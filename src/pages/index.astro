@@ -22,6 +22,7 @@ import {
 	additionalProducts,
 	aboutTeaser,
 	longDescription,
+	longDescriptionCta,
 	partnerLogos,
 	mainCtaBanner,
 	pricingStrip,
@@ -494,18 +495,37 @@ const PLACEHOLDER_TK = '/img/placeholder-tk-logo.svg';
 	<!-- LONG DESCRIPTION (SEO + смыслы) -->
 	<section class="section" aria-labelledby="ld-title">
 		<div class="container">
-			<span class="eyebrow">О продукте</span>
-			<h2 id="ld-title" class="section-title">Купить нержавеющую сталь и профильные трубы от ГК Металлинвест</h2>
+			<div class="ld-head">
+				<span class="eyebrow">О продукте</span>
+				<h2 id="ld-title" class="section-title">Купить нержавеющую сталь и профильные трубы от ГК Металлинвест</h2>
+				<p class="section-sub">Что мы поставляем, как обрабатываем и почему работа с нами выгодна — коротко и по делу.</p>
+			</div>
 			<div class="ld-grid">
 				{
-					longDescription.map((d) => (
+					longDescription.map((d, i) => (
 						<article class="ld-card">
+							<span class="ld-card__num">{String(i + 1).padStart(2, '0')}</span>
+							<span class="ld-card__icon" aria-hidden="true">
+								<Icon name={d.icon} size={32} />
+							</span>
 							<h3 class="ld-card__h">{d.h}</h3>
 							<p class="ld-card__p">{d.p}</p>
 						</article>
 					))
 				}
 			</div>
+
+			<aside class="ld-cta" aria-label={longDescriptionCta.h}>
+				<div class="ld-cta__bg" aria-hidden="true"></div>
+				<div class="ld-cta__content">
+					<h3 class="ld-cta__h">{longDescriptionCta.h}</h3>
+					<p class="ld-cta__p">{longDescriptionCta.p}</p>
+					<p class="ld-cta__tag">{longDescriptionCta.tagline}</p>
+				</div>
+				<div class="ld-cta__action">
+					<Button href={longDescriptionCta.cta.href} variant="accent" size="lg">{longDescriptionCta.cta.label}</Button>
+				</div>
+			</aside>
 		</div>
 	</section>
 
@@ -1842,28 +1862,151 @@ const PLACEHOLDER_TK = '/img/placeholder-tk-logo.svg';
 	}
 
 	/* Long description */
+	.ld-head {
+		max-width: 720px;
+		margin-bottom: var(--space-7);
+	}
+	.ld-head .section-sub {
+		margin-top: var(--space-3);
+	}
 	.ld-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-		gap: var(--space-3);
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+	@media (max-width: 760px) {
+		.ld-grid {
+			grid-template-columns: 1fr;
+		}
 	}
 	.ld-card {
-		padding: var(--space-4);
+		position: relative;
+		padding: var(--space-6) var(--space-5) var(--space-5);
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		border-left: 3px solid var(--color-accent);
+		border-radius: 18px;
+		box-shadow: 0 4px 14px -8px rgba(10, 31, 61, 0.12);
+		transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+		overflow: hidden;
+	}
+	.ld-card::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 80px;
+		height: 80px;
+		background: radial-gradient(60% 60% at 0% 0%, rgba(196, 101, 27, 0.12), transparent 70%);
+		pointer-events: none;
+	}
+	.ld-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 16px 32px -12px rgba(10, 31, 61, 0.22);
+		border-color: var(--color-accent-100, #fff1e3);
+	}
+	.ld-card__num {
+		position: absolute;
+		top: var(--space-4);
+		right: var(--space-5);
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--color-accent);
+		letter-spacing: 0.08em;
+		opacity: 0.55;
+	}
+	.ld-card__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 56px;
+		height: 56px;
+		border-radius: 14px;
+		background: var(--color-accent-100, #fff1e3);
+		color: var(--color-accent, #c4651b);
+		margin-bottom: var(--space-4);
 	}
 	.ld-card__h {
-		margin: 0 0 var(--space-1);
-		font-size: 0.95rem;
+		margin: 0 0 var(--space-3);
+		font-size: 1.15rem;
+		line-height: 1.25;
+		letter-spacing: -0.01em;
+		color: var(--color-text);
 	}
 	.ld-card__p {
 		margin: 0;
-		font-size: 0.85rem;
+		font-size: 0.95rem;
 		color: var(--color-muted);
 		max-width: none;
+		line-height: 1.6;
+	}
+
+	/* CTA banner under product description */
+	.ld-cta {
+		position: relative;
+		margin-top: var(--space-6);
+		padding: var(--space-7) var(--space-6);
+		border-radius: 24px;
+		overflow: hidden;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: var(--space-6);
+		isolation: isolate;
+		color: var(--color-on-dark, #fff);
+	}
+	.ld-cta__bg {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background:
+			radial-gradient(50% 60% at 80% 20%, rgba(244, 162, 97, 0.25), transparent 60%),
+			radial-gradient(50% 60% at 20% 90%, rgba(108, 125, 146, 0.25), transparent 60%),
+			linear-gradient(135deg, #1c4b80 0%, #11304f 50%, #0a1f3d 100%);
+	}
+	.ld-cta__bg::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+		background-size: 48px 48px;
+		mask-image: radial-gradient(70% 70% at 30% 30%, #000 30%, transparent 80%);
+		-webkit-mask-image: radial-gradient(70% 70% at 30% 30%, #000 30%, transparent 80%);
+	}
+	.ld-cta__content {
+		min-width: 0;
+	}
+	.ld-cta__h {
+		margin: 0 0 var(--space-3);
+		font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+		letter-spacing: -0.015em;
+		line-height: 1.15;
+		color: #fff;
+	}
+	.ld-cta__p {
+		margin: 0 0 var(--space-3);
+		font-size: 1rem;
 		line-height: 1.55;
+		color: var(--color-on-dark-muted, rgba(255, 255, 255, 0.78));
+		max-width: 60ch;
+	}
+	.ld-cta__tag {
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 600;
+		color: var(--color-accent-300, #f4a261);
+	}
+	.ld-cta__action {
+		flex-shrink: 0;
+	}
+	@media (max-width: 760px) {
+		.ld-cta {
+			grid-template-columns: 1fr;
+			padding: var(--space-6) var(--space-5);
+			gap: var(--space-4);
+		}
 	}
 
 	/* Partners */
