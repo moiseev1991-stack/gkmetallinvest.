@@ -1,0 +1,36 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import PriceTable from '../../components/PriceTable.astro';
+---
+
+<CatalogHubTemplate
+	title="Проволока нержавеющая"
+	description="Нержавеющая проволока всех марок: 12Х18Н10Т, AISI 304/316L/316Ti/321, EN 10270-3 и сварочная ER308L/ER316L. Цены в наличии."
+	h1="Проволока нержавеющая"
+	intro="Технологическая, пружинная (EN 10270-3) и сварочная (ER308L, ER316L, ER316Ti) проволока. Диаметры от 0,11 до 6 мм."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Проволока нержавеющая' }]}
+>
+	<PriceTable hub="provoloka" title="Прайс на проволоку" measure="диаметр" />
+
+	<section class="block">
+		<h2>Что входит в раздел</h2>
+		<ul class="list-plain">
+			<li>Технологическая — 12Х18Н10Т, AISI 304/316L/321/310S/904L</li>
+			<li>Пружинная — EN 10270-3 1.4310 (AISI 302)</li>
+			<li>Сварочная — ER308L, ER316L, ER316Ti</li>
+			<li>Ферритная — AISI 410, 430</li>
+		</ul>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 65ch;
+	}
+</style>

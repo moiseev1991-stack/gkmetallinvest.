@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import LeadForm from '../../../components/LeadForm.astro';
+---
+
+<BaseLayout
+	title="Продольная и поперечная резка рулонов"
+	description="Резка нержавеющих рулонов в лист и штрипс, перемотка. Оборудование и сроки — по запросу."
+>
+	<div class="container page">
+		<Breadcrumbs
+			items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, { label: 'Резка рулонов' }]}
+		/>
+		<h1>Продольная и поперечная резка рулонов</h1>
+		<p class="lead">
+			Связанные товарные хабы: <a href="/rulon/">рулон</a>, <a href="/lenta/">лента</a>,
+			<a href="/lenta/proizvodstvo/">производство штрипса</a>.
+		</p>
+		<section class="block">
+			<h2>Задачи</h2>
+			<ul>
+				<li>Резка в лист заданного кроя</li>
+				<li>Продольная резка в штрипс</li>
+				<li>Согласование толщины и ширины с производством</li>
+			</ul>
+		</section>
+		<CtaSection title="Запросить резку" />
+		<LeadForm />
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.block ul {
+		color: var(--color-muted);
+		max-width: 65ch;
+	}
+</style>

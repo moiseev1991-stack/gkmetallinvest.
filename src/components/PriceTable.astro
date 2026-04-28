@@ -1,0 +1,470 @@
+---
+import pricelist from '../data/pricelist.json';
+
+interface Props {
+	hub: 'list' | 'krug' | 'provoloka' | 'detali-truboprovoda';
+	title?: string;
+	measure?: 'толщина' | 'диаметр' | 'размер';
+}
+
+const { hub, title = 'Прайс-лист', measure = 'размер' } = Astro.props;
+
+const allSkus: any[] = (pricelist.hubs as any)[hub] ?? [];
+
+function uniq<T>(arr: T[]): T[] {
+	return [...new Set(arr)].filter((x) => x !== null && x !== undefined && x !== '') as T[];
+}
+
+const grades = uniq(allSkus.map((s) => s.grade)).sort((a: any, b: any) => String(a).localeCompare(String(b), 'ru'));
+const subs = uniq(allSkus.map((s) => s.sub)) as string[];
+const rolls = uniq(allSkus.map((s) => s.roll)) as string[];
+const surfaces = uniq(allSkus.map((s) => s.surface)) as string[];
+
+const SUB_LABELS: Record<string, string> = {
+	nikelesod: 'Никелесодержащий',
+	beznikelya: 'Без никеля',
+	zharoprochnyj: 'Жаропрочный круг',
+	kvadrat: 'Квадрат',
+	nikelevyj: 'Круг никелесодержащий',
+	shestigrannik: 'Шестигранник',
+	osnovnaya: 'Проволока',
+	flanec: 'Фланцы',
+	otvod: 'Отводы',
+};
+
+function fmtPrice(p: number | null) {
+	if (p == null) return null;
+	return new Intl.NumberFormat('ru-RU').format(p);
+}
+
+const initialLimit = 60;
+---
+
+<section class="pt" data-hub={hub}>
+	<header class="pt__head">
+		<div>
+			<h2 class="pt__title">{title}</h2>
+			<p class="pt__sub">
+				Цены ориентировочные, актуальны на {pricelist.updatedAt}. Финальная цена — после запроса с указанием объёма
+				и формы оплаты.
+			</p>
+		</div>
+		<span class="pt__count" data-pt-count>{allSkus.length} позиций</span>
+	</header>
+
+	<div class="pt__filters">
+		<div class="pt__field">
+			<label for={`${hub}-q`}>Поиск</label>
+			<input id={`${hub}-q`} type="search" placeholder="марка, поверхность, размер" data-pt-q autocomplete="off" />
+		</div>
+		{
+			subs.length > 1 && (
+				<div class="pt__field">
+					<label for={`${hub}-sub`}>Категория</label>
+					<select id={`${hub}-sub`} data-pt-sub>
+						<option value="">Все</option>
+						{subs.map((s) => (
+							<option value={s}>{SUB_LABELS[s] ?? s}</option>
+						))}
+					</select>
+				</div>
+			)
+		}
+		{
+			rolls.length > 1 && (
+				<div class="pt__field">
+					<label for={`${hub}-roll`}>Передел</label>
+					<select id={`${hub}-roll`} data-pt-roll>
+						<option value="">Все</option>
+						{rolls.map((r) => (
+							<option value={r}>{r}</option>
+						))}
+					</select>
+				</div>
+			)
+		}
+		{
+			surfaces.length > 1 && (
+				<div class="pt__field">
+					<label for={`${hub}-surface`}>Поверхность</label>
+					<select id={`${hub}-surface`} data-pt-surface>
+						<option value="">Все</option>
+						{surfaces.map((s) => (
+							<option value={s}>{s}</option>
+						))}
+					</select>
+				</div>
+			)
+		}
+		{
+			grades.length > 1 && (
+				<div class="pt__field">
+					<label for={`${hub}-grade`}>Марка</label>
+					<select id={`${hub}-grade`} data-pt-grade>
+						<option value="">Все</option>
+						{grades.map((g) => (
+							<option value={g}>{g}</option>
+						))}
+					</select>
+				</div>
+			)
+		}
+		<button type="button" class="pt__reset" data-pt-reset>Сбросить</button>
+	</div>
+
+	<div class="pt__wrap">
+		<table class="pt__table">
+			<thead>
+				<tr>
+					<th>Марка</th>
+					<th>{measure}, мм</th>
+					<th>Ед.</th>
+					<th class="pt__th-price">Цена, ₽</th>
+					<th class="pt__th-action">Заявка</th>
+				</tr>
+			</thead>
+			<tbody data-pt-body>
+				{
+					allSkus.slice(0, initialLimit).map((s, i) => {
+						const subLabel = SUB_LABELS[s.sub] ?? s.sub;
+						const surface = s.surface ? ` · ${s.surface}` : '';
+						const roll = s.roll ? ` · ${s.roll}` : '';
+						return (
+							<tr
+								data-pt-row
+								data-grade={s.grade}
+								data-roll={s.roll ?? ''}
+								data-surface={s.surface ?? ''}
+								data-sub={s.sub}
+								data-search={`${s.grade} ${subLabel} ${s.roll ?? ''} ${s.surface ?? ''} ${s.size}`.toLowerCase()}
+							>
+								<td>
+									<span class="pt__grade">{s.grade}</span>
+									<span class="pt__sub-tag">{subLabel}{roll}{surface}</span>
+								</td>
+								<td class="pt__cell-num">{s.size}</td>
+								<td class="pt__cell-num">{s.unit}</td>
+								<td class="pt__cell-price">
+									{s.price ? <strong>{fmtPrice(s.price)}</strong> : <span class="pt__on-request">по запросу</span>}
+								</td>
+								<td class="pt__cell-action">
+									<a href="/zapros-kp/" class="pt__cta">Запросить →</a>
+								</td>
+							</tr>
+						);
+					})
+				}
+			</tbody>
+		</table>
+	</div>
+
+	<div class="pt__foot">
+		<button type="button" class="pt__more" data-pt-more>
+			Показать ещё <span data-pt-more-num>{Math.max(0, allSkus.length - initialLimit)}</span>
+		</button>
+		<p class="pt__empty" data-pt-empty hidden>Ничего не найдено по фильтрам — попробуйте сбросить.</p>
+	</div>
+</section>
+
+<script define:vars={{ hub, allSkus, initialLimit, SUB_LABELS }}>
+	const root = document.querySelector(`.pt[data-hub="${hub}"]`);
+	if (root) {
+		const fmt = (p) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
+		const body = root.querySelector('[data-pt-body]');
+		const countEl = root.querySelector('[data-pt-count]');
+		const moreBtn = root.querySelector('[data-pt-more]');
+		const moreNum = root.querySelector('[data-pt-more-num]');
+		const emptyEl = root.querySelector('[data-pt-empty]');
+		const resetBtn = root.querySelector('[data-pt-reset]');
+
+		const inputs = {
+			q: root.querySelector('[data-pt-q]'),
+			sub: root.querySelector('[data-pt-sub]'),
+			roll: root.querySelector('[data-pt-roll]'),
+			surface: root.querySelector('[data-pt-surface]'),
+			grade: root.querySelector('[data-pt-grade]'),
+		};
+
+		let limit = initialLimit;
+
+		function rowMatches(s, f) {
+			if (f.sub && s.sub !== f.sub) return false;
+			if (f.roll && (s.roll || '') !== f.roll) return false;
+			if (f.surface && (s.surface || '') !== f.surface) return false;
+			if (f.grade && s.grade !== f.grade) return false;
+			if (f.q) {
+				const hay = `${s.grade} ${SUB_LABELS[s.sub] || s.sub} ${s.roll || ''} ${s.surface || ''} ${s.size}`.toLowerCase();
+				if (!hay.includes(f.q)) return false;
+			}
+			return true;
+		}
+
+		function render() {
+			const f = {
+				q: (inputs.q?.value || '').trim().toLowerCase(),
+				sub: inputs.sub?.value || '',
+				roll: inputs.roll?.value || '',
+				surface: inputs.surface?.value || '',
+				grade: inputs.grade?.value || '',
+			};
+			const filtered = allSkus.filter((s) => rowMatches(s, f));
+			countEl.textContent = `${filtered.length} позиций`;
+			emptyEl.hidden = filtered.length > 0;
+
+			const visible = filtered.slice(0, limit);
+			body.innerHTML = visible
+				.map((s) => {
+					const subLabel = SUB_LABELS[s.sub] || s.sub;
+					const surface = s.surface ? ` · ${s.surface}` : '';
+					const roll = s.roll ? ` · ${s.roll}` : '';
+					const price = s.price ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
+					return `<tr data-pt-row>
+            <td>
+              <span class="pt__grade">${s.grade}</span>
+              <span class="pt__sub-tag">${subLabel}${roll}${surface}</span>
+            </td>
+            <td class="pt__cell-num">${s.size}</td>
+            <td class="pt__cell-num">${s.unit}</td>
+            <td class="pt__cell-price">${price}</td>
+            <td class="pt__cell-action"><a href="/zapros-kp/" class="pt__cta">Запросить →</a></td>
+          </tr>`;
+				})
+				.join('');
+
+			const remaining = Math.max(0, filtered.length - visible.length);
+			moreNum.textContent = remaining;
+			moreBtn.hidden = remaining === 0;
+		}
+
+		Object.values(inputs).forEach((el) => {
+			if (!el) return;
+			const ev = el.tagName === 'SELECT' ? 'change' : 'input';
+			el.addEventListener(ev, () => {
+				limit = initialLimit;
+				render();
+			});
+		});
+
+		moreBtn?.addEventListener('click', () => {
+			limit += initialLimit;
+			render();
+		});
+
+		resetBtn?.addEventListener('click', () => {
+			Object.values(inputs).forEach((el) => {
+				if (!el) return;
+				if (el.tagName === 'SELECT') el.value = '';
+				else el.value = '';
+			});
+			limit = initialLimit;
+			render();
+		});
+	}
+</script>
+
+<style>
+	.pt {
+		margin-block: var(--space-8);
+	}
+	.pt__head {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-5);
+	}
+	.pt__title {
+		margin: 0 0 var(--space-1);
+		font-size: 1.4rem;
+		letter-spacing: -0.015em;
+	}
+	.pt__sub {
+		margin: 0;
+		font-size: 0.88rem;
+		color: var(--color-muted);
+		max-width: 60ch;
+	}
+	.pt__count {
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.pt__filters {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--space-4);
+		align-items: end;
+	}
+	.pt__field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+	.pt__field label {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--color-subtle);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	.pt__field input,
+	.pt__field select {
+		font: inherit;
+		font-size: 0.9rem;
+		padding: 0.55rem 0.7rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		color: var(--color-text);
+		outline: none;
+		transition: border-color var(--dur-fast) var(--ease-out);
+	}
+	.pt__field input:focus,
+	.pt__field select:focus {
+		border-color: var(--color-primary-500);
+		box-shadow: 0 0 0 3px var(--color-primary-100);
+	}
+	.pt__reset {
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--color-muted);
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		padding: 0.55rem 0.8rem;
+		cursor: pointer;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.pt__reset:hover {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	.pt__wrap {
+		overflow-x: auto;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+	.pt__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 640px;
+	}
+	.pt__table th {
+		text-align: left;
+		padding: var(--space-3) var(--space-4);
+		font-weight: 600;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-subtle);
+		background: var(--color-bg-elev);
+		border-bottom: 1px solid var(--color-border);
+		white-space: nowrap;
+	}
+	.pt__th-price,
+	.pt__th-action {
+		text-align: right;
+	}
+	.pt__table td {
+		padding: var(--space-3) var(--space-4);
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+	}
+	.pt__table tr:last-child td {
+		border-bottom: 0;
+	}
+	.pt__table tr:hover td {
+		background: var(--color-primary-50);
+	}
+	.pt__grade {
+		display: block;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+	.pt__sub-tag {
+		display: block;
+		font-size: 0.78rem;
+		color: var(--color-subtle);
+		margin-top: 2px;
+	}
+	.pt__cell-num {
+		font-family: var(--font-mono);
+		font-size: 0.88rem;
+		color: var(--color-text);
+		white-space: nowrap;
+	}
+	.pt__cell-price {
+		text-align: right;
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+		white-space: nowrap;
+	}
+	.pt__cell-price strong {
+		font-weight: 700;
+		color: var(--color-text);
+	}
+	.pt__on-request {
+		font-family: var(--font-sans);
+		font-size: 0.82rem;
+		color: var(--color-accent);
+		font-weight: 500;
+	}
+	.pt__cell-action {
+		text-align: right;
+		white-space: nowrap;
+	}
+	.pt__cta {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-primary-500);
+		text-decoration: none;
+	}
+	.pt__cta:hover {
+		color: var(--color-primary-600);
+		text-decoration: underline;
+	}
+
+	.pt__foot {
+		display: flex;
+		justify-content: center;
+		margin-top: var(--space-4);
+	}
+	.pt__more {
+		font: inherit;
+		font-weight: 600;
+		font-size: 0.92rem;
+		color: var(--color-primary-500);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: 0.7rem 1.4rem;
+		cursor: pointer;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.pt__more:hover {
+		border-color: var(--color-primary-500);
+		color: var(--color-primary-600);
+		box-shadow: var(--shadow-sm);
+	}
+	.pt__empty {
+		text-align: center;
+		color: var(--color-muted);
+		font-size: 0.9rem;
+	}
+</style>

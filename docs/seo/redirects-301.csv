@@ -1,0 +1,11 @@
+source_path,target_path,type,notes
+/all,/postavka-nerzhaveyushchego-metalloprokata/,301,Широкая коммерческая воронка
+/list,/list/,301,Канон с завершающим слэшем
+/catalog/truba,/truba/,301,Новая плоская иерархия
+/catalog/krug/prutok,/krug/,301,Круг/пруток
+/catalog/lenta,/lenta/,301,Каталог ленты
+/lenta,/lenta/proizvodstvo/,301,Текущая /lenta = производственная посадочная (не каталог)
+/rulon,/rulon/,301,Рулон
+/listdeco,/dekorativnye-listy/,301,Декоративные листы
+/uslugi/perforation,/uslugi/perforaciya-listov/,301,Перфорация — не на главную
+/provolokanerzh,/provolokanerzh/,301,Зарезервировать эквивалент или 301 на ближайший хаб — уточнить контент

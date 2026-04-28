@@ -1,0 +1,2046 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/ui/Card.astro';
+import Button from '../components/ui/Button.astro';
+import Icon from '../components/ui/Icon.astro';
+import LeadForm from '../components/LeadForm.astro';
+import { siteName } from '../data/site';
+import {
+	heroBullets,
+	heroProducts,
+	capabilities,
+	catalogCategories,
+	popularDirections,
+	solutions,
+	homeServices,
+	shipments,
+	advantageGroups,
+	trustItems,
+	guarantees,
+	deliveryItems,
+	deliveryPartners,
+	additionalProducts,
+	aboutTeaser,
+	longDescription,
+	partnerLogos,
+	mainCtaBanner,
+	pricingStrip,
+} from '../data/homepage';
+import pricelist from '../data/pricelist.json';
+
+const totalSkus = Object.values(pricelist.stats).reduce((s: number, x: any) => s + x.total, 0);
+const totalGrades = new Set<string>();
+for (const hub of Object.values(pricelist.hubs as Record<string, Array<any>>)) {
+	for (const sku of hub) totalGrades.add(sku.grade);
+}
+
+const PLACEHOLDER_PRODUCT = '/img/placeholder-product.svg';
+const PLACEHOLDER_TEAM = '/img/team/team.jpg';
+const PLACEHOLDER_ILLUSTRATION = '/img/illustrations/not-found.svg';
+const PLACEHOLDER_BANNER = '/img/placeholder-cta-banner.svg';
+const PLACEHOLDER_PARTNER = '/img/placeholder-partner.svg';
+const PLACEHOLDER_TK = '/img/placeholder-tk-logo.svg';
+---
+
+<BaseLayout
+	title={siteName}
+	description="Нержавеющий металлопрокат: лист, труба, рулон, круг, лента, декоративные листы. Услуги резки, перфорации, доставка по России. ГК Металлинвест."
+>
+	<!-- HERO -->
+	<section class="hero" aria-labelledby="hero-title">
+		<div class="container hero__grid">
+			<div class="hero__copy">
+				<span class="hero__pill">
+					<span class="hero__pill-dot" aria-hidden="true"></span>
+					Прайс обновлён 15.04.2026 · {totalSkus.toLocaleString('ru')} позиций
+				</span>
+				<h1 id="hero-title" class="hero__h1">
+					Нержавеющий <span class="hero__h1-accent">металлопрокат</span><br />
+					поставки по всей России
+				</h1>
+				<p class="hero__lead">
+					Лист, труба, рулон, круг, проволока. Подбор марки и формата, обработка на заказ — от одной тонны до объёмных партий.
+				</p>
+				<ul class="hero__bullets" aria-label="Ключевые офферы">
+					{
+						heroBullets.map((t) => (
+							<li>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M2 7.5l3 3 7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+								<span>{t}</span>
+							</li>
+						))
+					}
+				</ul>
+				<div class="hero__cta">
+					<Button href="/zapros-kp/" variant="accent" size="lg">Запросить цену</Button>
+					<Button href="/#catalog" variant="on-dark" size="lg">Смотреть каталог</Button>
+				</div>
+				<div class="hero__metrics" aria-label="Ключевые показатели">
+					<div class="hero__metric">
+						<span class="hero__metric-num">{totalGrades.size}+</span>
+						<span class="hero__metric-label">марок стали</span>
+					</div>
+					<div class="hero__metric-divider" aria-hidden="true"></div>
+					<div class="hero__metric">
+						<span class="hero__metric-num">{totalSkus.toLocaleString('ru')}</span>
+						<span class="hero__metric-label">позиций в прайсе</span>
+					</div>
+					<div class="hero__metric-divider" aria-hidden="true"></div>
+					<div class="hero__metric">
+						<span class="hero__metric-num">2–3 дня</span>
+						<span class="hero__metric-label">экспресс-доставка</span>
+					</div>
+				</div>
+			</div>
+			<div class="hero__visual" aria-label="Ключевые товары">
+				<ul class="hero-cards">
+					{
+						heroProducts.map((p, i) => (
+							<li class={`hero-cards__slot hero-cards__slot--${i === 0 ? 'main' : i === 1 ? 'top' : 'bottom'}`}>
+								<a class="hero-card" href={p.href}>
+									<div class="hero-card__media">
+										<img
+											src={p.image ?? PLACEHOLDER_PRODUCT}
+											alt={p.alt ?? p.title}
+											loading="eager"
+											decoding="async"
+											width="480"
+											height="360"
+										/>
+									</div>
+									<div class="hero-card__body">
+										<span class="hero-card__title">{p.title}</span>
+										<span class="hero-card__hint">{p.hint}</span>
+									</div>
+									<span class="hero-card__arrow" aria-hidden="true">
+										<svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+											<path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+										</svg>
+									</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<!-- SHIPMENTS SLIDER -->
+	<section class="section section--alt" aria-labelledby="ship-title">
+		<div class="container">
+			<div class="section-head section-head--center">
+				<span class="eyebrow">Кейсы</span>
+				<h2 id="ship-title" class="section-title">Последние отгрузки</h2>
+				<p class="section-sub">Реальные видео с нашего склада — упаковка, погрузка, отгрузка под контролем нашей команды</p>
+				<div class="ship-rating" aria-label="Средняя оценка отгрузок">
+					<span class="ship-rating__stars" aria-hidden="true">★★★★★</span>
+					<span class="ship-rating__text">4.9 · по отзывам клиентов</span>
+				</div>
+			</div>
+			<div class="ship-slider" data-ship-slider>
+				<button type="button" class="ship-slider__btn ship-slider__btn--prev" data-ship-prev aria-label="Назад">
+					<svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+				</button>
+				<div class="ship-slider__track" data-ship-track>
+					{
+						[...shipments, ...shipments].map((s, i) => {
+							const isClone = i >= shipments.length;
+							const orderIdx = i % shipments.length;
+							return (
+								<article
+									class={`ship-card ship-card--${orderIdx % 2 === 0 ? 'down' : 'up'}`}
+									aria-hidden={isClone ? 'true' : undefined}
+								>
+									<div class="ship-card__media">
+										<video
+											class="ship-card__video"
+											src={`${s.video}#t=0.5`}
+											poster={s.poster}
+											preload="metadata"
+											muted
+											playsinline
+											aria-label={s.title}
+										/>
+										{s.tag && <span class="ship-card__tag">{s.tag}</span>}
+										<button
+											type="button"
+											class="ship-card__btn"
+											data-ship-open={s.video}
+											data-ship-title={s.title}
+											aria-label={`Смотреть видео: ${s.title}`}
+											tabindex={isClone ? -1 : undefined}
+										>
+											<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" /></svg>
+											<span>Смотреть видео</span>
+										</button>
+									</div>
+									<h3 class="ship-card__caption">{s.title}</h3>
+								</article>
+							);
+						})
+					}
+				</div>
+				<button type="button" class="ship-slider__btn ship-slider__btn--next" data-ship-next aria-label="Вперёд">
+					<svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M8 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+				</button>
+			</div>
+		</div>
+
+		<!-- Modal -->
+		<div class="ship-modal" data-ship-modal hidden>
+			<div class="ship-modal__backdrop" data-ship-close></div>
+			<div class="ship-modal__inner">
+				<button type="button" class="ship-modal__close" data-ship-close aria-label="Закрыть">
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+				</button>
+				<video class="ship-modal__video" data-ship-video controls playsinline preload="metadata"></video>
+				<p class="ship-modal__title" data-ship-modal-title></p>
+			</div>
+		</div>
+	</section>
+
+	<!-- PRODUCTION CAPABILITIES -->
+	<section class="section" aria-labelledby="cap-title">
+		<div class="container">
+			<span class="eyebrow">Производство</span>
+			<h2 id="cap-title" class="section-title">Возможности на собственной площадке</h2>
+			<p class="section-sub">Реальные компетенции — что делаем на оборудовании. Без маркетинговой воды.</p>
+			<div class="cap-grid">
+				{
+					capabilities.map((c, i) => (
+						<article class="cap-card">
+							<div class="cap-card__head">
+								<span class="cap-card__icon" aria-hidden="true">
+									<Icon name={c.icon} size={26} />
+								</span>
+								<span class="cap-card__num">{String(i + 1).padStart(2, '0')}</span>
+							</div>
+							<h3 class="cap-card__title">{c.title}</h3>
+							<p class="cap-card__text">{c.text}</p>
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- SOLUTIONS — 3 icon cards -->
+	<section class="section" aria-labelledby="sol-title">
+		<div class="container">
+			<span class="eyebrow">Подход</span>
+			<h2 id="sol-title" class="section-title">Решаем под вашу задачу</h2>
+			<div class="sol-grid">
+				{
+					solutions.map((s) => (
+						<article class="sol-card">
+							<div class="sol-card__icon" aria-hidden="true">
+								<Icon name={s.icon ?? 'gear'} size={28} />
+							</div>
+							<h3 class="sol-card__title">{s.title}</h3>
+							<p class="sol-card__text">{s.text}</p>
+							{s.cta && (
+								<a class="sol-card__cta" href={s.cta.href}>
+									{s.cta.label} →
+								</a>
+							)}
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- ADVANTAGES -->
+	<section class="section section--alt" aria-labelledby="adv-title">
+		<div class="container">
+			<span class="eyebrow">Почему мы</span>
+			<h2 id="adv-title" class="section-title">Преимущества работы с ГК Металлинвест</h2>
+			<div class="adv-grid">
+				{
+					advantageGroups.map((a, i) => (
+						<article class="adv-card">
+							<div class="adv-card__icon" aria-hidden="true">
+								<Icon name={a.icon ?? 'shield-check'} size={26} />
+							</div>
+							<span class="adv-card__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+							<h3 class="adv-card__title">{a.title}</h3>
+							<p class="adv-card__text">{a.text}</p>
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- CATALOG -->
+	<section class="section" id="catalog" aria-labelledby="cat-title">
+		<div class="container">
+			<div class="section-head">
+				<div>
+					<span class="eyebrow">Каталог</span>
+					<h2 id="cat-title" class="section-title">Категории нержавеющего проката</h2>
+				</div>
+				<Button href="/postavka-nerzhaveyushchego-metalloprokata/" variant="ghost">Все категории →</Button>
+			</div>
+			<div class="grid-cards">
+				{catalogCategories.map((c) => <Card href={c.href} title={c.title} description={c.description} image={c.image} imageAlt={c.alt} />)}
+			</div>
+		</div>
+	</section>
+
+	<!-- POPULAR -->
+	<section class="section section--alt" aria-labelledby="pop-title">
+		<div class="container">
+			<span class="eyebrow">Спрос</span>
+			<h2 id="pop-title" class="section-title">Популярные направления</h2>
+			<div class="pop-grid">
+				{
+					popularDirections.map((p) => (
+						<a class="pop-card" href={p.href}>
+							<span class="pop-card__label">{p.label}</span>
+							<svg class="pop-card__arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- NOT FOUND -->
+	<section class="notfound" aria-labelledby="nf-title">
+		<div class="container notfound__inner">
+			<div class="notfound__copy">
+				<span class="eyebrow eyebrow--accent">Помощь подбора</span>
+				<h2 id="nf-title" class="notfound__h">Не нашли нужный товар?</h2>
+				<p class="notfound__text">
+					У нас <strong>более 10 000 наименований</strong> — отправьте смету, проверим наличие и предложим аналоги.
+				</p>
+				<div class="notfound__cta">
+					<Button href="/zapros-kp/#lead-form" variant="accent">Отправить смету</Button>
+					<Button href="/zapros-kp/" variant="secondary">Запросить наличие</Button>
+				</div>
+			</div>
+			<div class="notfound__visual" aria-hidden="true">
+				<img src={PLACEHOLDER_ILLUSTRATION} alt="" width="320" height="220" loading="lazy" decoding="async" />
+			</div>
+		</div>
+	</section>
+
+	<!-- SERVICES -->
+	<section class="section" aria-labelledby="svc-title">
+		<div class="container">
+			<span class="eyebrow">Услуги</span>
+			<h2 id="svc-title" class="section-title">Обработка металла под задачу</h2>
+			<p class="section-sub">Полный коммерческий блок услуг — режем, шлифуем, перфорируем, выравниваем плоскостность.</p>
+			<div class="svc-grid">
+				{
+					homeServices.map((s, i) => (
+						<article class="svc-card">
+							<div class="svc-card__icon" aria-hidden="true">
+								{s.icon ? <img src={s.icon} alt="" width="28" height="28" /> : <span>{String(i + 1).padStart(2, '0')}</span>}
+							</div>
+							<h3 class="svc-card__title">
+								<a href={s.href}>{s.title}</a>
+							</h3>
+							<p class="svc-card__text">{s.text}</p>
+							<a class="svc-card__more" href={s.href}>
+								Подробнее
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</a>
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- ADDITIONAL PRODUCTS — Provoloka + DECO -->
+	<section class="section section--alt" aria-labelledby="addp-title">
+		<div class="container">
+			<span class="eyebrow">Отдельные категории</span>
+			<h2 id="addp-title" class="section-title">Проволока и декоративные листы</h2>
+			<div class="addp-grid">
+				{
+					additionalProducts.map((p) => (
+						<a class="addp-card" href={p.href}>
+							<div class="addp-card__media">
+								<img src={p.image ?? PLACEHOLDER_BANNER} alt={p.title} loading="lazy" decoding="async" width="600" height="400" />
+							</div>
+							<div class="addp-card__body">
+								<h3 class="addp-card__title">{p.title}</h3>
+								<p class="addp-card__sub">{p.subtitle}</p>
+								<ul class="addp-card__bullets">
+									{p.bullets.map((b) => <li>{b}</li>)}
+								</ul>
+								<span class="addp-card__more">
+									Смотреть раздел
+									<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+										<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+								</span>
+							</div>
+						</a>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- MAIN CTA BANNER (with image) -->
+	<section class="cta-banner" aria-labelledby="cta-banner-title">
+		<div class="container cta-banner__inner">
+			<div class="cta-banner__media">
+				<img src={mainCtaBanner.image ?? PLACEHOLDER_BANNER} alt="" loading="lazy" decoding="async" width="600" height="400" />
+			</div>
+			<div class="cta-banner__copy">
+				<span class="eyebrow eyebrow--accent">{mainCtaBanner.eyebrow}</span>
+				<h2 id="cta-banner-title" class="cta-banner__h">{mainCtaBanner.title}</h2>
+				<p class="cta-banner__text">{mainCtaBanner.text}</p>
+				<Button href={mainCtaBanner.cta.href} variant="accent" size="lg">{mainCtaBanner.cta.label}</Button>
+			</div>
+		</div>
+	</section>
+
+	<!-- TRUST (dark) -->
+	<section class="trust" aria-labelledby="trust-title">
+		<div class="container">
+			<span class="eyebrow eyebrow--accent">Стандарты</span>
+			<h2 id="trust-title" class="trust__h">Опыт, документы и стандарты</h2>
+			<div class="trust-grid">
+				{
+					trustItems.map((t) => (
+						<div class="trust-card">
+							<div class="trust-card__stat">{t.stat}</div>
+							<p class="trust-card__text">{t.text}</p>
+						</div>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- GUARANTEES + DELIVERY -->
+	<section class="section" aria-labelledby="gd-title">
+		<div class="container">
+			<div class="gd">
+				<div class="gd__col">
+					<span class="eyebrow">Гарантии</span>
+					<h3 class="gd__h">Чёткие условия отгрузки</h3>
+					<ul class="gd__list">
+						{
+							guarantees.map((g) => (
+								<li>
+									<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+										<path d="M2 7.5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+									<span>{g}</span>
+								</li>
+							))
+						}
+					</ul>
+				</div>
+				<div class="gd__col">
+					<span class="eyebrow">Доставка</span>
+					<h3 class="gd__h">По России и СНГ</h3>
+					<ul class="gd__list">
+						{
+							deliveryItems.map((g) => (
+								<li>
+									<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+										<path d="M2 7.5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+									<span>{g}</span>
+								</li>
+							))
+						}
+					</ul>
+					<div class="gd__tk" aria-label="Транспортные компании">
+						{
+							deliveryPartners.map((tk) => (
+								<div class="gd__tk-item" title={tk.name}>
+									<img src={tk.logo ?? PLACEHOLDER_TK} alt={tk.name} loading="lazy" decoding="async" width="100" height="40" />
+								</div>
+							))
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- ABOUT -->
+	<section class="section section--alt about" aria-labelledby="about-title">
+		<div class="container about__inner">
+			<div class="about__text">
+				<span class="eyebrow">О компании</span>
+				<h2 id="about-title" class="section-title">Наша команда и компания</h2>
+				<p class="about__p">{aboutTeaser}</p>
+				<p class="about__more">
+					<a href="/o-kompanii/">Подробнее о компании →</a>
+				</p>
+			</div>
+			<div class="about__visual">
+				<img src={PLACEHOLDER_TEAM} alt="Команда ГК Металлинвест" loading="lazy" decoding="async" width="480" height="360" />
+			</div>
+		</div>
+	</section>
+
+	<!-- LONG DESCRIPTION (SEO + смыслы) -->
+	<section class="section" aria-labelledby="ld-title">
+		<div class="container">
+			<span class="eyebrow">О продукте</span>
+			<h2 id="ld-title" class="section-title">Нержавеющий металлопрокат: материалы, форматы, обработка</h2>
+			<div class="ld-grid">
+				{
+					longDescription.map((d) => (
+						<article class="ld-card">
+							<h3 class="ld-card__h">{d.h}</h3>
+							<p class="ld-card__p">{d.p}</p>
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- PARTNERS (10 logos) -->
+	<section class="section section--alt partners" aria-labelledby="part-title">
+		<div class="container">
+			<span class="eyebrow">Партнёры</span>
+			<h2 id="part-title" class="section-title">Работаем с ведущими заводами</h2>
+			<p class="section-sub">Слайдер логотипов поставщиков и партнёров по производству.</p>
+			<div class="partners__row" role="list">
+				{
+					partnerLogos.map((p, i) => (
+						<div class="partners__logo" role="listitem" aria-label={p.name}>
+							<img src={p.logo ?? PLACEHOLDER_PARTNER} alt={p.name} loading="lazy" decoding="async" width="160" height="60" />
+						</div>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- LEAD FORM -->
+	<LeadForm />
+
+	<!-- PRICING STRIP -->
+	<section class="pricing" aria-label="Актуальность цен">
+		<div class="container pricing__inner">
+			<div class="pricing__icon" aria-hidden="true">
+				<svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+					<circle cx="14" cy="14" r="11" stroke="currentColor" stroke-width="2" />
+					<path d="M14 8v6l4 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+			</div>
+			<div class="pricing__copy">
+				<strong class="pricing__title">{pricingStrip.title}</strong>
+				<span class="pricing__text">{pricingStrip.text}</span>
+			</div>
+			<div class="pricing__phone">
+				<a href={`tel:${pricingStrip.phone.replace(/\s|\(|\)|-/g, '')}`}>{pricingStrip.phone}</a>
+			</div>
+		</div>
+	</section>
+
+	<!-- CONTACTS PRE-FOOTER -->
+	<section class="prefoot" aria-label="Контакты">
+		<div class="container prefoot__inner">
+			<div>
+				<span class="eyebrow eyebrow--accent">Связаться</span>
+				<h2 class="prefoot__h">Готовы ответить на ваш запрос</h2>
+				<p class="prefoot__contact">
+					<a href="tel:+78312812660">+7 (831) 281-26-60</a>
+					<a href="mailto:zakaz@gkmetallinvest.ru">zakaz@gkmetallinvest.ru</a>
+				</p>
+				<p class="prefoot__addr">
+					603006, Нижний Новгород, ул. Варварская, д. 32, помещ. П5, офис 417
+					<br />
+					ООО «МЕТАЛЛИНВЕСТ», ИНН 5262332690
+				</p>
+			</div>
+			<div class="prefoot__cta">
+				<Button href="/zapros-kp/" variant="primary" size="lg">Запросить цену</Button>
+				<Button href="/kontakty/" variant="secondary" size="lg">Все контакты</Button>
+			</div>
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+	// Shipments video modal
+	const shipModal = document.querySelector('[data-ship-modal]') as HTMLElement | null;
+	const shipModalVideo = shipModal?.querySelector('[data-ship-video]') as HTMLVideoElement | null;
+	const shipModalTitle = shipModal?.querySelector('[data-ship-modal-title]') as HTMLElement | null;
+	let shipModalOpen = false;
+	const closeShipModal = () => {
+		if (!shipModal || !shipModalVideo) return;
+		shipModalVideo.pause();
+		shipModalVideo.removeAttribute('src');
+		shipModalVideo.load();
+		shipModal.setAttribute('hidden', '');
+		document.body.style.overflow = '';
+		shipModalOpen = false;
+	};
+	document.querySelectorAll<HTMLButtonElement>('[data-ship-open]').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			if (!shipModal || !shipModalVideo) return;
+			const src = btn.getAttribute('data-ship-open') || '';
+			const title = btn.getAttribute('data-ship-title') || '';
+			shipModalVideo.src = src;
+			if (shipModalTitle) shipModalTitle.textContent = title;
+			shipModal.removeAttribute('hidden');
+			document.body.style.overflow = 'hidden';
+			shipModalOpen = true;
+			shipModalVideo.play().catch(() => {});
+		});
+	});
+	shipModal?.querySelectorAll('[data-ship-close]').forEach((el) => el.addEventListener('click', closeShipModal));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && shipModal && !shipModal.hasAttribute('hidden')) closeShipModal();
+	});
+
+	// Shipments slider — infinite auto-rotating carousel.
+	// Track is rendered with shipments duplicated 2x; we silently teleport scroll
+	// position back by half whenever it crosses the midpoint (and forward when it goes negative).
+	const slider = document.querySelector('[data-ship-slider]') as HTMLElement | null;
+	if (slider) {
+		const track = slider.querySelector('[data-ship-track]') as HTMLElement | null;
+		const prev = slider.querySelector('[data-ship-prev]') as HTMLElement | null;
+		const next = slider.querySelector('[data-ship-next]') as HTMLElement | null;
+
+		if (track) {
+			const cardStep = () => {
+				const first = track.querySelector('.ship-card') as HTMLElement | null;
+				if (!first) return track.clientWidth * 0.5;
+				const styles = getComputedStyle(track);
+				const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+				return first.getBoundingClientRect().width + gap;
+			};
+
+			let isTeleporting = false;
+			const half = () => track.scrollWidth / 2;
+			const normalize = () => {
+				if (isTeleporting) return;
+				const h = half();
+				if (h <= 0) return;
+				if (track.scrollLeft >= h) {
+					isTeleporting = true;
+					const prevBehavior = track.style.scrollBehavior;
+					track.style.scrollBehavior = 'auto';
+					track.scrollLeft -= h;
+					track.style.scrollBehavior = prevBehavior;
+					requestAnimationFrame(() => { isTeleporting = false; });
+				} else if (track.scrollLeft <= 0) {
+					isTeleporting = true;
+					const prevBehavior = track.style.scrollBehavior;
+					track.style.scrollBehavior = 'auto';
+					track.scrollLeft += h;
+					track.style.scrollBehavior = prevBehavior;
+					requestAnimationFrame(() => { isTeleporting = false; });
+				}
+			};
+
+			let scrollDebounce: number | undefined;
+			track.addEventListener('scroll', () => {
+				window.clearTimeout(scrollDebounce);
+				scrollDebounce = window.setTimeout(normalize, 60);
+			});
+
+			// Start somewhere in the middle so prev/next both have room
+			const initOffset = () => {
+				const h = half();
+				if (h > 0 && track.scrollLeft === 0) {
+					track.style.scrollBehavior = 'auto';
+					track.scrollLeft = 0;
+					track.style.scrollBehavior = '';
+				}
+			};
+			window.addEventListener('load', initOffset);
+			initOffset();
+
+			prev?.addEventListener('click', () => {
+				normalize();
+				track.scrollBy({ left: -cardStep(), behavior: 'smooth' });
+			});
+			next?.addEventListener('click', () => {
+				normalize();
+				track.scrollBy({ left: cardStep(), behavior: 'smooth' });
+			});
+
+			// Autoplay
+			let isHovered = false;
+			let autoTimer: number | undefined;
+			let userActiveUntil = 0;
+			const AUTOPLAY_MS = 3500;
+			const tick = () => {
+				if (!track) return;
+				const now = Date.now();
+				const docVisible = !document.hidden;
+				if (!isHovered && !shipModalOpen && docVisible && now > userActiveUntil) {
+					normalize();
+					track.scrollBy({ left: cardStep(), behavior: 'smooth' });
+				}
+			};
+			const startAutoplay = () => {
+				if (autoTimer) return;
+				autoTimer = window.setInterval(tick, AUTOPLAY_MS);
+			};
+			const stopAutoplay = () => {
+				if (autoTimer) {
+					window.clearInterval(autoTimer);
+					autoTimer = undefined;
+				}
+			};
+
+			slider.addEventListener('mouseenter', () => { isHovered = true; });
+			slider.addEventListener('mouseleave', () => { isHovered = false; });
+			slider.addEventListener('focusin', () => { isHovered = true; });
+			slider.addEventListener('focusout', () => { isHovered = false; });
+
+			// Pause briefly after manual interaction so it doesn't fight the user
+			const bump = () => { userActiveUntil = Date.now() + 5000; };
+			prev?.addEventListener('click', bump);
+			next?.addEventListener('click', bump);
+			track.addEventListener('pointerdown', bump);
+			track.addEventListener('wheel', bump, { passive: true });
+			track.addEventListener('touchstart', bump, { passive: true });
+
+			document.addEventListener('visibilitychange', () => {
+				if (document.hidden) stopAutoplay();
+				else startAutoplay();
+			});
+
+			// Start autoplay when slider scrolls into view
+			if ('IntersectionObserver' in window) {
+				const io = new IntersectionObserver((entries) => {
+					for (const e of entries) {
+						if (e.isIntersecting) startAutoplay();
+						else stopAutoplay();
+					}
+				}, { threshold: 0.15 });
+				io.observe(slider);
+			} else {
+				startAutoplay();
+			}
+		}
+	}
+</script>
+
+<style>
+	/* ============ HERO ============ */
+	.hero {
+		position: relative;
+		color: var(--color-on-dark);
+		padding: var(--space-10) 0 var(--space-12);
+		overflow: hidden;
+		background:
+			radial-gradient(60% 60% at 80% 10%, rgba(196, 101, 27, 0.18), transparent 60%),
+			radial-gradient(40% 60% at 10% 90%, rgba(108, 125, 146, 0.22), transparent 60%),
+			linear-gradient(135deg, #1c4b80 0%, #11304f 45%, #0a1f3d 100%);
+	}
+	.hero::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+		background-size: 56px 56px;
+		mask-image: radial-gradient(75% 70% at 25% 30%, #000 30%, transparent 80%);
+		-webkit-mask-image: radial-gradient(75% 70% at 25% 30%, #000 30%, transparent 80%);
+		pointer-events: none;
+	}
+	.hero > .container {
+		position: relative;
+		z-index: 1;
+	}
+	.hero__grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-7);
+		align-items: center;
+	}
+	@media (min-width: 960px) {
+		.hero__grid {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+			gap: var(--space-8);
+		}
+	}
+	.hero__pill {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: 0.3rem 0.75rem;
+		font-size: 0.74rem;
+		font-weight: 500;
+		color: var(--color-on-dark-muted);
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-4);
+		backdrop-filter: blur(8px);
+	}
+	.hero__pill-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: #4ade80;
+		box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18);
+	}
+	.hero__h1 {
+		color: #fff;
+		max-width: 24ch;
+		margin-bottom: var(--space-3);
+		font-weight: 700;
+		font-size: clamp(1.6rem, 3vw, 2.25rem);
+		line-height: 1.15;
+	}
+	.hero__h1-accent {
+		background: linear-gradient(135deg, #f4a261 0%, #e76f51 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+	.hero__lead {
+		font-size: 0.98rem;
+		max-width: 52ch;
+		margin-bottom: var(--space-4);
+		color: var(--color-on-dark-muted);
+		line-height: 1.55;
+	}
+	.hero__bullets {
+		list-style: none !important;
+		padding: 0;
+		margin: 0 0 var(--space-5);
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: var(--space-1) var(--space-4);
+		max-width: 60ch;
+	}
+	.hero__bullets li {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.88rem;
+		color: var(--color-on-dark);
+		list-style: none;
+	}
+	.hero__bullets svg {
+		flex-shrink: 0;
+		color: #f4a261;
+		width: 13px;
+		height: 13px;
+	}
+	.hero__cta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		margin-bottom: var(--space-5);
+	}
+	.hero__metrics {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-4);
+		padding-top: var(--space-4);
+		border-top: 1px solid rgba(255, 255, 255, 0.12);
+	}
+	.hero__metric {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+	.hero__metric-num {
+		font-size: 1.25rem;
+		font-weight: 700;
+		letter-spacing: -0.025em;
+		color: #fff;
+		line-height: 1.1;
+	}
+	.hero__metric-label {
+		font-size: 0.74rem;
+		color: var(--color-on-dark-muted);
+	}
+	.hero__metric-divider {
+		width: 1px;
+		height: 26px;
+		background: rgba(255, 255, 255, 0.14);
+	}
+	@media (max-width: 480px) {
+		.hero__metric-divider {
+			display: none;
+		}
+	}
+
+	/* Hero — large asymmetric product cards on dark */
+	.hero__visual {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
+	.hero-cards {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: 1.25fr 1fr;
+		grid-template-rows: 1fr 1fr;
+		gap: var(--space-4);
+		width: 100%;
+		max-width: 620px;
+		aspect-ratio: 5 / 4;
+	}
+	.hero-cards__slot {
+		display: flex;
+		min-width: 0;
+		min-height: 0;
+	}
+	.hero-cards__slot--main {
+		grid-column: 1;
+		grid-row: 1 / span 2;
+	}
+	.hero-cards__slot--top {
+		grid-column: 2;
+		grid-row: 1;
+	}
+	.hero-cards__slot--bottom {
+		grid-column: 2;
+		grid-row: 2;
+	}
+	.hero-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		background: #fff;
+		border-radius: 22px;
+		overflow: hidden;
+		text-decoration: none;
+		color: var(--color-primary-600, #0a1f3d);
+		box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.5), 0 4px 10px -3px rgba(0, 0, 0, 0.28);
+		transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+	}
+	.hero-card:hover {
+		transform: translateY(-5px);
+		text-decoration: none;
+		color: var(--color-primary-600, #0a1f3d);
+		box-shadow: 0 28px 54px -16px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.32);
+	}
+	.hero-card__media {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--space-4);
+		background: linear-gradient(160deg, #f7f9fc 0%, #e3e9f1 100%);
+		border-bottom: 1px solid rgba(10, 31, 61, 0.06);
+	}
+	.hero-card__media img {
+		max-width: 100%;
+		max-height: 100%;
+		width: auto;
+		height: auto;
+		object-fit: contain;
+		transition: transform 500ms var(--ease-out);
+	}
+	.hero-card:hover .hero-card__media img {
+		transform: scale(1.05);
+	}
+	.hero-card__body {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		padding: var(--space-3) var(--space-4);
+		padding-right: 50px;
+	}
+	.hero-card__title {
+		font-weight: 700;
+		font-size: 1.05rem;
+		line-height: 1.2;
+		letter-spacing: -0.01em;
+		color: var(--color-primary-600, #0a1f3d);
+	}
+	.hero-cards__slot--main .hero-card__title {
+		font-size: 1.2rem;
+	}
+	.hero-card__hint {
+		font-size: 0.85rem;
+		line-height: 1.3;
+		color: var(--color-muted, #5a6678);
+	}
+	.hero-card__arrow {
+		position: absolute;
+		right: var(--space-3);
+		bottom: var(--space-3);
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(10, 31, 61, 0.08);
+		color: var(--color-primary-600, #0a1f3d);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.hero-card:hover .hero-card__arrow {
+		background: var(--color-accent, #c4651b);
+		color: #fff;
+		transform: translateX(2px);
+	}
+	@media (max-width: 1023px) {
+		.hero-cards {
+			max-width: 560px;
+			margin: 0 auto;
+		}
+	}
+	@media (max-width: 600px) {
+		.hero-cards {
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: 200px 160px;
+			aspect-ratio: auto;
+		}
+		.hero-cards__slot--main {
+			grid-column: 1 / -1;
+			grid-row: 1;
+		}
+		.hero-cards__slot--top { grid-column: 1; grid-row: 2; }
+		.hero-cards__slot--bottom { grid-column: 2; grid-row: 2; }
+		.hero-cards__slot--main .hero-card__title { font-size: 1.1rem; }
+	}
+
+	/* ============ SECTIONS ============ */
+	.section {
+		padding: var(--space-10) 0;
+	}
+	.section--alt {
+		background: var(--color-bg-elev);
+	}
+	.section-head {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-6);
+	}
+	.section-head .section-title {
+		margin-bottom: 0;
+	}
+
+	/* Capabilities */
+	.cap-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: var(--space-3);
+	}
+	.cap-card {
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-xs);
+		transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+	}
+	.cap-card:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
+	}
+	.cap-card__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+	.cap-card__icon {
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		background: var(--color-accent-100, #fff1e3);
+		color: var(--color-accent, #c4651b);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+	.cap-card__num {
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--color-accent);
+		letter-spacing: 0.04em;
+		opacity: 0.7;
+	}
+	.cap-card__title {
+		font-size: 0.98rem;
+		margin: var(--space-2) 0 var(--space-1);
+		color: var(--color-text);
+	}
+	.cap-card__text {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		line-height: 1.5;
+	}
+
+	/* Shipments slider — vertical 9:16 video cards */
+	.section-head--center {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: var(--space-2);
+	}
+	.section-head--center .eyebrow {
+		display: inline-block;
+	}
+	.section-head--center .section-title {
+		margin: 0;
+	}
+	.section-sub {
+		margin: var(--space-2) 0 0;
+		color: var(--color-muted);
+		font-size: 0.95rem;
+		max-width: 540px;
+	}
+	.section-head--center .section-sub {
+		margin: 0 auto;
+	}
+	.ship-rating {
+		display: inline-flex;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--space-2);
+		margin-top: var(--space-2);
+	}
+	.ship-rating__stars {
+		font-size: 1.1rem;
+		color: var(--color-accent);
+		letter-spacing: 0.1em;
+	}
+	.ship-rating__text {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+	}
+	.ship-slider {
+		position: relative;
+		padding: var(--space-4) 0 var(--space-6);
+	}
+	.ship-slider__btn {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 2;
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		box-shadow: var(--shadow-md);
+		color: var(--color-primary-500);
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.ship-slider__btn:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		transform: translateY(-50%) scale(1.05);
+	}
+	.ship-slider__btn--prev { left: -8px; }
+	.ship-slider__btn--next { right: -8px; }
+	@media (min-width: 1280px) {
+		.ship-slider__btn--prev { left: -28px; }
+		.ship-slider__btn--next { right: -28px; }
+	}
+	@media (max-width: 600px) {
+		.ship-slider__btn { display: none; }
+	}
+	.ship-slider__track {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: 62%;
+		gap: var(--space-4);
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-padding: var(--space-4);
+		padding: var(--space-2) var(--space-1) var(--space-4);
+		scroll-behavior: smooth;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+	.ship-slider__track::-webkit-scrollbar {
+		display: none;
+	}
+	@media (min-width: 600px) {
+		.ship-slider__track { grid-auto-columns: 38%; }
+	}
+	@media (min-width: 900px) {
+		.ship-slider__track { grid-auto-columns: 26%; }
+	}
+	@media (min-width: 1200px) {
+		.ship-slider__track { grid-auto-columns: calc((100% - var(--space-4) * 4) / 5); }
+	}
+	.ship-card {
+		scroll-snap-align: center;
+		position: relative;
+		display: block;
+		aspect-ratio: 9 / 16;
+		border-radius: 28px;
+		overflow: hidden;
+		background: #0a1f3d;
+		box-shadow: 0 12px 28px -10px rgba(10, 31, 61, 0.3), 0 4px 10px -4px rgba(10, 31, 61, 0.2);
+		transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+	}
+	.ship-card--up { transform: translateY(-10px); }
+	.ship-card--down { transform: translateY(10px); }
+	@media (max-width: 600px) {
+		.ship-card--up, .ship-card--down { transform: none; }
+	}
+	.ship-card:hover {
+		box-shadow: 0 20px 40px -12px rgba(10, 31, 61, 0.4), 0 8px 16px -6px rgba(10, 31, 61, 0.25);
+	}
+	.ship-card--up:hover { transform: translateY(-14px); }
+	.ship-card--down:hover { transform: translateY(6px); }
+	.ship-card__media {
+		position: relative;
+		width: 100%;
+		height: 100%;
+	}
+	.ship-card__video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		background: #0a1f3d;
+	}
+	.ship-card__media::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, rgba(10, 31, 61, 0) 55%, rgba(10, 31, 61, 0.55) 100%);
+		pointer-events: none;
+	}
+	.ship-card__tag {
+		position: absolute;
+		top: var(--space-3);
+		left: var(--space-3);
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: #fff;
+		background: rgba(10, 31, 61, 0.65);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		z-index: 2;
+	}
+	.ship-card__btn {
+		position: absolute;
+		left: 50%;
+		bottom: var(--space-4);
+		transform: translateX(-50%);
+		z-index: 3;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.65rem 1.2rem;
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: rgba(255, 255, 255, 0.92);
+		color: var(--color-primary-600);
+		font: inherit;
+		font-weight: 600;
+		font-size: 0.88rem;
+		cursor: pointer;
+		box-shadow: 0 6px 18px -4px rgba(10, 31, 61, 0.4);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		transition: all var(--dur-fast) var(--ease-out);
+		white-space: nowrap;
+	}
+	.ship-card__btn:hover {
+		background: #fff;
+		transform: translateX(-50%) scale(1.04);
+		color: var(--color-primary-500);
+	}
+	.ship-card__btn svg {
+		flex-shrink: 0;
+		margin-left: -2px;
+	}
+	.ship-card__caption {
+		position: absolute;
+		left: var(--space-3);
+		right: var(--space-3);
+		bottom: calc(var(--space-4) + 48px);
+		margin: 0;
+		color: #fff;
+		font-size: 0.95rem;
+		font-weight: 600;
+		line-height: 1.25;
+		text-align: center;
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	/* Video modal */
+	.ship-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--space-4);
+		animation: shipFadeIn 200ms var(--ease-out);
+	}
+	.ship-modal[hidden] { display: none; }
+	.ship-modal__backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(10, 31, 61, 0.85);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		cursor: pointer;
+	}
+	.ship-modal__inner {
+		position: relative;
+		width: min(440px, 100%);
+		max-height: 92vh;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+	.ship-modal__video {
+		width: 100%;
+		max-height: 80vh;
+		aspect-ratio: 9 / 16;
+		object-fit: contain;
+		background: #000;
+		border-radius: 20px;
+		box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.6);
+	}
+	.ship-modal__title {
+		margin: 0;
+		text-align: center;
+		color: #fff;
+		font-size: 0.95rem;
+		font-weight: 500;
+	}
+	.ship-modal__close {
+		position: absolute;
+		top: -44px;
+		right: 0;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		border: 0;
+		background: rgba(255, 255, 255, 0.15);
+		color: #fff;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		transition: background var(--dur-fast) var(--ease-out);
+	}
+	.ship-modal__close:hover {
+		background: rgba(255, 255, 255, 0.28);
+	}
+	@keyframes shipFadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	/* Solutions */
+	.sol-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-3);
+	}
+	.sol-card {
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		transition: all var(--dur-base) var(--ease-out);
+	}
+	.sol-card:hover {
+		border-color: var(--color-primary-100);
+		box-shadow: var(--shadow-md);
+		transform: translateY(-2px);
+	}
+	.sol-card__icon {
+		width: 48px;
+		height: 48px;
+		border-radius: 12px;
+		background: var(--grad-cta);
+		color: #fff;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: var(--shadow-sm);
+		margin-bottom: var(--space-3);
+	}
+	.sol-card__icon svg {
+		display: block;
+	}
+	.sol-card__num {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		font-weight: 700;
+	}
+	.sol-card__title {
+		margin: 0;
+		font-size: 1rem;
+	}
+	.sol-card__text {
+		margin: 0;
+		flex: 1;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		line-height: 1.5;
+	}
+	.sol-card__cta {
+		font-weight: 600;
+		font-size: 0.9rem;
+		color: var(--color-accent);
+		text-decoration: none;
+	}
+	.sol-card__cta:hover {
+		color: var(--color-accent-600);
+		text-decoration: underline;
+	}
+
+	/* Advantages with icons */
+	.adv-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--space-3);
+	}
+	.adv-card {
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.adv-card {
+		position: relative;
+	}
+	.adv-card__icon {
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		background: var(--color-accent-100);
+		color: var(--color-accent);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: var(--space-3);
+	}
+	.adv-card__num {
+		position: absolute;
+		top: var(--space-4);
+		right: var(--space-4);
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: var(--color-accent);
+		letter-spacing: 0.06em;
+		opacity: 0.55;
+	}
+	.adv-card__title {
+		margin: 0;
+		font-size: 0.95rem;
+	}
+	.adv-card__text {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		max-width: none;
+		line-height: 1.5;
+	}
+
+	/* Catalog grid */
+	.grid-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: var(--space-3);
+	}
+
+	/* Popular */
+	.pop-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--space-3);
+	}
+	.pop-card {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding: var(--space-4) var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		font-weight: 600;
+		font-size: 0.92rem;
+		transition: all var(--dur-base) var(--ease-out);
+	}
+	.pop-card:hover {
+		border-color: var(--color-primary-500);
+		color: var(--color-primary-500);
+		text-decoration: none;
+		box-shadow: var(--shadow-sm);
+		transform: translateY(-1px);
+	}
+	.pop-card__arrow {
+		color: var(--color-subtle);
+		transition: transform var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+	}
+	.pop-card:hover .pop-card__arrow {
+		color: var(--color-primary-500);
+		transform: translateX(3px);
+	}
+
+	/* Not found */
+	.notfound {
+		padding: var(--space-8) 0;
+		background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-accent-100) 100%);
+		border-block: 1px solid var(--color-border);
+	}
+	.notfound__inner {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-6);
+		align-items: center;
+	}
+	@media (min-width: 768px) {
+		.notfound__inner {
+			grid-template-columns: 1.5fr 1fr;
+		}
+	}
+	.notfound__h {
+		margin: 0 0 var(--space-1);
+		font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+		letter-spacing: -0.02em;
+	}
+	.notfound__text {
+		margin: 0 0 var(--space-4);
+		max-width: 48ch;
+		color: var(--color-muted);
+		font-size: 0.92rem;
+	}
+	.notfound__cta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+	.notfound__visual img {
+		width: 100%;
+		max-width: 240px;
+		height: auto;
+		margin-left: auto;
+		display: block;
+	}
+
+	/* Services */
+	.svc-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-3);
+	}
+	.svc-card {
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+	}
+	.svc-card:hover {
+		border-color: var(--color-primary-100);
+		box-shadow: var(--shadow-sm);
+	}
+	.svc-card__icon {
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-sm);
+		background: var(--color-primary-50);
+		color: var(--color-primary-500);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		margin-bottom: var(--space-2);
+	}
+	.svc-card__title {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.3;
+	}
+	.svc-card__title a {
+		color: var(--color-text);
+		text-decoration: none;
+	}
+	.svc-card__title a:hover {
+		color: var(--color-primary-500);
+	}
+	.svc-card__text {
+		margin: 0;
+		flex: 1;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		max-width: none;
+		line-height: 1.5;
+	}
+	.svc-card__more {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--color-primary-500);
+		text-decoration: none;
+	}
+	.svc-card__more svg {
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+	.svc-card__more:hover svg {
+		transform: translateX(3px);
+	}
+
+	/* Additional products */
+	.addp-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-5);
+	}
+	@media (min-width: 768px) {
+		.addp-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	.addp-card {
+		display: grid;
+		grid-template-columns: 1fr;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		text-decoration: none;
+		color: inherit;
+		box-shadow: var(--shadow-xs);
+		transition: all var(--dur-base) var(--ease-out);
+	}
+	.addp-card:hover {
+		text-decoration: none;
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
+		border-color: var(--color-primary-100);
+	}
+	.addp-card__media {
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+	}
+	.addp-card__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.4s var(--ease-out);
+	}
+	.addp-card:hover .addp-card__media img {
+		transform: scale(1.04);
+	}
+	.addp-card__body {
+		padding: var(--space-4);
+	}
+	.addp-card__title {
+		margin: 0 0 var(--space-1);
+		font-size: 1.05rem;
+		color: var(--color-text);
+	}
+	.addp-card__sub {
+		margin: 0 0 var(--space-2);
+		color: var(--color-muted);
+		font-size: 0.85rem;
+	}
+	.addp-card__bullets {
+		margin: 0 0 var(--space-3);
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		font-size: 0.82rem;
+		color: var(--color-text);
+	}
+	.addp-card__bullets li::before {
+		content: '— ';
+		color: var(--color-accent);
+		font-weight: 700;
+	}
+	.addp-card__more {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--color-primary-500);
+	}
+
+	/* Main CTA banner */
+	.cta-banner {
+		padding: var(--space-8) 0;
+		background: linear-gradient(135deg, #11304f 0%, #0a1f3d 100%);
+		color: var(--color-on-dark);
+		position: relative;
+		overflow: hidden;
+	}
+	.cta-banner__inner {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-5);
+		align-items: center;
+	}
+	@media (min-width: 768px) {
+		.cta-banner__inner {
+			grid-template-columns: 0.9fr 1.1fr;
+		}
+	}
+	.cta-banner__media {
+		aspect-ratio: 16 / 9;
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: var(--shadow-md);
+	}
+	.cta-banner__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.cta-banner__h {
+		color: #fff;
+		font-size: clamp(1.2rem, 2vw, 1.5rem);
+		margin: 0 0 var(--space-2);
+	}
+	.cta-banner__text {
+		color: var(--color-on-dark-muted);
+		max-width: 52ch;
+		margin: 0 0 var(--space-4);
+		font-size: 0.9rem;
+	}
+
+	/* Trust dark */
+	.trust {
+		position: relative;
+		padding: var(--space-10) 0;
+		background: linear-gradient(180deg, #0a1f3d 0%, #11304f 100%);
+		color: var(--color-on-dark);
+		overflow: hidden;
+	}
+	.trust::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+		background-size: 28px 28px;
+		mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
+		-webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
+	}
+	.trust > .container {
+		position: relative;
+	}
+	.trust__h {
+		color: #fff;
+		margin-bottom: var(--space-5);
+	}
+	.trust-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		gap: var(--space-4);
+	}
+	.trust-card__stat {
+		font-size: 1.35rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		background: linear-gradient(135deg, #f4a261 0%, #e76f51 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		margin-bottom: var(--space-1);
+	}
+	.trust-card__text {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-on-dark-muted);
+		max-width: none;
+		line-height: 1.5;
+	}
+
+	/* Guarantees */
+	.gd {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-8);
+	}
+	@media (min-width: 768px) {
+		.gd {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	.gd__h {
+		margin: 0 0 var(--space-4);
+		font-size: 1.2rem;
+	}
+	.gd__list {
+		margin: 0 0 var(--space-5);
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+	.gd__list li {
+		display: flex;
+		gap: var(--space-3);
+		color: var(--color-text);
+		font-size: 0.95rem;
+		line-height: 1.55;
+	}
+	.gd__list svg {
+		flex-shrink: 0;
+		margin-top: 0.4rem;
+		color: var(--color-success);
+	}
+	.gd__tk {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+	}
+	.gd__tk-item {
+		padding: var(--space-2);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		display: flex;
+		align-items: center;
+	}
+	.gd__tk-item img {
+		max-height: 32px;
+		width: auto;
+	}
+
+	/* About */
+	.about__inner {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-8);
+		align-items: center;
+	}
+	@media (min-width: 800px) {
+		.about__inner {
+			grid-template-columns: 1.2fr 0.8fr;
+		}
+	}
+	.about__p {
+		font-size: 1rem;
+		color: var(--color-muted);
+		max-width: 65ch;
+		line-height: 1.65;
+	}
+	.about__more {
+		margin-top: var(--space-4);
+		margin-bottom: 0;
+		font-weight: 600;
+	}
+	.about__visual {
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+		box-shadow: var(--shadow-md);
+	}
+	.about__visual img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	/* Long description */
+	.ld-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: var(--space-3);
+	}
+	.ld-card {
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		border-left: 3px solid var(--color-accent);
+	}
+	.ld-card__h {
+		margin: 0 0 var(--space-1);
+		font-size: 0.95rem;
+	}
+	.ld-card__p {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		max-width: none;
+		line-height: 1.55;
+	}
+
+	/* Partners */
+	.partners__row {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+		gap: var(--space-2);
+		align-items: center;
+	}
+	.partners__logo {
+		height: 52px;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--space-2);
+		filter: grayscale(0.4);
+		transition: filter var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+	}
+	.partners__logo:hover {
+		filter: grayscale(0);
+		border-color: var(--color-primary-100);
+	}
+	.partners__logo img {
+		max-width: 100%;
+		max-height: 32px;
+		height: auto;
+		width: auto;
+	}
+
+	/* Pricing strip */
+	.pricing {
+		padding: var(--space-6) 0;
+		background: linear-gradient(135deg, var(--color-accent-100) 0%, var(--color-primary-50) 100%);
+		border-block: 1px solid var(--color-border);
+	}
+	.pricing__inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-4);
+	}
+	.pricing__icon {
+		width: 48px;
+		height: 48px;
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		color: var(--color-accent);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: var(--shadow-sm);
+		flex-shrink: 0;
+	}
+	.pricing__copy {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		flex: 1;
+		min-width: 200px;
+	}
+	.pricing__title {
+		font-size: 1.05rem;
+		font-weight: 700;
+		color: var(--color-text);
+		letter-spacing: -0.01em;
+	}
+	.pricing__text {
+		font-size: 0.9rem;
+		color: var(--color-muted);
+	}
+	.pricing__phone a {
+		font-size: 1.15rem;
+		font-weight: 700;
+		color: var(--color-text);
+		text-decoration: none;
+		letter-spacing: -0.01em;
+	}
+	.pricing__phone a:hover {
+		color: var(--color-accent);
+	}
+
+	/* Pre-footer */
+	.prefoot {
+		padding: var(--space-8) 0;
+		background: linear-gradient(180deg, var(--color-bg-elev) 0%, var(--color-bg) 100%);
+		border-top: 1px solid var(--color-border);
+	}
+	.prefoot__inner {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: start;
+		gap: var(--space-6);
+	}
+	.prefoot__h {
+		margin: 0 0 var(--space-2);
+		font-size: clamp(1.15rem, 2vw, 1.4rem);
+	}
+	.prefoot__contact {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		max-width: none;
+	}
+	.prefoot__contact a {
+		color: var(--color-text);
+		font-weight: 600;
+		font-size: 1.05rem;
+	}
+	.prefoot__addr {
+		font-size: 0.88rem;
+		color: var(--color-muted);
+		max-width: 50ch;
+	}
+	.prefoot__cta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+</style>

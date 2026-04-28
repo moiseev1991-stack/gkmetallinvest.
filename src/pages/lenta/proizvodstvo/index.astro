@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import CityBlock from '../../../components/CityBlock.astro';
+import LeadForm from '../../../components/LeadForm.astro';
+---
+
+<BaseLayout
+	title="Производство ленты и штрипса из рулона"
+	description="Нержавеющая лента, штрипс, продольная резка рулона до 4 мм, точность резки. Отдельная коммерческая посадочная."
+>
+	<div class="container page">
+		<Breadcrumbs
+			items={[
+				{ label: 'Главная', href: '/' },
+				{ label: 'Лента', href: '/lenta/' },
+				{ label: 'Производство ленты / штрипса' },
+			]}
+		/>
+		<h1>Производство ленты и штрипса из рулона</h1>
+		<p class="lead">
+			Эквивалент коммерческого кластера старого URL <code>/lenta</code>: не смешиваем с каталогом
+			<a href="/lenta/">/lenta/</a>.
+		</p>
+		<section class="block">
+			<h2>Возможности</h2>
+			<ul>
+				<li>Продольная резка рулона, изготовление штрипса</li>
+				<li>Точность и состояние нагартовки — по ТЗ</li>
+				<li>Связка с услугой <a href="/uslugi/rezka-rulonov/">резки рулонов</a></li>
+			</ul>
+		</section>
+		<CtaSection title="Запросить расчёт по ленте" text="Прикрепите смету или опишите толщину, ширину и марку." />
+		<LeadForm />
+		<CityBlock />
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.lead {
+		font-size: 1.05rem;
+		max-width: 65ch;
+	}
+	.lead code {
+		font-size: 0.9em;
+	}
+	.block {
+		margin: var(--space-8) 0;
+	}
+	.block ul {
+		color: var(--color-muted);
+		max-width: 65ch;
+	}
+</style>

@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CityBlock from '../../components/CityBlock.astro';
+import LeadForm from '../../components/LeadForm.astro';
+---
+
+<BaseLayout
+	title="Поставка нержавеющего металлопроката"
+	description="Широкая коммерческая страница: поставка нержавеющего металлопроката по России, опт, подбор, документы."
+>
+	<div class="container page">
+		<Breadcrumbs
+			items={[{ label: 'Главная', href: '/' }, { label: 'Поставка металлопроката' }]}
+		/>
+		<h1>Поставка нержавеющего металлопроката</h1>
+		<p class="lead">
+			Целевая страница для 301 с <code>/all</code>: широкий вход в воронку без «схлопывания» каталога.
+		</p>
+		<section class="block">
+			<h2>Что входит</h2>
+			<ul>
+				<li>Лист, труба, круг, лента, рулон, декоративные листы — см. каталог.</li>
+				<li>Услуги резки, перфорации, подбора.</li>
+				<li>Логистика по ключевым регионам РФ.</li>
+			</ul>
+		</section>
+		<CityBlock />
+		<LeadForm />
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.lead code {
+		font-size: 0.9em;
+	}
+	.block ul {
+		color: var(--color-muted);
+		max-width: 65ch;
+	}
+</style>

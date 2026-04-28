@@ -1,0 +1,100 @@
+/**
+ * Design tokens — industrial premium для B2B-металлоторговли.
+ * Палитра: глубокий navy + сталь-серебро + тёплый акцент (медь-янтарь).
+ * Лёгкость: ровные радиусы, мягкие тени, фирменные градиенты для hero/CTA.
+ */
+:root {
+	/* Surfaces */
+	--color-bg: #f6f8fb;
+	--color-bg-elev: #fbfcfe;
+	--color-surface: #ffffff;
+	--color-border: #e3e8ef;
+	--color-border-strong: #cdd5e0;
+
+	/* Text */
+	--color-text: #0f1a2b;
+	--color-muted: #5a6878;
+	--color-subtle: #8893a4;
+	--color-on-dark: #f1f4fa;
+	--color-on-dark-muted: #a5b1c4;
+
+	/* Brand: navy → steel */
+	--color-primary: #163b66;
+	--color-primary-600: #11304f;
+	--color-primary-500: #1c4b80;
+	--color-primary-400: #2c699f;
+	--color-primary-100: #e7eef7;
+	--color-primary-50: #f1f5fb;
+
+	/* Accent: warm copper / amber — only for CTA highlights, badges, prices */
+	--color-accent: #c4651b;
+	--color-accent-600: #a8540e;
+	--color-accent-100: #faece0;
+
+	/* Cool steel for structural lines / icon strokes */
+	--color-steel: #6c7d92;
+	--color-steel-100: #eef1f6;
+
+	/* Semantic */
+	--color-success: #1f8a5a;
+	--color-danger: #c33b3b;
+
+	/* Gradients */
+	--grad-hero: radial-gradient(120% 80% at 0% 0%, #1c4b80 0%, #11304f 45%, #0a1f3d 100%);
+	--grad-hero-glow: radial-gradient(60% 60% at 80% 10%, rgba(196, 101, 27, 0.18), transparent 60%),
+		radial-gradient(40% 60% at 10% 90%, rgba(108, 125, 146, 0.22), transparent 60%);
+	--grad-steel: linear-gradient(135deg, #dde3ec 0%, #c5cfdd 35%, #e6ebf2 65%, #aab5c5 100%);
+	--grad-cta: linear-gradient(135deg, #1c4b80 0%, #163b66 100%);
+	--grad-cta-warm: linear-gradient(135deg, #c4651b 0%, #a8540e 100%);
+	--grad-card: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+	--grad-divider: linear-gradient(90deg, transparent, var(--color-border), transparent);
+
+	/* Typography */
+	--font-sans:
+		'Inter', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	--font-display: var(--font-sans);
+	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+	/* Radii */
+	--radius-xs: 4px;
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-lg: 14px;
+	--radius-xl: 20px;
+	--radius-pill: 999px;
+
+	/* Shadows: soft, layered */
+	--shadow-xs: 0 1px 2px rgba(15, 26, 43, 0.05);
+	--shadow-sm: 0 2px 6px rgba(15, 26, 43, 0.06), 0 1px 2px rgba(15, 26, 43, 0.04);
+	--shadow-md: 0 8px 24px rgba(15, 26, 43, 0.08), 0 2px 6px rgba(15, 26, 43, 0.04);
+	--shadow-lg: 0 18px 48px rgba(15, 26, 43, 0.12), 0 4px 12px rgba(15, 26, 43, 0.06);
+	--shadow-glow: 0 10px 32px rgba(28, 75, 128, 0.22);
+	--shadow-warm-glow: 0 10px 32px rgba(196, 101, 27, 0.25);
+
+	/* Spacing scale (rem) */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.25rem;
+	--space-6: 1.5rem;
+	--space-7: 1.75rem;
+	--space-8: 2rem;
+	--space-10: 2.5rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--space-20: 5rem;
+
+	/* Layout */
+	--container-max: 1200px;
+	--header-h: 72px;
+	--header-strip-h: 36px;
+	--sticky-mobile-h: 56px;
+
+	/* Easing */
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+	--dur-fast: 0.15s;
+	--dur-base: 0.22s;
+	--dur-slow: 0.4s;
+}

@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { contacts } from '../../data/site';
+---
+
+<BaseLayout title="Контакты" description="Контакты ГК Металлинвест: телефон, email, адрес в Нижнем Новгороде.">
+	<div class="container page">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Контакты' }]} />
+		<h1>Контакты</h1>
+		<div class="card">
+			<p>
+				<strong>Телефон:</strong>
+				<a href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+			</p>
+			<p>
+				<strong>Email:</strong>
+				<a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+			</p>
+			<p>
+				<strong>Адрес:</strong>
+				{contacts.address}
+			</p>
+			<p>
+				<strong>{contacts.company}</strong>
+				<br />
+				ИНН {contacts.inn}
+			</p>
+		</div>
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.card {
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		max-width: 560px;
+	}
+	.card p {
+		margin-bottom: var(--space-4);
+		color: var(--color-muted);
+		max-width: none;
+	}
+</style>

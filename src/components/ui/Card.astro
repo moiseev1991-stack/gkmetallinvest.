@@ -1,0 +1,120 @@
+---
+interface Props {
+	href: string;
+	title: string;
+	description?: string;
+	image?: string | null;
+	imageAlt?: string;
+	icon?: string;
+}
+const { href, title, description, image, imageAlt, icon } = Astro.props;
+const placeholder = '/img/placeholder-product.svg';
+const src = image ?? placeholder;
+const alt = imageAlt ?? title;
+---
+
+<a class="card" href={href}>
+	<div class="card__media">
+		<img src={src} alt={alt} loading="lazy" decoding="async" width="320" height="200" />
+	</div>
+	<div class="card__body">
+		{icon && <span class="card__icon" aria-hidden="true">{icon}</span>}
+		<h3 class="card__title">{title}</h3>
+		{description && <p class="card__desc">{description}</p>}
+		<span class="card__more">
+			Смотреть
+			<svg class="card__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+				<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+			</svg>
+		</span>
+	</div>
+</a>
+
+<style>
+	.card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-xs);
+		color: inherit;
+		text-decoration: none;
+		overflow: hidden;
+		transition:
+			transform var(--dur-base) var(--ease-out),
+			box-shadow var(--dur-base) var(--ease-out),
+			border-color var(--dur-base) var(--ease-out);
+	}
+	.card:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
+		border-color: var(--color-primary-100);
+		text-decoration: none;
+	}
+	.card__media {
+		aspect-ratio: 4 / 3;
+		background: var(--grad-steel);
+		overflow: hidden;
+		border-bottom: 1px solid var(--color-border);
+		position: relative;
+	}
+	.card__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.4s var(--ease-out);
+	}
+	.card:hover .card__media img {
+		transform: scale(1.04);
+	}
+	.card__body {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		padding: var(--space-4);
+	}
+	.card__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		font-size: 1.2rem;
+		border-radius: var(--radius-sm);
+		background: var(--color-primary-50);
+		color: var(--color-primary-500);
+		margin-bottom: var(--space-3);
+	}
+	.card__title {
+		font-size: 0.95rem;
+		margin: 0 0 var(--space-1);
+		color: var(--color-text);
+		letter-spacing: -0.01em;
+		line-height: 1.3;
+	}
+	.card__desc {
+		flex: 1;
+		margin: 0 0 var(--space-3);
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		max-width: none;
+		line-height: 1.45;
+	}
+	.card__more {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: var(--color-primary-500);
+	}
+	.card__arrow {
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+	.card:hover .card__arrow {
+		transform: translateX(3px);
+	}
+</style>

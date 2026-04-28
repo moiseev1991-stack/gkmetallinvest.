@@ -1,0 +1,37 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import PriceTable from '../../components/PriceTable.astro';
+---
+
+<CatalogHubTemplate
+	title="Круг / Квадрат / Шестигранник нержавеющий"
+	description="Нержавеющий круг, квадрат и шестигранник по маркам стали. Калиброванный (h9, h11), обточенный DIN1013, жаропрочный."
+	h1="Круг / Квадрат / Шестигранник"
+	intro="Сортовой нержавеющий прокат: круг, квадрат, шестигранник. Калиброванный (h9, h11), обточенный (DIN1013), жаропрочный. Никелесодержащие марки (AISI 304, 316L, 321, 904L) и ферритные (20Х13, 30Х13, 40Х13)."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Круг / Квадрат / Шестигранник' }]}
+>
+	<PriceTable hub="krug" title="Прайс на сортовой прокат" measure="диаметр" />
+
+	<section class="block">
+		<h2>Что входит в раздел</h2>
+		<ul class="list-plain">
+			<li>Круг никелесодержащий — AISI 304/304L/310S/316L/316Ti/321/904L</li>
+			<li>Круг жаропрочный — 08Х13, 12Х13, 20Х13, ЭШП</li>
+			<li>Квадрат калиброванный (h9, h11)</li>
+			<li>Шестигранник — AISI 420, 12Х18Н10Т</li>
+			<li>Обточенный DIN1013, ЭШП (электрошлаковый переплав)</li>
+		</ul>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 65ch;
+	}
+</style>

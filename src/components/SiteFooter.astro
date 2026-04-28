@@ -1,0 +1,217 @@
+---
+import { navCatalog, navServices } from '../data/navigation';
+import { contacts, siteName } from '../data/site';
+---
+
+<footer class="foot">
+	<div class="container foot__top">
+		<div class="foot__brand">
+			<div class="foot__brand-row">
+				<span class="foot__mark" aria-hidden="true">
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+						<path d="M3 18l4-12h3l4 12M5.5 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+						<path d="M16 6h5v12h-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+					</svg>
+				</span>
+				<strong class="foot__title">{siteName}</strong>
+			</div>
+			<p class="foot__about">Поставка нержавеющего металлопроката от листа до проволоки. Резка, перфорация, доставка по всей России.</p>
+			<address class="foot__addr">
+				{contacts.address}
+				<br />
+				<span>{contacts.company} · ИНН {contacts.inn}</span>
+			</address>
+		</div>
+
+		<div class="foot__col">
+			<span class="foot__h">Каталог</span>
+			<ul>
+				{
+					navCatalog.map((c) => (
+						<li>
+							<a href={c.href}>{c.title}</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="foot__col">
+			<span class="foot__h">Услуги</span>
+			<ul>
+				{
+					navServices.map((s) => (
+						<li>
+							<a href={s.href}>{s.label}</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="foot__col">
+			<span class="foot__h">Контакты</span>
+			<p class="foot__contact">
+				<a href={`tel:${contacts.phoneTel}`} class="foot__phone">{contacts.phone}</a>
+				<a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+				<a href="/zapros-kp/">Запросить КП →</a>
+			</p>
+		</div>
+	</div>
+
+	<div class="foot__legal">
+		<div class="container foot__legal-inner">
+			<span>© {new Date().getFullYear()} {siteName}. Все права защищены.</span>
+			<span class="foot__legal-links">
+				<a href="/politika-konfidencialnosti/">Политика конфиденциальности</a>
+				<a href="/publichnaya-oferta/">Публичная оферта</a>
+				<a href="/sertifikaty/">Сертификаты</a>
+			</span>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.foot {
+		margin-top: var(--space-16);
+		background: #0a1f3d;
+		background-image: linear-gradient(180deg, #0a1f3d 0%, #0e2a52 100%);
+		color: var(--color-on-dark-muted);
+		position: relative;
+		overflow: hidden;
+	}
+	.foot::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 60%;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, rgba(244, 162, 97, 0.5), transparent);
+	}
+	.foot__top {
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr 1.2fr;
+		gap: var(--space-8);
+		padding-top: var(--space-12);
+		padding-bottom: var(--space-10);
+	}
+	@media (max-width: 1024px) {
+		.foot__top {
+			grid-template-columns: 1fr 1fr;
+			gap: var(--space-7) var(--space-8);
+		}
+		.foot__brand {
+			grid-column: 1 / -1;
+		}
+	}
+	@media (max-width: 540px) {
+		.foot__top {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.foot__brand-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-3);
+	}
+	.foot__mark {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		border-radius: var(--radius-md);
+		background: rgba(255, 255, 255, 0.08);
+		color: #fff;
+	}
+	.foot__title {
+		color: #fff;
+		font-size: 1.05rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+	.foot__about {
+		font-size: 0.9rem;
+		max-width: 38ch;
+		color: var(--color-on-dark-muted);
+		line-height: 1.6;
+		margin-bottom: var(--space-4);
+	}
+	.foot__addr {
+		font-size: 0.85rem;
+		color: var(--color-on-dark-muted);
+		font-style: normal;
+		line-height: 1.6;
+	}
+	.foot__addr span {
+		color: var(--color-subtle);
+	}
+
+	.foot__col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+	.foot__h {
+		display: block;
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: #fff;
+	}
+	.foot ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		font-size: 0.9rem;
+	}
+	.foot a {
+		color: var(--color-on-dark-muted);
+		text-decoration: none;
+		transition: color var(--dur-fast) var(--ease-out);
+	}
+	.foot a:hover {
+		color: #fff;
+		text-decoration: none;
+	}
+	.foot__contact {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin: 0;
+		font-size: 0.9rem;
+		max-width: none;
+	}
+	.foot__phone {
+		color: #fff;
+		font-weight: 600;
+		font-size: 1.05rem;
+	}
+
+	.foot__legal {
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		padding: var(--space-5) 0;
+		font-size: 0.82rem;
+	}
+	.foot__legal-inner {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-3);
+	}
+	.foot__legal-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-4);
+	}
+</style>

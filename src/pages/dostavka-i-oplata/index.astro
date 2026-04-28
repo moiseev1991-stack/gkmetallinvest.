@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+---
+
+<BaseLayout title="Доставка и оплата" description="Условия доставки нержавеющего металлопроката по России и оплаты для юрлиц.">
+	<div class="container page">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Доставка и оплата' }]} />
+		<h1>Доставка и оплата</h1>
+		<p class="lead">
+			Попутные отправки, транспортные компании, страхование груза — детали фиксируются в коммерческом предложении.
+		</p>
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.lead {
+		max-width: 65ch;
+	}
+</style>

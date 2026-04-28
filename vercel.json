@@ -1,0 +1,21 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive, nosnippet" }
+      ]
+    }
+  ],
+  "redirects": [
+    { "source": "/all", "destination": "/postavka-nerzhaveyushchego-metalloprokata/", "permanent": true },
+    { "source": "/list", "destination": "/list/", "permanent": true },
+    { "source": "/catalog/truba", "destination": "/truba/", "permanent": true },
+    { "source": "/catalog/krug/prutok", "destination": "/krug/", "permanent": true },
+    { "source": "/catalog/lenta", "destination": "/lenta/", "permanent": true },
+    { "source": "/lenta", "destination": "/lenta/proizvodstvo/", "permanent": true },
+    { "source": "/rulon", "destination": "/rulon/", "permanent": true },
+    { "source": "/listdeco", "destination": "/dekorativnye-listy/", "permanent": true },
+    { "source": "/uslugi/perforation", "destination": "/uslugi/perforaciya-listov/", "permanent": true }
+  ]
+}

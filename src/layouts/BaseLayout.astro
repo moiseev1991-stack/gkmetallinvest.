@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import MobileStickyBar from '../components/MobileStickyBar.astro';
+import { siteName } from '../data/site';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+const {
+	title,
+	description = 'Нержавеющий металлопрокат с доставкой по России. Лист, труба, круг, лента, рулон, декоративные листы. Услуги резки и перфорации.',
+} = Astro.props;
+const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
+---
+
+<!doctype html>
+<html lang="ru">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#163b66" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="description" content={description} />
+		<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+		<meta name="generator" content={Astro.generator} />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+		/>
+
+		<title>{fullTitle}</title>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Перейти к содержимому</a>
+		<SiteHeader />
+		<main id="main">
+			<slot />
+		</main>
+		<SiteFooter />
+		<MobileStickyBar />
+		<style>
+			.skip-link {
+				position: absolute;
+				left: -9999px;
+				top: 0;
+				background: var(--color-primary);
+				color: #fff;
+				padding: var(--space-3) var(--space-4);
+				border-radius: var(--radius-sm);
+				font-size: 0.9rem;
+				z-index: 100;
+			}
+			.skip-link:focus {
+				left: var(--space-3);
+				top: var(--space-3);
+			}
+		</style>
+	</body>
+</html>

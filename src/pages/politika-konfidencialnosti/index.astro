@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+---
+
+<BaseLayout title="Политика конфиденциальности">
+	<div class="container page">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Политика конфиденциальности' }]} />
+		<h1>Политика конфиденциальности</h1>
+		<p class="lead">Текст политики разместите здесь (перенос с действующего сайта или юридическая подготовка).</p>
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.lead {
+		max-width: 60ch;
+		color: var(--color-muted);
+	}
+</style>

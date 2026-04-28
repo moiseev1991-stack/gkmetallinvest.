@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/ui/Button.astro';
+---
+
+<BaseLayout title="Страница не найдена" description="404 — запрошенная страница не существует.">
+	<div class="container err">
+		<h1>404</h1>
+		<p class="lead">Такой страницы нет. Перейдите в каталог или отправьте заявку.</p>
+		<div class="err__actions">
+			<Button href="/">На главную</Button>
+			<Button href="/list/" variant="secondary">Каталог: лист</Button>
+			<Button href="/zapros-kp/" variant="ghost">Запрос КП</Button>
+		</div>
+	</div>
+</BaseLayout>
+
+<style>
+	.err {
+		padding: var(--space-12) 0;
+		min-height: 40vh;
+	}
+	.lead {
+		max-width: 40ch;
+	}
+	.err__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		margin-top: var(--space-6);
+	}
+</style>

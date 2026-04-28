@@ -1,0 +1,24 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+---
+
+<CatalogHubTemplate
+	title="Декоративные листы из нержавеющей стали"
+	description="Декоративные листы AISI DECO, зеркальные и шлифованные решения для интерьеров и коммерческих объектов."
+	h1="Декоративные листы из нержавеющей стали"
+	intro="Отдельный SEO-кластер (старый /listdeco): не смешиваем с обычным листом без отдельной посадочной."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Декоративные листы' }]}
+>
+	<section class="block">
+		<h2>Линейки</h2>
+		<p>
+			DECO и фактурные рисунки, зеркало и шлиф — отдельные подстраницы планируются в фазе P2 (см. sitemap в репозитории).
+		</p>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block p {
+		max-width: 65ch;
+	}
+</style>

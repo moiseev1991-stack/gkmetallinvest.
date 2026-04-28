@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+---
+
+<BaseLayout title="Сертификаты и документы" description="Сертификаты качества и документы на металлопрокат — по запросу.">
+	<div class="container page">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Сертификаты' }]} />
+		<h1>Сертификаты и документы</h1>
+		<p class="lead">
+			Блок для PDF и реестра документов (загрузка файлов — на этапе интеграции с CMS или статикой).
+		</p>
+		<div class="docs" role="list">
+			<div class="docs__row" role="listitem">Место для списка сертификатов</div>
+		</div>
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.docs {
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-6);
+		color: var(--color-muted);
+	}
+</style>

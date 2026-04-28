@@ -1,0 +1,50 @@
+---
+
+---
+
+<section class="trust" aria-label="Преимущества">
+	<div class="container trust__grid">
+		<div class="trust__item">
+			<strong>Склад и под заказ</strong>
+			<span>Наличие и поставка под задачу</span>
+		</div>
+		<div class="trust__item">
+			<strong>Документы</strong>
+			<span>Сертификаты по запросу</span>
+		</div>
+		<div class="trust__item">
+			<strong>Логистика</strong>
+			<span>Отправка по России и СНГ</span>
+		</div>
+		<div class="trust__item">
+			<strong>B2B</strong>
+			<span>Работа с юрлицами и НДС</span>
+		</div>
+	</div>
+</section>
+
+<style>
+	.trust {
+		padding: var(--space-8) 0;
+	}
+	.trust__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		gap: var(--space-4);
+	}
+	.trust__item {
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		font-size: 0.9rem;
+	}
+	.trust__item strong {
+		display: block;
+		color: var(--color-text);
+		margin-bottom: var(--space-1);
+	}
+	.trust__item span {
+		color: var(--color-muted);
+	}
+</style>

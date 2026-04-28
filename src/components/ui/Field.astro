@@ -1,0 +1,65 @@
+---
+interface Props {
+	label: string;
+	name: string;
+	type?: string;
+	required?: boolean;
+	rows?: number;
+	placeholder?: string;
+}
+const { label, name, type = 'text', required, rows, placeholder } = Astro.props;
+---
+
+<div class="field">
+	<label class="field__label" for={name}>{label}{required ? ' *' : ''}</label>
+	{
+		rows ? (
+			<textarea
+				class="field__input field__input--area"
+				id={name}
+				name={name}
+				rows={rows}
+				placeholder={placeholder}
+				required={required}
+			/>
+		) : (
+			<input
+				class="field__input"
+				id={name}
+				name={name}
+				type={type}
+				placeholder={placeholder}
+				required={required}
+			/>
+		)
+	}
+</div>
+
+<style>
+	.field {
+		margin-bottom: var(--space-4);
+	}
+	.field__label {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 600;
+		margin-bottom: var(--space-2);
+		color: var(--color-text);
+	}
+	.field__input {
+		width: 100%;
+		padding: 0.65rem 0.75rem;
+		font: inherit;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+	}
+	.field__input:focus {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
+	}
+	.field__input--area {
+		resize: vertical;
+		min-height: 96px;
+	}
+</style>

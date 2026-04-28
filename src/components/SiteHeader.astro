@@ -1,0 +1,434 @@
+---
+import { navCatalog, navTop, navServices } from '../data/navigation';
+import { siteName, contacts } from '../data/site';
+import Button from './ui/Button.astro';
+---
+
+<header class="head">
+	<div class="head__strip">
+		<div class="container head__strip-inner">
+			<span class="head__location" aria-hidden="true">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+					<path d="M8 14s5-4.5 5-8a5 5 0 10-10 0c0 3.5 5 8 5 8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+					<circle cx="8" cy="6" r="1.6" stroke="currentColor" stroke-width="1.4" />
+				</svg>
+				Нижний Новгород · доставка по РФ
+			</span>
+			<a class="head__strip-link" href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+			<a class="head__strip-link" href={`mailto:${contacts.email}`}>{contacts.email}</a>
+		</div>
+	</div>
+
+	<div class="container head__inner">
+		<div class="head__brand">
+			<a class="head__logo" href="/" aria-label={siteName}>
+				<img class="head__logo-img" src="/img/logo.svg" alt={siteName} width="40" height="40" />
+				<span class="head__logo-text">
+					<span class="head__logo-name">{siteName}</span>
+					<span class="head__logo-tag">нержавеющий металлопрокат</span>
+				</span>
+			</a>
+			<a class="head__mob-phone" href={`tel:${contacts.phoneTel}`} aria-label="Позвонить">
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+					<path d="M3.5 4.5c0 7 5 12 12 12l1.5-3-3.5-1.5-1 1c-2-1-3.5-2.5-4.5-4.5l1-1L7.5 4 4.5 5.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+				</svg>
+			</a>
+		</div>
+
+		<button type="button" class="head__burger" aria-expanded="false" aria-controls="nav-drawer" id="nav-toggle">
+			<span class="sr-only">Меню</span>
+			<span class="head__burger-icon"></span>
+		</button>
+
+		<div class="head__nav-wrap" id="nav-drawer">
+			<nav class="head__nav" aria-label="Основное">
+				<div class="mega">
+					<button type="button" class="mega__trigger" aria-expanded="false" id="mega-btn">
+						Каталог
+						<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+							<path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</button>
+					<div class="mega__panel" id="mega-panel" hidden>
+						<div class="mega__cols">
+							{
+								navCatalog.map((col) => (
+									<div class="mega__col">
+										<a class="mega__title" href={col.href}>
+											{col.title}
+										</a>
+										<ul>
+											{col.children.map((c) => (
+												<li>
+													<a href={c.href}>{c.label}</a>
+												</li>
+											))}
+										</ul>
+									</div>
+								))
+							}
+						</div>
+						<div class="mega__svc">
+							<span class="mega__svc-title">Услуги</span>
+							<ul>
+								{
+									navServices.map((s) => (
+										<li>
+											<a href={s.href}>{s.label}</a>
+										</li>
+									))
+								}
+							</ul>
+						</div>
+					</div>
+				</div>
+				{navTop.map((l) => <a class="head__link" href={l.href}>{l.label}</a>)}
+				<a class="head__link" href="/uslugi/">Услуги</a>
+			</nav>
+			<div class="head__cta">
+				<Button href="/zapros-kp/#lead-form" variant="ghost" size="sm">Заявка</Button>
+				<Button href="/zapros-kp/" variant="primary" size="sm">Запросить цену</Button>
+			</div>
+		</div>
+	</div>
+</header>
+
+<script>
+	const toggle = document.getElementById('nav-toggle');
+	const drawer = document.getElementById('nav-drawer');
+	const megaBtn = document.getElementById('mega-btn');
+	const megaPanel = document.getElementById('mega-panel');
+
+	toggle?.addEventListener('click', () => {
+		const open = drawer?.classList.toggle('head__nav-wrap--open');
+		toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+		document.body.style.overflow = open ? 'hidden' : '';
+	});
+
+	megaBtn?.addEventListener('click', () => {
+		if (!megaPanel || !megaBtn) return;
+		const isHidden = megaPanel.hasAttribute('hidden');
+		if (isHidden) {
+			megaPanel.removeAttribute('hidden');
+			megaBtn.setAttribute('aria-expanded', 'true');
+		} else {
+			megaPanel.setAttribute('hidden', '');
+			megaBtn.setAttribute('aria-expanded', 'false');
+		}
+	});
+
+	document.addEventListener('click', (e) => {
+		if (!megaPanel || !megaBtn) return;
+		const target = e.target as Node;
+		if (!megaPanel.contains(target) && !megaBtn.contains(target)) {
+			megaPanel.setAttribute('hidden', '');
+			megaBtn.setAttribute('aria-expanded', 'false');
+		}
+	});
+</script>
+
+<style>
+	.head {
+		position: sticky;
+		top: 0;
+		z-index: 40;
+		background: rgba(255, 255, 255, 0.92);
+		border-bottom: 1px solid var(--color-border);
+		backdrop-filter: saturate(180%) blur(10px);
+		-webkit-backdrop-filter: saturate(180%) blur(10px);
+	}
+
+	.head__strip {
+		display: none;
+		background: var(--color-primary-600);
+		color: var(--color-on-dark-muted);
+		font-size: 0.8rem;
+	}
+	@media (min-width: 768px) {
+		.head__strip {
+			display: block;
+		}
+	}
+	.head__strip-inner {
+		display: flex;
+		align-items: center;
+		gap: var(--space-5);
+		min-height: var(--header-strip-h);
+	}
+	.head__location {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin-right: auto;
+	}
+	.head__location svg {
+		opacity: 0.75;
+	}
+	.head__strip-link {
+		color: var(--color-on-dark);
+		text-decoration: none;
+		font-weight: 500;
+	}
+	.head__strip-link:hover {
+		color: #fff;
+		text-decoration: underline;
+	}
+
+	.head__inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		min-height: var(--header-h);
+	}
+	.head__brand {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		min-width: 0;
+	}
+	.head__logo {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-3);
+		text-decoration: none;
+		color: var(--color-text);
+	}
+	.head__logo:hover {
+		color: var(--color-primary-500);
+		text-decoration: none;
+	}
+	.head__logo-img {
+		width: 40px;
+		height: 40px;
+		object-fit: contain;
+		display: block;
+		flex-shrink: 0;
+	}
+	.head__logo-text {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.1;
+	}
+	.head__logo-name {
+		font-weight: 700;
+		font-size: 1.05rem;
+		letter-spacing: -0.015em;
+	}
+	.head__logo-tag {
+		font-size: 0.72rem;
+		color: var(--color-muted);
+		font-weight: 500;
+		margin-top: 2px;
+	}
+	@media (max-width: 480px) {
+		.head__logo-tag {
+			display: none;
+		}
+	}
+
+	.head__mob-phone {
+		display: none;
+		width: 40px;
+		height: 40px;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-md);
+		background: var(--color-primary-50);
+		color: var(--color-primary-500);
+	}
+	@media (max-width: 1023px) {
+		.head__mob-phone {
+			display: inline-flex;
+		}
+	}
+
+	.head__burger {
+		display: none;
+		background: none;
+		border: 0;
+		padding: var(--space-2);
+		cursor: pointer;
+		color: var(--color-text);
+	}
+	.head__burger-icon {
+		display: block;
+		width: 22px;
+		height: 2px;
+		background: currentColor;
+		border-radius: 1px;
+		box-shadow:
+			0 -7px 0 currentColor,
+			0 7px 0 currentColor;
+	}
+
+	@media (max-width: 1023px) {
+		.head__burger {
+			display: block;
+			margin-left: auto;
+		}
+		.head__nav-wrap {
+			position: fixed;
+			inset: calc(var(--header-h) + 1px) 0 0 0;
+			background: var(--color-surface);
+			padding: var(--space-5);
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-5);
+			overflow-y: auto;
+			transform: translateX(100%);
+			transition: transform var(--dur-base) var(--ease-out);
+		}
+		.head__nav-wrap--open {
+			transform: translateX(0);
+		}
+	}
+	@media (min-width: 1024px) {
+		.head__nav-wrap {
+			display: flex;
+			align-items: center;
+			gap: var(--space-5);
+			flex: 1;
+			justify-content: flex-end;
+		}
+	}
+
+	.head__nav {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2) var(--space-5);
+	}
+	.head__link {
+		color: var(--color-text);
+		text-decoration: none;
+		font-size: 0.95rem;
+		font-weight: 500;
+		padding: 0.4rem 0;
+		border-bottom: 2px solid transparent;
+		transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+	}
+	.head__link:hover {
+		color: var(--color-primary-500);
+		border-bottom-color: var(--color-primary-500);
+		text-decoration: none;
+	}
+
+	.mega {
+		position: relative;
+	}
+	.mega__trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		background: none;
+		border: 0;
+		font: inherit;
+		font-weight: 600;
+		font-size: 0.95rem;
+		cursor: pointer;
+		color: var(--color-text);
+		padding: 0.4rem 0;
+	}
+	.mega__trigger:hover {
+		color: var(--color-primary-500);
+	}
+	.mega__panel {
+		position: absolute;
+		top: calc(100% + 14px);
+		left: -1rem;
+		min-width: min(92vw, 760px);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg);
+		padding: var(--space-6);
+	}
+	.mega__panel[hidden] {
+		display: none;
+	}
+	@media (max-width: 1023px) {
+		.mega__panel {
+			position: static;
+			min-width: 0;
+			box-shadow: none;
+			border: 1px solid var(--color-border);
+			padding: var(--space-4);
+			margin-top: var(--space-3);
+		}
+	}
+	.mega__cols {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		gap: var(--space-5);
+	}
+	.mega__title {
+		font-weight: 650;
+		display: block;
+		margin-bottom: var(--space-2);
+		color: var(--color-text);
+		text-decoration: none;
+		font-size: 0.92rem;
+	}
+	.mega__title:hover {
+		color: var(--color-primary-500);
+	}
+	.mega__col ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: 0.875rem;
+	}
+	.mega__col li {
+		margin-bottom: var(--space-2);
+	}
+	.mega__col a {
+		color: var(--color-muted);
+		text-decoration: none;
+	}
+	.mega__col a:hover {
+		color: var(--color-primary-500);
+	}
+	.mega__svc {
+		margin-top: var(--space-5);
+		padding-top: var(--space-4);
+		border-top: 1px solid var(--color-border);
+	}
+	.mega__svc-title {
+		display: block;
+		font-weight: 600;
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-subtle);
+	}
+	.mega__svc ul {
+		margin: var(--space-2) 0 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-4);
+		font-size: 0.875rem;
+	}
+	.mega__svc a {
+		color: var(--color-muted);
+		text-decoration: none;
+	}
+	.mega__svc a:hover {
+		color: var(--color-primary-500);
+	}
+
+	.head__cta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+	@media (max-width: 1023px) {
+		.head__cta {
+			margin-top: var(--space-4);
+			padding-top: var(--space-4);
+			border-top: 1px solid var(--color-border);
+		}
+	}
+</style>

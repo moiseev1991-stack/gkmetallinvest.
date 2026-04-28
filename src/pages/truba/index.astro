@@ -1,0 +1,33 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+---
+
+<CatalogHubTemplate
+	title="Труба нержавеющая"
+	description="Нержавеющая труба: круглая, квадратная, прямоугольная, профильная, бесшовная, электросварная. Поставка по России."
+	h1="Труба нержавеющая"
+	intro="Раздел трубы охватывает основные типы по форме и технологии изготовления."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Труба' }]}
+>
+	<section class="block">
+		<h2>Ассортимент</h2>
+		<ul class="list-plain">
+			<li>Круглая бесшовная</li>
+			<li>Электросварная</li>
+			<li>Прямоугольная</li>
+			<li>Квадратная</li>
+			<li>Марки AISI и отечественные аналоги</li>
+		</ul>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+	}
+</style>

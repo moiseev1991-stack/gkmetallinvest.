@@ -1,0 +1,46 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+---
+
+<CatalogHubTemplate
+	title="Лента нержавеющая"
+	description="Нержавеющая лента и фольга по маркам. Каталог ленты — отдельно от производственной страницы штрипса из рулона."
+	h1="Лента нержавеющая (каталог)"
+	intro="Раздел ленты сгруппирован по маркам, толщинам и ширинам с шагом 5 мм."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Лента' }]}
+>
+	<p class="note">
+		<strong>Производство / штрипс:</strong>
+		<a href="/lenta/proizvodstvo/">Лента и штрипс из рулона</a>
+	</p>
+	<section class="block">
+		<h2>Форматы</h2>
+		<ul class="list-plain">
+			<li>Лента по маркам</li>
+			<li>Подбор по толщинам</li>
+			<li>Подбор по ширинам с шагом 5 мм</li>
+			<li>
+				Фольга как отдельный раздел:
+				<a href="/folga/">Фольга нержавеющая</a>
+			</li>
+		</ul>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.note {
+		padding: var(--space-4);
+		background: var(--color-accent-subtle);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--space-6);
+		max-width: none;
+	}
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+	}
+</style>

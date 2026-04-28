@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Card from '../../components/ui/Card.astro';
+import { navServices } from '../../data/navigation';
+
+const extra = [
+	{ href: '/uslugi/shlifovanie/', title: 'Шлифование', description: 'Подготовка поверхности листа и рулона.' },
+	{ href: '/uslugi/nanesenie-plenki/', title: 'Нанесение плёнки', description: 'Защита поверхности при транспортировке.' },
+	{ href: '/uslugi/podbor-metalla/', title: 'Подбор металла', description: 'Инженерная помощь по ТЗ.' },
+];
+---
+
+<BaseLayout title="Услуги" description="Резка рулонов, перфорация листов, полировка, шлифование, поставка под заказ.">
+	<div class="container page">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Услуги' }]} />
+		<h1>Услуги</h1>
+		<p class="lead">Полноценные коммерческие страницы — не вспомогательный текст в футере.</p>
+		<div class="grid">
+			{navServices.filter((s) => s.href !== '/uslugi/').map((s) => (
+				<Card href={s.href} title={s.label} description="Подробности и формы заявки на странице услуги." />
+			))}
+			{extra.map((e) => (
+				<Card href={e.href} title={e.title} description={e.description} />
+			))}
+		</div>
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.lead {
+		max-width: 60ch;
+		margin-bottom: var(--space-8);
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: var(--space-4);
+	}
+</style>

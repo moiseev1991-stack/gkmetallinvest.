@@ -1,0 +1,57 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import PriceTable from '../../components/PriceTable.astro';
+---
+
+<CatalogHubTemplate
+	title="Лист нержавеющий"
+	description="Нержавеющий лист AISI и ГОСТ: матовый, зеркальный, шлифованный, рифлёный. Резка, перфорация, доставка по России."
+	h1="Лист нержавеющий"
+	intro="Холоднокатаный, горячекатаный, рифленый, декоративный и перфорированный лист. Никелесодержащие (AISI 304/316/321) и ферритные (AISI 430, 20Х13) марки. Рулон выделен в отдельную категорию."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Лист' }]}
+>
+	<PriceTable hub="list" title="Прайс на лист" measure="толщина" />
+
+	<section class="block">
+		<h2>Параметры и форматы</h2>
+		<ul class="list-plain">
+			<li>Холоднокатаный (х/к) и горячекатаный (г/к) лист</li>
+			<li>Рифлёный (TEAR PLATE) и декоративный (DECO+PE)</li>
+			<li>Перфорированный лист под задачу</li>
+			<li>Поверхности: 2B (матовый), BA (зеркальный), 4N (шлифованный) и др.</li>
+			<li>Марки: AISI 304, 316L, 321, 430, 201, 410S, 439 и др.</li>
+		</ul>
+	</section>
+	<section class="block">
+		<h2>Услуги для листа</h2>
+		<p>
+			<a href="/uslugi/perforaciya-listov/">Перфорация</a>
+			·
+			<a href="/uslugi/rezka-rulonov/">Резка рулонов в лист</a>
+			·
+			<a href="/uslugi/polirovka/">Полировка и шлифование</a>
+		</p>
+		<p>
+			Отдельный раздел рулона:
+			<a href="/rulon/">Рулон нержавеющий</a>
+		</p>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.block h2 {
+		font-size: 1.15rem;
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 65ch;
+	}
+	.block p {
+		max-width: none;
+	}
+</style>

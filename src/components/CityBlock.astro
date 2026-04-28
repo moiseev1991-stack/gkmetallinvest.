@@ -1,0 +1,52 @@
+---
+import { citiesRf } from '../data/site';
+---
+
+<section class="geo" aria-labelledby="geo-title">
+	<div class="container">
+		<h2 id="geo-title" class="geo__h">Поставляем по всей России</h2>
+		<p class="geo__lead">
+			Работаем с юридическими и частными заказчиками, организуем логистику и страхование груза.
+		</p>
+		<ul class="geo__cities">
+			{citiesRf.map((c) => <li>{c}</li>)}
+		</ul>
+		<p class="geo__note">
+			Шаблон гео-страниц под города — в дорожной карте (фаза P3): <code>/dostavka/&#123;gorod&#125;/</code>
+		</p>
+	</div>
+</section>
+
+<style>
+	.geo {
+		padding: var(--space-12) 0;
+		background: var(--color-surface);
+		border-block: 1px solid var(--color-border);
+	}
+	.geo__h {
+		margin-bottom: var(--space-3);
+	}
+	.geo__lead {
+		max-width: 50ch;
+		margin-bottom: var(--space-6);
+	}
+	.geo__cities {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: var(--space-2) var(--space-4);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-size: 0.95rem;
+		color: var(--color-muted);
+	}
+	.geo__note {
+		margin-top: var(--space-6);
+		font-size: 0.8rem;
+		color: var(--color-muted);
+		max-width: none;
+	}
+	.geo__note code {
+		font-size: 0.85em;
+	}
+</style>

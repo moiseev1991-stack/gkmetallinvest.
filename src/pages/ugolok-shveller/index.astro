@@ -1,0 +1,31 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+---
+
+<CatalogHubTemplate
+	title="Уголок и швеллер нержавеющий"
+	description="Нержавеющие уголок и швеллер по маркам стали для строительных и производственных задач."
+	h1="Уголок / Швеллер"
+	intro="Отдельная категория сортового проката. Подбор номенклатуры в первую очередь ведется по маркам."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Уголок / Швеллер' }]}
+>
+	<section class="block">
+		<h2>Номенклатура</h2>
+		<ul class="list-plain">
+			<li>Уголок нержавеющий по маркам</li>
+			<li>Швеллер нержавеющий по маркам</li>
+			<li>Подбор формата и объема под проект</li>
+		</ul>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+	}
+</style>

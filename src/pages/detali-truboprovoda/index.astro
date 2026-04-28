@@ -1,0 +1,36 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import PriceTable from '../../components/PriceTable.astro';
+---
+
+<CatalogHubTemplate
+	title="Детали трубопровода нержавеющие"
+	description="Нержавеющие отводы 90°, фланцы, переходы из стали 12Х18Н10Т, 304, 316L. Импортные и российские. Цены за штуку."
+	h1="Детали трубопровода"
+	intro="Отводы 90° (импорт и Россия), фланцы и комплектующие из нержавеющей стали 12Х18Н10Т, AISI 304, 316L. Диаметры от DN 25 до DN 219."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Детали трубопровода' }]}
+>
+	<PriceTable hub="detali-truboprovoda" title="Прайс на детали трубопровода" measure="размер" />
+
+	<section class="block">
+		<h2>Что входит в раздел</h2>
+		<ul class="list-plain">
+			<li>Отводы 90° — 12Х18Н10Т, AISI 304, 316L</li>
+			<li>Импортные и российские отводы</li>
+			<li>Фланцы — 12Х18Н10Т, типоразмер 150x25x11 и др.</li>
+			<li>Переходы и тройники — под запрос</li>
+		</ul>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 65ch;
+	}
+</style>

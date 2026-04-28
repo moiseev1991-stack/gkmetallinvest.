@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import FilterPanel from './ui/FilterPanel.astro';
+import CtaSection from './CtaSection.astro';
+import CityBlock from './CityBlock.astro';
+import type { BreadcrumbItem } from '../types';
+
+interface Props {
+	title: string;
+	description?: string;
+	h1: string;
+	intro: string;
+	breadcrumbs: BreadcrumbItem[];
+}
+const { title, description, h1, intro, breadcrumbs } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="container hub">
+		<Breadcrumbs items={breadcrumbs} />
+		<h1>{h1}</h1>
+		<p class="hub__intro">{intro}</p>
+		<FilterPanel />
+		<slot />
+		<CtaSection
+			title="Нужна цена и сроки?"
+			text="Отправьте заявку — подберём марку, формат и логистику."
+		/>
+		<CityBlock />
+	</div>
+</BaseLayout>
+
+<style>
+	.hub {
+		padding-block: var(--space-8);
+	}
+	.hub__intro {
+		font-size: 1.05rem;
+		margin-bottom: var(--space-6);
+		max-width: 65ch;
+	}
+</style>

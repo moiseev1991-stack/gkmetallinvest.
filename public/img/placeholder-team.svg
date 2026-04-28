@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" preserveAspectRatio="xMidYMid slice">
+	<defs>
+		<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0%" stop-color="#dde3ec" />
+			<stop offset="50%" stop-color="#b9c4d4" />
+			<stop offset="100%" stop-color="#e6ebf2" />
+		</linearGradient>
+	</defs>
+	<rect width="480" height="360" fill="url(#g)" />
+	<g fill="#5a6878" opacity="0.25">
+		<circle cx="170" cy="160" r="34" />
+		<path d="M120 260c0-25 22-45 50-45s50 20 50 45v40H120z" />
+		<circle cx="280" cy="170" r="30" />
+		<path d="M236 260c0-22 20-40 44-40s44 18 44 40v40H236z" />
+	</g>
+	<text x="240" y="330" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#5a6878" letter-spacing="0.06em">TEAM PHOTO</text>
+</svg>

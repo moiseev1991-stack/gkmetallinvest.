@@ -1,0 +1,31 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+---
+
+<CatalogHubTemplate
+	title="Полоса нержавеющая"
+	description="Нержавеющая полоса по маркам стали. Подбор сечений и длины под задачи производства и монтажа."
+	h1="Полоса нержавеющая"
+	intro="Раздел полосы выделен в отдельную категорию. Основная сортировка ведется по маркам стали."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Полоса нержавеющая' }]}
+>
+	<section class="block">
+		<h2>Ассортимент</h2>
+		<ul class="list-plain">
+			<li>Полоса нержавеющая по маркам AISI и российским аналогам</li>
+			<li>Подбор размеров и длины под заказ</li>
+			<li>Поставка в составе комплексной заявки</li>
+		</ul>
+	</section>
+</CatalogHubTemplate>
+
+<style>
+	.block {
+		margin-bottom: var(--space-8);
+	}
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+	}
+</style>

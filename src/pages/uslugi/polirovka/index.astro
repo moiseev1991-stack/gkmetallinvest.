@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+---
+
+<BaseLayout title="Полировка и шлифование" description="Полировка и шлифование нержавеющих листов и рулонов.">
+	<div class="container page">
+		<Breadcrumbs
+			items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, { label: 'Полировка' }]}
+		/>
+		<h1>Полировка и шлифование</h1>
+		<p class="lead">Коммерческая заглушка P1; расширение контента — по готовности производства.</p>
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+</style>

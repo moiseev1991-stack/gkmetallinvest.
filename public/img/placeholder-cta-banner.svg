@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
+	<defs>
+		<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0%" stop-color="#dde3ec" />
+			<stop offset="50%" stop-color="#aab5c5" />
+			<stop offset="100%" stop-color="#e6ebf2" />
+		</linearGradient>
+		<linearGradient id="sh" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="30%" stop-color="#fff" stop-opacity="0" />
+			<stop offset="50%" stop-color="#fff" stop-opacity="0.45" />
+			<stop offset="70%" stop-color="#fff" stop-opacity="0" />
+		</linearGradient>
+	</defs>
+	<rect width="600" height="400" fill="url(#g)" />
+	<g opacity="0.18">
+		<path d="M0 100h600M0 160h600M0 220h600M0 280h600" stroke="#0f1a2b" stroke-width="1" />
+	</g>
+	<g transform="translate(150 100)" fill="none" stroke="#0f1a2b" stroke-opacity="0.35" stroke-width="2">
+		<ellipse cx="150" cy="100" rx="150" ry="50" />
+		<ellipse cx="150" cy="100" rx="120" ry="38" />
+		<ellipse cx="150" cy="100" rx="80" ry="22" />
+	</g>
+	<rect width="600" height="400" fill="url(#sh)" />
+	<text x="300" y="370" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#5a6878" letter-spacing="0.08em">CTA BANNER IMAGE (рулон / лента)</text>
+</svg>

@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import LeadForm from '../../../components/LeadForm.astro';
+---
+
+<BaseLayout
+	title="Перфорация листов"
+	description="Перфорация нержавеющих листов: лазер, координатно-пробивной пресс, рисунок по эскизу."
+>
+	<div class="container page">
+		<Breadcrumbs
+			items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, { label: 'Перфорация листов' }]}
+		/>
+		<h1>Перфорация листов из нержавеющей стали</h1>
+		<p class="lead">
+			301 с прежнего URL <code>/uslugi/perforation</code> — сохраняем кластер спроса, не редиректим на главную.
+		</p>
+		<section class="block">
+			<h2>Форматы отверстий</h2>
+			<p>Круглые, щелевые, фигурные — по эскизу заказчика. Уточните толщину листа и марку стали в заявке.</p>
+		</section>
+		<CtaSection title="Запросить перфорацию" />
+		<LeadForm />
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.lead code {
+		font-size: 0.9em;
+	}
+	.block p {
+		max-width: 65ch;
+		color: var(--color-muted);
+	}
+</style>

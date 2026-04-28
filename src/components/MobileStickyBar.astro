@@ -1,0 +1,50 @@
+---
+import { contacts } from '../data/site';
+---
+
+<div class="sticky" role="navigation" aria-label="Быстрые действия">
+	<a class="sticky__btn sticky__btn--call" href={`tel:${contacts.phoneTel}`}>
+		Позвонить
+	</a>
+	<a class="sticky__btn sticky__btn--lead" href="/#lead-form">Заявка</a>
+</div>
+
+<style>
+	.sticky {
+		display: none;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 50;
+		padding: var(--space-2);
+		padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0));
+		background: rgba(255, 255, 255, 0.96);
+		border-top: 1px solid var(--color-border);
+		box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.06);
+		gap: var(--space-2);
+	}
+	@media (max-width: 767px) {
+		.sticky {
+			display: flex;
+		}
+	}
+	.sticky__btn {
+		flex: 1;
+		text-align: center;
+		padding: 0.85rem 1rem;
+		font-weight: 600;
+		font-size: 0.95rem;
+		border-radius: var(--radius-md);
+		text-decoration: none;
+	}
+	.sticky__btn--call {
+		background: var(--color-surface);
+		color: var(--color-text);
+		border: 1px solid var(--color-border);
+	}
+	.sticky__btn--lead {
+		background: var(--color-accent);
+		color: #fff;
+	}
+</style>

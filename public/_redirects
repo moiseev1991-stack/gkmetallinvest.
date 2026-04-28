@@ -1,0 +1,10 @@
+# Netlify-style redirects (legacy gkmetallinvest.ru → новый сайт)
+/all /postavka-nerzhaveyushchego-metalloprokata/ 301
+/list /list/ 301
+/catalog/truba /truba/ 301
+/catalog/krug/prutok /krug/ 301
+/catalog/lenta /lenta/ 301
+/lenta /lenta/proizvodstvo/ 301
+/rulon /rulon/ 301
+/listdeco /dekorativnye-listy/ 301
+/uslugi/perforation /uslugi/perforaciya-listov/ 301

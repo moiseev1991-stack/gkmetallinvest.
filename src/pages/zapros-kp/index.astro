@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import LeadForm from '../../components/LeadForm.astro';
+---
+
+<BaseLayout title="Запрос КП и подбор металла" description="Запросить коммерческое предложение на нержавеющий металлопрокат.">
+	<div class="container page">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Запрос КП' }]} />
+		<h1>Запрос КП / подбор металла</h1>
+		<p class="lead">
+			Если марка не определена — опишите условия эксплуатации; приложите чертеж или смету (бэкенд формы подключите
+			отдельно).
+		</p>
+		<LeadForm id="lead-form" />
+	</div>
+</BaseLayout>
+
+<style>
+	.page {
+		padding-block: var(--space-8);
+	}
+	.lead {
+		max-width: 65ch;
+		margin-bottom: var(--space-8);
+	}
+</style>

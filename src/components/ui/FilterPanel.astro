@@ -1,0 +1,38 @@
+---
+/**
+ * Заглушка UI фильтра (P1): визуальная готовность без бэкенда.
+ */
+---
+
+<div class="filter">
+	<p class="filter__hint">Фильтр ассортимента (марка, поверхность, толщина…)</p>
+	<button type="button" class="filter__open" disabled aria-disabled="true">
+		Открыть фильтры (скоро)
+	</button>
+</div>
+
+<style>
+	.filter {
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--space-6);
+	}
+	.filter__hint {
+		margin: 0 0 var(--space-3);
+		font-size: 0.9rem;
+		color: var(--color-muted);
+		max-width: none;
+	}
+	.filter__open {
+		padding: 0.5rem 1rem;
+		font: inherit;
+		font-size: 0.875rem;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-muted);
+		cursor: not-allowed;
+	}
+</style>
