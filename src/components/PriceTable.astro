@@ -148,7 +148,7 @@ const initialLimit = 60;
 									{s.price ? <strong>{fmtPrice(s.price)}</strong> : <span class="pt__on-request">по запросу</span>}
 								</td>
 								<td class="pt__cell-action">
-									<a href="/zapros-kp/" class="pt__cta">Запросить →</a>
+									<a href={`/${hub}/${s.slug}/`} class="pt__cta">Подробнее →</a>
 								</td>
 							</tr>
 						);
@@ -226,7 +226,7 @@ const initialLimit = 60;
             <td class="pt__cell-num">${s.size}</td>
             <td class="pt__cell-num">${s.unit}</td>
             <td class="pt__cell-price">${price}</td>
-            <td class="pt__cell-action"><a href="/zapros-kp/" class="pt__cta">Запросить →</a></td>
+            <td class="pt__cell-action"><a href="/${hub}/${s.slug}/" class="pt__cta">Подробнее →</a></td>
           </tr>`;
 				})
 				.join('');

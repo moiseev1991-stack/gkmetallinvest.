@@ -1,0 +1,390 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import CtaSection from './CtaSection.astro';
+import pricelist from '../data/pricelist.json';
+
+interface SKU {
+	hub: string;
+	sub: string;
+	grade: string;
+	roll: string | null;
+	alloy: string | null;
+	surface: string | null;
+	size: string;
+	unit: string;
+	price: number | null;
+	slug: string;
+}
+
+interface Props {
+	sku: SKU;
+	hubLabel: string;
+	hubHref: string;
+	measureLabel: string;
+}
+
+const { sku, hubLabel, hubHref, measureLabel } = Astro.props;
+
+const SUB_LABELS: Record<string, string> = {
+	nikelesod: 'Никелесодержащий',
+	beznikelya: 'Без никеля',
+	zharoprochnyj: 'Жаропрочный',
+	kvadrat: 'Квадрат',
+	nikelevyj: 'Круг никелесодержащий',
+	shestigrannik: 'Шестигранник',
+	osnovnaya: 'Проволока',
+	flanec: 'Фланец',
+	otvod: 'Отвод',
+};
+
+const subLabel = SUB_LABELS[sku.sub] ?? sku.sub;
+const surface = sku.surface ?? '';
+const roll = sku.roll ?? '';
+
+const titleParts = [hubLabel, sku.grade, sku.size ? `${sku.size} мм` : ''].filter(Boolean);
+const fullTitle = titleParts.join(' · ');
+
+const description = `${hubLabel} ${sku.grade}${roll ? `, ${roll}` : ''}${surface ? `, ${surface}` : ''}${
+	sku.size ? `, ${measureLabel} ${sku.size} мм` : ''
+}. Цена ${sku.price ? `от ${new Intl.NumberFormat('ru-RU').format(sku.price)} ₽/${sku.unit}` : 'по запросу'}.`;
+
+const fmt = (p: number | null) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
+
+const detailRows: { label: string; value: string }[] = [
+	{ label: 'Марка стали', value: sku.grade },
+	{ label: 'Категория', value: subLabel },
+];
+if (roll) detailRows.push({ label: 'Передел', value: roll });
+if (surface) detailRows.push({ label: 'Поверхность', value: surface });
+if (sku.alloy) detailRows.push({ label: 'Тип сплава', value: sku.alloy });
+if (sku.size) detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + measureLabel.slice(1), value: `${sku.size} мм` });
+detailRows.push({ label: 'Единица измерения', value: sku.unit });
+
+// 6 близких позиций по той же марке/переделу
+const allSkus = (pricelist.hubs as any)[sku.hub] as SKU[];
+const related = allSkus
+	.filter((s) => s.slug !== sku.slug && s.grade === sku.grade && (s.roll ?? '') === (sku.roll ?? ''))
+	.slice(0, 6);
+
+const breadcrumbs = [
+	{ label: 'Главная', href: '/' },
+	{ label: hubLabel, href: hubHref },
+	{ label: `${sku.grade}${sku.size ? ` · ${sku.size} мм` : ''}` },
+];
+---
+
+<BaseLayout title={fullTitle} description={description}>
+	<div class="container product">
+		<Breadcrumbs items={breadcrumbs} />
+
+		<header class="product__head">
+			<div class="product__title-wrap">
+				<span class="product__eyebrow">{hubLabel} · {subLabel}</span>
+				<h1 class="product__title">
+					{sku.grade}
+					{sku.size && <span class="product__size">{sku.size} мм</span>}
+				</h1>
+				{(roll || surface) && (
+					<p class="product__tags">
+						{roll && <span class="tag">{roll}</span>}
+						{surface && <span class="tag tag--accent">{surface}</span>}
+					</p>
+				)}
+			</div>
+
+			<aside class="product__price">
+				{sku.price ? (
+					<>
+						<span class="product__price-label">Цена</span>
+						<span class="product__price-value">{fmt(sku.price)} ₽</span>
+						<span class="product__price-unit">за {sku.unit} (с НДС)</span>
+					</>
+				) : (
+					<>
+						<span class="product__price-label">Цена</span>
+						<span class="product__price-on-request">по запросу</span>
+					</>
+				)}
+				<a href="/zapros-kp/" class="product__cta">Запросить КП</a>
+				<a href="tel:+78312812660" class="product__call">+7 (831) 281-26-60</a>
+			</aside>
+		</header>
+
+		<section class="product__grid">
+			<div>
+				<h2>Характеристики</h2>
+				<dl class="specs">
+					{detailRows.map((r) => (
+						<>
+							<dt>{r.label}</dt>
+							<dd>{r.value}</dd>
+						</>
+					))}
+				</dl>
+			</div>
+
+			<div>
+				<h2>Условия поставки</h2>
+				<ul class="conditions">
+					<li>Отгрузка со склада в Нижнем Новгороде</li>
+					<li>Доставка по России — авто, ЖД, ТК</li>
+					<li>Сертификаты качества и паспорта на металл</li>
+					<li>Резка в размер, перфорация, полировка — по запросу</li>
+					<li>Цена ориентировочная на {pricelist.updatedAt}, актуализируется на момент заказа</li>
+				</ul>
+			</div>
+		</section>
+
+		{related.length > 0 && (
+			<section class="related">
+				<h2>Похожие позиции — {sku.grade}{roll && `, ${roll}`}</h2>
+				<div class="related__grid">
+					{related.map((r) => (
+						<a class="related__card" href={`${hubHref}${r.slug}/`}>
+							<span class="related__title">{r.grade}{r.size && ` · ${r.size} мм`}</span>
+							<span class="related__meta">{SUB_LABELS[r.sub] ?? r.sub}{r.surface && ` · ${r.surface}`}</span>
+							<span class="related__price">
+								{r.price ? `${fmt(r.price)} ₽/${r.unit}` : 'по запросу'}
+							</span>
+						</a>
+					))}
+				</div>
+				<p class="related__back">
+					<a href={hubHref}>← Все позиции «{hubLabel}»</a>
+				</p>
+			</section>
+		)}
+	</div>
+
+	<CtaSection
+		title="Уточнить цену и наличие"
+		text="Менеджер подтвердит остаток на складе, рассчитает резку и логистику до вашего адреса."
+	/>
+</BaseLayout>
+
+<style>
+	.product {
+		padding-block: var(--space-8);
+	}
+	.product__head {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-6);
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--space-8);
+	}
+	@media (min-width: 720px) {
+		.product__head {
+			grid-template-columns: 1fr auto;
+			align-items: start;
+		}
+	}
+	.product__eyebrow {
+		display: block;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-subtle);
+		margin-bottom: var(--space-2);
+	}
+	.product__title {
+		margin: 0 0 var(--space-3);
+		font-size: clamp(1.5rem, 2.6vw, 2rem);
+		letter-spacing: -0.015em;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-3);
+	}
+	.product__size {
+		font-family: var(--font-mono);
+		font-weight: 500;
+		font-size: 0.7em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.2rem 0.7rem;
+		border-radius: var(--radius-pill);
+	}
+	.product__tags {
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+	.tag {
+		font-size: 0.82rem;
+		padding: 0.25rem 0.7rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-pill);
+		color: var(--color-muted);
+		background: var(--color-bg-elev);
+	}
+	.tag--accent {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+		background: transparent;
+	}
+	.product__price {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		min-width: 220px;
+		padding: var(--space-4);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+		background: var(--color-primary-50);
+	}
+	.product__price-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-subtle);
+	}
+	.product__price-value {
+		font-family: var(--font-mono);
+		font-size: 1.65rem;
+		font-weight: 700;
+		color: var(--color-text);
+		line-height: 1.1;
+	}
+	.product__price-unit {
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.product__price-on-request {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--color-accent);
+		margin-bottom: var(--space-3);
+	}
+	.product__cta {
+		display: inline-block;
+		text-align: center;
+		font-weight: 600;
+		font-size: 0.95rem;
+		padding: 0.75rem 1.2rem;
+		background: var(--color-primary-500);
+		color: #fff;
+		border-radius: var(--radius-sm);
+		text-decoration: none;
+		transition: background var(--dur-fast) var(--ease-out);
+	}
+	.product__cta:hover {
+		background: var(--color-primary-600);
+	}
+	.product__call {
+		display: inline-block;
+		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		color: var(--color-primary-500);
+		text-decoration: none;
+		margin-top: var(--space-2);
+	}
+	.product__call:hover {
+		text-decoration: underline;
+	}
+
+	.product__grid {
+		display: grid;
+		gap: var(--space-6);
+		grid-template-columns: 1fr;
+		margin-bottom: var(--space-8);
+	}
+	@media (min-width: 720px) {
+		.product__grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	.product__grid h2 {
+		font-size: 1.15rem;
+		margin: 0 0 var(--space-4);
+	}
+	.specs {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		gap: var(--space-2) var(--space-4);
+		margin: 0;
+		font-size: 0.94rem;
+	}
+	.specs dt {
+		color: var(--color-subtle);
+		font-size: 0.85rem;
+	}
+	.specs dd {
+		margin: 0;
+		color: var(--color-text);
+		font-weight: 500;
+	}
+	.conditions {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		font-size: 0.94rem;
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.related {
+		margin-bottom: var(--space-8);
+	}
+	.related h2 {
+		font-size: 1.15rem;
+		margin: 0 0 var(--space-4);
+	}
+	.related__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: var(--space-3);
+	}
+	.related__card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		padding: var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		text-decoration: none;
+		color: inherit;
+		transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+	}
+	.related__card:hover {
+		border-color: var(--color-primary-500);
+		transform: translateY(-2px);
+	}
+	.related__title {
+		font-weight: 600;
+		font-size: 0.95rem;
+	}
+	.related__meta {
+		font-size: 0.8rem;
+		color: var(--color-subtle);
+	}
+	.related__price {
+		margin-top: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		color: var(--color-primary-500);
+		font-weight: 600;
+	}
+	.related__back {
+		margin-top: var(--space-4);
+		font-size: 0.92rem;
+	}
+	.related__back a {
+		color: var(--color-primary-500);
+		text-decoration: none;
+		font-weight: 500;
+	}
+	.related__back a:hover {
+		text-decoration: underline;
+	}
+</style>

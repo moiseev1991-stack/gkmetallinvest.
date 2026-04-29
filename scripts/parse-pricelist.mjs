@@ -1,5 +1,6 @@
 // Parses планы/nerzhaveika_utf8.csv (semicolon, two-stream layout) → src/data/pricelist.json
 // Two streams per row: cols 0..3 (Марка/Размер/Ед.изм/Цена) and cols 5..8.
+// Applies a configurable price markup (default +5%) and emits a stable URL slug per SKU.
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +9,9 @@ import { dirname, resolve } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(here, '../планы/nerzhaveika_utf8.csv');
 const OUT = resolve(here, '../src/data/pricelist.json');
+
+const PRICE_MARKUP = 1.05; // +5% over the source pricelist
+const UPDATED_AT = '2026-04-29';
 
 const SECTION_PATTERNS = [
 	{ re: /^СТАЛЬ ЛИСТОВАЯ НЕРЖАВ НИКЕЛЕСОД/i, hub: 'list', sub: 'nikelesod' },
@@ -104,6 +108,54 @@ function parsePrice(raw) {
 	return n > 0 ? n : null; // 0 → on request
 }
 
+function applyMarkup(p) {
+	if (p == null) return null;
+	return Math.round(p * PRICE_MARKUP);
+}
+
+const TRANSLIT_MAP = {
+	а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh',
+	з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o',
+	п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c',
+	ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+};
+
+function transliterate(s) {
+	return String(s)
+		.toLowerCase()
+		.split('')
+		.map((ch) => (TRANSLIT_MAP[ch] !== undefined ? TRANSLIT_MAP[ch] : ch))
+		.join('');
+}
+
+function slugify(s) {
+	return transliterate(s)
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.replace(/-{2,}/g, '-');
+}
+
+function rollSlug(roll) {
+	if (!roll) return '';
+	const m = { 'г/к': 'gk', 'х/к': 'hk', 'обточенный': 'din1013', 'калиброванный': 'kalibr', 'ЭШП': 'eshp' };
+	return m[roll] ?? slugify(roll);
+}
+
+function surfaceSlug(surface) {
+	if (!surface) return '';
+	return slugify(surface.replace(/\(.*?\)/g, ''));
+}
+
+function buildSlug(sku) {
+	const parts = [
+		slugify(sku.grade),
+		rollSlug(sku.roll),
+		surfaceSlug(sku.surface),
+		sku.size ? `${slugify(sku.size)}mm` : '',
+	].filter(Boolean);
+	return parts.join('-');
+}
+
 function parseCSV(text) {
 	const lines = text.split(/\r?\n/);
 	const rows = [];
@@ -112,7 +164,6 @@ function parseCSV(text) {
 			rows.push([]);
 			continue;
 		}
-		// Robust split with quoted field support
 		const cols = [];
 		let cur = '';
 		let inQ = false;
@@ -146,7 +197,6 @@ function reclassifyByName(sku) {
 }
 
 function processRowsShared(rows) {
-	// Per-stream section state + name-based reclassification for fittings.
 	const out = [];
 	const sections = { L: null, R: null };
 	const lastByStream = { L: null, R: null };
@@ -228,11 +278,22 @@ function expandSkus(skus) {
 				surface: s.surface,
 				size,
 				unit: s.unit,
-				price: s.price,
+				price: applyMarkup(s.price),
 			});
 		}
 	}
 	return exp;
+}
+
+function ensureUniqueSlugs(skus) {
+	const seen = new Map();
+	for (const sku of skus) {
+		const base = buildSlug(sku) || 'pozition';
+		const key = `${sku.hub}/${base}`;
+		const n = (seen.get(key) ?? 0) + 1;
+		seen.set(key, n);
+		sku.slug = n === 1 ? base : `${base}-${n}`;
+	}
 }
 
 async function main() {
@@ -241,14 +302,12 @@ async function main() {
 	const skus = processRowsShared(rows);
 	const all = expandSkus(skus);
 
-	// Group by hub
 	const byHub = {};
 	for (const sku of all) {
 		const k = sku.hub;
 		(byHub[k] ||= []).push(sku);
 	}
 
-	// Sort: grade → roll → surface → size
 	for (const hub of Object.keys(byHub)) {
 		byHub[hub].sort((a, b) => {
 			const cmp = (a.grade || '').localeCompare(b.grade || '', 'ru');
@@ -259,16 +318,16 @@ async function main() {
 			if (s) return s;
 			return parseFloat(a.size) - parseFloat(b.size) || 0;
 		});
+		ensureUniqueSlugs(byHub[hub]);
 	}
 
-	// Stats
 	const stats = Object.fromEntries(
 		Object.entries(byHub).map(([k, v]) => [k, { total: v.length, withPrice: v.filter((x) => x.price != null).length }]),
 	);
 
 	const out = {
-		updatedAt: '2026-04-15',
-		source: 'mc.ru',
+		updatedAt: UPDATED_AT,
+		source: `mc.ru +${Math.round((PRICE_MARKUP - 1) * 100)}% markup applied`,
 		stats,
 		hubs: byHub,
 	};
