@@ -692,6 +692,52 @@ const PLACEHOLDER_TK = '/img/placeholder-tk-logo.svg';
 				normalize();
 				track.scrollBy({ left: cardStep(), behavior: 'smooth' });
 			});
+
+			// After 5s on the page: lazy-autoplay all shipment videos (muted, looped, inline)
+			// and start an infinite auto-scroll. Pauses on hover / focus / touch and on tab hidden.
+			const videos = Array.from(track.querySelectorAll<HTMLVideoElement>('.ship-card__video'));
+			let autoStarted = false;
+			const startAuto = () => {
+				if (autoStarted) return;
+				autoStarted = true;
+
+				videos.forEach((v) => {
+					v.muted = true;
+					v.loop = true;
+					v.setAttribute('playsinline', '');
+					v.preload = 'auto';
+					v.play().catch(() => {});
+				});
+
+				let paused = false;
+				let lastTs = 0;
+				const SPEED = 28; // px/sec
+				const tick = (ts: number) => {
+					if (lastTs === 0) lastTs = ts;
+					const dt = (ts - lastTs) / 1000;
+					lastTs = ts;
+					if (!paused && !shipModalOpen && document.visibilityState === 'visible') {
+						track.scrollLeft += SPEED * dt;
+						normalize();
+					}
+					requestAnimationFrame(tick);
+				};
+				requestAnimationFrame(tick);
+
+				const pause = () => { paused = true; };
+				const resume = () => { paused = false; lastTs = 0; };
+				slider.addEventListener('mouseenter', pause);
+				slider.addEventListener('mouseleave', resume);
+				slider.addEventListener('focusin', pause);
+				slider.addEventListener('focusout', resume);
+				slider.addEventListener('touchstart', pause, { passive: true });
+				slider.addEventListener('touchend', resume, { passive: true });
+				document.addEventListener('visibilitychange', () => {
+					if (document.visibilityState === 'visible') resume();
+					else pause();
+				});
+			};
+			window.setTimeout(startAuto, 5000);
 		}
 	}
 </script>
