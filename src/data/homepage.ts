@@ -50,12 +50,12 @@ export const catalogCategories: Array<{
 	{ href: '/list/', title: 'Лист нержавеющий', description: 'Холоднокатаный, горячекатаный, рифленый, декоративный и перфорированный лист.', image: '/img/catalog/list.png' },
 	{ href: '/truba/', title: 'Труба нержавеющая', description: 'Круглая бесшовная, электросварная, прямоугольная и квадратная.', image: '/img/catalog/truba.png' },
 	{ href: '/lenta/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: '/img/catalog/lenta.png' },
-	{ href: '/krug/', title: 'Круг / Квадрат / Шестигранник', description: 'Сортовой нержавеющий прокат по маркам.', image: '/img/catalog/krug.webp' },
-	{ href: '/polosa/', title: 'Полоса нержавеющая', description: 'Полоса нержавеющая по маркам.', image: null },
-	{ href: '/ugolok-shveller/', title: 'Уголок / Швеллер', description: 'Уголок и швеллер по маркам.', image: null },
+	{ href: '/krug/', title: 'Круг / Квадрат / Шестигранник', description: 'Сортовой нержавеющий прокат по маркам.', image: '/img/catalog/krug.jpg' },
+	{ href: '/polosa/', title: 'Полоса нержавеющая', description: 'Полоса нержавеющая по маркам.', image: '/img/catalog/polosa.jpg' },
+	{ href: '/ugolok-shveller/', title: 'Уголок / Швеллер', description: 'Уголок и швеллер по маркам.', image: '/img/catalog/ugolok-shveller.jpg' },
 	{ href: '/rulon/', title: 'Рулон нержавеющий', description: 'Отдельная товарная категория рулонного проката.', image: '/img/catalog/rulon.png' },
-	{ href: '/folga/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: null },
-	{ href: '/detali-truboprovoda/', title: 'Детали трубопровода', description: 'Фланцы, переходы, отводы и тройники.', image: null },
+	{ href: '/folga/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: '/img/catalog/folga.jpg' },
+	{ href: '/detali-truboprovoda/', title: 'Детали трубопровода', description: 'Фланцы, переходы, отводы и тройники.', image: '/img/catalog/detali-truboprovoda.jpg' },
 	{ href: '/provoloka/', title: 'Проволока нержавеющая', description: 'Отдельная категория, не в метизах.', image: '/img/catalog/provoloka.jpg' },
 ];
 
