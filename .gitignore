@@ -23,6 +23,9 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# local Claude Code harness config (permission settings, not for repo)
+.claude/
+
 # local working materials (not part of the site)
 планы/
 *.xls
