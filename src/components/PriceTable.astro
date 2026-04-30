@@ -46,7 +46,7 @@ function fmtPrice(p: number | null) {
 	return new Intl.NumberFormat('ru-RU').format(p);
 }
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 15;
 const showSubTabs = subTabs.length > 1;
 ---
 
@@ -130,25 +130,7 @@ const showSubTabs = subTabs.length > 1;
 		<button type="button" class="pt__reset" data-pt-reset>Сбросить</button>
 	</div>
 
-	<div class="pt__wrap">
-		<table class="pt__table">
-			<colgroup>
-				<col />
-				<col />
-				<col />
-				<col />
-			</colgroup>
-			<thead>
-				<tr>
-					<th>Марка</th>
-					<th>{measure}</th>
-					<th class="pt__th-price">Цена</th>
-					<th class="pt__th-action">&nbsp;</th>
-				</tr>
-			</thead>
-			<tbody data-pt-body></tbody>
-		</table>
-	</div>
+	<div class="pt__list" data-pt-body></div>
 
 	<div class="pt__pager" data-pt-pager hidden>
 		<button type="button" class="pt__page-btn" data-pt-prev aria-label="Предыдущая страница">‹</button>
@@ -231,6 +213,51 @@ const showSubTabs = subTabs.length > 1;
 			});
 		}
 
+		function groupSkus(skus) {
+			const groups = new Map();
+			for (const s of skus) {
+				const key = `${s.grade}|${s.roll || ''}|${s.surface || ''}|${s.sub}`;
+				let g = groups.get(key);
+				if (!g) {
+					g = {
+						grade: s.grade,
+						roll: s.roll,
+						surface: s.surface,
+						sub: s.sub,
+						unit: s.unit,
+						items: [],
+						minPrice: Infinity,
+						maxPrice: -Infinity,
+					};
+					groups.set(key, g);
+				}
+				g.items.push(s);
+				if (s.price != null) {
+					if (s.price < g.minPrice) g.minPrice = s.price;
+					if (s.price > g.maxPrice) g.maxPrice = s.price;
+				}
+			}
+			// Sort each group's items by numeric size
+			for (const g of groups.values()) {
+				g.items.sort((a, b) => {
+					const na = parseFloat(String(a.size).replace(/^Ø/, '').replace(/×.*/, ''));
+					const nb = parseFloat(String(b.size).replace(/^Ø/, '').replace(/×.*/, ''));
+					return (Number.isFinite(na) ? na : 0) - (Number.isFinite(nb) ? nb : 0);
+				});
+			}
+			return [...groups.values()];
+		}
+
+		function priceLabel(g) {
+			if (!Number.isFinite(g.minPrice)) {
+				return '<span class="pt__on-request">по запросу</span>';
+			}
+			if (g.minPrice === g.maxPrice) {
+				return `<strong>${fmt(g.minPrice)}</strong> <span class="pt__unit">₽/${escapeHtml(g.unit)}</span>`;
+			}
+			return `<strong>${fmt(g.minPrice)}–${fmt(g.maxPrice)}</strong> <span class="pt__unit">₽/${escapeHtml(g.unit)}</span>`;
+		}
+
 		function render() {
 			const f = {
 				q: (inputs.q?.value || '').trim().toLowerCase(),
@@ -239,47 +266,58 @@ const showSubTabs = subTabs.length > 1;
 				grade: inputs.grade?.value || '',
 			};
 			const filtered = allSkus.filter((s) => rowMatches(s, f));
-			const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+			const groups = groupSkus(filtered);
+
+			const totalPages = Math.max(1, Math.ceil(groups.length / PAGE_SIZE));
 			if (state.page > totalPages) state.page = totalPages;
 			const start = (state.page - 1) * PAGE_SIZE;
-			const visible = filtered.slice(start, start + PAGE_SIZE);
+			const visible = groups.slice(start, start + PAGE_SIZE);
 
-			countEl.textContent = `${filtered.length} позиций`;
+			countEl.textContent = `${filtered.length} позиций · ${groups.length} групп`;
 			emptyEl.hidden = filtered.length > 0;
 
-			let prevKey = '';
 			body.innerHTML = visible
-				.map((s) => {
+				.map((g) => {
 					const tags = [];
 					if (!state.sub) {
-						const subLabel = SUB_LABELS[s.sub] || s.sub;
+						const subLabel = SUB_LABELS[g.sub] || g.sub;
 						if (subLabel) tags.push(escapeHtml(subLabel));
 					}
-					if (s.roll) tags.push(escapeHtml(s.roll));
-					if (s.surface) tags.push(escapeHtml(s.surface));
+					if (g.roll) tags.push(escapeHtml(g.roll));
+					if (g.surface) tags.push(escapeHtml(g.surface));
+					const tagsHtml = tags.length
+						? `<div class="pt-card__tags">${tags.map((t) => `<span class="pt-card__tag">${t}</span>`).join('')}</div>`
+						: '';
 
-					// Group rows by grade+roll+surface — show the title only once,
-					// indented placeholder for subsequent rows in the same group.
-					const groupKey = `${s.grade}|${s.roll || ''}|${s.surface || ''}|${s.sub}`;
-					const isNewGroup = groupKey !== prevKey;
-					prevKey = groupKey;
+					// Render up to 24 size pills inline; if more, show a "+N" overflow.
+					const SHOW = 24;
+					const head = g.items.slice(0, SHOW);
+					const overflow = g.items.length - head.length;
+					const pills = head
+						.map((s) => {
+							const priceTooltip = s.price ? `${fmt(s.price)} ₽/${s.unit}` : 'по запросу';
+							return `<a class="pt-pill" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(priceTooltip)}">${escapeHtml(s.size)}<span class="pt-pill__suffix">мм</span></a>`;
+						})
+						.join('');
+					const overflowHtml = overflow > 0
+						? `<span class="pt-pill pt-pill--more">+${overflow}</span>`
+						: '';
 
-					const gradeCell = isNewGroup
-						? `<span class="pt__grade">${escapeHtml(s.grade)}</span>${tags.length ? `<span class="pt__sub-tag">${tags.join(' · ')}</span>` : ''}`
-						: '<span class="pt__grade-cont" aria-hidden="true">↪</span>';
+					const sizeWord = ['list'].includes(hub) ? 'Толщины' : (hub === 'truba' ? 'Размеры (Ø×стенка)' : 'Размеры');
 
-					const price = s.price
-						? `<strong>${fmt(s.price)}</strong> <span class="pt__unit">₽/${escapeHtml(s.unit)}</span>`
-						: '<span class="pt__on-request">по запросу</span>';
-
-					const rowCls = isNewGroup ? 'pt__row pt__row--head' : 'pt__row';
-
-					return `<tr class="${rowCls}">
-						<td class="pt__cell-grade">${gradeCell}</td>
-						<td class="pt__cell-num"><span class="pt__cell-num-inner">${escapeHtml(s.size)}<span class="pt__cell-num-suffix">мм</span></span></td>
-						<td class="pt__cell-price">${price}</td>
-						<td class="pt__cell-action"><a href="/${hub}/${escapeHtml(s.slug)}/" class="pt__cta">Подробнее →</a></td>
-					</tr>`;
+					return `<article class="pt-card">
+						<header class="pt-card__head">
+							<div>
+								<h3 class="pt-card__grade">${escapeHtml(g.grade)}</h3>
+								${tagsHtml}
+							</div>
+							<div class="pt-card__price">${priceLabel(g)}</div>
+						</header>
+						<div class="pt-card__sizes">
+							<span class="pt-card__sizes-label">${sizeWord} · ${g.items.length}</span>
+							<div class="pt-card__pills">${pills}${overflowHtml}</div>
+						</div>
+					</article>`;
 				})
 				.join('');
 
@@ -475,13 +513,144 @@ const showSubTabs = subTabs.length > 1;
 		color: var(--color-accent);
 	}
 
-	/* Table — industrial premium card */
-	.pt__wrap {
-		overflow-x: auto;
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-lg);
+	/* Catalog card list */
+	.pt__list {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-3);
+	}
+	.pt-card {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-4);
+		padding: 1.4rem 1.6rem;
 		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-xs);
+		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+	}
+	.pt-card:hover {
+		border-color: var(--color-primary-500);
 		box-shadow: var(--shadow-md);
+	}
+	.pt-card__head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.pt-card__grade {
+		margin: 0 0 0.4rem;
+		font-size: 1.25rem;
+		font-weight: 700;
+		letter-spacing: -0.015em;
+		color: var(--color-text);
+		line-height: 1.2;
+	}
+	.pt-card__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+	.pt-card__tag {
+		display: inline-block;
+		font-size: 0.78rem;
+		font-weight: 500;
+		padding: 0.2rem 0.65rem;
+		background: var(--color-steel-100);
+		color: var(--color-steel);
+		border-radius: var(--radius-pill);
+	}
+	.pt-card__price {
+		text-align: right;
+		font-family: var(--font-mono);
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+	.pt-card__price strong {
+		display: inline-block;
+		font-weight: 800;
+		color: var(--color-text);
+		font-size: 1.3rem;
+		letter-spacing: -0.015em;
+	}
+	.pt-card__sizes {
+		display: grid;
+		gap: 0.6rem;
+	}
+	.pt-card__sizes-label {
+		font-size: 0.74rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-subtle);
+	}
+	.pt-card__pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+	}
+
+	/* Size pill — clickable, leads to per-SKU page */
+	.pt-pill {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.25rem;
+		padding: 0.5rem 0.85rem;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--color-text);
+		text-decoration: none;
+		font-variant-numeric: tabular-nums;
+		transition: all var(--dur-fast) var(--ease-out);
+		white-space: nowrap;
+	}
+	.pt-pill:hover {
+		background: var(--color-primary-500);
+		border-color: var(--color-primary-500);
+		color: #fff;
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-sm);
+		text-decoration: none;
+	}
+	.pt-pill__suffix {
+		font-family: var(--font-sans);
+		font-size: 0.72rem;
+		font-weight: 500;
+		opacity: 0.7;
+	}
+	.pt-pill--more {
+		background: transparent;
+		border-style: dashed;
+		color: var(--color-muted);
+		cursor: default;
+	}
+
+	.pt__unit {
+		font-family: var(--font-sans);
+		font-size: 0.85rem;
+		color: var(--color-accent);
+		font-weight: 600;
+		margin-left: 0.25rem;
+	}
+	.pt__on-request {
+		font-family: var(--font-sans);
+		font-size: 1rem;
+		color: var(--color-accent);
+		font-weight: 700;
+	}
+
+	/* legacy table styles kept inert for now (no .pt__wrap in template) */
+	.pt__wrap {
+		display: none;
 	}
 	.pt__table {
 		width: 100%;
