@@ -693,19 +693,29 @@ const PLACEHOLDER_TK = '/img/placeholder-tk-logo.svg';
 				track.scrollBy({ left: cardStep(), behavior: 'smooth' });
 			});
 
-			// After 5s on the page: lazy-autoplay all shipment videos (muted, looped, inline).
-			// Auto-scroll was removed — it caused jitter against the smooth-scroll teleport.
-			// User can still manually scroll/swipe; the infinite teleport keeps it seamless.
+			// Hover/click-to-play: inline videos stay paused on load; play on mouseenter
+			// (or tap on touch), pause + rewind on mouseleave. Click on the video opens
+			// the same modal that the "Смотреть видео" button does.
 			const videos = Array.from(track.querySelectorAll<HTMLVideoElement>('.ship-card__video'));
-			window.setTimeout(() => {
-				videos.forEach((v) => {
-					v.muted = true;
-					v.loop = true;
-					v.setAttribute('playsinline', '');
-					v.preload = 'auto';
+			videos.forEach((v) => {
+				v.muted = true;
+				v.loop = true;
+				v.setAttribute('playsinline', '');
+				const card = v.closest('.ship-card') as HTMLElement | null;
+				const target = card ?? v;
+				target.addEventListener('mouseenter', () => {
 					v.play().catch(() => {});
 				});
-			}, 5000);
+				target.addEventListener('mouseleave', () => {
+					v.pause();
+					try { v.currentTime = 0.5; } catch {}
+				});
+				v.style.cursor = 'pointer';
+				v.addEventListener('click', () => {
+					const btn = card?.querySelector<HTMLButtonElement>('[data-ship-open]');
+					btn?.click();
+				});
+			});
 		}
 	}
 </script>
