@@ -136,9 +136,8 @@ const showSubTabs = subTabs.length > 1;
 				<tr>
 					<th>Марка</th>
 					<th>{measure}, мм</th>
-					<th>Ед.</th>
-					<th class="pt__th-price">Цена, ₽</th>
-					<th class="pt__th-action">Заявка</th>
+					<th class="pt__th-price">Цена</th>
+					<th class="pt__th-action">&nbsp;</th>
 				</tr>
 			</thead>
 			<tbody data-pt-body></tbody>
@@ -244,19 +243,27 @@ const showSubTabs = subTabs.length > 1;
 
 			body.innerHTML = visible
 				.map((s) => {
-					const subLabel = SUB_LABELS[s.sub] || s.sub;
-					const surface = s.surface ? ` · ${escapeHtml(s.surface)}` : '';
-					const roll = s.roll ? ` · ${escapeHtml(s.roll)}` : '';
+					// Hide sub-label in row when tab already shows it (tab is active and not "all").
+					// Otherwise include sub. Always show roll + surface as secondary tags.
+					const tags = [];
+					if (!state.sub) {
+						const subLabel = SUB_LABELS[s.sub] || s.sub;
+						if (subLabel) tags.push(escapeHtml(subLabel));
+					}
+					if (s.roll) tags.push(escapeHtml(s.roll));
+					if (s.surface) tags.push(escapeHtml(s.surface));
+					const tagsHtml = tags.length
+						? `<span class="pt__sub-tag">${tags.join(' · ')}</span>`
+						: '';
 					const price = s.price
-						? `<strong>${fmt(s.price)}</strong>`
+						? `<strong>${fmt(s.price)}</strong> <span class="pt__unit">₽/${escapeHtml(s.unit)}</span>`
 						: '<span class="pt__on-request">по запросу</span>';
 					return `<tr>
-						<td>
+						<td class="pt__cell-grade">
 							<span class="pt__grade">${escapeHtml(s.grade)}</span>
-							<span class="pt__sub-tag">${escapeHtml(subLabel)}${roll}${surface}</span>
+							${tagsHtml}
 						</td>
 						<td class="pt__cell-num">${escapeHtml(s.size)}</td>
-						<td class="pt__cell-num">${escapeHtml(s.unit)}</td>
 						<td class="pt__cell-price">${price}</td>
 						<td class="pt__cell-action"><a href="/${hub}/${escapeHtml(s.slug)}/" class="pt__cta">Подробнее →</a></td>
 					</tr>`;
@@ -465,16 +472,16 @@ const showSubTabs = subTabs.length > 1;
 	.pt__table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.92rem;
-		min-width: 640px;
+		font-size: 0.93rem;
+		min-width: 580px;
 	}
 	.pt__table th {
 		text-align: left;
 		padding: var(--space-3) var(--space-4);
 		font-weight: 600;
-		font-size: 0.78rem;
+		font-size: 0.74rem;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.06em;
 		color: var(--color-subtle);
 		background: var(--color-bg-elev);
 		border-bottom: 1px solid var(--color-border);
@@ -485,42 +492,58 @@ const showSubTabs = subTabs.length > 1;
 		text-align: right;
 	}
 	.pt__table td {
-		padding: var(--space-3) var(--space-4);
+		padding: 0.85rem var(--space-4);
 		border-bottom: 1px solid var(--color-border);
-		vertical-align: top;
+		vertical-align: middle;
+	}
+	.pt__table tbody tr:nth-child(even) td {
+		background: color-mix(in srgb, var(--color-bg-elev) 50%, transparent);
 	}
 	.pt__table tr:last-child td {
 		border-bottom: 0;
 	}
-	.pt__table tr:hover td {
+	.pt__table tbody tr:hover td {
 		background: var(--color-primary-50);
+	}
+	.pt__cell-grade {
+		min-width: 240px;
 	}
 	.pt__grade {
 		display: block;
 		font-weight: 600;
+		font-size: 0.96rem;
 		color: var(--color-text);
+		line-height: 1.3;
 	}
 	.pt__sub-tag {
 		display: block;
 		font-size: 0.78rem;
 		color: var(--color-subtle);
-		margin-top: 2px;
+		margin-top: 3px;
 	}
 	.pt__cell-num {
 		font-family: var(--font-mono);
-		font-size: 0.88rem;
+		font-size: 0.92rem;
 		color: var(--color-text);
 		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
 	.pt__cell-price {
 		text-align: right;
 		font-family: var(--font-mono);
-		font-size: 0.95rem;
+		font-size: 0.96rem;
 		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
 	.pt__cell-price strong {
 		font-weight: 700;
 		color: var(--color-text);
+		font-size: 1.02rem;
+	}
+	.pt__unit {
+		font-size: 0.78rem;
+		color: var(--color-subtle);
+		margin-left: 0.15rem;
 	}
 	.pt__on-request {
 		font-family: var(--font-sans);

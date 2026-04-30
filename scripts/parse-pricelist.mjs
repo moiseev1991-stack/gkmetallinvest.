@@ -20,6 +20,7 @@ const SECTION_PATTERNS = [
 	{ re: /^СТАЛЬ СОРТ НЕРЖ НИКЕЛ КВАДРАТ/i, hub: 'krug', sub: 'kvadrat' },
 	{ re: /^СТАЛЬ СОРТ НЕРЖ НИКЕЛ КРУГ/i, hub: 'krug', sub: 'nikelevyj' },
 	{ re: /^СТАЛЬ СОРТ НЕРЖ НИКЕЛ ШЕСТИГРАННИК/i, hub: 'krug', sub: 'shestigrannik' },
+	{ re: /^СТАЛЬ СОРТ НЕРЖ ЖАРОПР ШЕСТИГРАННИК/i, hub: 'krug', sub: 'shestigrannik' },
 	{ re: /^ПРОВОЛОКА НЕРЖАВЕЮЩАЯ/i, hub: 'provoloka', sub: 'osnovnaya' },
 	{ re: /^ДЕТАЛИ ТРУБОПРОВОДОВ\s*-\s*ФЛАНЕЦ/i, hub: 'detali-truboprovoda', sub: 'flanec' },
 	{ re: /^ДЕТАЛИ ТРУБОПРОВОДОВ\s*-\s*ОТВОД/i, hub: 'detali-truboprovoda', sub: 'otvod' },
@@ -201,7 +202,13 @@ function reclassifyByName(sku) {
 
 function processRowsShared(rows) {
 	const out = [];
-	const sections = { L: null, R: null };
+	// Single shared section for both column streams. The prayslist is laid
+	// out as one logical document; when any column shows a new section
+	// heading, BOTH columns are now in that section. Keeping per-stream
+	// section state caused the right column to keep adding e.g. truba rows
+	// to the previous "list/beznikelya" section because some section
+	// headings appear only in col 0 and never in col 5.
+	const state = { section: null };
 	const lastByStream = { L: null, R: null };
 
 	const handleStream = (row, off, streamKey) => {
@@ -210,8 +217,9 @@ function processRowsShared(rows) {
 
 		const sec = detectSection(cell0);
 		if (sec) {
-			sections[streamKey] = sec;
-			lastByStream[streamKey] = null;
+			state.section = sec;
+			lastByStream.L = null;
+			lastByStream.R = null;
 			return;
 		}
 		const grade = cell0;
@@ -220,7 +228,7 @@ function processRowsShared(rows) {
 		const price = get(off[3]);
 
 		if (isHeaderRow(grade)) return;
-		const section = sections[streamKey];
+		const section = state.section;
 		if (!section) return;
 		if (!grade && !size) return;
 
@@ -299,6 +307,9 @@ function expandSkus(skus) {
 	for (const s of skus) {
 		const sizes = s.sizes.length ? s.sizes : [''];
 		for (const size of sizes) {
+			// Skip rows with placeholder/missing size (e.g. CSV had "0").
+			const trimmed = String(size).trim();
+			if (!trimmed || trimmed === '0' || /^Ø?0(\b|\s|$)/.test(trimmed)) continue;
 			exp.push({
 				hub: s.section.hub,
 				sub: s.section.sub,
@@ -306,7 +317,7 @@ function expandSkus(skus) {
 				roll: s.roll,
 				alloy: s.alloy,
 				surface: s.surface,
-				size,
+				size: trimmed,
 				unit: s.unit,
 				price: applyMarkup(s.price),
 			});
