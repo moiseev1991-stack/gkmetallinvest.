@@ -247,10 +247,9 @@ const showSubTabs = subTabs.length > 1;
 			countEl.textContent = `${filtered.length} позиций`;
 			emptyEl.hidden = filtered.length > 0;
 
+			let prevKey = '';
 			body.innerHTML = visible
 				.map((s) => {
-					// Hide sub-label in row when tab already shows it (tab is active and not "all").
-					// Otherwise include sub. Always show roll + surface as secondary tags.
 					const tags = [];
 					if (!state.sub) {
 						const subLabel = SUB_LABELS[s.sub] || s.sub;
@@ -258,17 +257,25 @@ const showSubTabs = subTabs.length > 1;
 					}
 					if (s.roll) tags.push(escapeHtml(s.roll));
 					if (s.surface) tags.push(escapeHtml(s.surface));
-					const tagsHtml = tags.length
-						? `<span class="pt__sub-tag">${tags.join(' · ')}</span>`
-						: '';
+
+					// Group rows by grade+roll+surface — show the title only once,
+					// indented placeholder for subsequent rows in the same group.
+					const groupKey = `${s.grade}|${s.roll || ''}|${s.surface || ''}|${s.sub}`;
+					const isNewGroup = groupKey !== prevKey;
+					prevKey = groupKey;
+
+					const gradeCell = isNewGroup
+						? `<span class="pt__grade">${escapeHtml(s.grade)}</span>${tags.length ? `<span class="pt__sub-tag">${tags.join(' · ')}</span>` : ''}`
+						: '<span class="pt__grade-cont" aria-hidden="true">↪</span>';
+
 					const price = s.price
 						? `<strong>${fmt(s.price)}</strong> <span class="pt__unit">₽/${escapeHtml(s.unit)}</span>`
 						: '<span class="pt__on-request">по запросу</span>';
-					return `<tr>
-						<td class="pt__cell-grade">
-							<span class="pt__grade">${escapeHtml(s.grade)}</span>
-							${tagsHtml}
-						</td>
+
+					const rowCls = isNewGroup ? 'pt__row pt__row--head' : 'pt__row';
+
+					return `<tr class="${rowCls}">
+						<td class="pt__cell-grade">${gradeCell}</td>
 						<td class="pt__cell-num"><span class="pt__cell-num-inner">${escapeHtml(s.size)}<span class="pt__cell-num-suffix">мм</span></span></td>
 						<td class="pt__cell-price">${price}</td>
 						<td class="pt__cell-action"><a href="/${hub}/${escapeHtml(s.slug)}/" class="pt__cta">Подробнее →</a></td>
@@ -326,7 +333,7 @@ const showSubTabs = subTabs.length > 1;
 	}
 </script>
 
-<style>
+<style is:global>
 	.pt {
 		margin-block: var(--space-8);
 	}
@@ -516,14 +523,19 @@ const showSubTabs = subTabs.length > 1;
 	}
 
 	.pt__table tbody td {
-		padding: 1.2rem 1.5rem;
+		padding: 0.95rem 1.5rem;
 		border-bottom: 1px solid var(--color-border);
 		vertical-align: middle;
 		background: var(--color-surface);
 		transition: background var(--dur-fast) var(--ease-out);
 	}
-	.pt__table tbody tr:nth-child(even) td {
-		background: var(--color-bg);
+	/* Group separator: thicker line on top of each new grade group */
+	.pt__table tbody tr.pt__row--head td {
+		border-top: 2px solid var(--color-border-strong);
+		padding-top: 1.15rem;
+	}
+	.pt__table tbody tr.pt__row--head:first-child td {
+		border-top: 0;
 	}
 	.pt__table tbody tr:last-child td {
 		border-bottom: 0;
@@ -536,6 +548,13 @@ const showSubTabs = subTabs.length > 1;
 	}
 	.pt__table tbody tr:hover td {
 		background: var(--color-primary-100);
+	}
+	/* Continuation marker — small dim arrow showing same grade as row above */
+	.pt__grade-cont {
+		display: inline-block;
+		color: var(--color-border-strong);
+		font-size: 1.1rem;
+		padding-left: 0.3rem;
 	}
 
 	.pt__cell-grade {
