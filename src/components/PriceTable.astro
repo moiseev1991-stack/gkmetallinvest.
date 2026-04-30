@@ -135,7 +135,7 @@ const showSubTabs = subTabs.length > 1;
 			<thead>
 				<tr>
 					<th>Марка</th>
-					<th>{measure}, мм</th>
+					<th>{measure}</th>
 					<th class="pt__th-price">Цена</th>
 					<th class="pt__th-action">&nbsp;</th>
 				</tr>
@@ -263,7 +263,7 @@ const showSubTabs = subTabs.length > 1;
 							<span class="pt__grade">${escapeHtml(s.grade)}</span>
 							${tagsHtml}
 						</td>
-						<td class="pt__cell-num">${escapeHtml(s.size)}</td>
+						<td class="pt__cell-num"><span class="pt__cell-num-inner">${escapeHtml(s.size)}<span class="pt__cell-num-suffix">мм</span></span></td>
 						<td class="pt__cell-price">${price}</td>
 						<td class="pt__cell-action"><a href="/${hub}/${escapeHtml(s.slug)}/" class="pt__cta">Подробнее →</a></td>
 					</tr>`;
@@ -466,104 +466,141 @@ const showSubTabs = subTabs.length > 1;
 	.pt__wrap {
 		overflow-x: auto;
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-lg);
 		background: var(--color-surface);
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.08);
 	}
 	.pt__table {
 		width: 100%;
-		border-collapse: collapse;
-		font-size: 0.93rem;
-		min-width: 580px;
+		border-collapse: separate;
+		border-spacing: 0;
+		font-size: 1rem;
+		min-width: 720px;
+		table-layout: auto;
 	}
-	.pt__table th {
+	.pt__table thead th {
+		position: sticky;
+		top: 0;
+		z-index: 1;
 		text-align: left;
-		padding: var(--space-3) var(--space-4);
+		padding: 1rem 1.25rem;
 		font-weight: 600;
-		font-size: 0.74rem;
+		font-size: 0.78rem;
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.08em;
 		color: var(--color-subtle);
 		background: var(--color-bg-elev);
-		border-bottom: 1px solid var(--color-border);
+		border-bottom: 2px solid var(--color-border);
 		white-space: nowrap;
 	}
 	.pt__th-price,
 	.pt__th-action {
 		text-align: right;
 	}
-	.pt__table td {
-		padding: 0.85rem var(--space-4);
+	.pt__table tbody td {
+		padding: 1.15rem 1.25rem;
 		border-bottom: 1px solid var(--color-border);
 		vertical-align: middle;
+		background: var(--color-surface);
+		transition: background var(--dur-fast) var(--ease-out);
 	}
 	.pt__table tbody tr:nth-child(even) td {
-		background: color-mix(in srgb, var(--color-bg-elev) 50%, transparent);
+		background: #fafbfc;
 	}
-	.pt__table tr:last-child td {
+	.pt__table tbody tr:last-child td {
 		border-bottom: 0;
 	}
 	.pt__table tbody tr:hover td {
 		background: var(--color-primary-50);
 	}
 	.pt__cell-grade {
-		min-width: 240px;
+		min-width: 280px;
 	}
 	.pt__grade {
 		display: block;
 		font-weight: 600;
-		font-size: 0.96rem;
+		font-size: 1.05rem;
 		color: var(--color-text);
 		line-height: 1.3;
+		letter-spacing: -0.005em;
 	}
 	.pt__sub-tag {
 		display: block;
-		font-size: 0.78rem;
+		font-size: 0.85rem;
 		color: var(--color-subtle);
-		margin-top: 3px;
+		margin-top: 4px;
 	}
 	.pt__cell-num {
 		font-family: var(--font-mono);
-		font-size: 0.92rem;
+		font-size: 1rem;
+		font-weight: 600;
 		color: var(--color-text);
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
 	}
+	.pt__cell-num-inner {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.25rem;
+		padding: 0.4rem 0.8rem;
+		background: #eef2f7;
+		border-radius: var(--radius-md);
+		font-size: 1rem;
+		font-weight: 600;
+	}
+	.pt__cell-num-suffix {
+		font-family: var(--font-sans);
+		font-size: 0.78rem;
+		color: var(--color-subtle);
+		font-weight: 500;
+	}
 	.pt__cell-price {
 		text-align: right;
 		font-family: var(--font-mono);
-		font-size: 0.96rem;
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
 	}
 	.pt__cell-price strong {
 		font-weight: 700;
 		color: var(--color-text);
-		font-size: 1.02rem;
+		font-size: 1.15rem;
+		letter-spacing: -0.01em;
 	}
 	.pt__unit {
-		font-size: 0.78rem;
+		font-size: 0.82rem;
 		color: var(--color-subtle);
-		margin-left: 0.15rem;
+		font-weight: 500;
+		margin-left: 0.2rem;
 	}
 	.pt__on-request {
 		font-family: var(--font-sans);
-		font-size: 0.82rem;
+		font-size: 0.9rem;
 		color: var(--color-accent);
-		font-weight: 500;
+		font-weight: 600;
 	}
 	.pt__cell-action {
 		text-align: right;
 		white-space: nowrap;
 	}
 	.pt__cta {
-		font-size: 0.85rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.9rem;
 		font-weight: 600;
 		color: var(--color-primary-500);
 		text-decoration: none;
+		padding: 0.55rem 0.95rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		transition: all var(--dur-fast) var(--ease-out);
 	}
 	.pt__cta:hover {
-		color: var(--color-primary-600);
-		text-decoration: underline;
+		color: var(--color-on-dark);
+		background: var(--color-primary-500);
+		border-color: var(--color-primary-500);
+		text-decoration: none;
 	}
 
 	/* Pagination */
