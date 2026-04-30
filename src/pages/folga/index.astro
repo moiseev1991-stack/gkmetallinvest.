@@ -1,5 +1,6 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import HubRequest from '../../components/HubRequest.astro';
 ---
 
 <CatalogHubTemplate
@@ -9,6 +10,7 @@ import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 	intro="Фольга вынесена в самостоятельную категорию. Внутри раздела акцент на марках и толщине материала."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Фольга нержавеющая' }]}
 >
+	<HubRequest what="Нержавеющая фольга" />
 	<section class="block">
 		<h2>Подбор</h2>
 		<ul class="list-plain">

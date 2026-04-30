@@ -1,5 +1,6 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import HubRequest from '../../components/HubRequest.astro';
 ---
 
 <CatalogHubTemplate
@@ -9,6 +10,7 @@ import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 	intro="Отдельная категория сортового проката. Подбор номенклатуры в первую очередь ведется по маркам."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Уголок / Швеллер' }]}
 >
+	<HubRequest what="Уголок и швеллер нержавеющие" />
 	<section class="block">
 		<h2>Номенклатура</h2>
 		<ul class="list-plain">

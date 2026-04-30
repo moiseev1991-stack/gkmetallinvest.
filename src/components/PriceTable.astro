@@ -2,9 +2,9 @@
 import pricelist from '../data/pricelist.json';
 
 interface Props {
-	hub: 'list' | 'krug' | 'provoloka' | 'detali-truboprovoda';
+	hub: 'list' | 'krug' | 'provoloka' | 'detali-truboprovoda' | 'truba';
 	title?: string;
-	measure?: 'толщина' | 'диаметр' | 'размер';
+	measure?: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
 }
 
 const { hub, title = 'Прайс-лист', measure = 'размер' } = Astro.props;
@@ -30,6 +30,8 @@ const SUB_LABELS: Record<string, string> = {
 	osnovnaya: 'Проволока',
 	flanec: 'Фланцы',
 	otvod: 'Отводы',
+	elsvarnaya: 'Электросварная',
+	besshovnaya: 'Бесшовная',
 };
 
 function fmtPrice(p: number | null) {

@@ -1,22 +1,25 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import PriceTable from '../../components/PriceTable.astro';
 ---
 
 <CatalogHubTemplate
 	title="Труба нержавеющая"
-	description="Нержавеющая труба: круглая, квадратная, прямоугольная, профильная, бесшовная, электросварная. Поставка по России."
+	description="Нержавеющая труба электросварная и бесшовная: AISI 304, 316L, 321, 430, 12Х18Н10Т. Диаметры от 15 до 219 мм. Цены за метр и тонну."
 	h1="Труба нержавеющая"
-	intro="Раздел трубы охватывает основные типы по форме и технологии изготовления."
+	intro="Электросварная и бесшовная нержавеющая труба. Диаметры от 15 до 219 мм, стенки от 1 до 16 мм. Импортные и российские марки: AISI 304, 316L, 321, 430, 12Х18Н10Т."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Труба' }]}
 >
+	<PriceTable hub="truba" title="Прайс на трубу нержавеющую" measure="Ø × стенка" />
+
 	<section class="block">
-		<h2>Ассортимент</h2>
+		<h2>Что входит в раздел</h2>
 		<ul class="list-plain">
-			<li>Круглая бесшовная</li>
-			<li>Электросварная</li>
-			<li>Прямоугольная</li>
-			<li>Квадратная</li>
-			<li>Марки AISI и отечественные аналоги</li>
+			<li>Электросварная — диаметры 15–219 мм, стенки 1–6 мм</li>
+			<li>Бесшовная — диаметры 16–273 мм, стенки 2–16 мм</li>
+			<li>Импортные марки: AISI 304, 316L, 321, 430</li>
+			<li>Отечественные: 12Х18Н10Т, 08Х18Н10</li>
+			<li>Уценка и некондиция — по запросу со скидкой</li>
 		</ul>
 	</section>
 </CatalogHubTemplate>
@@ -29,5 +32,6 @@ import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 		margin: 0;
 		padding-left: 1.2rem;
 		color: var(--color-muted);
+		max-width: 65ch;
 	}
 </style>

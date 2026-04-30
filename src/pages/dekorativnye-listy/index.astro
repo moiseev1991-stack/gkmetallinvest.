@@ -1,5 +1,6 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import HubRequest from '../../components/HubRequest.astro';
 ---
 
 <CatalogHubTemplate
@@ -9,6 +10,7 @@ import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 	intro="Отдельный SEO-кластер (старый /listdeco): не смешиваем с обычным листом без отдельной посадочной."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Декоративные листы' }]}
 >
+	<HubRequest what="Декоративные листы DECO/PE" />
 	<section class="block">
 		<h2>Линейки</h2>
 		<p>

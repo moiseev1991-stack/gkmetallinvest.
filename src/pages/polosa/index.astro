@@ -1,5 +1,6 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import HubRequest from '../../components/HubRequest.astro';
 ---
 
 <CatalogHubTemplate
@@ -9,6 +10,7 @@ import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 	intro="Раздел полосы выделен в отдельную категорию. Основная сортировка ведется по маркам стали."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Полоса нержавеющая' }]}
 >
+	<HubRequest what="Нержавеющая полоса" />
 	<section class="block">
 		<h2>Ассортимент</h2>
 		<ul class="list-plain">

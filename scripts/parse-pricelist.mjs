@@ -23,6 +23,8 @@ const SECTION_PATTERNS = [
 	{ re: /^ПРОВОЛОКА НЕРЖАВЕЮЩАЯ/i, hub: 'provoloka', sub: 'osnovnaya' },
 	{ re: /^ДЕТАЛИ ТРУБОПРОВОДОВ\s*-\s*ФЛАНЕЦ/i, hub: 'detali-truboprovoda', sub: 'flanec' },
 	{ re: /^ДЕТАЛИ ТРУБОПРОВОДОВ\s*-\s*ОТВОД/i, hub: 'detali-truboprovoda', sub: 'otvod' },
+	{ re: /^ТРУБЫ НЕРЖАВ\.?\s*ЭЛ\/СВАРНЫЕ/i, hub: 'truba', sub: 'elsvarnaya' },
+	{ re: /^ТРУБЫ НЕРЖАВ\.?\s*БЕСШОВНЫЕ/i, hub: 'truba', sub: 'besshovnaya' },
 ];
 
 function detectSection(cell) {
@@ -34,7 +36,7 @@ function detectSection(cell) {
 
 function isHeaderRow(g) {
 	const t = (g || '').trim().toLowerCase();
-	return t === 'марка' || t.startsWith('марка;');
+	return t === 'марка' || t.startsWith('марка;') || t === 'размер' || t.startsWith('размер;');
 }
 
 function parseSizes(raw) {
@@ -187,6 +189,7 @@ function parseCSV(text) {
 }
 
 function reclassifyByName(sku) {
+	if (sku.section.hub === 'truba') return null;
 	const n = sku.rawName;
 	const isFitting = /\b90°|\bП90°|\d+x\d+/i.test(n) && (sku.unit === 'шт' || /импорт/i.test(n));
 	if (isFitting) {
@@ -228,12 +231,39 @@ function processRowsShared(rows) {
 		}
 		if (!grade) return;
 
-		const sizes = parseSizes(size);
 		const priceN = parsePrice(price);
+		const u = unit || 'т';
+
+		// Truba section uses a different layout: col0 = "<diameter>   <grade>",
+		// col1 = wall thickness, col2 = unit (м), col3 = price.
+		if (section.hub === 'truba') {
+			const m = grade.match(/^\s*([\d.,]+)\s+(.+)$/);
+			if (!m) return;
+			const diameter = m[1].replace(',', '.');
+			const restName = m[2].trim();
+			const cleanRest = extractGrade(restName);
+			const wall = (size || '').replace(',', '.');
+			const sku = {
+				section: { hub: section.hub, sub: section.sub },
+				rawName: grade,
+				grade: cleanRest,
+				roll: null,
+				alloy: null,
+				surface: null,
+				sizes: [wall ? `Ø${diameter} × ${wall}` : `Ø${diameter}`],
+				_extraSizes: [],
+				unit: u || 'м',
+				price: priceN,
+			};
+			out.push(sku);
+			lastByStream[streamKey] = sku;
+			return;
+		}
+
+		const sizes = parseSizes(size);
 		const treatment = classifyTreatment(grade);
 		const surface = detectSurface(grade);
 		const cleanGrade = extractGrade(grade);
-		const u = unit || 'т';
 
 		const sku = {
 			section: { hub: section.hub, sub: section.sub },

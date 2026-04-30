@@ -1,5 +1,6 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import HubRequest from '../../components/HubRequest.astro';
 ---
 
 <CatalogHubTemplate
@@ -9,6 +10,7 @@ import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 	intro="Рулон выделен в самостоятельную товарную категорию и не входит в раздел листа."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Рулон' }]}
 >
+	<HubRequest what="Нержавеющий рулон" />
 	<section class="block">
 		<h2>Категория рулона</h2>
 		<p>Отдельная товарная категория рулонного нержавеющего проката.</p>

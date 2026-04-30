@@ -1,5 +1,6 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import HubRequest from '../../components/HubRequest.astro';
 ---
 
 <CatalogHubTemplate
@@ -9,6 +10,7 @@ import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 	intro="Раздел ленты сгруппирован по маркам, толщинам и ширинам с шагом 5 мм."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Лента' }]}
 >
+	<HubRequest what="Нержавеющая лента" />
 	<p class="note">
 		<strong>Производство / штрипс:</strong>
 		<a href="/lenta/proizvodstvo/">Лента и штрипс из рулона</a>
