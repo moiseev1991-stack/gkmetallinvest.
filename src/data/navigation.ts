@@ -1,78 +1,64 @@
-/** Главное меню и мегаменю */
+/** Главное меню и мегаменю.
+ *
+ * В подпунктах оставляем только ссылки с уникальным href — иначе
+ * получается «меню-обманка»: разные пункты ведут на один и тот же URL.
+ */
 export const navCatalog = [
 	{
 		title: 'Лист нержавеющий',
 		href: '/list/',
 		children: [
-			{ label: 'Лист нержавеющий', href: '/list/' },
-			{ label: 'Холоднокатаный лист', href: '/list/' },
-			{ label: 'Горячекатаный лист', href: '/list/' },
-			{ label: 'Рифленый лист', href: '/list/' },
 			{ label: 'Декоративные листы', href: '/dekorativnye-listy/' },
 			{ label: 'Перфорированный лист', href: '/uslugi/perforaciya-listov/' },
-			{ label: 'Рулон нержавеющий (отдельно)', href: '/rulon/' },
+			{ label: 'Рулон нержавеющий', href: '/rulon/' },
 		],
 	},
 	{
 		title: 'Труба нержавеющая',
 		href: '/truba/',
-		children: [
-			{ label: 'Труба нержавеющая', href: '/truba/' },
-			{ label: 'Круглая бесшовная', href: '/truba/' },
-			{ label: 'Электросварная', href: '/truba/' },
-			{ label: 'Прямоугольная', href: '/truba/' },
-			{ label: 'Квадратная', href: '/truba/' },
-		],
+		children: [],
 	},
 	{
 		title: 'Лента нержавеющая',
 		href: '/lenta/',
 		children: [
-			{ label: 'По маркам', href: '/lenta/' },
-			{ label: 'По толщинам', href: '/lenta/' },
-			{ label: 'По ширинам (шаг 5 мм)', href: '/lenta/' },
 			{ label: 'Производство ленты / штрипса', href: '/lenta/proizvodstvo/' },
 		],
 	},
 	{
 		title: 'Круг / Квадрат / Шестигранник',
 		href: '/krug/',
-		children: [{ label: 'По маркам', href: '/krug/' }],
+		children: [],
 	},
 	{
 		title: 'Полоса нержавеющая',
 		href: '/polosa/',
-		children: [{ label: 'По маркам', href: '/polosa/' }],
+		children: [],
 	},
 	{
 		title: 'Уголок / Швеллер',
 		href: '/ugolok-shveller/',
-		children: [{ label: 'По маркам', href: '/ugolok-shveller/' }],
+		children: [],
 	},
 	{
 		title: 'Рулон нержавеющий',
 		href: '/rulon/',
-		children: [{ label: 'Отдельная категория', href: '/rulon/' }],
+		children: [],
 	},
 	{
 		title: 'Фольга нержавеющая',
 		href: '/folga/',
-		children: [{ label: 'По маркам и толщинам', href: '/folga/' }],
+		children: [],
 	},
 	{
 		title: 'Детали трубопровода',
 		href: '/detali-truboprovoda/',
-		children: [
-			{ label: 'Фланцы', href: '/detali-truboprovoda/' },
-			{ label: 'Переходы', href: '/detali-truboprovoda/' },
-			{ label: 'Отводы', href: '/detali-truboprovoda/' },
-			{ label: 'Тройники', href: '/detali-truboprovoda/' },
-		],
+		children: [],
 	},
 	{
 		title: 'Проволока нержавеющая',
 		href: '/provoloka/',
-		children: [{ label: 'Отдельная категория', href: '/provoloka/' }],
+		children: [],
 	},
 ];
 
