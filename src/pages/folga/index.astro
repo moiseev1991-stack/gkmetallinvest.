@@ -5,29 +5,10 @@ import HubRequest from '../../components/HubRequest.astro';
 
 <CatalogHubTemplate
 	title="Фольга нержавеющая"
-	description="Нержавеющая фольга по маркам и толщинам. Категория без отдельной разбивки по ширинам."
+	description="Нержавеющая фольга по маркам и толщинам. Раздел в наполнении — наличие и цены по запросу."
 	h1="Фольга нержавеющая"
-	intro="Фольга вынесена в самостоятельную категорию. Внутри раздела акцент на марках и толщине материала."
+	intro=""
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Фольга нержавеющая' }]}
 >
 	<HubRequest what="Нержавеющая фольга" />
-	<section class="block">
-		<h2>Подбор</h2>
-		<ul class="list-plain">
-			<li>Подбор по марке стали</li>
-			<li>Подбор по диапазону толщин</li>
-			<li>Поставка под техническое задание</li>
-		</ul>
-	</section>
 </CatalogHubTemplate>
-
-<style>
-	.block {
-		margin-bottom: var(--space-8);
-	}
-	.list-plain {
-		margin: 0;
-		padding-left: 1.2rem;
-		color: var(--color-muted);
-	}
-</style>

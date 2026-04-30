@@ -5,30 +5,10 @@ import HubRequest from '../../components/HubRequest.astro';
 
 <CatalogHubTemplate
 	title="Рулон нержавеющий"
-	description="Нержавеющие рулоны 2B, BA, 4N. Перемотка, резка, плёнка, полировка. Поставка по России."
+	description="Нержавеющий рулон 2B, BA, 4N. Раздел в наполнении — наличие и цены по запросу."
 	h1="Рулон нержавеющий"
-	intro="Рулон выделен в самостоятельную товарную категорию и не входит в раздел листа."
+	intro=""
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Рулон' }]}
 >
 	<HubRequest what="Нержавеющий рулон" />
-	<section class="block">
-		<h2>Категория рулона</h2>
-		<p>Отдельная товарная категория рулонного нержавеющего проката.</p>
-	</section>
-	<section class="block">
-		<h2>Услуги для рулона</h2>
-		<p>
-			Подробная посадочная:
-			<a href="/uslugi/rezka-rulonov/">Продольная и поперечная резка рулонов</a>
-		</p>
-	</section>
 </CatalogHubTemplate>
-
-<style>
-	.block {
-		margin-bottom: var(--space-8);
-	}
-	.block p {
-		max-width: 65ch;
-	}
-</style>
