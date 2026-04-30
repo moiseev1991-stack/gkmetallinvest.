@@ -45,6 +45,120 @@ const roll = sku.roll ?? '';
 const titleParts = [hubLabel, sku.grade, sku.size ? `${sku.size} мм` : ''].filter(Boolean);
 const fullTitle = titleParts.join(' · ');
 
+/* ===== Computed metadata: aliases (AISI ↔ ГОСТ), composition, applications ===== */
+const GRADE_ALIASES: Record<string, string[]> = {
+	'AISI 304': ['08Х18Н10', '12Х18Н10'],
+	'AISI 304L': ['03Х18Н11'],
+	'AISI 316L': ['03Х17Н14М2'],
+	'AISI 316Ti': ['10Х17Н13М2Т'],
+	'AISI 321': ['12Х18Н10Т', '08Х18Н10Т'],
+	'AISI 430': ['08Х17', '12Х17'],
+	'AISI 201': ['12Х15Г9НД'],
+	'AISI 410': ['08Х13', '12Х13'],
+	'AISI 420': ['20Х13', '30Х13', '40Х13'],
+	'AISI 904L': ['06ХН28МДТ'],
+	'AISI 310S': ['20Х23Н18'],
+	'08Х18Н10': ['AISI 304'],
+	'12Х18Н10Т': ['AISI 321'],
+	'08Х18Н10Т': ['AISI 321'],
+	'03Х17Н14М2': ['AISI 316L'],
+	'10Х17Н13М2Т': ['AISI 316Ti'],
+	'08Х17': ['AISI 430'],
+	'20Х13': ['AISI 420'],
+	'06ХН28МДТ': ['AISI 904L'],
+	'20Х23Н18': ['AISI 310S'],
+};
+
+const GRADE_INFO: Record<string, { applications: string; props: string }> = {
+	'AISI 304': {
+		applications: 'Пищевая, фармацевтика, архитектура, ёмкости и трубопроводы.',
+		props: 'Аустенитная универсальная. Хорошо сваривается, штампуется, корроз­ионно­стойкая в большинстве сред.',
+	},
+	'AISI 316L': {
+		applications: 'Морская, химическая, фармацевтическая отрасли. Хлоридостойкая.',
+		props: 'Аустенитная с молибденом. Низкоуглеродистая (L) — стойкость к МКК после сварки.',
+	},
+	'AISI 321': {
+		applications: 'Высокотемпературные среды, тепло­обменники, ТЭЦ, химия.',
+		props: 'Аустенитная стабилизированная титаном. Рабочие температуры до 800 °C.',
+	},
+	'12Х18Н10Т': {
+		applications: 'Российский аналог AISI 321. Работа при высоких температурах, химоборудование.',
+		props: 'Аустенитная Cr-Ni-Ti. Гост 5632-72. До 800 °C, стойкость к МКК.',
+	},
+	'AISI 430': {
+		applications: 'Бытовая техника, отделка интерьера, посуда.',
+		props: 'Ферритная, экономичная, магнитная. Низкая ударная вязкость при минусе.',
+	},
+	'AISI 201': {
+		applications: 'Отделка, мебель, поручни, бюджетные конструкции.',
+		props: 'Аустенитная с пониженным никелем (Mn-замещение). Уступает 304 по коррозии.',
+	},
+	'AISI 420': {
+		applications: 'Ножи, лопатки турбин, режущий инструмент, медицинский инструмент.',
+		props: 'Мартенситная, закаливаемая. Высокая твёрдость после термообработки.',
+	},
+};
+
+/* Density / weight calculation per geometry. ρ = 7.9 г/см³ для нержавейки. */
+const RHO = 7.9; // g/cm³
+function fmtNum(n: number, digits = 2): string {
+	return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
+}
+
+let weightLine: { label: string; value: string } | null = null;
+if (sku.hub === 'list' && sku.size) {
+	const t = parseFloat(sku.size);
+	if (Number.isFinite(t) && t > 0) {
+		// Вес 1 м² = t (мм) × ρ (кг/м³) × 1м² = t × 7.9 кг/м²
+		const kgM2 = t * RHO;
+		weightLine = { label: 'Вес 1 м²', value: `${fmtNum(kgM2, 2)} кг` };
+	}
+}
+if (sku.hub === 'krug' && sku.size) {
+	const d = parseFloat(sku.size);
+	if (Number.isFinite(d) && d > 0) {
+		// круг: m = π × (d/2)² × ρ × 1000 (для d в мм, m в кг/м)
+		const kgM = (Math.PI * (d / 2) ** 2 * RHO) / 1000;
+		weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgM, 2)} кг` };
+	}
+}
+if (sku.hub === 'truba' && sku.size) {
+	// truba size: "Ø100.0 × 2"
+	const m = sku.size.match(/Ø?\s*([\d.]+)\s*×\s*([\d.]+)/);
+	if (m) {
+		const D = parseFloat(m[1]);
+		const w = parseFloat(m[2]);
+		if (Number.isFinite(D) && Number.isFinite(w) && D > 0 && w > 0 && w < D / 2) {
+			// труба: m = π × (D − w) × w × ρ × 1000 (D, w в мм; m в кг/м)
+			const kgM = (Math.PI * (D - w) * w * RHO) / 1000;
+			weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgM, 2)} кг` };
+		}
+	}
+}
+if (sku.hub === 'provoloka' && sku.size) {
+	const d = parseFloat(sku.size);
+	if (Number.isFinite(d) && d > 0) {
+		const kgM = (Math.PI * (d / 2) ** 2 * RHO) / 1000;
+		weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgM, 3)} кг` };
+	}
+}
+
+/* Aliases for the displayed grade (matches anywhere in the grade string) */
+const aliases: string[] = [];
+const gradeUp = sku.grade.toUpperCase();
+for (const [key, list] of Object.entries(GRADE_ALIASES)) {
+	if (gradeUp.includes(key.toUpperCase())) {
+		for (const alt of list) if (!gradeUp.includes(alt.toUpperCase())) aliases.push(alt);
+	}
+}
+const gradeMeta = (() => {
+	for (const key of Object.keys(GRADE_INFO)) {
+		if (gradeUp.includes(key.toUpperCase())) return GRADE_INFO[key];
+	}
+	return null;
+})();
+
 const description = `${hubLabel} ${sku.grade}${roll ? `, ${roll}` : ''}${surface ? `, ${surface}` : ''}${
 	sku.size ? `, ${measureLabel} ${sku.size} мм` : ''
 }. Цена ${sku.price ? `от ${new Intl.NumberFormat('ru-RU').format(sku.price)} ₽/${sku.unit}` : 'по запросу'}.`;
@@ -60,6 +174,8 @@ if (surface) detailRows.push({ label: 'Поверхность', value: surface }
 if (sku.alloy) detailRows.push({ label: 'Тип сплава', value: sku.alloy });
 if (sku.size) detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + measureLabel.slice(1), value: `${sku.size} мм` });
 detailRows.push({ label: 'Единица измерения', value: sku.unit });
+if (weightLine) detailRows.push(weightLine);
+if (aliases.length) detailRows.push({ label: 'Аналоги марки', value: aliases.join(', ') });
 
 // 6 близких позиций по той же марке/переделу
 const allSkus = (pricelist.hubs as any)[sku.hub] as SKU[];
@@ -135,6 +251,22 @@ const breadcrumbs = [
 				</ul>
 			</div>
 		</section>
+
+		{gradeMeta && (
+			<section class="grade-info">
+				<h2>О марке</h2>
+				<div class="grade-info__grid">
+					<div>
+						<h3>Свойства</h3>
+						<p>{gradeMeta.props}</p>
+					</div>
+					<div>
+						<h3>Применение</h3>
+						<p>{gradeMeta.applications}</p>
+					</div>
+				</div>
+			</section>
+		)}
 
 		{related.length > 0 && (
 			<section class="related">
@@ -330,6 +462,40 @@ const breadcrumbs = [
 		font-size: 0.94rem;
 		display: grid;
 		gap: var(--space-2);
+	}
+
+	.grade-info {
+		padding: var(--space-6);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--space-8);
+	}
+	.grade-info h2 {
+		font-size: 1.15rem;
+		margin: 0 0 var(--space-4);
+	}
+	.grade-info__grid {
+		display: grid;
+		gap: var(--space-5);
+		grid-template-columns: 1fr;
+	}
+	@media (min-width: 720px) {
+		.grade-info__grid { grid-template-columns: 1fr 1fr; }
+	}
+	.grade-info h3 {
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--color-subtle);
+		margin: 0 0 var(--space-2);
+	}
+	.grade-info p {
+		margin: 0;
+		color: var(--color-text);
+		font-size: 0.95rem;
+		line-height: 1.55;
 	}
 
 	.related {
