@@ -29,25 +29,12 @@ function uniq<T>(arr: T[]): T[] {
 	return [...new Set(arr)].filter((x) => x !== null && x !== undefined && x !== '') as T[];
 }
 
-const subCounts: Record<string, number> = {};
-for (const s of allSkus) subCounts[s.sub] = (subCounts[s.sub] || 0) + 1;
-const subTabs = Object.entries(subCounts)
-	.map(([sub, count]) => ({ sub, count, label: SUB_LABELS[sub] ?? sub }))
-	.sort((a, b) => b.count - a.count);
-
 const grades = uniq(allSkus.map((s) => s.grade)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
-const rolls = uniq(allSkus.map((s) => s.roll)) as string[];
 const surfaces = uniq(allSkus.map((s) => s.surface)) as string[];
 
-function fmtPrice(p: number | null) {
-	if (p == null) return null;
-	return new Intl.NumberFormat('ru-RU').format(p);
-}
-
 const PAGE_SIZE = 15;
-const showSubTabs = subTabs.length > 1;
 ---
 
 <section class="pt" data-hub={hub}>
@@ -61,21 +48,6 @@ const showSubTabs = subTabs.length > 1;
 		</div>
 		<span class="pt__count" data-pt-count>{allSkus.length} позиций</span>
 	</header>
-
-	{
-		showSubTabs && (
-			<nav class="pt__tabs" aria-label="Подкатегории">
-				<button type="button" class="pt__tab pt__tab--active" data-pt-tab="">
-					Все <span class="pt__tab-count">{allSkus.length}</span>
-				</button>
-				{subTabs.map((t) => (
-					<button type="button" class="pt__tab" data-pt-tab={t.sub}>
-						{t.label} <span class="pt__tab-count">{t.count}</span>
-					</button>
-				))}
-			</nav>
-		)
-	}
 
 	<div class="pt__filters">
 		<div class="pt__field pt__field--search">
@@ -91,18 +63,6 @@ const showSubTabs = subTabs.length > 1;
 				autocomplete="off"
 			/>
 		</div>
-		{
-			rolls.length > 1 && (
-				<div class="pt__field">
-					<select id={`${hub}-roll`} data-pt-roll aria-label="Передел">
-						<option value="">Передел: все</option>
-						{rolls.map((r) => (
-							<option value={r}>{r}</option>
-						))}
-					</select>
-				</div>
-			)
-		}
 		{
 			surfaces.length > 1 && (
 				<div class="pt__field">
@@ -153,16 +113,14 @@ const showSubTabs = subTabs.length > 1;
 		const pagesEl = root.querySelector('[data-pt-pages]');
 		const prevBtn = root.querySelector('[data-pt-prev]');
 		const nextBtn = root.querySelector('[data-pt-next]');
-		const tabs = Array.from(root.querySelectorAll('[data-pt-tab]'));
 
 		const inputs = {
 			q: root.querySelector('[data-pt-q]'),
-			roll: root.querySelector('[data-pt-roll]'),
 			surface: root.querySelector('[data-pt-surface]'),
 			grade: root.querySelector('[data-pt-grade]'),
 		};
 
-		const state = { sub: '', page: 1 };
+		const state = { page: 1 };
 
 		function escapeHtml(s) {
 			return String(s ?? '')
@@ -173,8 +131,6 @@ const showSubTabs = subTabs.length > 1;
 		}
 
 		function rowMatches(s, f) {
-			if (state.sub && s.sub !== state.sub) return false;
-			if (f.roll && (s.roll || '') !== f.roll) return false;
 			if (f.surface && (s.surface || '') !== f.surface) return false;
 			if (f.grade && s.grade !== f.grade) return false;
 			if (f.q) {
@@ -261,7 +217,6 @@ const showSubTabs = subTabs.length > 1;
 		function render() {
 			const f = {
 				q: (inputs.q?.value || '').trim().toLowerCase(),
-				roll: inputs.roll?.value || '',
 				surface: inputs.surface?.value || '',
 				grade: inputs.grade?.value || '',
 			};
@@ -279,10 +234,8 @@ const showSubTabs = subTabs.length > 1;
 			body.innerHTML = visible
 				.map((g) => {
 					const tags = [];
-					if (!state.sub) {
-						const subLabel = SUB_LABELS[g.sub] || g.sub;
-						if (subLabel) tags.push(escapeHtml(subLabel));
-					}
+					const subLabel = SUB_LABELS[g.sub] || g.sub;
+					if (subLabel) tags.push(escapeHtml(subLabel));
 					if (g.roll) tags.push(escapeHtml(g.roll));
 					if (g.surface) tags.push(escapeHtml(g.surface));
 					const tagsHtml = tags.length
@@ -333,16 +286,6 @@ const showSubTabs = subTabs.length > 1;
 			});
 		});
 
-		tabs.forEach((tab) => {
-			tab.addEventListener('click', () => {
-				const sub = tab.getAttribute('data-pt-tab') || '';
-				state.sub = sub;
-				state.page = 1;
-				tabs.forEach((t) => t.classList.toggle('pt__tab--active', t === tab));
-				render();
-			});
-		});
-
 		prevBtn?.addEventListener('click', () => {
 			if (state.page > 1) {
 				state.page--;
@@ -361,9 +304,7 @@ const showSubTabs = subTabs.length > 1;
 				if (!el) return;
 				el.value = '';
 			});
-			state.sub = '';
 			state.page = 1;
-			tabs.forEach((t, i) => t.classList.toggle('pt__tab--active', i === 0));
 			render();
 		});
 
