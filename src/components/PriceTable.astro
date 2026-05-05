@@ -242,21 +242,32 @@ const PAGE_SIZE = 15;
 						? `<div class="pt-card__tags">${tags.map((t) => `<span class="pt-card__tag">${t}</span>`).join('')}</div>`
 						: '';
 
-					// Render up to 24 size pills inline; if more, show a "+N" overflow.
+					// Render up to 24 size pills inline per group; if more, show a "+N" overflow.
 					const SHOW = 24;
-					const head = g.items.slice(0, SHOW);
-					const overflow = g.items.length - head.length;
-					const pills = head
-						.map((s) => {
-							const priceTooltip = s.price ? `${fmt(s.price)} ₽/${s.unit}` : 'по запросу';
-							return `<a class="pt-pill" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(priceTooltip)}">${escapeHtml(s.size)}<span class="pt-pill__suffix">мм</span></a>`;
-						})
-						.join('');
-					const overflowHtml = overflow > 0
-						? `<span class="pt-pill pt-pill--more">+${overflow}</span>`
-						: '';
+					const renderPill = (s) => {
+						const priceTooltip = s.price ? `${fmt(s.price)} ₽/${s.unit}` : 'по запросу';
+						return `<a class="pt-pill" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(priceTooltip)}">${escapeHtml(s.size)}<span class="pt-pill__suffix">мм</span></a>`;
+					};
+					const renderGroup = (label, items) => {
+						if (!items.length) return '';
+						const head = items.slice(0, SHOW);
+						const overflow = items.length - head.length;
+						const overflowHtml = overflow > 0 ? `<span class="pt-pill pt-pill--more">+${overflow}</span>` : '';
+						return `<div class="pt-card__sizes">
+							<span class="pt-card__sizes-label">${label} · ${items.length}</span>
+							<div class="pt-card__pills">${head.map(renderPill).join('')}${overflowHtml}</div>
+						</div>`;
+					};
 
-					const sizeWord = ['list'].includes(hub) ? 'Толщины' : (hub === 'truba' ? 'Размеры (Ø×стенка)' : 'Размеры');
+					let sizesHtml;
+					if (hub === 'truba') {
+						const dn = g.items.filter((s) => String(s.size).startsWith('Ø'));
+						const wall = g.items.filter((s) => !String(s.size).startsWith('Ø'));
+						sizesHtml = renderGroup('Ø × стенка', dn) + renderGroup('Толщина стенки', wall);
+					} else {
+						const label = hub === 'list' ? 'Толщины' : 'Размеры';
+						sizesHtml = renderGroup(label, g.items);
+					}
 
 					return `<article class="pt-card">
 						<header class="pt-card__head">
@@ -266,10 +277,7 @@ const PAGE_SIZE = 15;
 							</div>
 							<div class="pt-card__price">${priceLabel(g)}</div>
 						</header>
-						<div class="pt-card__sizes">
-							<span class="pt-card__sizes-label">${sizeWord} · ${g.items.length}</span>
-							<div class="pt-card__pills">${pills}${overflowHtml}</div>
-						</div>
+						${sizesHtml}
 					</article>`;
 				})
 				.join('');
