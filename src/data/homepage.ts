@@ -55,12 +55,12 @@ export const catalogCategories: Array<{
 	{ href: '/rulon/', title: 'Рулон нержавеющий', description: 'Рулонный прокат AISI 304, 316L, 321. Толщины 0,4–3 мм.', image: '/img/catalog/rulon/nikelesod.webp' },
 	{ href: '/detali-truboprovoda/', title: 'Детали трубопровода', description: 'Фланцы, отводы, переходы, тройники, задвижки, клапаны.', image: '/img/catalog/detali-truboprovoda/flanec.webp' },
 	{ href: '/provoloka/', title: 'Проволока нержавеющая', description: 'Проволока AISI 304, 316L, 12Х18Н10Т, Ø 0,1–6 мм.', image: '/img/catalog/provoloka/osnovnaya.webp' },
-	{ href: '/metizy/', title: 'Метизы / Крепёж', description: 'Болты, гайки, винты, шайбы DIN/ГОСТ. A2, A4.', image: null },
-	{ href: '/elektrody/', title: 'Электроды нержавеющие', description: 'ЦЛ-11, ЭА-400/10У, ОЗЛ-8 для нерж. и жаропрочных.', image: null },
-	{ href: '/podshipniki/', title: 'Подшипники нержавеющие', description: 'Шариковые, роликовые. AISI 440C, 316. По заявке.', image: null },
-	{ href: '/lenta/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: null },
-	{ href: '/folga/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: null },
-	{ href: '/dekorativnye-listy/', title: 'Декоративные листы', description: 'BA, 4N, шлифовка, ткань — для интерьера и фасадов.', image: null },
+	{ href: '/metizy/', title: 'Метизы / Крепёж', description: 'Болты, гайки, винты, шайбы DIN/ГОСТ. A2, A4.', image: '/img/catalog/metizy/cover.webp' },
+	{ href: '/elektrody/', title: 'Электроды нержавеющие', description: 'ЦЛ-11, ЭА-400/10У, ОЗЛ-8 для нерж. и жаропрочных.', image: '/img/catalog/elektrody/cover.webp' },
+	{ href: '/podshipniki/', title: 'Подшипники нержавеющие', description: 'Шариковые, роликовые. AISI 440C, 316. По заявке.', image: '/img/catalog/podshipniki/cover.webp' },
+	{ href: '/lenta/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: '/img/catalog/lenta/cover.webp' },
+	{ href: '/folga/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: '/img/catalog/folga/cover.webp' },
+	{ href: '/dekorativnye-listy/', title: 'Декоративные листы', description: 'BA, 4N, шлифовка, ткань — для интерьера и фасадов.', image: '/img/catalog/dekorativnye-listy/cover.webp' },
 ];
 
 /** Популярные направления */
