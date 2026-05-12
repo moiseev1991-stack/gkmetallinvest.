@@ -2,13 +2,29 @@
  *
  * В подпунктах оставляем только ссылки с уникальным href — иначе
  * получается «меню-обманка»: разные пункты ведут на один и тот же URL.
+ *
+ * Флаг `empty: true` — раздел существует, но прайса в нём нет
+ * (только заявка). Меню подсветит его приглушённо + бейдж «по запросу».
  */
-export const navCatalog = [
+export interface NavLink {
+	label: string;
+	href: string;
+	empty?: boolean;
+}
+
+export interface NavCol {
+	title: string;
+	href: string;
+	empty?: boolean;
+	children: NavLink[];
+}
+
+export const navCatalog: NavCol[] = [
 	{
 		title: 'Лист нержавеющий',
 		href: '/list/',
 		children: [
-			{ label: 'Декоративные листы', href: '/dekorativnye-listy/' },
+			{ label: 'Декоративные листы', href: '/dekorativnye-listy/', empty: true },
 			{ label: 'Перфорированный лист', href: '/uslugi/perforaciya-listov/' },
 			{ label: 'Рулон нержавеющий', href: '/rulon/' },
 		],
@@ -21,8 +37,9 @@ export const navCatalog = [
 	{
 		title: 'Лента нержавеющая',
 		href: '/lenta/',
+		empty: true,
 		children: [
-			{ label: 'Производство ленты / штрипса', href: '/lenta/proizvodstvo/' },
+			{ label: 'Производство ленты / штрипса', href: '/lenta/proizvodstvo/', empty: true },
 		],
 	},
 	{
@@ -48,6 +65,7 @@ export const navCatalog = [
 	{
 		title: 'Фольга нержавеющая',
 		href: '/folga/',
+		empty: true,
 		children: [],
 	},
 	{
@@ -63,16 +81,19 @@ export const navCatalog = [
 	{
 		title: 'Метизы / Крепёж',
 		href: '/metizy/',
+		empty: true,
 		children: [],
 	},
 	{
 		title: 'Электроды нержавеющие',
 		href: '/elektrody/',
+		empty: true,
 		children: [],
 	},
 	{
 		title: 'Подшипники нержавеющие',
 		href: '/podshipniki/',
+		empty: true,
 		children: [],
 	},
 ];
