@@ -60,6 +60,21 @@ export const navCatalog = [
 		href: '/provoloka/',
 		children: [],
 	},
+	{
+		title: 'Метизы / Крепёж',
+		href: '/metizy/',
+		children: [],
+	},
+	{
+		title: 'Электроды нержавеющие',
+		href: '/elektrody/',
+		children: [],
+	},
+	{
+		title: 'Подшипники нержавеющие',
+		href: '/podshipniki/',
+		children: [],
+	},
 ];
 
 export const navTop = [

@@ -1,14 +1,57 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
-import HubRequest from '../../components/HubRequest.astro';
+import PriceTable from '../../components/PriceTable.astro';
 ---
 
 <CatalogHubTemplate
-	title="Уголок и швеллер нержавеющий"
-	description="Нержавеющие уголок и швеллер по маркам стали. Раздел в наполнении — наличие и цены по запросу."
-	h1="Уголок / Швеллер"
-	intro=""
+	title="Уголок и швеллер нержавеющие — AISI 304, 316L, 12Х18Н10Т"
+	description="Уголок равнополочный 20×20…100×100 и швеллер №№ 8–20 из нержавеющей стали. AISI 304, 316L, 12Х18Н10Т. Резка в размер, доставка по России."
+	h1="Уголок / Швеллер нержавеющий"
+	intro="Сортовой нержавеющий профильный прокат для каркасов, опор и обвязок в коррозионно-стойком исполнении. Уголок равнополочный 20×20…100×100 мм и швеллер №№ 8, 10, 12, 14, 16, 18, 20. Стандартные длины 6 м, резка в размер по заявке. Никелесодержащие марки AISI 304, 316L, 12Х18Н10Т."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Уголок / Швеллер' }]}
 >
-	<HubRequest what="Уголок и швеллер нержавеющие" />
+	<PriceTable hub="ugolok-shveller" title="Прайс на уголок и швеллер" measure="размер" />
+
+	<section class="block">
+		<h2>Сортамент</h2>
+		<ul class="list-plain">
+			<li><strong>Уголок равнополочный</strong> — 20×20×3, 25×25×3, 32×32×3, 40×40×4, 50×50×5, 63×63×6, 75×75×6, 100×100×8</li>
+			<li><strong>Швеллер</strong> — №№ 8, 10, 12, 14, 16, 18, 20</li>
+			<li><strong>Длины</strong> — 6000 мм; резка в размер с шагом 1 мм по заявке</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Применение</h2>
+		<ul class="list-plain">
+			<li>Каркасы оборудования пищевой, фармацевтической промышленности</li>
+			<li>Опоры и стойки для трубопроводов в агрессивной среде</li>
+			<li>Архитектурные элементы — обвязки витражей, перил</li>
+			<li>Морские и прибрежные конструкции</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Документы и поставка</h2>
+		<ul class="list-plain">
+			<li>Сертификат завода — ГОСТ 8240 (швеллер), ГОСТ 8509 (уголок)</li>
+			<li>Резка в размер по чертежу или заявке</li>
+			<li>Отгрузка из Нижнего Новгорода</li>
+			<li>Доставка автотранспортом и ТК</li>
+		</ul>
+	</section>
 </CatalogHubTemplate>
+
+<style>
+	.block { margin-bottom: var(--space-8); }
+	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+		display: grid;
+		gap: var(--space-2);
+	}
+	.list-plain strong { color: var(--color-text); }
+</style>

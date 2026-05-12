@@ -14,7 +14,12 @@ interface SKU {
 	size: string;
 	unit: string;
 	price: number | null;
+	priceUnit?: number | null;
 	slug: string;
+	name?: string;
+	dlina?: string | null;
+	fact?: string | null;
+	ostatok?: number | null;
 }
 
 interface Props {
@@ -146,7 +151,7 @@ if (sku.hub === 'provoloka' && sku.size) {
 
 /* Aliases for the displayed grade (matches anywhere in the grade string) */
 const aliases: string[] = [];
-const gradeUp = sku.grade.toUpperCase();
+const gradeUp = (sku.grade || '').toUpperCase();
 for (const [key, list] of Object.entries(GRADE_ALIASES)) {
 	if (gradeUp.includes(key.toUpperCase())) {
 		for (const alt of list) if (!gradeUp.includes(alt.toUpperCase())) aliases.push(alt);
@@ -159,7 +164,7 @@ const gradeMeta = (() => {
 	return null;
 })();
 
-const description = `${hubLabel} ${sku.grade}${roll ? `, ${roll}` : ''}${surface ? `, ${surface}` : ''}${
+const description = `${hubLabel}${sku.grade ? ` ${sku.grade}` : ''}${roll ? `, ${roll}` : ''}${surface ? `, ${surface}` : ''}${
 	sku.size ? `, ${measureLabel} ${sku.size} мм` : ''
 }. Цена ${sku.price ? `от ${new Intl.NumberFormat('ru-RU').format(sku.price)} ₽/${sku.unit}` : 'по запросу'}.`;
 
@@ -173,9 +178,40 @@ if (roll) detailRows.push({ label: 'Передел', value: roll });
 if (surface) detailRows.push({ label: 'Поверхность', value: surface });
 if (sku.alloy) detailRows.push({ label: 'Тип сплава', value: sku.alloy });
 if (sku.size) detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + measureLabel.slice(1), value: `${sku.size} мм` });
+if (sku.dlina) detailRows.push({ label: 'Длина', value: `${sku.dlina} мм` });
 detailRows.push({ label: 'Единица измерения', value: sku.unit });
 if (weightLine) detailRows.push(weightLine);
+if (sku.fact) detailRows.push({ label: 'Склад', value: sku.fact });
+if (sku.ostatok != null) detailRows.push({ label: 'Остаток на складе', value: `${sku.ostatok} ${sku.unit}` });
 if (aliases.length) detailRows.push({ label: 'Аналоги марки', value: aliases.join(', ') });
+
+// Cross-sell: which obrabotki applicable to this hub
+const SERVICES_BY_HUB: Record<string, Array<{ href: string; label: string; desc: string }>> = {
+	list: [
+		{ href: '/uslugi/rezka-rulonov/', label: 'Резка в размер', desc: 'до 12 м, ±1 мм' },
+		{ href: '/uslugi/perforaciya-listov/', label: 'Перфорация', desc: 'круглая, щелевая, по чертежу' },
+		{ href: '/uslugi/polirovka/', label: 'Полировка', desc: 'до зеркала Ra ≤ 0,4 мкм' },
+	],
+	rulon: [
+		{ href: '/uslugi/rezka-rulonov/', label: 'Резка в лист', desc: 'до 12 м длиной' },
+		{ href: '/lenta/proizvodstvo/', label: 'Резка в штрипс', desc: 'шаг 5 мм, толщина до 4 мм' },
+	],
+	truba: [
+		{ href: '/uslugi/rezka-rulonov/', label: 'Резка в размер', desc: 'от 1 шт ±1 мм' },
+		{ href: '/uslugi/polirovka/', label: 'Полировка', desc: 'снаружи и внутри' },
+	],
+	krug: [
+		{ href: '/uslugi/rezka-rulonov/', label: 'Резка в заготовку', desc: 'дисковой и ленточной пилой' },
+	],
+	provoloka: [
+		{ href: '/uslugi/rezka-rulonov/', label: 'Перемотка с катушки', desc: 'на бухты от 1 кг' },
+	],
+};
+const services = SERVICES_BY_HUB[sku.hub] || [];
+
+// Category image (one per sub) — pre-uniqueized from mc.ru.
+const imgPath = `/img/catalog/${sku.hub}/${sku.sub}.webp`;
+const imgAlt = `${hubLabel} ${sku.grade || ''} ${sku.size ? sku.size + ' мм' : ''}`.trim();
 
 // 6 близких позиций по той же марке/переделу
 const allSkus = (pricelist.hubs as any)[sku.hub] as SKU[];
@@ -195,16 +231,37 @@ const breadcrumbs = [
 		<Breadcrumbs items={breadcrumbs} />
 
 		<header class="product__head">
+			<figure class="product__media">
+				<img
+					src={imgPath}
+					alt={imgAlt}
+					width="640"
+					height="640"
+					loading="eager"
+					onerror="this.style.display='none'; this.parentElement.classList.add('product__media--missing');"
+				/>
+				<figcaption class="product__media-caption">{hubLabel} · {subLabel}</figcaption>
+			</figure>
+
 			<div class="product__title-wrap">
 				<span class="product__eyebrow">{hubLabel} · {subLabel}</span>
 				<h1 class="product__title">
 					{sku.grade}
 					{sku.size && <span class="product__size">{sku.size} мм</span>}
 				</h1>
-				{(roll || surface) && (
+				{(roll || surface || sku.alloy) && (
 					<p class="product__tags">
 						{roll && <span class="tag">{roll}</span>}
 						{surface && <span class="tag tag--accent">{surface}</span>}
+						{sku.alloy && <span class="tag">{sku.alloy}</span>}
+					</p>
+				)}
+				{sku.fact && (
+					<p class="product__stock">
+						<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+							<circle cx="7" cy="7" r="3.5" fill="var(--color-success, #16a34a)" />
+						</svg>
+						В наличии — {sku.fact}{sku.ostatok != null && ` · ${sku.ostatok} ${sku.unit}`}
 					</p>
 				)}
 			</div>
@@ -212,9 +269,14 @@ const breadcrumbs = [
 			<aside class="product__price">
 				{sku.price ? (
 					<>
-						<span class="product__price-label">Цена</span>
+						<span class="product__price-label">Цена от 1 {sku.unit}</span>
 						<span class="product__price-value">{fmt(sku.price)} ₽</span>
 						<span class="product__price-unit">за {sku.unit} (с НДС)</span>
+						{sku.priceUnit != null && sku.priceUnit !== sku.price && (
+							<span class="product__price-retail">
+								Розница до 0,1 т · <strong>{fmt(sku.priceUnit)} ₽</strong>/{sku.unit}
+							</span>
+						)}
 					</>
 				) : (
 					<>
@@ -243,11 +305,37 @@ const breadcrumbs = [
 			<div>
 				<h2>Условия поставки</h2>
 				<ul class="conditions">
-					<li>Отгрузка со склада в Нижнем Новгороде</li>
-					<li>Доставка по России — авто, ЖД, ТК</li>
-					<li>Сертификаты качества и паспорта на металл</li>
-					<li>Резка в размер, перфорация, полировка — по запросу</li>
-					<li>Цена ориентировочная на {pricelist.updatedAt}, актуализируется на момент заказа</li>
+					<li>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<rect x="1" y="3" width="15" height="13" rx="1" />
+							<path d="M16 8h4l3 3v5h-7" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+						</svg>
+						<span>Отгрузка со склада в Нижнем Новгороде в день оплаты</span>
+					</li>
+					<li>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
+						</svg>
+						<span>Доставка по России — авто, ж/д контейнеры, ТК</span>
+					</li>
+					<li>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M9 13l2 2 4-4" />
+						</svg>
+						<span>Сертификат завода и паспорт качества на каждую партию</span>
+					</li>
+					<li>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
+						</svg>
+						<span>Резка в размер, перфорация, полировка — по запросу</span>
+					</li>
+					<li>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+						</svg>
+						<span>Цена актуальна на {pricelist.updatedAt}, фиксируется в КП на 5 рабочих дней</span>
+					</li>
 				</ul>
 			</div>
 		</section>
@@ -268,17 +356,43 @@ const breadcrumbs = [
 			</section>
 		)}
 
+		{services.length > 0 && (
+			<section class="services">
+				<h2>Услуги по этой позиции</h2>
+				<div class="services__grid">
+					{services.map((s) => (
+						<a class="services__card" href={s.href}>
+							<span class="services__title">{s.label}</span>
+							<span class="services__desc">{s.desc}</span>
+							<span class="services__arrow" aria-hidden="true">→</span>
+						</a>
+					))}
+				</div>
+			</section>
+		)}
+
 		{related.length > 0 && (
 			<section class="related">
 				<h2>Похожие позиции — {sku.grade}{roll && `, ${roll}`}</h2>
 				<div class="related__grid">
 					{related.map((r) => (
 						<a class="related__card" href={`${hubHref}${r.slug}/`}>
-							<span class="related__title">{r.grade}{r.size && ` · ${r.size} мм`}</span>
-							<span class="related__meta">{SUB_LABELS[r.sub] ?? r.sub}{r.surface && ` · ${r.surface}`}</span>
-							<span class="related__price">
-								{r.price ? `${fmt(r.price)} ₽/${r.unit}` : 'по запросу'}
-							</span>
+							<img
+								class="related__img"
+								src={`/img/catalog/${r.hub}/${r.sub}.webp`}
+								alt={`${r.grade} ${r.size || ''}`.trim()}
+								width="120"
+								height="120"
+								loading="lazy"
+								onerror="this.style.display='none';"
+							/>
+							<div class="related__body">
+								<span class="related__title">{r.grade}{r.size && ` · ${r.size} мм`}</span>
+								<span class="related__meta">{SUB_LABELS[r.sub] ?? r.sub}{r.surface && ` · ${r.surface}`}</span>
+								<span class="related__price">
+									{r.price ? `${fmt(r.price)} ₽/${r.unit}` : 'по запросу'}
+								</span>
+							</div>
 						</a>
 					))}
 				</div>
@@ -309,11 +423,72 @@ const breadcrumbs = [
 		border-radius: var(--radius-md);
 		margin-bottom: var(--space-8);
 	}
-	@media (min-width: 720px) {
+	@media (min-width: 900px) {
 		.product__head {
-			grid-template-columns: 1fr auto;
+			grid-template-columns: 280px 1fr 260px;
 			align-items: start;
 		}
+	}
+	.product__media {
+		margin: 0;
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		background: var(--color-bg-elev, #f5f5f7);
+		border: 1px solid var(--color-border);
+		aspect-ratio: 1 / 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+	}
+	.product__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.product__media--missing::before {
+		content: '🔩';
+		font-size: 4rem;
+		opacity: 0.25;
+	}
+	.product__media-caption {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 0.4rem 0.7rem;
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #fff;
+		background: linear-gradient(0deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 100%);
+		line-height: 1.3;
+	}
+	.product__stock {
+		margin: var(--space-3) 0 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.88rem;
+		font-weight: 500;
+		color: var(--color-text);
+		background: var(--color-success-50, #f0fdf4);
+		border: 1px solid var(--color-success-100, #dcfce7);
+		padding: 0.35rem 0.7rem;
+		border-radius: var(--radius-pill);
+	}
+	.product__price-retail {
+		display: block;
+		margin-top: 0.5rem;
+		font-size: 0.82rem;
+		color: var(--color-muted);
+	}
+	.product__price-retail strong {
+		color: var(--color-text);
+		font-weight: 700;
+		font-family: var(--font-mono);
 	}
 	.product__eyebrow {
 		display: block;
@@ -457,11 +632,23 @@ const breadcrumbs = [
 	}
 	.conditions {
 		margin: 0;
-		padding-left: 1.2rem;
+		padding: 0;
+		list-style: none;
 		color: var(--color-muted);
 		font-size: 0.94rem;
 		display: grid;
-		gap: var(--space-2);
+		gap: var(--space-3);
+	}
+	.conditions li {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+		line-height: 1.45;
+	}
+	.conditions svg {
+		flex: 0 0 20px;
+		margin-top: 2px;
+		color: var(--color-primary-500);
 	}
 
 	.grade-info {
@@ -498,6 +685,53 @@ const breadcrumbs = [
 		line-height: 1.55;
 	}
 
+	.services {
+		margin-bottom: var(--space-8);
+	}
+	.services h2 {
+		font-size: 1.15rem;
+		margin: 0 0 var(--space-4);
+	}
+	.services__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: var(--space-3);
+	}
+	.services__card {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-rows: auto auto;
+		gap: 0.2rem 0.5rem;
+		padding: var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		text-decoration: none;
+		color: inherit;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.services__card:hover {
+		border-color: var(--color-primary-500);
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-sm);
+	}
+	.services__title {
+		font-weight: 600;
+		font-size: 0.98rem;
+		color: var(--color-text);
+	}
+	.services__desc {
+		grid-column: 1 / -1;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+	}
+	.services__arrow {
+		color: var(--color-primary-500);
+		font-size: 1.1rem;
+		font-weight: 700;
+		justify-self: end;
+	}
+
 	.related {
 		margin-bottom: var(--space-8);
 	}
@@ -512,15 +746,30 @@ const breadcrumbs = [
 	}
 	.related__card {
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-		padding: var(--space-4);
+		flex-direction: row;
+		gap: var(--space-3);
+		padding: var(--space-3);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
 		text-decoration: none;
 		color: inherit;
 		transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+	}
+	.related__img {
+		flex: 0 0 64px;
+		width: 64px;
+		height: 64px;
+		object-fit: cover;
+		border-radius: var(--radius-sm);
+		background: var(--color-bg-elev, #f5f5f7);
+	}
+	.related__body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		min-width: 0;
+		flex: 1;
 	}
 	.related__card:hover {
 		border-color: var(--color-primary-500);

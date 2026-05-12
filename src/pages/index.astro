@@ -29,11 +29,17 @@ import {
 } from '../data/homepage';
 import pricelist from '../data/pricelist.json';
 
-const totalSkus = Object.values(pricelist.stats).reduce((s: number, x: any) => s + x.total, 0);
+const totalSkus = Object.values(pricelist.hubs as Record<string, Array<any>>)
+	.reduce((s, arr) => s + arr.length, 0);
 const totalGrades = new Set<string>();
 for (const hub of Object.values(pricelist.hubs as Record<string, Array<any>>)) {
-	for (const sku of hub) totalGrades.add(sku.grade);
+	for (const sku of hub) if (sku.grade) totalGrades.add(sku.grade);
 }
+// Format pricelist.updatedAt (YYYY-MM-DD) → DD.MM.YYYY for the hero pill
+const priceUpdatedDisplay = (() => {
+	const m = String(pricelist.updatedAt || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+	return m ? `${m[3]}.${m[2]}.${m[1]}` : String(pricelist.updatedAt || '');
+})();
 
 const PLACEHOLDER_PRODUCT = '/img/placeholder-product.svg';
 const PLACEHOLDER_TEAM = '/img/team/team.jpg';
@@ -53,7 +59,7 @@ const PLACEHOLDER_TK = '/img/placeholder-tk-logo.svg';
 			<div class="hero__copy">
 				<span class="hero__pill">
 					<span class="hero__pill-dot" aria-hidden="true"></span>
-					Прайс обновлён 15.04.2026 · {totalSkus.toLocaleString('ru')} позиций
+					Прайс обновлён {priceUpdatedDisplay} · {totalSkus.toLocaleString('ru')} позиций
 				</span>
 				<h1 id="hero-title" class="hero__h1">
 					Нержавеющий <span class="hero__h1-accent">металлопрокат</span><br />

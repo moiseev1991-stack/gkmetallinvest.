@@ -2,7 +2,17 @@
 import pricelist from '../data/pricelist.json';
 
 interface Props {
-	hub: 'list' | 'krug' | 'provoloka' | 'detali-truboprovoda' | 'truba';
+	hub:
+		| 'list'
+		| 'krug'
+		| 'provoloka'
+		| 'detali-truboprovoda'
+		| 'truba'
+		| 'polosa'
+		| 'ugolok-shveller'
+		| 'podshipniki'
+		| 'rulon'
+		| 'elektrody';
 	title?: string;
 	measure?: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
 }
@@ -21,8 +31,25 @@ const SUB_LABELS: Record<string, string> = {
 	osnovnaya: 'Проволока',
 	flanec: 'Фланцы',
 	otvod: 'Отводы',
+	troynik: 'Тройники',
+	perehod: 'Переходы',
+	zaglushka: 'Заглушки',
+	zadvizhka: 'Задвижки',
+	shtutser: 'Штуцеры',
+	klapan: 'Клапаны и затворы',
+	prochee: 'Прочее',
+	lestnichnye: 'Лестничные ограждения',
 	elsvarnaya: 'Электросварная',
+	'elsvarnaya-kvadrat': 'Электросварная квадратная',
+	'elsvarnaya-pryamougolnaya': 'Электросварная прямоугольная',
 	besshovnaya: 'Бесшовная',
+	perforirovannaya: 'Перфорированная',
+	duplex: 'Duplex',
+	profnastil: 'Профнастил',
+	pvl: 'ПВЛ',
+	ugolok: 'Уголок',
+	shveller: 'Швеллер',
+	krepyozh: 'Крепёж',
 };
 
 function uniq<T>(arr: T[]): T[] {
@@ -32,9 +59,12 @@ function uniq<T>(arr: T[]): T[] {
 const grades = uniq(allSkus.map((s) => s.grade)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
-const surfaces = uniq(allSkus.map((s) => s.surface)) as string[];
+const facts = uniq(allSkus.map((s) => s.fact)).sort((a: any, b: any) =>
+	String(a).localeCompare(String(b), 'ru'),
+);
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 50;
+const unitDefault = allSkus[0]?.unit ?? 'т';
 ---
 
 <section class="pt" data-hub={hub}>
@@ -42,8 +72,8 @@ const PAGE_SIZE = 15;
 		<div>
 			<h2 class="pt__title">{title}</h2>
 			<p class="pt__sub">
-				Цены ориентировочные на {pricelist.updatedAt}. До тонны — указано с наценкой,
-				объём от тонны — выгоднее, уточняйте у менеджера.
+				Цены с наценкой 5% на {pricelist.updatedAt}. Цены ориентировочные — наличие
+				и финальную цену уточняйте у менеджера.
 			</p>
 		</div>
 		<span class="pt__count" data-pt-count>{allSkus.length} позиций</span>
@@ -64,18 +94,6 @@ const PAGE_SIZE = 15;
 			/>
 		</div>
 		{
-			surfaces.length > 1 && (
-				<div class="pt__field">
-					<select id={`${hub}-surface`} data-pt-surface aria-label="Поверхность">
-						<option value="">Поверхность: все</option>
-						{surfaces.map((s) => (
-							<option value={s}>{s}</option>
-						))}
-					</select>
-				</div>
-			)
-		}
-		{
 			grades.length > 1 && (
 				<div class="pt__field">
 					<select id={`${hub}-grade`} data-pt-grade aria-label="Марка">
@@ -87,10 +105,48 @@ const PAGE_SIZE = 15;
 				</div>
 			)
 		}
+		{
+			facts.length > 1 && (
+				<div class="pt__field">
+					<select id={`${hub}-fact`} data-pt-fact aria-label="Склад">
+						<option value="">Склад: все</option>
+						{facts.map((f) => (
+							<option value={f}>{f}</option>
+						))}
+					</select>
+				</div>
+			)
+		}
 		<button type="button" class="pt__reset" data-pt-reset>Сбросить</button>
 	</div>
 
-	<div class="pt__list" data-pt-body></div>
+	<div class="pt__table-wrap">
+		<table class="pt__table">
+			<colgroup>
+				<col class="pt__col-name" />
+				<col class="pt__col-size" />
+				<col class="pt__col-grade" />
+				<col class="pt__col-len" />
+				<col class="pt__col-fact" />
+				<col class="pt__col-price" />
+				<col class="pt__col-price" />
+				<col class="pt__col-act" />
+			</colgroup>
+			<thead>
+				<tr>
+					<th class="pt__th" data-sort="name">Продукция</th>
+					<th class="pt__th pt__th--num" data-sort="size">{measure === 'Ø × стенка' ? 'Ø × ст.' : 'Размер'}</th>
+					<th class="pt__th" data-sort="grade">Марка</th>
+					<th class="pt__th pt__th--num">Длина</th>
+					<th class="pt__th">Склад</th>
+					<th class="pt__th pt__th--price" data-sort="priceUnit">Цена ₽/{unitDefault}</th>
+					<th class="pt__th pt__th--price" data-sort="price">Цена ₽/{unitDefault} от 1т</th>
+					<th class="pt__th"></th>
+				</tr>
+			</thead>
+			<tbody data-pt-body></tbody>
+		</table>
+	</div>
 
 	<div class="pt__pager" data-pt-pager hidden>
 		<button type="button" class="pt__page-btn" data-pt-prev aria-label="Предыдущая страница">‹</button>
@@ -116,11 +172,11 @@ const PAGE_SIZE = 15;
 
 		const inputs = {
 			q: root.querySelector('[data-pt-q]'),
-			surface: root.querySelector('[data-pt-surface]'),
 			grade: root.querySelector('[data-pt-grade]'),
+			fact: root.querySelector('[data-pt-fact]'),
 		};
 
-		const state = { page: 1 };
+		const state = { page: 1, sortKey: null, sortDir: 'asc' };
 
 		function escapeHtml(s) {
 			return String(s ?? '')
@@ -130,26 +186,43 @@ const PAGE_SIZE = 15;
 				.replace(/"/g, '&quot;');
 		}
 
+		function sizeNum(s) {
+			const m = String(s ?? '').match(/-?\d+(?:[.,]\d+)?/);
+			return m ? parseFloat(m[0].replace(',', '.')) : NaN;
+		}
+
 		function rowMatches(s, f) {
-			if (f.surface && (s.surface || '') !== f.surface) return false;
 			if (f.grade && s.grade !== f.grade) return false;
+			if (f.fact && (s.fact || '') !== f.fact) return false;
 			if (f.q) {
-				const hay = `${s.grade} ${SUB_LABELS[s.sub] || s.sub} ${s.roll || ''} ${s.surface || ''} ${s.size}`.toLowerCase();
+				const hay = `${s.name || ''} ${s.grade || ''} ${SUB_LABELS[s.sub] || s.sub || ''} ${s.roll || ''} ${s.surface || ''} ${s.size || ''}`.toLowerCase();
 				if (!hay.includes(f.q)) return false;
 			}
 			return true;
 		}
 
+		function sortRows(rows) {
+			if (!state.sortKey) return rows;
+			const dir = state.sortDir === 'asc' ? 1 : -1;
+			const key = state.sortKey;
+			return [...rows].sort((a, b) => {
+				let va = a[key];
+				let vb = b[key];
+				if (key === 'size') { va = sizeNum(va); vb = sizeNum(vb); }
+				if (typeof va === 'number' || typeof vb === 'number') {
+					if (va == null || Number.isNaN(va)) return 1;
+					if (vb == null || Number.isNaN(vb)) return -1;
+					return (va - vb) * dir;
+				}
+				return String(va ?? '').localeCompare(String(vb ?? ''), 'ru') * dir;
+			});
+		}
+
 		function buildPager(totalPages, current) {
-			if (totalPages <= 1) {
-				pager.hidden = true;
-				return;
-			}
+			if (totalPages <= 1) { pager.hidden = true; return; }
 			pager.hidden = false;
 			prevBtn.disabled = current <= 1;
 			nextBtn.disabled = current >= totalPages;
-
-			// Compact pager: 1 … (cur-1) cur (cur+1) … last
 			const pages = new Set([1, totalPages, current, current - 1, current + 1]);
 			const sorted = [...pages].filter((n) => n >= 1 && n <= totalPages).sort((a, b) => a - b);
 			let html = '';
@@ -169,150 +242,73 @@ const PAGE_SIZE = 15;
 			});
 		}
 
-		function groupSkus(skus) {
-			const groups = new Map();
-			for (const s of skus) {
-				const key = `${s.grade}|${s.roll || ''}|${s.surface || ''}|${s.sub}`;
-				let g = groups.get(key);
-				if (!g) {
-					g = {
-						grade: s.grade,
-						roll: s.roll,
-						surface: s.surface,
-						sub: s.sub,
-						unit: s.unit,
-						items: [],
-						minPrice: Infinity,
-						maxPrice: -Infinity,
-					};
-					groups.set(key, g);
-				}
-				g.items.push(s);
-				if (s.price != null) {
-					if (s.price < g.minPrice) g.minPrice = s.price;
-					if (s.price > g.maxPrice) g.maxPrice = s.price;
-				}
-			}
-			// Sort each group's items by numeric size
-			for (const g of groups.values()) {
-				g.items.sort((a, b) => {
-					const na = parseFloat(String(a.size).replace(/^Ø/, '').replace(/×.*/, ''));
-					const nb = parseFloat(String(b.size).replace(/^Ø/, '').replace(/×.*/, ''));
-					return (Number.isFinite(na) ? na : 0) - (Number.isFinite(nb) ? nb : 0);
-				});
-			}
-			return [...groups.values()];
-		}
-
-		function priceLabel(g) {
-			if (!Number.isFinite(g.minPrice)) {
-				return '<span class="pt__on-request">по запросу</span>';
-			}
-			if (g.minPrice === g.maxPrice) {
-				return `<strong>${fmt(g.minPrice)}</strong> <span class="pt__unit">₽/${escapeHtml(g.unit)}</span>`;
-			}
-			return `<strong>${fmt(g.minPrice)}–${fmt(g.maxPrice)}</strong> <span class="pt__unit">₽/${escapeHtml(g.unit)}</span>`;
+		function renderRow(s) {
+			const name = s.name || `${SUB_LABELS[s.sub] || s.sub || ''} ${s.grade || ''}`.trim();
+			const priceUnit = s.priceUnit != null ? `<strong>${fmt(s.priceUnit)}</strong>` : '<span class="pt__on-request">по запросу</span>';
+			const price = s.price != null ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
+			const sizeSuffix = String(s.size).startsWith('Ø') ? '' : ' <span class="pt__unit-suffix">мм</span>';
+			return `<tr class="pt__row">
+				<td class="pt__cell-name"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/">${escapeHtml(name)}</a></td>
+				<td class="pt__cell-num">${escapeHtml(s.size)}${sizeSuffix}</td>
+				<td class="pt__cell-grade">${escapeHtml(s.grade || '—')}</td>
+				<td class="pt__cell-num pt__cell-muted">${escapeHtml(s.dlina || '—')}</td>
+				<td class="pt__cell-fact">${escapeHtml(s.fact || '—')}${s.ostatok ? `<span class="pt__ost">остаток: ${s.ostatok}</span>` : ''}</td>
+				<td class="pt__cell-price">${priceUnit}</td>
+				<td class="pt__cell-price pt__cell-price--accent">${price}</td>
+				<td class="pt__cell-act"><a class="pt__cta" href="/zapros-kp/#lead-form?sku=${encodeURIComponent(s.slug)}" aria-label="Запросить КП">→</a></td>
+			</tr>`;
 		}
 
 		function render() {
 			const f = {
 				q: (inputs.q?.value || '').trim().toLowerCase(),
-				surface: inputs.surface?.value || '',
 				grade: inputs.grade?.value || '',
+				fact: inputs.fact?.value || '',
 			};
-			const filtered = allSkus.filter((s) => rowMatches(s, f));
-			const groups = groupSkus(filtered);
+			const filtered = sortRows(allSkus.filter((s) => rowMatches(s, f)));
 
-			const totalPages = Math.max(1, Math.ceil(groups.length / PAGE_SIZE));
+			const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 			if (state.page > totalPages) state.page = totalPages;
 			const start = (state.page - 1) * PAGE_SIZE;
-			const visible = groups.slice(start, start + PAGE_SIZE);
+			const visible = filtered.slice(start, start + PAGE_SIZE);
 
-			countEl.textContent = `${filtered.length} позиций · ${groups.length} групп`;
+			countEl.textContent = `${filtered.length} позиций`;
 			emptyEl.hidden = filtered.length > 0;
-
-			body.innerHTML = visible
-				.map((g) => {
-					const tags = [];
-					const subLabel = SUB_LABELS[g.sub] || g.sub;
-					if (subLabel) tags.push(escapeHtml(subLabel));
-					if (g.roll) tags.push(escapeHtml(g.roll));
-					if (g.surface) tags.push(escapeHtml(g.surface));
-					const tagsHtml = tags.length
-						? `<div class="pt-card__tags">${tags.map((t) => `<span class="pt-card__tag">${t}</span>`).join('')}</div>`
-						: '';
-
-					// Render up to 24 size pills inline per group; if more, show a "+N" overflow.
-					const SHOW = 24;
-					const renderPill = (s) => {
-						const priceTooltip = s.price ? `${fmt(s.price)} ₽/${s.unit}` : 'по запросу';
-						return `<a class="pt-pill" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(priceTooltip)}">${escapeHtml(s.size)}<span class="pt-pill__suffix">мм</span></a>`;
-					};
-					const renderGroup = (label, items) => {
-						if (!items.length) return '';
-						const head = items.slice(0, SHOW);
-						const overflow = items.length - head.length;
-						const overflowHtml = overflow > 0 ? `<span class="pt-pill pt-pill--more">+${overflow}</span>` : '';
-						return `<div class="pt-card__sizes">
-							<span class="pt-card__sizes-label">${label} · ${items.length}</span>
-							<div class="pt-card__pills">${head.map(renderPill).join('')}${overflowHtml}</div>
-						</div>`;
-					};
-
-					let sizesHtml;
-					if (hub === 'truba') {
-						const dn = g.items.filter((s) => String(s.size).startsWith('Ø'));
-						const wall = g.items.filter((s) => !String(s.size).startsWith('Ø'));
-						sizesHtml = renderGroup('Ø × стенка', dn) + renderGroup('Толщина стенки', wall);
-					} else {
-						const label = hub === 'list' ? 'Толщины' : 'Размеры';
-						sizesHtml = renderGroup(label, g.items);
-					}
-
-					return `<article class="pt-card">
-						<header class="pt-card__head">
-							<div>
-								<h3 class="pt-card__grade">${escapeHtml(g.grade)}</h3>
-								${tagsHtml}
-							</div>
-							<div class="pt-card__price">${priceLabel(g)}</div>
-						</header>
-						${sizesHtml}
-					</article>`;
-				})
-				.join('');
-
+			body.innerHTML = visible.map(renderRow).join('');
 			buildPager(totalPages, state.page);
+
+			root.querySelectorAll('[data-sort]').forEach((th) => {
+				const key = th.getAttribute('data-sort');
+				th.classList.toggle('pt__th--sorted', state.sortKey === key);
+				th.classList.toggle('pt__th--asc', state.sortKey === key && state.sortDir === 'asc');
+				th.classList.toggle('pt__th--desc', state.sortKey === key && state.sortDir === 'desc');
+			});
 		}
 
-		Object.values(inputs).forEach((el) => {
-			if (!el) return;
-			const ev = el.tagName === 'SELECT' ? 'change' : 'input';
-			el.addEventListener(ev, () => {
+		root.querySelectorAll('[data-sort]').forEach((th) => {
+			th.addEventListener('click', () => {
+				const key = th.getAttribute('data-sort');
+				if (state.sortKey === key) {
+					state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+				} else {
+					state.sortKey = key;
+					state.sortDir = 'asc';
+				}
 				state.page = 1;
 				render();
 			});
 		});
 
-		prevBtn?.addEventListener('click', () => {
-			if (state.page > 1) {
-				state.page--;
-				render();
-				root.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			}
+		Object.values(inputs).forEach((el) => {
+			if (!el) return;
+			const ev = el.tagName === 'SELECT' ? 'change' : 'input';
+			el.addEventListener(ev, () => { state.page = 1; render(); });
 		});
-		nextBtn?.addEventListener('click', () => {
-			state.page++;
-			render();
-			root.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		});
-
+		prevBtn?.addEventListener('click', () => { if (state.page > 1) { state.page--; render(); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+		nextBtn?.addEventListener('click', () => { state.page++; render(); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
 		resetBtn?.addEventListener('click', () => {
-			Object.values(inputs).forEach((el) => {
-				if (!el) return;
-				el.value = '';
-			});
-			state.page = 1;
+			Object.values(inputs).forEach((el) => { if (el) el.value = ''; });
+			state.sortKey = null; state.sortDir = 'asc'; state.page = 1;
 			render();
 		});
 
@@ -321,9 +317,7 @@ const PAGE_SIZE = 15;
 </script>
 
 <style is:global>
-	.pt {
-		margin-block: var(--space-8);
-	}
+	.pt { margin-block: var(--space-8); }
 	.pt__head {
 		display: flex;
 		align-items: end;
@@ -332,17 +326,8 @@ const PAGE_SIZE = 15;
 		flex-wrap: wrap;
 		margin-bottom: var(--space-5);
 	}
-	.pt__title {
-		margin: 0 0 var(--space-1);
-		font-size: 1.4rem;
-		letter-spacing: -0.015em;
-	}
-	.pt__sub {
-		margin: 0;
-		font-size: 0.88rem;
-		color: var(--color-muted);
-		max-width: 60ch;
-	}
+	.pt__title { margin: 0 0 var(--space-1); font-size: 1.4rem; letter-spacing: -0.015em; }
+	.pt__sub { margin: 0; font-size: 0.88rem; color: var(--color-muted); max-width: 60ch; }
 	.pt__count {
 		font-family: var(--font-mono);
 		font-size: 0.82rem;
@@ -354,49 +339,6 @@ const PAGE_SIZE = 15;
 		white-space: nowrap;
 	}
 
-	/* Subcategory tabs */
-	.pt__tabs {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-2);
-		margin-bottom: var(--space-4);
-		padding-bottom: var(--space-3);
-		border-bottom: 1px solid var(--color-border);
-	}
-	.pt__tab {
-		font: inherit;
-		font-size: 0.92rem;
-		font-weight: 500;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5em;
-		padding: 0.55rem 0.95rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-pill);
-		color: var(--color-text);
-		cursor: pointer;
-		transition: all var(--dur-fast) var(--ease-out);
-	}
-	.pt__tab:hover {
-		border-color: var(--color-primary-500);
-		color: var(--color-primary-600);
-	}
-	.pt__tab--active {
-		background: var(--color-primary-500);
-		border-color: var(--color-primary-500);
-		color: var(--color-on-dark);
-	}
-	.pt__tab--active:hover {
-		color: var(--color-on-dark);
-	}
-	.pt__tab-count {
-		font-family: var(--font-mono);
-		font-size: 0.78rem;
-		opacity: 0.8;
-	}
-
-	/* Filters bar */
 	.pt__filters {
 		display: flex;
 		flex-wrap: wrap;
@@ -404,15 +346,8 @@ const PAGE_SIZE = 15;
 		align-items: stretch;
 		margin-bottom: var(--space-4);
 	}
-	.pt__field {
-		display: flex;
-		align-items: stretch;
-		min-width: 0;
-	}
-	.pt__field--search {
-		flex: 1 1 280px;
-		position: relative;
-	}
+	.pt__field { display: flex; align-items: stretch; min-width: 0; }
+	.pt__field--search { flex: 1 1 280px; position: relative; }
 	.pt__search-icon {
 		position: absolute;
 		left: 0.85rem;
@@ -421,10 +356,7 @@ const PAGE_SIZE = 15;
 		color: var(--color-subtle);
 		pointer-events: none;
 	}
-	.pt__field--search input {
-		width: 100%;
-		padding-left: 2.4rem;
-	}
+	.pt__field--search input { width: 100%; padding-left: 2.4rem; }
 	.pt__field input,
 	.pt__field select {
 		font: inherit;
@@ -457,326 +389,120 @@ const PAGE_SIZE = 15;
 		transition: all var(--dur-fast) var(--ease-out);
 		white-space: nowrap;
 	}
-	.pt__reset:hover {
-		border-color: var(--color-accent);
-		color: var(--color-accent);
-	}
+	.pt__reset:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
-	/* Catalog card list */
-	.pt__list {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: var(--space-3);
-	}
-	.pt-card {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: var(--space-4);
-		padding: 1.4rem 1.6rem;
-		background: var(--color-surface);
+	/* Flat table — like mc.ru */
+	.pt__table-wrap {
+		overflow-x: auto;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
+		background: var(--color-surface);
 		box-shadow: var(--shadow-xs);
-		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
-	}
-	.pt-card:hover {
-		border-color: var(--color-primary-500);
-		box-shadow: var(--shadow-md);
-	}
-	.pt-card__head {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: var(--space-4);
-		flex-wrap: wrap;
-		padding-bottom: 1rem;
-		border-bottom: 1px solid var(--color-border);
-	}
-	.pt-card__grade {
-		margin: 0 0 0.4rem;
-		font-size: 1.25rem;
-		font-weight: 700;
-		letter-spacing: -0.015em;
-		color: var(--color-text);
-		line-height: 1.2;
-	}
-	.pt-card__tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-	}
-	.pt-card__tag {
-		display: inline-block;
-		font-size: 0.78rem;
-		font-weight: 500;
-		padding: 0.2rem 0.65rem;
-		background: var(--color-steel-100);
-		color: var(--color-steel);
-		border-radius: var(--radius-pill);
-	}
-	.pt-card__price {
-		text-align: right;
-		font-family: var(--font-mono);
-		white-space: nowrap;
-		font-variant-numeric: tabular-nums;
-	}
-	.pt-card__price strong {
-		display: inline-block;
-		font-weight: 800;
-		color: var(--color-text);
-		font-size: 1.3rem;
-		letter-spacing: -0.015em;
-	}
-	.pt-card__sizes {
-		display: grid;
-		gap: 0.6rem;
-	}
-	.pt-card__sizes-label {
-		font-size: 0.74rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--color-subtle);
-	}
-	.pt-card__pills {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.45rem;
-	}
-
-	/* Size pill — clickable, leads to per-SKU page */
-	.pt-pill {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 0.25rem;
-		padding: 0.5rem 0.85rem;
-		background: var(--color-bg);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		font-family: var(--font-mono);
-		font-size: 0.95rem;
-		font-weight: 700;
-		color: var(--color-text);
-		text-decoration: none;
-		font-variant-numeric: tabular-nums;
-		transition: all var(--dur-fast) var(--ease-out);
-		white-space: nowrap;
-	}
-	.pt-pill:hover {
-		background: var(--color-primary-500);
-		border-color: var(--color-primary-500);
-		color: #fff;
-		transform: translateY(-1px);
-		box-shadow: var(--shadow-sm);
-		text-decoration: none;
-	}
-	.pt-pill__suffix {
-		font-family: var(--font-sans);
-		font-size: 0.72rem;
-		font-weight: 500;
-		opacity: 0.7;
-	}
-	.pt-pill--more {
-		background: transparent;
-		border-style: dashed;
-		color: var(--color-muted);
-		cursor: default;
-	}
-
-	.pt__unit {
-		font-family: var(--font-sans);
-		font-size: 0.85rem;
-		color: var(--color-accent);
-		font-weight: 600;
-		margin-left: 0.25rem;
-	}
-	.pt__on-request {
-		font-family: var(--font-sans);
-		font-size: 1rem;
-		color: var(--color-accent);
-		font-weight: 700;
-	}
-
-	/* legacy table styles kept inert for now (no .pt__wrap in template) */
-	.pt__wrap {
-		display: none;
 	}
 	.pt__table {
 		width: 100%;
 		border-collapse: separate;
 		border-spacing: 0;
-		font-size: 1rem;
-		min-width: 760px;
+		font-size: 0.95rem;
+		min-width: 1024px;
 		table-layout: fixed;
 	}
-	.pt__table colgroup col:nth-child(1) { width: auto; }
-	.pt__table colgroup col:nth-child(2) { width: 140px; }
-	.pt__table colgroup col:nth-child(3) { width: 200px; }
-	.pt__table colgroup col:nth-child(4) { width: 170px; }
+	.pt__col-name { width: auto; min-width: 280px; }
+	.pt__col-size { width: 110px; }
+	.pt__col-grade { width: 170px; }
+	.pt__col-len { width: 90px; }
+	.pt__col-fact { width: 140px; }
+	.pt__col-price { width: 130px; }
+	.pt__col-act { width: 50px; }
 
 	.pt__table thead th {
 		position: sticky;
 		top: 0;
 		z-index: 1;
 		text-align: left;
-		padding: 1.1rem 1.5rem;
-		font-weight: 700;
-		font-size: 0.76rem;
+		padding: 0.85rem 1rem;
+		font-weight: 600;
+		font-size: 0.78rem;
 		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--color-on-dark);
-		background: var(--grad-cta);
-		border-bottom: none;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		background: var(--color-bg);
+		border-bottom: 1px solid var(--color-border);
 		white-space: nowrap;
+		user-select: none;
 	}
-	.pt__table thead th:first-child {
-		border-top-left-radius: var(--radius-lg);
+	.pt__th[data-sort] { cursor: pointer; }
+	.pt__th[data-sort]:hover { color: var(--color-primary-600); }
+	.pt__th--num { text-align: right; }
+	.pt__th--price { text-align: right; color: var(--color-text); }
+	.pt__th--sorted { color: var(--color-primary-600); }
+	.pt__th[data-sort]::after {
+		content: ' ↕';
+		opacity: 0.35;
+		font-size: 0.8em;
 	}
-	.pt__table thead th:last-child {
-		border-top-right-radius: var(--radius-lg);
-	}
-	.pt__th-price,
-	.pt__th-action {
-		text-align: right;
-	}
+	.pt__th--asc::after { content: ' ↑'; opacity: 1; color: var(--color-primary-500); }
+	.pt__th--desc::after { content: ' ↓'; opacity: 1; color: var(--color-primary-500); }
 
 	.pt__table tbody td {
-		padding: 0.95rem 1.5rem;
+		padding: 0.7rem 1rem;
 		border-bottom: 1px solid var(--color-border);
 		vertical-align: middle;
 		background: var(--color-surface);
-		transition: background var(--dur-fast) var(--ease-out);
-	}
-	/* Group separator: thicker line on top of each new grade group */
-	.pt__table tbody tr.pt__row--head td {
-		border-top: 2px solid var(--color-border-strong);
-		padding-top: 1.15rem;
-	}
-	.pt__table tbody tr.pt__row--head:first-child td {
-		border-top: 0;
-	}
-	.pt__table tbody tr:last-child td {
-		border-bottom: 0;
-	}
-	.pt__table tbody tr:last-child td:first-child {
-		border-bottom-left-radius: var(--radius-lg);
-	}
-	.pt__table tbody tr:last-child td:last-child {
-		border-bottom-right-radius: var(--radius-lg);
-	}
-	.pt__table tbody tr:hover td {
-		background: var(--color-primary-100);
-	}
-	/* Continuation marker — small dim arrow showing same grade as row above */
-	.pt__grade-cont {
-		display: inline-block;
-		color: var(--color-border-strong);
-		font-size: 1.1rem;
-		padding-left: 0.3rem;
-	}
-
-	.pt__cell-grade {
-		min-width: 280px;
-	}
-	.pt__grade {
-		display: block;
-		font-weight: 700;
-		font-size: 1.08rem;
-		color: var(--color-text);
-		line-height: 1.25;
-		letter-spacing: -0.01em;
-	}
-	.pt__sub-tag {
-		display: block;
-		font-size: 0.85rem;
-		color: var(--color-muted);
-		margin-top: 5px;
-		letter-spacing: 0.005em;
-	}
-
-	/* Size pill — visible steel-blue chip */
-	.pt__cell-num {
-		text-align: left;
-	}
-	.pt__cell-num-inner {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 0.3rem;
-		padding: 0.5rem 0.85rem;
-		background: var(--color-steel-100);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-pill);
-		font-family: var(--font-mono);
-		font-size: 0.98rem;
-		font-weight: 700;
-		color: var(--color-text);
 		font-variant-numeric: tabular-nums;
 	}
-	.pt__cell-num-suffix {
-		font-family: var(--font-sans);
-		font-size: 0.78rem;
-		color: var(--color-subtle);
-		font-weight: 500;
-	}
+	.pt__table tbody tr:last-child td { border-bottom: 0; }
+	.pt__table tbody tr:hover td { background: var(--color-primary-50); }
 
-	/* Price — big, accent copper */
+	.pt__cell-name { color: var(--color-text); }
+	.pt__name-link {
+		color: var(--color-text);
+		text-decoration: none;
+		font-weight: 500;
+		line-height: 1.35;
+		display: block;
+	}
+	.pt__name-link:hover { color: var(--color-primary-600); text-decoration: underline; }
+	.pt__cell-num { text-align: right; font-family: var(--font-mono); font-weight: 600; }
+	.pt__cell-muted { color: var(--color-muted); font-weight: 400; }
+	.pt__unit-suffix { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-subtle); font-weight: 400; margin-left: 0.15rem; }
+	.pt__cell-grade { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-text); }
+	.pt__cell-fact { color: var(--color-text); font-size: 0.9rem; }
+	.pt__ost { display: block; font-size: 0.78rem; color: var(--color-muted); margin-top: 2px; }
 	.pt__cell-price {
 		text-align: right;
 		font-family: var(--font-mono);
-		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
-	}
-	.pt__cell-price strong {
-		display: inline-block;
-		font-weight: 800;
-		color: var(--color-text);
-		font-size: 1.22rem;
-		letter-spacing: -0.015em;
-	}
-	.pt__unit {
-		font-family: var(--font-sans);
-		font-size: 0.82rem;
-		color: var(--color-accent);
-		font-weight: 600;
-		margin-left: 0.25rem;
-	}
-	.pt__on-request {
-		font-family: var(--font-sans);
-		font-size: 0.92rem;
-		color: var(--color-accent);
-		font-weight: 700;
-	}
-
-	/* Action button — copper accent, real button */
-	.pt__cell-action {
-		text-align: right;
 		white-space: nowrap;
 	}
+	.pt__cell-price strong { font-weight: 700; color: var(--color-text); font-size: 1rem; }
+	.pt__cell-price--accent strong { color: var(--color-primary-600); font-size: 1.05rem; }
+	.pt__on-request { font-family: var(--font-sans); font-size: 0.88rem; color: var(--color-accent); font-weight: 600; }
+
+	.pt__cell-act { text-align: center; }
 	.pt__cta {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.35rem;
-		font-size: 0.88rem;
-		font-weight: 600;
-		color: var(--color-primary-600);
-		text-decoration: none;
-		padding: 0.6rem 1.1rem;
-		border: 1.5px solid var(--color-primary-500);
+		justify-content: center;
+		width: 32px;
+		height: 32px;
 		border-radius: var(--radius-md);
+		border: 1px solid var(--color-border);
+		color: var(--color-primary-600);
 		background: var(--color-surface);
+		text-decoration: none;
+		font-weight: 700;
 		transition: all var(--dur-fast) var(--ease-out);
-		white-space: nowrap;
 	}
 	.pt__cta:hover {
 		color: #fff;
 		background: var(--color-primary-500);
 		border-color: var(--color-primary-500);
-		text-decoration: none;
-		box-shadow: var(--shadow-glow);
 		transform: translateY(-1px);
+		text-decoration: none;
 	}
 
-	/* Pagination */
+	/* Pager */
 	.pt__pager {
 		display: flex;
 		justify-content: center;
@@ -800,35 +526,16 @@ const PAGE_SIZE = 15;
 		transition: all var(--dur-fast) var(--ease-out);
 	}
 	.pt__page-btn:hover:not(:disabled),
-	.pt__page:hover {
-		border-color: var(--color-primary-500);
-		color: var(--color-primary-600);
-	}
-	.pt__page-btn:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
+	.pt__page:hover { border-color: var(--color-primary-500); color: var(--color-primary-600); }
+	.pt__page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 	.pt__page--active {
 		background: var(--color-primary-500);
 		border-color: var(--color-primary-500);
 		color: var(--color-on-dark);
 	}
-	.pt__page--active:hover {
-		background: var(--color-primary-600);
-		border-color: var(--color-primary-600);
-		color: var(--color-on-dark);
-	}
-	.pt__pages {
-		display: flex;
-		gap: var(--space-1);
-	}
-	.pt__gap {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 24px;
-		color: var(--color-subtle);
-	}
+	.pt__page--active:hover { background: var(--color-primary-600); border-color: var(--color-primary-600); color: var(--color-on-dark); }
+	.pt__pages { display: flex; gap: var(--space-1); }
+	.pt__gap { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; color: var(--color-subtle); }
 
 	.pt__empty {
 		text-align: center;
@@ -836,5 +543,28 @@ const PAGE_SIZE = 15;
 		font-size: 0.95rem;
 		padding: var(--space-5);
 		margin: var(--space-4) 0 0;
+	}
+
+	/* Mobile: switch to card layout */
+	@media (max-width: 768px) {
+		.pt__table { min-width: 0; }
+		.pt__table thead { display: none; }
+		.pt__table,
+		.pt__table tbody,
+		.pt__table tr { display: block; }
+		.pt__table tbody td { display: flex; justify-content: space-between; align-items: baseline; padding: 0.5rem 1rem; border: none; gap: 1rem; }
+		.pt__table tbody tr {
+			border-bottom: 1px solid var(--color-border);
+			padding: 0.6rem 0;
+		}
+		.pt__table tbody tr:last-child { border-bottom: 0; }
+		.pt__cell-name { font-weight: 700; padding-top: 0.75rem !important; }
+		.pt__cell-num::before { content: 'Размер: '; color: var(--color-muted); font-weight: 400; }
+		.pt__cell-grade::before { content: 'Марка: '; color: var(--color-muted); font-weight: 400; }
+		.pt__cell-muted::before { content: 'Длина: '; }
+		.pt__cell-fact::before { content: 'Склад: '; color: var(--color-muted); }
+		.pt__cell-price:nth-of-type(6)::before { content: 'Цена ₽: '; color: var(--color-muted); }
+		.pt__cell-price:nth-of-type(7)::before { content: 'От 1т ₽: '; color: var(--color-muted); }
+		.pt__cell-act { justify-content: flex-end; padding-bottom: 0.75rem !important; }
 	}
 </style>

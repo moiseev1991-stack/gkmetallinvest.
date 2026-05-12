@@ -1,14 +1,58 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
-import HubRequest from '../../components/HubRequest.astro';
+import PriceTable from '../../components/PriceTable.astro';
 ---
 
 <CatalogHubTemplate
-	title="Полоса нержавеющая"
-	description="Нержавеющая полоса по маркам стали. Раздел в наполнении — наличие и цены по запросу."
+	title="Полоса нержавеющая — AISI 304, 316L, 321 — цена за тонну"
+	description="Полоса нержавеющая никельсодержащая со склада в Нижнем Новгороде. Толщины 4–50 мм, ширины 25–300 мм. AISI 304, 316L, 321, 12Х18Н10Т."
 	h1="Полоса нержавеющая"
-	intro=""
+	intro="Полоса нержавеющая горячекатаная и калиброванная для металлоконструкций, дверной фурнитуры, бандажей и крепёжных систем. Аустенитные марки AISI 304, 316L, 321 и 12Х18Н10Т. 38 типоразмеров в наличии: толщина 4–50 мм, ширина 25–300 мм."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Полоса нержавеющая' }]}
 >
-	<HubRequest what="Нержавеющая полоса" />
+	<PriceTable hub="polosa" title="Прайс на полосу нержавеющую" measure="толщина" />
+
+	<section class="block">
+		<h2>Размеры и марки</h2>
+		<ul class="list-plain">
+			<li>Толщины: 4, 5, 6, 8, 10, 12, 16, 20, 25, 30, 40, 50 мм</li>
+			<li>Ширины: 25, 30, 40, 50, 60, 80, 100, 150, 200, 300 мм</li>
+			<li>Длины — 2000–6000 мм, поставка в размер по заявке</li>
+			<li>Марки: AISI 304 / 08Х18Н10, AISI 316L / 03Х17Н14М2, AISI 321 / 12Х18Н10Т</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Применение</h2>
+		<ul class="list-plain">
+			<li>Металлоконструкции в коррозионных средах</li>
+			<li>Бандажи и хомуты для трубопроводов</li>
+			<li>Закладные элементы фасадов и навесных систем</li>
+			<li>Дверная и оконная фурнитура — петли, накладки, ригели</li>
+			<li>Заготовки для штамповки кронштейнов и кронштейновых систем</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Документы и поставка</h2>
+		<ul class="list-plain">
+			<li>Сертификат завода-изготовителя — ГОСТ 103 / EN 10058</li>
+			<li>Резка в размер по заявке</li>
+			<li>Отгрузка со склада в Нижнем Новгороде</li>
+			<li>Доставка по России — авто, ж/д, ТК</li>
+		</ul>
+	</section>
 </CatalogHubTemplate>
+
+<style>
+	.block { margin-bottom: var(--space-8); }
+	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+		display: grid;
+		gap: var(--space-2);
+	}
+</style>

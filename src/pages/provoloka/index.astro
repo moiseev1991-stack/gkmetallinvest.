@@ -4,10 +4,10 @@ import PriceTable from '../../components/PriceTable.astro';
 ---
 
 <CatalogHubTemplate
-	title="Проволока нержавеющая"
-	description="Нержавеющая проволока всех марок: 12Х18Н10Т, AISI 304/316L/316Ti/321, EN 10270-3 и сварочная ER308L/ER316L. Цены в наличии."
+	title="Проволока нержавеющая — технологическая, пружинная, сварочная"
+	description="Проволока нержавеющая 0,11–6 мм: AISI 304/316L/316Ti/321, EN 10270-3 пружинная, сварочная ER308L/ER316L. Поставка с наценкой 5% от 1 кг до тонны."
 	h1="Проволока нержавеющая"
-	intro="Технологическая, пружинная (EN 10270-3) и сварочная (ER308L, ER316L, ER316Ti) проволока. Диаметры от 0,11 до 6 мм."
+	intro="Проволока нержавеющая Ø 0,11–6 мм трёх назначений: технологическая (вязальная, сетчатая, для гибов), пружинная по EN 10270-3 и сварочная под полуавтомат / TIG. Аустенитные марки 12Х18Н10Т, AISI 304/316L/321 и сварочные ER308L/ER316L/ER316Ti — 105 позиций в наличии в Нижнем Новгороде."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Проволока нержавеющая' }]}
 >
 	<PriceTable hub="provoloka" title="Прайс на проволоку" measure="диаметр" />
@@ -15,22 +15,46 @@ import PriceTable from '../../components/PriceTable.astro';
 	<section class="block">
 		<h2>Что входит в раздел</h2>
 		<ul class="list-plain">
-			<li>Технологическая — 12Х18Н10Т, AISI 304/316L/321/310S/904L</li>
-			<li>Пружинная — EN 10270-3 1.4310 (AISI 302)</li>
-			<li>Сварочная — ER308L, ER316L, ER316Ti</li>
-			<li>Ферритная — AISI 410, 430</li>
+			<li><strong>Технологическая</strong> — 12Х18Н10Т, AISI 304/316L/321/310S/904L. Для вязки арматуры, плетения сеток, увязки</li>
+			<li><strong>Пружинная (EN 10270-3)</strong> — 1.4310 (AISI 302). Для пружин и упругих элементов</li>
+			<li><strong>Сварочная</strong> — ER308L (под AISI 304), ER316L (под 316L), ER316Ti (под жаростойкие). Бухты и катушки</li>
+			<li><strong>Ферритная</strong> — AISI 410, 430. Для пружинных шайб, скоб, защёлок</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Применение</h2>
+		<ul class="list-plain">
+			<li>Сетки тканые и сварные — фильтры, грохоты, защитные ограждения</li>
+			<li>Сварка нержавеющих сталей — ручная TIG и полуавтоматическая MIG</li>
+			<li>Метизные пружины и пружинные кольца</li>
+			<li>Вязка арматуры в коррозионно-стойкой среде</li>
+			<li>Плетение канатов и тросов морского применения</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Документы и поставка</h2>
+		<ul class="list-plain">
+			<li>Сертификат завода — ГОСТ 18143 / EN 10088-3</li>
+			<li>Поставка бухтами и катушками от 1 кг</li>
+			<li>Отгрузка со склада в Нижнем Новгороде</li>
+			<li>Транспортные компании по всей России</li>
 		</ul>
 	</section>
 </CatalogHubTemplate>
 
 <style>
-	.block {
-		margin-bottom: var(--space-8);
-	}
+	.block { margin-bottom: var(--space-8); }
+	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
 	.list-plain {
 		margin: 0;
 		padding-left: 1.2rem;
 		color: var(--color-muted);
-		max-width: 65ch;
+		max-width: 70ch;
+		display: grid;
+		gap: var(--space-2);
 	}
+	.list-plain strong { color: var(--color-text); }
+	.block p { max-width: 70ch; color: var(--color-muted); }
 </style>

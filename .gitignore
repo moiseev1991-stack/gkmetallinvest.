@@ -31,3 +31,7 @@ pnpm-debug.log*
 *.xls
 *.xlsx
 ~$*
+
+# scraper cache (HTML dumps from mc.ru) and pricelist backups
+scripts/scrape-mc/.cache/
+src/data/pricelist.backup-*.json

@@ -1,14 +1,70 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
-import HubRequest from '../../components/HubRequest.astro';
+import PriceTable from '../../components/PriceTable.astro';
 ---
 
 <CatalogHubTemplate
-	title="Рулон нержавеющий"
-	description="Нержавеющий рулон 2B, BA, 4N. Раздел в наполнении — наличие и цены по запросу."
+	title="Рулон нержавеющий — AISI 304, 316L, 321, 12Х18Н10Т"
+	description="Рулон нержавеющий 0,4–3 мм холоднокатаный с поверхностью 2B, BA, 4N. AISI 304, 316L, 321, 12Х18Н10Т. Ширины 1000, 1250, 1500 мм. 77 позиций."
 	h1="Рулон нержавеющий"
-	intro=""
-	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Рулон' }]}
+	intro="Холоднокатаный нержавеющий рулон толщиной 0,4–3 мм, ширина 1000, 1250, 1500 мм. Поставка для собственного раскроя в лист или штрипс. Никелесодержащие марки AISI 304, 316L, 321, 12Х18Н10Т. Поверхности 2B (матовая), BA (зеркальная), 4N (шлифованная), DECO+PE с защитной плёнкой."
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Рулон нержавеющий' }]}
 >
-	<HubRequest what="Нержавеющий рулон" />
+	<PriceTable hub="rulon" title="Прайс на рулон нержавеющий" measure="толщина" />
+
+	<section class="block">
+		<h2>Что входит в раздел</h2>
+		<ul class="list-plain">
+			<li><strong>Толщины</strong> — 0,4; 0,5; 0,6; 0,8; 1,0; 1,2; 1,5; 2,0; 2,5; 3,0 мм</li>
+			<li><strong>Ширины</strong> — 1000, 1250, 1500 мм (ходовые), 600 и 1219 мм по заявке</li>
+			<li><strong>Поверхности</strong> — 2B универсальная матовая, BA зеркальная для интерьеров, 4N шлифованная декоративная</li>
+			<li><strong>Защитная плёнка PE</strong> с печатью или без — для архитектурного применения</li>
+			<li><strong>Марки</strong> — AISI 304/304L, 316L, 321, 430, 12Х18Н10Т</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Резка из рулона</h2>
+		<p>
+			Из рулона мы делаем <a href="/uslugi/rezka-rulonov/">резку в лист</a>
+			(длина до 12 м) и <a href="/lenta/proizvodstvo/">продольную резку в штрипс</a> с шагом 5 мм.
+			Это даёт цену на 5–10% ниже готового листа той же толщины.
+		</p>
+	</section>
+
+	<section class="block">
+		<h2>Применение</h2>
+		<ul class="list-plain">
+			<li>Производство сэндвич-панелей и облицовочных элементов</li>
+			<li>Заготовка под штамповку посуды, кухонного оборудования</li>
+			<li>Кровля и фасады в премиум-сегменте</li>
+			<li>Лента для упаковочного и медицинского оборудования</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Документы и поставка</h2>
+		<ul class="list-plain">
+			<li>Сертификат завода — ГОСТ 19904 / EN 10088 / ASTM A240</li>
+			<li>Защитная плёнка PE / PVC по запросу</li>
+			<li>Отгрузка со склада в Нижнем Новгороде</li>
+			<li>Доставка автотранспортом и ж/д контейнерами</li>
+		</ul>
+	</section>
 </CatalogHubTemplate>
+
+<style>
+	.block { margin-bottom: var(--space-8); }
+	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+		display: grid;
+		gap: var(--space-2);
+	}
+	.list-plain strong { color: var(--color-text); }
+	.block p { max-width: 70ch; color: var(--color-muted); }
+	.block p a { color: var(--color-primary-600); }
+</style>
