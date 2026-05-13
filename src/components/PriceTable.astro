@@ -83,6 +83,16 @@ const sizeRangeMax = hasSizeRange ? Math.max(...sizeNums) : 0;
 const sizePh = (n: number) =>
 	Number.isInteger(n) ? String(n) : String(+n.toFixed(2)).replace('.', ',');
 
+// Skip columns that carry no signal for this hub.
+const hasDlina = allSkus.some((s) => s.dlina !== null && s.dlina !== undefined && s.dlina !== '');
+const hasFact = allSkus.some((s) => s.fact);
+// Show second price column only when most SKUs actually have two distinct
+// prices — a handful of exceptions out of hundreds (e.g. detali-truboprovoda)
+// don't justify a noisy duplicate column.
+const _differingPrices = allSkus.filter((s) => s.price != null && s.priceUnit != null && s.price !== s.priceUnit).length;
+const hasUniquePrices = allSkus.length > 0 && _differingPrices / allSkus.length > 0.5;
+const hasOstatok = allSkus.some((s) => s.ostatok);
+
 const PAGE_SIZE = 50;
 const unitDefault = allSkus[0]?.unit ?? 'т';
 ---
@@ -210,9 +220,9 @@ const unitDefault = allSkus[0]?.unit ?? 'т';
 				<col class="pt__col-name" />
 				<col class="pt__col-size" />
 				<col class="pt__col-grade" />
-				<col class="pt__col-len" />
-				<col class="pt__col-fact" />
-				<col class="pt__col-price" />
+				{hasDlina && <col class="pt__col-len" />}
+				{hasFact && <col class="pt__col-fact" />}
+				{hasUniquePrices && <col class="pt__col-price" />}
 				<col class="pt__col-price" />
 				<col class="pt__col-act" />
 			</colgroup>
@@ -221,10 +231,10 @@ const unitDefault = allSkus[0]?.unit ?? 'т';
 					<th class="pt__th" data-sort="name">Продукция</th>
 					<th class="pt__th pt__th--num" data-sort="size">{measure === 'Ø × стенка' ? 'Ø × ст.' : 'Размер'}</th>
 					<th class="pt__th" data-sort="grade">Марка</th>
-					<th class="pt__th pt__th--num">Длина</th>
-					<th class="pt__th">Склад</th>
-					<th class="pt__th pt__th--price" data-sort="priceUnit">Цена ₽/{unitDefault}</th>
-					<th class="pt__th pt__th--price" data-sort="price">Цена ₽/{unitDefault} от 1т</th>
+					{hasDlina && <th class="pt__th pt__th--num">Длина</th>}
+					{hasFact && <th class="pt__th">Склад</th>}
+					{hasUniquePrices && <th class="pt__th pt__th--price" data-sort="priceUnit">Цена ₽/{unitDefault} <span class="pt__th-hint">розн.</span></th>}
+					<th class="pt__th pt__th--price" data-sort="price">Цена ₽/{unitDefault}{hasUniquePrices && <span class="pt__th-hint"> от 1т</span>}</th>
 					<th class="pt__th"></th>
 				</tr>
 			</thead>
@@ -241,7 +251,7 @@ const unitDefault = allSkus[0]?.unit ?? 'т';
 	<p class="pt__empty" data-pt-empty hidden>Ничего не найдено по фильтрам — попробуйте сбросить.</p>
 </section>
 
-<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS }}>
+<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices }}>
 	const root = document.querySelector(`.pt[data-hub="${hub}"]`);
 	if (root) {
 		const fmt = (p) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
@@ -342,17 +352,27 @@ const unitDefault = allSkus[0]?.unit ?? 'т';
 
 		function renderRow(s) {
 			const name = s.name || `${SUB_LABELS[s.sub] || s.sub || ''} ${s.grade || ''}`.trim();
-			const priceUnit = s.priceUnit != null ? `<strong>${fmt(s.priceUnit)}</strong>` : '<span class="pt__on-request">по запросу</span>';
-			const price = s.price != null ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
+			const priceUnitCell = s.priceUnit != null ? `<strong>${fmt(s.priceUnit)}</strong>` : '<span class="pt__on-request">по запросу</span>';
+			const priceCell = s.price != null ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
 			const sizeSuffix = String(s.size).startsWith('Ø') ? '' : ' <span class="pt__unit-suffix">мм</span>';
+			const dlinaTd = HAS_DLINA
+				? `<td class="pt__cell-num pt__cell-muted" data-label="Длина">${escapeHtml(s.dlina || '—')}</td>`
+				: '';
+			const factTd = HAS_FACT
+				? `<td class="pt__cell-fact" data-label="Склад">${escapeHtml(s.fact || '—')}${s.ostatok ? `<span class="pt__ost">остаток: ${s.ostatok}</span>` : ''}</td>`
+				: '';
+			const priceUnitTd = HAS_UNIQUE_PRICES
+				? `<td class="pt__cell-price" data-label="Цена розн.">${priceUnitCell}</td>`
+				: '';
+			const priceLabel = HAS_UNIQUE_PRICES ? 'Цена от 1т' : 'Цена';
 			return `<tr class="pt__row">
-				<td class="pt__cell-name"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/">${escapeHtml(name)}</a></td>
-				<td class="pt__cell-num">${escapeHtml(s.size)}${sizeSuffix}</td>
-				<td class="pt__cell-grade">${escapeHtml(s.grade || '—')}</td>
-				<td class="pt__cell-num pt__cell-muted">${escapeHtml(s.dlina || '—')}</td>
-				<td class="pt__cell-fact">${escapeHtml(s.fact || '—')}${s.ostatok ? `<span class="pt__ost">остаток: ${s.ostatok}</span>` : ''}</td>
-				<td class="pt__cell-price">${priceUnit}</td>
-				<td class="pt__cell-price pt__cell-price--accent">${price}</td>
+				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/">${escapeHtml(name)}</a></td>
+				<td class="pt__cell-num" data-label="Размер">${escapeHtml(s.size)}${sizeSuffix}</td>
+				<td class="pt__cell-grade" data-label="Марка">${escapeHtml(s.grade || '—')}</td>
+				${dlinaTd}
+				${factTd}
+				${priceUnitTd}
+				<td class="pt__cell-price pt__cell-price--accent" data-label="${priceLabel}">${priceCell}</td>
 				<td class="pt__cell-act"><a class="pt__cta" href="/zapros-kp/#lead-form?sku=${encodeURIComponent(s.slug)}" aria-label="Запросить КП">→</a></td>
 			</tr>`;
 		}
@@ -602,6 +622,15 @@ const unitDefault = allSkus[0]?.unit ?? 'т';
 	}
 	.pt__th--asc::after { content: ' ↑'; opacity: 1; color: var(--color-primary-500); }
 	.pt__th--desc::after { content: ' ↓'; opacity: 1; color: var(--color-primary-500); }
+	.pt__th-hint {
+		display: inline-block;
+		margin-left: 0.25rem;
+		font-size: 0.7rem;
+		text-transform: none;
+		letter-spacing: 0;
+		color: var(--color-subtle);
+		font-weight: 400;
+	}
 
 	.pt__table tbody td {
 		padding: 0.7rem 1rem;
@@ -718,12 +747,13 @@ const unitDefault = allSkus[0]?.unit ?? 'т';
 		}
 		.pt__table tbody tr:last-child { border-bottom: 0; }
 		.pt__cell-name { font-weight: 700; padding-top: 0.75rem !important; }
-		.pt__cell-num::before { content: 'Размер: '; color: var(--color-muted); font-weight: 400; }
-		.pt__cell-grade::before { content: 'Марка: '; color: var(--color-muted); font-weight: 400; }
-		.pt__cell-muted::before { content: 'Длина: '; }
-		.pt__cell-fact::before { content: 'Склад: '; color: var(--color-muted); }
-		.pt__cell-price:nth-of-type(6)::before { content: 'Цена ₽: '; color: var(--color-muted); }
-		.pt__cell-price:nth-of-type(7)::before { content: 'От 1т ₽: '; color: var(--color-muted); }
+		/* Labels for stacked-card mobile layout come from data-label set on each <td>. */
+		.pt__table tbody td[data-label]::before {
+			content: attr(data-label) ': ';
+			color: var(--color-muted);
+			font-weight: 400;
+		}
+		.pt__cell-name[data-label]::before { content: ''; }
 		.pt__cell-act { justify-content: flex-end; padding-bottom: 0.75rem !important; }
 	}
 </style>

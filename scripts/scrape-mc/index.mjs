@@ -153,6 +153,16 @@ function extractTubeSize(name, r1) {
 	return r1 ? `Ø${r1}` : null;
 }
 
+// mc.ru rulon listings put roll-width in the «Марка» cell and the surface
+// description in «Длина» — the real AISI grade is buried inside the product
+// name. Extract it so our `grade` field actually means grade.
+function extractAisiGrade(name) {
+	let m = String(name).match(/AISI\s*\d+[A-Za-z]*(?:\s*\([0-9ХЁА-Яа-я-]+\))?/);
+	if (m) return m[0].replace(/AISI\s*/, 'AISI ').replace(/\s+/g, ' ').trim();
+	m = String(name).match(/\b\d{1,3}Х\d{1,2}(?:Н\d{1,2})?(?:[А-Я]\d?)*Т?\b/);
+	return m ? m[0] : null;
+}
+
 function parseCategoryPage(html) {
 	const $ = cheerio.load(html);
 	const rows = [];
@@ -227,7 +237,8 @@ function parseCategoryPage(html) {
 // ─── normalizer: mc.ru row → pricelist SKU entry ─────────────────────────────
 function rowToSku(row, cat) {
 	const isTuba = cat.hub === 'truba';
-	const size = isTuba ? extractTubeSize(row.name, row.r1) : (row.r1 || null);
+	const isRulon = cat.hub === 'rulon';
+	let size = isTuba ? extractTubeSize(row.name, row.r1) : (row.r1 || null);
 	if (!size) return null;
 	const basePrice = row.priceFrom1t ?? row.priceFromMid ?? row.priceFromZero;
 	if (!basePrice && !cat.acceptNoPrice) return null;
@@ -238,16 +249,28 @@ function rowToSku(row, cat) {
 	const roll = detectRoll(row.name) ?? cat.defaultRoll;
 	const surface = detectSurface(row.name);
 
+	// mc.ru rulon listings: «Марка» = roll width (number), «Длина» = surface
+	// description. Move width into size («толщина × ширина»), pull real AISI
+	// grade out of the product name, drop the dup `dlina`.
+	let grade = row.grade || null;
+	let dlina = row.dlina || null;
+	if (isRulon) {
+		const realGrade = extractAisiGrade(row.name);
+		if (realGrade) grade = realGrade;
+		if (row.grade && /^\d/.test(String(row.grade))) size = `${size} × ${row.grade}`;
+		dlina = null;
+	}
+
 	// slug parts: grade + roll + size, normalize
 	const sizeForSlug = isTuba
 		? size.replace(/Ø/g, '').replace(/\s*×\s*/g, '-').replace(/\s+/g, '')
-		: String(size);
-	const slug = slugify(row.grade, roll, surface, sizeForSlug + 'mm');
+		: String(size).replace(/\s*×\s*/g, '-').replace(/\s+/g, '');
+	const slug = slugify(grade, roll, surface, sizeForSlug + 'mm');
 
 	return {
 		hub: cat.hub,
 		sub,
-		grade: row.grade || null,
+		grade,
 		roll: roll || null,
 		alloy: cat.alloy || null,
 		surface: surface || null,
@@ -257,7 +280,7 @@ function rowToSku(row, cat) {
 		priceUnit,
 		slug,
 		// extra fields (kept for new pages; existing code ignores them):
-		dlina: row.dlina || null,
+		dlina,
 		fact: row.fact || null,
 		ostatok: row.ost ? parseInt(row.ost.replace(/\D/g, ''), 10) || null : null,
 		name: row.name,
