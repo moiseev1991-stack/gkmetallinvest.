@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import pricelist from '../data/pricelist.json';
+import { siteName, siteUrl, contacts } from '../data/site';
 
 interface SKU {
 	hub: string;
@@ -224,9 +225,83 @@ const breadcrumbs = [
 	{ label: hubLabel, href: hubHref },
 	{ label: `${sku.grade}${sku.size ? ` · ${sku.size} мм` : ''}` },
 ];
+
+/* Duplicate slugs (-2/-3/-N) — это тот же товар с другой партии/остатком.
+   На основной slug ставим себя сам, на дубли — canonical на основной + noindex,
+   чтобы поисковики не считали 594 группы карточек дублирующимся контентом. */
+const dupMatch = sku.slug.match(/-(\d+)$/);
+const dupIdx = dupMatch ? parseInt(dupMatch[1], 10) : 0;
+const isDup = dupIdx >= 2;
+const baseSlug = isDup ? sku.slug.replace(/-\d+$/, '') : sku.slug;
+const canonicalPath = `${hubHref}${baseSlug}/`;
+
+/* SEO-title — короче и читабельнее: «Лист AISI 304 BA 0,4 мм — купить, цена ...».
+   В intro/description — то же содержимое плюс цена. */
+const titleSeo = (() => {
+	const bits = [hubLabel];
+	if (sku.grade) bits.push(sku.grade);
+	if (sku.surface) bits.push(sku.surface);
+	if (sku.size) bits.push(`${sku.size} мм`);
+	return bits.join(' ');
+})();
+
+const fmtPrice = (p: number | null | undefined) =>
+	p == null ? null : new Intl.NumberFormat('ru-RU').format(p);
+const priceLine = sku.price
+	? `от ${fmtPrice(sku.price)} ₽/${sku.unit}`
+	: 'цена по запросу';
+const seoDescription = `${titleSeo} — ${priceLine}. Сертификат завода, отгрузка из Нижнего Новгорода, доставка по России. ${sku.fact ? 'В наличии' : 'Под заказ'}. ${contacts.phone}.`;
+
+/* Product / Offer JSON-LD. На дубли тоже отдаём — но т.к. они носят canonical
+   на основной, поисковики не сделают два rich snippet'а на один товар. */
+const productJsonLd: Record<string, any> = {
+	'@context': 'https://schema.org/',
+	'@type': 'Product',
+	name: titleSeo,
+	description: seoDescription,
+	sku: sku.slug,
+	mpn: sku.slug,
+	category: `${hubLabel}${subLabel ? ' · ' + subLabel : ''}`,
+	brand: { '@type': 'Brand', name: siteName },
+	url: `${siteUrl}${canonicalPath}`,
+	image: [`${siteUrl}${imgPath}`],
+};
+if (sku.grade) productJsonLd.material = sku.grade;
+if (sku.price != null) {
+	const offer: Record<string, any> = {
+		'@type': 'Offer',
+		price: sku.price,
+		priceCurrency: 'RUB',
+		availability:
+			sku.ostatok != null && sku.ostatok > 0
+				? 'https://schema.org/InStock'
+				: 'https://schema.org/PreOrder',
+		url: `${siteUrl}${canonicalPath}`,
+		seller: {
+			'@type': 'Organization',
+			name: contacts.company,
+			telephone: contacts.phone,
+		},
+	};
+	if (sku.unit) offer.priceSpecification = {
+		'@type': 'UnitPriceSpecification',
+		price: sku.price,
+		priceCurrency: 'RUB',
+		referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitText: sku.unit },
+	};
+	productJsonLd.offers = offer;
+}
 ---
 
-<BaseLayout title={fullTitle} description={description}>
+<BaseLayout
+	title={titleSeo}
+	description={seoDescription}
+	canonical={canonicalPath}
+	noindex={isDup}
+	image={imgPath}
+	type="product"
+	jsonLd={productJsonLd}
+>
 	<div class="container product">
 		<Breadcrumbs items={breadcrumbs} />
 

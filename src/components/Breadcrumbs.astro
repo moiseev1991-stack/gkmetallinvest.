@@ -1,4 +1,6 @@
 ---
+import { siteUrl } from '../data/site';
+
 interface Crumb {
 	label: string;
 	href?: string;
@@ -7,6 +9,22 @@ interface Props {
 	items: Crumb[];
 }
 const { items } = Astro.props;
+
+const base = siteUrl.replace(/\/$/, '');
+const toAbs = (path: string) => (path.startsWith('http') ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`);
+
+const currentPath = Astro.url.pathname;
+
+const breadcrumbJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: items.map((item, i) => ({
+		'@type': 'ListItem',
+		position: i + 1,
+		name: item.label,
+		item: toAbs(item.href ?? currentPath),
+	})),
+};
 ---
 
 <nav class="crumbs" aria-label="Хлебные крошки">
@@ -25,6 +43,7 @@ const { items } = Astro.props;
 		}
 	</ol>
 </nav>
+<script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
 
 <style>
 	.crumbs {

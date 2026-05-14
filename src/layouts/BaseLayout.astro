@@ -3,17 +3,53 @@ import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import MobileStickyBar from '../components/MobileStickyBar.astro';
-import { siteName } from '../data/site';
+import { siteName, siteUrl, siteNoindex, siteOgImage } from '../data/site';
 
 interface Props {
 	title: string;
 	description?: string;
+	/** Canonical URL — абсолютный или путь от корня. По умолчанию — текущий URL. */
+	canonical?: string;
+	/** Скрыть страницу из индекса (поверх глобального siteNoindex). */
+	noindex?: boolean;
+	/** OG image — путь от корня сайта или абсолютный URL. */
+	image?: string;
+	/** OG type, по умолчанию website. */
+	type?: 'website' | 'article' | 'product';
+	/** JSON-LD payload или массив payload'ов. Будут отрисованы как <script type="application/ld+json">. */
+	jsonLd?: Record<string, any> | Record<string, any>[];
 }
 const {
 	title,
 	description = 'Нержавеющий металлопрокат с доставкой по России. Лист, труба, круг, лента, рулон, декоративные листы. Услуги резки и перфорации.',
+	canonical,
+	noindex = false,
+	image,
+	type = 'website',
+	jsonLd,
 } = Astro.props;
+
 const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
+const isNoindex = siteNoindex || noindex;
+const robotsContent = isNoindex
+	? 'noindex, nofollow, noarchive, nosnippet, noimageindex'
+	: 'index, follow, max-image-preview:large, max-snippet:-1';
+
+const toAbsolute = (urlOrPath: string) => {
+	if (/^https?:\/\//i.test(urlOrPath)) return urlOrPath;
+	return `${siteUrl.replace(/\/$/, '')}${urlOrPath.startsWith('/') ? '' : '/'}${urlOrPath}`;
+};
+
+const canonicalUrl = canonical
+	? toAbsolute(canonical)
+	: toAbsolute(Astro.url.pathname);
+const ogImage = toAbsolute(image ?? siteOgImage);
+
+const jsonLdItems = jsonLd
+	? Array.isArray(jsonLd)
+		? jsonLd
+		: [jsonLd]
+	: [];
 ---
 
 <!doctype html>
@@ -24,8 +60,22 @@ const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
 		<meta name="theme-color" content="#163b66" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="description" content={description} />
-		<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+		<meta name="robots" content={robotsContent} />
 		<meta name="generator" content={Astro.generator} />
+
+		<link rel="canonical" href={canonicalUrl} />
+
+		<meta property="og:type" content={type} />
+		<meta property="og:site_name" content={siteName} />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:locale" content="ru_RU" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={fullTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -35,6 +85,10 @@ const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
 		/>
 
 		<title>{fullTitle}</title>
+
+		{jsonLdItems.map((item) => (
+			<script type="application/ld+json" set:html={JSON.stringify(item)} />
+		))}
 	</head>
 	<body>
 		<a class="skip-link" href="#main">Перейти к содержимому</a>

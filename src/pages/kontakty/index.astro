@@ -1,10 +1,37 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import { contacts } from '../../data/site';
+import { siteName, siteUrl, contacts, orgAddress } from '../../data/site';
+
+const localBusinessJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'LocalBusiness',
+	'@id': `${siteUrl}/#localbusiness`,
+	name: siteName,
+	legalName: contacts.company,
+	url: siteUrl,
+	logo: `${siteUrl}/img/logo.png`,
+	telephone: contacts.phone,
+	email: contacts.email,
+	taxID: contacts.inn,
+	priceRange: '₽₽',
+	address: { '@type': 'PostalAddress', ...orgAddress },
+	openingHoursSpecification: [
+		{
+			'@type': 'OpeningHoursSpecification',
+			dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+			opens: '09:00',
+			closes: '18:00',
+		},
+	],
+};
 ---
 
-<BaseLayout title="Контакты" description="Контакты ГК Металлинвест: телефон, email, адрес в Нижнем Новгороде.">
+<BaseLayout
+	title="Контакты"
+	description="Контакты ГК Металлинвест: телефон, email, адрес в Нижнем Новгороде."
+	jsonLd={localBusinessJsonLd}
+>
 	<div class="container page">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Контакты' }]} />
 		<h1>Контакты</h1>
