@@ -1,23 +1,372 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import { contacts } from '../../data/site';
+import { cities } from '../../data/cities';
+
+const advantages = [
+	{
+		title: 'Экспресс-доставка по России и СНГ',
+		text: 'Свой отдел логистики, проверенные перевозчики, ежедневные отправки.',
+		icon: 'rocket',
+	},
+	{
+		title: 'Отгрузка в день оплаты',
+		text: 'Если позиция на складе — отправляем в день поступления оплаты.',
+		icon: 'lightning',
+	},
+	{
+		title: 'Попутный транспорт',
+		text: 'Экономичный вариант — отправка попутками за 2–3 дня по основным направлениям.',
+		icon: 'truck',
+	},
+	{
+		title: 'Страхование груза',
+		text: 'Каждая отгрузка страхуется. Возмещение в случае повреждения или утраты.',
+		icon: 'shield',
+	},
+];
+
+const tk = [
+	{ name: 'СДЭК', desc: 'до пункта выдачи и адресно' },
+	{ name: 'Деловые линии', desc: 'крупногабарит, ж/д контейнеры' },
+	{ name: 'ПЭК', desc: 'по всей России и СНГ' },
+	{ name: 'Байкал-Сервис', desc: 'Сибирь, Дальний Восток' },
+	{ name: 'Свой автотранспорт', desc: 'Москва, Казань, ЦФО' },
+	{ name: 'Ж/д контейнеры', desc: 'дальние регионы, объёмные партии' },
+];
+
+const docs = [
+	'Договор поставки / счёт-оферта',
+	'УПД (универсальный передаточный документ) с НДС',
+	'Транспортная накладная',
+	'Сертификат завода-изготовителя на партию',
+	'Паспорт качества',
+	'Копии документов до отгрузки — по запросу через ЭДО',
+];
+
+const payment = [
+	{
+		title: 'Безналичный расчёт для юридических лиц',
+		text: 'Оплата по счёту, банковским переводом. УПД с НДС.',
+	},
+	{
+		title: 'Карта для физических лиц',
+		text: 'Оплата по выставленному счёту картой через банк-эквайер.',
+	},
+	{
+		title: 'Отсрочка платежа по договору',
+		text: 'Возможна для проверенных контрагентов на согласованный лимит.',
+	},
+	{
+		title: 'Предоплата 100% по умолчанию',
+		text: 'Отгрузка в день поступления оплаты при наличии позиции на складе.',
+	},
+];
+
+/* Топ-городские сроки — берём из cities.ts, чтобы не дублировать данные */
+const topCityRoutes = cities.map((c) => ({
+	name: c.name,
+	distance: c.distance,
+	transit: c.transit,
+}));
 ---
 
-<BaseLayout title="Доставка и оплата" description="Условия доставки нержавеющего металлопроката по России и оплаты для юрлиц.">
+<BaseLayout
+	title="Доставка и оплата"
+	description="Доставка нержавейки по России за 2–3 дня. СДЭК, Деловые линии, ПЭК, попутный транспорт. Страхование груза. Безналичный расчёт с НДС, карта для физлиц, отсрочка по договору."
+>
 	<div class="container page">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Доставка и оплата' }]} />
-		<h1>Доставка и оплата</h1>
-		<p class="lead">
-			Попутные отправки, транспортные компании, страхование груза — детали фиксируются в коммерческом предложении.
-		</p>
+
+		<header class="page__hero">
+			<span class="eyebrow">Логистика и расчёты</span>
+			<h1>Доставка и оплата</h1>
+			<p class="page__lead">
+				Отгружаем со склада в Нижнем Новгороде по всей России и СНГ. Экспресс-доставка
+				за 2–3 дня по ключевым направлениям, страхование груза на каждую отгрузку,
+				отгрузка в день оплаты при наличии позиции на складе.
+			</p>
+		</header>
+
+		<section class="page__section">
+			<h2>Условия доставки</h2>
+			<div class="adv-grid">
+				{advantages.map((a) => (
+					<article class="adv-card">
+						<span class="adv-card__ico" aria-hidden="true">
+							{a.icon === 'rocket' && (
+								<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+							)}
+							{a.icon === 'lightning' && (
+								<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+							)}
+							{a.icon === 'truck' && (
+								<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+							)}
+							{a.icon === 'shield' && (
+								<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+							)}
+						</span>
+						<h3>{a.title}</h3>
+						<p>{a.text}</p>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="page__section">
+			<h2>Сроки в основные города</h2>
+			<p class="page__sub">Ориентировочные сроки от момента отгрузки. Точные — менеджер подтвердит в КП.</p>
+			<div class="cities-table-wrap">
+				<table class="cities-table">
+					<thead>
+						<tr>
+							<th>Город</th>
+							<th class="cities-table__num">Расстояние</th>
+							<th>Срок доставки</th>
+						</tr>
+					</thead>
+					<tbody>
+						{topCityRoutes.map((c) => (
+							<tr>
+								<td>{c.name}</td>
+								<td class="cities-table__num">{c.distance.toLocaleString('ru-RU')} км</td>
+								<td>{c.transit}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="page__section">
+			<h2>Транспортные компании и собственная логистика</h2>
+			<div class="tk-grid">
+				{tk.map((t) => (
+					<div class="tk-card">
+						<span class="tk-card__name">{t.name}</span>
+						<span class="tk-card__desc">{t.desc}</span>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="page__section page__section--alt">
+			<h2>Способы оплаты</h2>
+			<div class="pay-grid">
+				{payment.map((p) => (
+					<article class="pay-card">
+						<h3>{p.title}</h3>
+						<p>{p.text}</p>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="page__section">
+			<h2>Документы при отгрузке</h2>
+			<ul class="docs">
+				{docs.map((d) => (
+					<li>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+							<polyline points="14 2 14 8 20 8"/>
+							<path d="M9 13l2 2 4-4"/>
+						</svg>
+						<span>{d}</span>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<div class="page__contact-strip">
+			<div>
+				<strong>Уточнить срок и стоимость доставки до вашего адреса —</strong>
+				<a href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+				или <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+			</div>
+		</div>
 	</div>
+
+	<CtaSection
+		title="Рассчитаем доставку под ваш заказ"
+		text="Оставьте заявку — менеджер подберёт оптимальный способ и сообщит точный срок."
+	/>
 </BaseLayout>
 
 <style>
-	.page {
-		padding-block: var(--space-8);
+	.page { padding-block: var(--space-8); }
+	.page__hero { margin-bottom: var(--space-10); max-width: 80ch; }
+	.page__lead {
+		font-size: 1.08rem;
+		max-width: 70ch;
+		margin: var(--space-3) 0 0;
+		color: var(--color-text);
+		line-height: 1.6;
 	}
-	.lead {
-		max-width: 65ch;
+	.page__section { margin-bottom: var(--space-10); }
+	.page__section h2 {
+		font-size: 1.4rem;
+		margin-bottom: var(--space-2);
+		letter-spacing: -0.015em;
 	}
+	.page__sub {
+		margin: 0 0 var(--space-5);
+		color: var(--color-muted);
+		font-size: 0.94rem;
+	}
+
+	.adv-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-4);
+		margin-top: var(--space-5);
+	}
+	.adv-card {
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-xs);
+	}
+	.adv-card__ico {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 42px;
+		height: 42px;
+		border-radius: var(--radius-md);
+		background: var(--color-primary-50);
+		color: var(--color-primary-500);
+		margin-bottom: var(--space-3);
+	}
+	.adv-card h3 {
+		font-size: 1rem;
+		margin: 0 0 var(--space-2);
+		line-height: 1.35;
+	}
+	.adv-card p {
+		margin: 0;
+		font-size: 0.92rem;
+		color: var(--color-muted);
+		line-height: 1.55;
+	}
+
+	.cities-table-wrap {
+		overflow-x: auto;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+	}
+	.cities-table {
+		width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
+		font-size: 0.95rem;
+		min-width: 480px;
+	}
+	.cities-table thead th {
+		text-align: left;
+		padding: 0.85rem 1rem;
+		font-size: 0.74rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--color-muted);
+		background: var(--color-bg);
+		border-bottom: 1px solid var(--color-border);
+		white-space: nowrap;
+	}
+	.cities-table__num { text-align: right; font-variant-numeric: tabular-nums; }
+	.cities-table tbody td {
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--color-border);
+		color: var(--color-text);
+	}
+	.cities-table tbody tr:nth-child(even) td { background: var(--color-bg-elev); }
+	.cities-table tbody tr:last-child td { border-bottom: 0; }
+
+	.tk-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: var(--space-3);
+		margin-top: var(--space-4);
+	}
+	.tk-card {
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+	.tk-card__name { font-weight: 600; color: var(--color-text); }
+	.tk-card__desc { font-size: 0.85rem; color: var(--color-muted); }
+
+	.page__section--alt {
+		padding: var(--space-6);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-lg);
+	}
+	.page__section--alt h2 { margin-bottom: var(--space-5); }
+	.pay-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: var(--space-3);
+	}
+	.pay-card {
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+	}
+	.pay-card h3 {
+		font-size: 0.98rem;
+		margin: 0 0 var(--space-2);
+		color: var(--color-text);
+		line-height: 1.35;
+	}
+	.pay-card p {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-muted);
+		line-height: 1.55;
+	}
+
+	.docs {
+		margin: var(--space-3) 0 0;
+		padding: 0;
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: var(--space-3);
+	}
+	.docs li {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		font-size: 0.94rem;
+		color: var(--color-text);
+		line-height: 1.4;
+		padding: var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+	.docs svg { flex: 0 0 18px; margin-top: 2px; color: var(--color-primary-500); }
+
+	.page__contact-strip {
+		padding: var(--space-4) var(--space-5);
+		background: var(--color-bg-elev);
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-md);
+		font-size: 0.94rem;
+		color: var(--color-muted);
+	}
+	.page__contact-strip strong { color: var(--color-text); }
+	.page__contact-strip a { color: var(--color-primary-600); font-weight: 600; }
 </style>

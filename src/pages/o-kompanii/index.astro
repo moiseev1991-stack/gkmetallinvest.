@@ -1,24 +1,305 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import { siteName, siteUrl, contacts } from '../../data/site';
+
+const stats = [
+	{ value: '7 лет', label: 'на рынке металлопроката' },
+	{ value: '10 000+', label: 'наименований на складах' },
+	{ value: 'Своё', label: 'производство ЭСВ труб' },
+	{ value: 'Россия + СНГ', label: 'география поставок' },
+];
+
+const capabilities = [
+	{
+		title: 'Нержавеющий металлопрокат и прецизионные сплавы',
+		text: 'Лист, рулон, труба, круг, полоса, уголок, проволока, фитинги, ленты и фольга. Подбираем под марку, формат и сроки заказчика.',
+	},
+	{
+		title: 'Собственное производство ЭСВ и гофрированных труб',
+		text: 'Электросварные и гофрированные трубы под технические задания заказчика.',
+	},
+	{
+		title: 'Резка листа в размер до 12 м',
+		text: 'Точность ±1 мм. Резка от одного листа — под небольшие проекты и пробные партии.',
+	},
+	{
+		title: 'Продольная резка в штрипс до 4 мм',
+		text: 'Резка рулона в штрипс заданной ширины с шагом 5 мм для собственного раскроя клиента.',
+	},
+	{
+		title: 'Шлифовка и перфорация нержавеющих листов',
+		text: 'Шлиф до Ra ≤ 0,4 мкм, перфорация по чертежу — лазер и координатно-пробивной пресс.',
+	},
+	{
+		title: 'Редкие позиции под заказ',
+		text: 'Жаропрочные, дуплекс, никелесодержащие, безникелевые марки — держим на складе и привозим под проект.',
+	},
+];
+
+const industries = [
+	'Металлообработка и машиностроение',
+	'Строительство и фасады',
+	'Пищевая и фармацевтическая промышленность',
+	'Химия, нефтегаз, энергетика',
+	'Морские конструкции и судостроение',
+	'Интерьеры и архитектура',
+];
+
+const requisites = [
+	{ k: 'Юридическое лицо', v: 'ООО «МЕТАЛЛИНВЕСТ»' },
+	{ k: 'ИНН', v: '5262332690' },
+	{ k: 'КПП', v: '526001001' },
+	{ k: 'ОГРН', v: '1165262052889' },
+	{ k: 'Адрес', v: contacts.address },
+	{ k: 'Телефон', v: contacts.phone },
+	{ k: 'Email', v: contacts.email },
+];
+
+const aboutJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'AboutPage',
+	url: `${siteUrl}/o-kompanii/`,
+	name: `О компании ${siteName}`,
+	mainEntity: { '@id': `${siteUrl}/#organization` },
+};
 ---
 
-<BaseLayout title="О компании" description="ГК Металлинвест — поставки нержавеющего металлопроката и услуги обработки.">
-	<div class="container page">
+<BaseLayout
+	title="О компании"
+	description="ГК Металлинвест — 7 лет на рынке нержавеющего металлопроката. Более 10 000 наименований, собственное производство ЭСВ труб, резка до 12 м, шлифовка и перфорация. Поставки по всей России."
+	jsonLd={aboutJsonLd}
+>
+	<div class="container about">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'О компании' }]} />
-		<h1>О компании</h1>
-		<p class="lead">
-			Работаем с металлообработкой, строительством, пищевой и химической отраслями. Контент расширяется по мере
-			согласования с маркетингом.
-		</p>
+
+		<header class="about__hero">
+			<span class="eyebrow">О компании</span>
+			<h1>Группа компаний «Металлинвест»</h1>
+			<p class="about__lead">
+				Семь лет на рынке нержавеющего металлопроката и прецизионных сплавов. За пять лет
+				работы выстроили эффективную систему партнёрства с поставщиками металла —
+				держим редкие позиции на складах и закрываем заказы любого объёма для производств
+				по всей России и СНГ.
+			</p>
+			<dl class="about__stats">
+				{stats.map((s) => (
+					<div>
+						<dt>{s.value}</dt>
+						<dd>{s.label}</dd>
+					</div>
+				))}
+			</dl>
+		</header>
+
+		<section class="about__section">
+			<h2>Чем занимаемся</h2>
+			<div class="cap-grid">
+				{capabilities.map((c, i) => (
+					<article class="cap-card">
+						<span class="cap-card__num">{String(i + 1).padStart(2, '0')}</span>
+						<h3>{c.title}</h3>
+						<p>{c.text}</p>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="about__section about__industries">
+			<div>
+				<h2>Кому поставляем</h2>
+				<p class="about__industries-lead">
+					Работаем с производственными компаниями и проектными организациями. Подбираем
+					марку и формат под отраслевые стандарты и нагрузки.
+				</p>
+			</div>
+			<ul class="industries">
+				{industries.map((it) => (
+					<li>
+						<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+							<path d="M3 9.5l3.5 3.5 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+						<span>{it}</span>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="about__section">
+			<h2>Реквизиты</h2>
+			<dl class="reqs">
+				{requisites.map((r) => (
+					<>
+						<dt>{r.k}</dt>
+						<dd>{r.v}</dd>
+					</>
+				))}
+			</dl>
+		</section>
 	</div>
+
+	<CtaSection
+		title="Готовы работать с нами?"
+		text="Отправьте заявку — менеджер подберёт марку, формат и логистику под вашу задачу."
+	/>
 </BaseLayout>
 
 <style>
-	.page {
-		padding-block: var(--space-8);
+	.about { padding-block: var(--space-8); }
+
+	.about__hero { margin-bottom: var(--space-10); max-width: 80ch; }
+	.about__lead {
+		font-size: 1.1rem;
+		max-width: 70ch;
+		margin: var(--space-3) 0 var(--space-6);
+		color: var(--color-text);
+		line-height: 1.6;
 	}
-	.lead {
-		max-width: 65ch;
+
+	.about__stats {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: var(--space-4);
+		margin: 0;
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-xs);
+	}
+	.about__stats > div { min-width: 0; }
+	.about__stats dt {
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: var(--color-primary-600);
+		letter-spacing: -0.02em;
+		font-family: var(--font-display);
+	}
+	.about__stats dd {
+		margin: 0.2rem 0 0;
+		font-size: 0.88rem;
+		color: var(--color-muted);
+		line-height: 1.4;
+	}
+
+	.about__section { margin-bottom: var(--space-10); }
+	.about__section h2 {
+		font-size: 1.4rem;
+		margin-bottom: var(--space-5);
+		letter-spacing: -0.015em;
+	}
+
+	.cap-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: var(--space-4);
+	}
+	.cap-card {
+		position: relative;
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-xs);
+		transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+	}
+	.cap-card:hover {
+		transform: translateY(-2px);
+		border-color: var(--color-primary-100);
+	}
+	.cap-card__num {
+		position: absolute;
+		top: var(--space-4);
+		right: var(--space-4);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--color-subtle);
+		letter-spacing: 0.05em;
+	}
+	.cap-card h3 {
+		font-size: 1.02rem;
+		margin: 0 0 var(--space-2);
+		padding-right: var(--space-6);
+		line-height: 1.35;
+	}
+	.cap-card p {
+		margin: 0;
+		font-size: 0.93rem;
+		color: var(--color-muted);
+		line-height: 1.55;
+	}
+
+	.about__industries {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-6);
+		padding: var(--space-6);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-lg);
+	}
+	@media (min-width: 720px) {
+		.about__industries { grid-template-columns: 1fr 1fr; align-items: start; }
+	}
+	.about__industries h2 { margin-bottom: var(--space-3); }
+	.about__industries-lead {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: 0.95rem;
+		line-height: 1.55;
+	}
+	.industries {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-2);
+	}
+	@media (min-width: 540px) {
+		.industries { grid-template-columns: 1fr 1fr; }
+	}
+	.industries li {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.55rem;
+		font-size: 0.94rem;
+		color: var(--color-text);
+		line-height: 1.4;
+	}
+	.industries svg {
+		flex: 0 0 18px;
+		margin-top: 2px;
+		color: var(--color-primary-500);
+	}
+
+	.reqs {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		gap: var(--space-3) var(--space-5);
+		margin: 0;
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		font-size: 0.94rem;
+	}
+	.reqs dt {
+		color: var(--color-subtle);
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+	.reqs dd {
+		margin: 0;
+		color: var(--color-text);
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+	}
+	@media (max-width: 540px) {
+		.reqs { grid-template-columns: 1fr; gap: 0.2rem var(--space-3); }
+		.reqs dt { margin-top: var(--space-3); }
+		.reqs dt:first-child { margin-top: 0; }
 	}
 </style>
