@@ -892,23 +892,23 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 	}
 	.pt__th--main { background: var(--color-primary-50); }
 	.pt__th--act { padding: 0; }
+	/* inline-flex, чтобы стрелка всегда жилась рядом с подписью —
+	   а text-align на th прижимает весь блок к нужному краю колонки. */
 	.pt__th-inner {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.35rem;
-		line-height: 1;
+		gap: 0.4rem;
+		line-height: 1.15;
+		vertical-align: middle;
 	}
 	.pt__th--num,
 	.pt__th--price { text-align: right; }
-	.pt__th--num .pt__th-inner,
-	.pt__th--price .pt__th-inner { flex-direction: row-reverse; }
-	.pt__th--price .pt__th-inner { align-items: flex-end; }
+	.pt__th--price .pt__th-inner { align-items: center; }
 	.pt__th--price .pt__th-inner > span:first-child {
 		display: inline-flex;
 		flex-wrap: wrap;
 		justify-content: flex-end;
-		gap: 0.25rem;
-		row-gap: 0;
+		gap: 0.2rem 0.3rem;
 		align-items: baseline;
 	}
 	.pt__th-unit {
