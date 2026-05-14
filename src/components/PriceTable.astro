@@ -433,7 +433,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 				? `<td class="pt__cell-num pt__cell-muted" data-label="Длина">${escapeHtml(s.dlina || '—')}</td>`
 				: '';
 			const factTd = HAS_FACT
-				? `<td class="pt__cell-fact" data-label="Склад"><span class="pt__fact">${escapeHtml(s.fact || '—')}</span>${s.ostatok ? `<span class="pt__ost"><span class="pt__ost-dot" aria-hidden="true"></span>${s.ostatok}</span>` : ''}</td>`
+				? `<td class="pt__cell-fact" data-label="Склад"><span class="pt__fact-wrap"><span class="pt__fact">${escapeHtml(s.fact || '—')}</span>${s.ostatok ? `<span class="pt__ost"><span class="pt__ost-dot" aria-hidden="true"></span>${s.ostatok}</span>` : ''}</span></td>`
 				: '';
 			const priceUnitTd = HAS_UNIQUE_PRICES
 				? `<td class="pt__cell-price" data-label="Цена розн.">${priceUnitCell}</td>`
@@ -861,17 +861,19 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 		width: 100%;
 		border-collapse: separate;
 		border-spacing: 0;
-		font-size: 0.95rem;
-		min-width: 1024px;
+		font-size: 0.94rem;
+		/* Сумма фиксированных ширин ниже = ~960px при всех включённых колонках;
+		   таблица влезает в стандартный desktop без горизонтального скролла. */
+		min-width: 960px;
 		table-layout: fixed;
 	}
-	.pt__col-name { width: auto; min-width: 280px; }
-	.pt__col-size { width: 130px; }
-	.pt__col-grade { width: 210px; }
-	.pt__col-len { width: 90px; }
-	.pt__col-fact { width: 150px; }
-	.pt__col-price { width: 130px; }
-	.pt__col-price--main { width: 140px; background: var(--color-primary-50); }
+	.pt__col-name { width: auto; min-width: 220px; }
+	.pt__col-size { width: 108px; }
+	.pt__col-grade { width: 168px; }
+	.pt__col-len { width: 72px; }
+	.pt__col-fact { width: 124px; }
+	.pt__col-price { width: 112px; }
+	.pt__col-price--main { width: 128px; }
 	.pt__col-act { width: 56px; }
 
 	.pt__table thead th {
@@ -976,6 +978,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 	.pt__unit-suffix { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-subtle); font-weight: 400; margin-left: 0.15rem; }
 	.pt__cell-grade { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-text); }
 	.pt__cell-fact { color: var(--color-text); font-size: 0.9rem; }
+	.pt__fact-wrap { display: block; }
 	.pt__fact { display: block; }
 	.pt__ost {
 		display: inline-flex;
