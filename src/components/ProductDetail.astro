@@ -177,7 +177,11 @@ const detailRows: { label: string; value: string }[] = [
 ];
 if (roll) detailRows.push({ label: 'Передел', value: roll });
 if (surface) detailRows.push({ label: 'Поверхность', value: surface });
-if (sku.alloy) detailRows.push({ label: 'Тип сплава', value: sku.alloy });
+// «Тип сплава» обычно дублирует «Категорию» (никелесодержащий/без никеля).
+// Показываем, только если отличается от subLabel.
+if (sku.alloy && sku.alloy.toLowerCase() !== subLabel.toLowerCase()) {
+	detailRows.push({ label: 'Тип сплава', value: sku.alloy });
+}
 if (sku.size) detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + measureLabel.slice(1), value: `${sku.size} мм` });
 if (sku.dlina) detailRows.push({ label: 'Длина', value: `${sku.dlina} мм` });
 detailRows.push({ label: 'Единица измерения', value: sku.unit });
@@ -214,11 +218,78 @@ const services = SERVICES_BY_HUB[sku.hub] || [];
 const imgPath = `/img/catalog/${sku.hub}/${sku.sub}.webp`;
 const imgAlt = `${hubLabel} ${sku.grade || ''} ${sku.size ? sku.size + ' мм' : ''}`.trim();
 
-// 6 близких позиций по той же марке/переделу
+// 6 близких позиций по той же марке/переделу — для блока «Похожие позиции»
 const allSkus = (pricelist.hubs as any)[sku.hub] as SKU[];
 const related = allSkus
 	.filter((s) => s.slug !== sku.slug && s.grade === sku.grade && (s.roll ?? '') === (sku.roll ?? ''))
 	.slice(0, 6);
+
+/* Другие размеры этой же марки + поверхности — компактный список ссылок
+   («другие толщины»). Дедуплицируем по числовому значению size, режем дубли -N. */
+function sizeNum(v: any): number {
+	const m = String(v ?? '').match(/-?\d+(?:[.,]\d+)?/);
+	return m ? parseFloat(m[0].replace(',', '.')) : NaN;
+}
+const _sizeMap = new Map<number, SKU>();
+for (const s of allSkus) {
+	if (s.slug === sku.slug) continue;
+	if (s.grade !== sku.grade) continue;
+	if ((s.surface ?? '') !== (sku.surface ?? '')) continue;
+	if ((s.roll ?? '') !== (sku.roll ?? '')) continue;
+	if (/-\d+$/.test(s.slug)) continue; // дубль партии
+	const n = sizeNum(s.size);
+	if (!Number.isFinite(n)) continue;
+	if (!_sizeMap.has(n)) _sizeMap.set(n, s);
+}
+const otherSizes = [..._sizeMap.entries()]
+	.sort(([a], [b]) => a - b)
+	.map(([, s]) => s);
+
+/* CTA — передаём slug и (опц.) объём, чтобы форма заявки могла предзаполниться
+   и трекать конверсии по конкретной позиции. */
+const ctaHref = `/zapros-kp/?sku=${encodeURIComponent(sku.slug)}#lead-form`;
+
+/* FAQ-блок: 4-6 универсальных вопросов с подстановкой марки/толщины.
+   Отдаём FAQPage JSON-LD — это даёт rich snippets в выдаче Яндекса/Google. */
+const faqItems = (() => {
+	const items: { q: string; a: string }[] = [];
+	items.push({
+		q: `Какой минимальный объём заказа ${hubLabel.toLowerCase()} ${sku.grade}?`,
+		a: `Отгружаем от розничной нормы — 0,1 ${sku.unit} (с розничной ценой) и от 1 ${sku.unit} по оптовой цене. Возможна резка под ваш размер и комплектация одной отправкой нескольких марок.`,
+	});
+	items.push({
+		q: 'Какие документы предоставляются на партию?',
+		a: 'На каждую партию — сертификат завода-изготовителя и паспорт качества. По запросу — копии в формате PDF/ЭДО до отгрузки, оригиналы вкладываются в груз или направляются курьером.',
+	});
+	if (aliases.length) {
+		items.push({
+			q: `Чем ${sku.grade} отличается от ${aliases[0]}?`,
+			a: `${sku.grade} и ${aliases[0]} — взаимозаменяемые марки по составу и характеристикам (российская и зарубежная номенклатура). Используются под одни и те же задачи; в спецификации можно указывать любой из аналогов.`,
+		});
+	}
+	items.push({
+		q: 'Сколько действует цена в коммерческом предложении?',
+		a: `Цена в прайсе ориентировочная и обновляется ежедневно. В КП фиксируем цену на 5 рабочих дней — этого достаточно для согласования и оплаты счёта.`,
+	});
+	items.push({
+		q: 'Можно ли заказать резку, перфорацию или полировку этой позиции?',
+		a: `Да. ${hubLabel} режем в размер до 12 м (точность ±1 мм), перфорируем по чертежу, полируем до зеркала Ra ≤ 0,4 мкм. Услуги добавляются в счёт отдельной строкой.`,
+	});
+	items.push({
+		q: 'Доставка по России — какие способы и сроки?',
+		a: 'Авто и ж/д контейнерные отправки, попутный транспорт и собственные машины, СДЭК / ПЭК / «Деловые линии». Срок в Москву — 1–2 дня, СПб — 2–3, Урал — 3–4, Сибирь — 5–7 рабочих дней.',
+	});
+	return items;
+})();
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faqItems.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
 
 const breadcrumbs = [
 	{ label: 'Главная', href: '/' },
@@ -300,7 +371,7 @@ if (sku.price != null) {
 	noindex={isDup}
 	image={imgPath}
 	type="product"
-	jsonLd={productJsonLd}
+	jsonLd={[productJsonLd, faqJsonLd]}
 >
 	<div class="container product">
 		<Breadcrumbs items={breadcrumbs} />
@@ -341,7 +412,7 @@ if (sku.price != null) {
 				)}
 			</div>
 
-			<aside class="product__price">
+			<aside class="product__price" data-product-price>
 				{sku.price ? (
 					<>
 						<span class="product__price-label">Цена от 1 {sku.unit}</span>
@@ -349,9 +420,30 @@ if (sku.price != null) {
 						<span class="product__price-unit">за {sku.unit} (с НДС)</span>
 						{sku.priceUnit != null && sku.priceUnit !== sku.price && (
 							<span class="product__price-retail">
-								Розница до 0,1 т · <strong>{fmt(sku.priceUnit)} ₽</strong>/{sku.unit}
+								Розница до 0,1 {sku.unit} · <strong>{fmt(sku.priceUnit)} ₽</strong>/{sku.unit}
 							</span>
 						)}
+
+						<div class="calc">
+							<label class="calc__label" for={`calc-${sku.slug}`}>Расчёт по объёму, {sku.unit}</label>
+							<div class="calc__row">
+								<input
+									id={`calc-${sku.slug}`}
+									class="calc__input"
+									type="number"
+									inputmode="decimal"
+									step="0.1"
+									min="0.1"
+									placeholder="1"
+									data-calc-input
+									data-unit-price={sku.price}
+									data-retail-price={sku.priceUnit ?? sku.price}
+									data-unit={sku.unit}
+								/>
+								<span class="calc__unit">{sku.unit}</span>
+							</div>
+							<div class="calc__result" data-calc-result>Введите объём — посчитаем сумму</div>
+						</div>
 					</>
 				) : (
 					<>
@@ -359,7 +451,7 @@ if (sku.price != null) {
 						<span class="product__price-on-request">по запросу</span>
 					</>
 				)}
-				<a href="/zapros-kp/" class="product__cta">Запросить КП</a>
+				<a href={ctaHref} class="product__cta" data-product-cta data-base-href={ctaHref}>Запросить КП</a>
 				<a href="tel:+78312812660" class="product__call">+7 (831) 281-26-60</a>
 			</aside>
 		</header>
@@ -446,6 +538,23 @@ if (sku.price != null) {
 			</section>
 		)}
 
+		{otherSizes.length > 1 && (
+			<section class="other-sizes">
+				<h2>Другие {measureLabel === 'диаметр' ? 'диаметры' : measureLabel === 'Ø × стенка' ? 'размеры' : 'толщины'} для {sku.grade}{surface && ` · ${surface}`}</h2>
+				<ul class="other-sizes__list">
+					{otherSizes.map((s) => (
+						<li>
+							{s.slug === sku.slug ? (
+								<span class="other-sizes__chip other-sizes__chip--active">{s.size} мм</span>
+							) : (
+								<a class="other-sizes__chip" href={`${hubHref}${s.slug}/`}>{s.size} мм</a>
+							)}
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
+
 		{related.length > 0 && (
 			<section class="related">
 				<h2>Похожие позиции — {sku.grade}{roll && `, ${roll}`}</h2>
@@ -463,7 +572,7 @@ if (sku.price != null) {
 							/>
 							<div class="related__body">
 								<span class="related__title">{r.grade}{r.size && ` · ${r.size} мм`}</span>
-								<span class="related__meta">{SUB_LABELS[r.sub] ?? r.sub}{r.surface && ` · ${r.surface}`}</span>
+								<span class="related__meta">{[SUB_LABELS[r.sub] ?? r.sub, r.surface].filter(Boolean).join(' · ')}</span>
 								<span class="related__price">
 									{r.price ? `${fmt(r.price)} ₽/${r.unit}` : 'по запросу'}
 								</span>
@@ -476,7 +585,75 @@ if (sku.price != null) {
 				</p>
 			</section>
 		)}
+
+		<section class="faq">
+			<h2>Частые вопросы</h2>
+			<div class="faq__list">
+				{faqItems.map((f) => (
+					<details class="faq__item">
+						<summary class="faq__q">
+							<span>{f.q}</span>
+							<svg class="faq__chev" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p class="faq__a">{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
 	</div>
+
+	{sku.price && (
+		<div class="product-sticky" data-product-sticky aria-label="Цена и заявка">
+			<div class="product-sticky__price">
+				<span class="product-sticky__num">{fmt(sku.price)} ₽</span>
+				<span class="product-sticky__unit">/{sku.unit}</span>
+			</div>
+			<a class="product-sticky__cta" href={ctaHref} data-product-sticky-cta data-base-href={ctaHref}>Запросить КП</a>
+		</div>
+	)}
+
+	<script>
+		(function () {
+			const root = document.querySelector('[data-product-price]');
+			if (!root) return;
+			const input = root.querySelector('[data-calc-input]');
+			const result = root.querySelector('[data-calc-result]');
+			const cta = document.querySelector('[data-product-cta]');
+			const stickyCta = document.querySelector('[data-product-sticky-cta]');
+			if (!input || !result) return;
+
+			const unitPrice = parseFloat(input.dataset.unitPrice || '0');
+			const retailPrice = parseFloat(input.dataset.retailPrice || String(unitPrice));
+			const unit = input.dataset.unit || 'т';
+			const fmt = new Intl.NumberFormat('ru-RU');
+			const baseHref = cta?.dataset.baseHref || cta?.getAttribute('href') || '/zapros-kp/';
+
+			function recalc() {
+				const raw = (input.value || '').replace(',', '.').trim();
+				const qty = parseFloat(raw);
+				if (!isFinite(qty) || qty <= 0) {
+					result.textContent = 'Введите объём — посчитаем сумму';
+					result.classList.remove('calc__result--ok');
+					if (cta) cta.setAttribute('href', baseHref);
+					if (stickyCta) stickyCta.setAttribute('href', baseHref);
+					return;
+				}
+				const price = qty < 1 ? retailPrice : unitPrice;
+				const total = Math.round(qty * price);
+				const tier = qty < 1 ? 'розница' : 'оптовая цена';
+				result.innerHTML = `<strong>${fmt.format(total)} ₽</strong> <span class="calc__hint">≈ ${fmt.format(price)} ₽/${unit} · ${tier}</span>`;
+				result.classList.add('calc__result--ok');
+
+				const sep = baseHref.includes('?') ? '&' : '?';
+				const newHref = baseHref.replace('#lead-form', '') + `${sep}qty=${encodeURIComponent(qty)}#lead-form`;
+				if (cta) cta.setAttribute('href', newHref);
+				if (stickyCta) stickyCta.setAttribute('href', newHref);
+			}
+			input.addEventListener('input', recalc);
+		})();
+	</script>
 
 	<CtaSection
 		title="Уточнить цену и наличие"
@@ -876,5 +1053,214 @@ if (sku.price != null) {
 	}
 	.related__back a:hover {
 		text-decoration: underline;
+	}
+
+	/* Калькулятор стоимости — в правой колонке цены */
+	.calc {
+		margin: var(--space-3) 0 var(--space-4);
+		padding-top: var(--space-3);
+		border-top: 1px dashed var(--color-primary-100);
+	}
+	.calc__label {
+		display: block;
+		font-size: 0.74rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-subtle);
+		margin-bottom: 0.3rem;
+	}
+	.calc__row {
+		display: flex;
+		align-items: stretch;
+		gap: 0.4rem;
+		background: #fff;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		padding: 0.1rem 0.6rem;
+		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.calc__row:focus-within {
+		border-color: var(--color-primary-500);
+		box-shadow: 0 0 0 3px var(--color-primary-100);
+	}
+	.calc__input {
+		flex: 1;
+		min-width: 0;
+		border: 0;
+		outline: none;
+		background: transparent;
+		font: inherit;
+		font-family: var(--font-mono);
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--color-text);
+		padding: 0.45rem 0;
+		-moz-appearance: textfield;
+		appearance: textfield;
+	}
+	.calc__input::-webkit-outer-spin-button,
+	.calc__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+	.calc__unit {
+		align-self: center;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		font-weight: 500;
+	}
+	.calc__result {
+		margin-top: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		line-height: 1.3;
+	}
+	.calc__result--ok strong {
+		font-family: var(--font-mono);
+		font-size: 1.05rem;
+		color: var(--color-primary-600);
+		display: block;
+		margin-bottom: 0.1rem;
+	}
+	.calc__hint {
+		font-size: 0.78rem;
+		color: var(--color-subtle);
+	}
+
+	/* Другие толщины — компактные чипы */
+	.other-sizes { margin-bottom: var(--space-8); }
+	.other-sizes h2 { font-size: 1.15rem; margin: 0 0 var(--space-4); }
+	.other-sizes__list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.other-sizes__chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 64px;
+		padding: 0.45rem 0.85rem;
+		border-radius: var(--radius-pill);
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--color-text);
+		text-decoration: none;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.other-sizes__chip:hover {
+		border-color: var(--color-primary-500);
+		color: var(--color-primary-600);
+		text-decoration: none;
+	}
+	.other-sizes__chip--active {
+		background: var(--color-primary-500);
+		border-color: var(--color-primary-500);
+		color: #fff;
+		cursor: default;
+	}
+
+	/* FAQ */
+	.faq { margin-bottom: var(--space-8); }
+	.faq h2 { font-size: 1.15rem; margin: 0 0 var(--space-4); }
+	.faq__list {
+		display: grid;
+		gap: var(--space-2);
+	}
+	.faq__item {
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		transition: border-color var(--dur-fast) var(--ease-out);
+	}
+	.faq__item[open] {
+		border-color: var(--color-primary-100);
+	}
+	.faq__q {
+		list-style: none;
+		cursor: pointer;
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		font-size: 0.97rem;
+		color: var(--color-text);
+		line-height: 1.4;
+	}
+	.faq__q::-webkit-details-marker { display: none; }
+	.faq__chev {
+		color: var(--color-subtle);
+		flex: 0 0 auto;
+		transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+	}
+	.faq__item[open] .faq__chev {
+		transform: rotate(180deg);
+		color: var(--color-primary-500);
+	}
+	.faq__a {
+		margin: 0;
+		padding: 0 var(--space-4) var(--space-4);
+		color: var(--color-muted);
+		font-size: 0.93rem;
+		line-height: 1.55;
+		max-width: 70ch;
+	}
+
+	/* Sticky-цена на мобиле — перекрывает общий MobileStickyBar для product detail */
+	.product-sticky {
+		display: none;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 51;
+		padding: var(--space-2) var(--space-3);
+		padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0));
+		background: rgba(255, 255, 255, 0.97);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		border-top: 1px solid var(--color-border);
+		box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+		gap: var(--space-3);
+		align-items: center;
+	}
+	@media (max-width: 767px) {
+		.product-sticky { display: flex; }
+	}
+	.product-sticky__price {
+		display: flex;
+		align-items: baseline;
+		gap: 0.2rem;
+		font-family: var(--font-mono);
+	}
+	.product-sticky__num {
+		font-size: 1.05rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+	.product-sticky__unit {
+		font-size: 0.8rem;
+		color: var(--color-muted);
+	}
+	.product-sticky__cta {
+		flex: 1;
+		text-align: center;
+		padding: 0.7rem 1rem;
+		background: var(--color-primary-500);
+		color: #fff;
+		border-radius: var(--radius-md);
+		font-weight: 600;
+		font-size: 0.95rem;
+		text-decoration: none;
+	}
+	.product-sticky__cta:hover {
+		background: var(--color-primary-600);
+		text-decoration: none;
 	}
 </style>
