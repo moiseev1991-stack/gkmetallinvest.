@@ -1,6 +1,13 @@
 ---
 import { navCatalog, navServices } from '../data/navigation';
 import { contacts, siteName } from '../data/site';
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => {
+	if (href === '/') return path === '/';
+	const norm = href.endsWith('/') ? href : href + '/';
+	return path === norm || path.startsWith(norm);
+};
 ---
 
 <footer class="foot">
@@ -27,7 +34,7 @@ import { contacts, siteName } from '../data/site';
 				{
 					navCatalog.map((c) => (
 						<li>
-							<a href={c.href}>{c.title}</a>
+							<a class={isActive(c.href) ? 'foot__link--active' : ''} href={c.href} aria-current={isActive(c.href) ? 'page' : undefined}>{c.title}</a>
 						</li>
 					))
 				}
@@ -40,7 +47,7 @@ import { contacts, siteName } from '../data/site';
 				{
 					navServices.map((s) => (
 						<li>
-							<a href={s.href}>{s.label}</a>
+							<a class={isActive(s.href) ? 'foot__link--active' : ''} href={s.href} aria-current={isActive(s.href) ? 'page' : undefined}>{s.label}</a>
 						</li>
 					))
 				}
@@ -50,11 +57,15 @@ import { contacts, siteName } from '../data/site';
 		<div class="foot__col">
 			<span class="foot__h">Информация</span>
 			<ul>
-				<li><a href="/o-kompanii/">О компании</a></li>
-				<li><a href="/dostavka-i-oplata/">Доставка и оплата</a></li>
-				<li><a href="/kontakty/">Контакты</a></li>
-				<li><a href="/zapros-kp/">Запросить КП</a></li>
-				<li><a href="/karta-sayta/">Карта сайта</a></li>
+				{[
+					{ href: '/o-kompanii/', label: 'О компании' },
+					{ href: '/dostavka-i-oplata/', label: 'Доставка и оплата' },
+					{ href: '/kontakty/', label: 'Контакты' },
+					{ href: '/zapros-kp/', label: 'Запросить КП' },
+					{ href: '/karta-sayta/', label: 'Карта сайта' },
+				].map((l) => (
+					<li><a class={isActive(l.href) ? 'foot__link--active' : ''} href={l.href} aria-current={isActive(l.href) ? 'page' : undefined}>{l.label}</a></li>
+				))}
 			</ul>
 			<p class="foot__contact">
 				<a href={`tel:${contacts.phoneTel}`} class="foot__phone">{contacts.phone}</a>
@@ -200,6 +211,23 @@ import { contacts, siteName } from '../data/site';
 	.foot a:hover {
 		color: #fff;
 		text-decoration: none;
+	}
+	.foot__link--active {
+		color: #fff;
+		font-weight: 600;
+		position: relative;
+		padding-left: 12px;
+	}
+	.foot__link--active::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: var(--color-accent, #c4651b);
 	}
 	.foot__contact {
 		display: flex;

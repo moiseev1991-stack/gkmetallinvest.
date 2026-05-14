@@ -2,6 +2,22 @@
 import { navGroups, navTop, navServices } from '../data/navigation';
 import { siteName, contacts } from '../data/site';
 import Button from './ui/Button.astro';
+
+const path = Astro.url.pathname;
+
+/** href "/list/" активен на /list/, /list/aisi-304…/, /list/v-moskve/.
+ *  href "/" активен только на главной. */
+const isActive = (href: string) => {
+	if (href === '/') return path === '/';
+	const norm = href.endsWith('/') ? href : href + '/';
+	return path === norm || path.startsWith(norm);
+};
+
+const catalogHrefs = navGroups.flatMap((g) => g.items.map((i) => i.href));
+const inCatalog = catalogHrefs.some((h) => isActive(h));
+
+const serviceHrefs = navServices.map((s) => s.href);
+const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h));
 ---
 
 <header class="head">
@@ -43,7 +59,7 @@ import Button from './ui/Button.astro';
 		<div class="head__nav-wrap" id="nav-drawer">
 			<nav class="head__nav" aria-label="Основное">
 				<div class="mega">
-					<button type="button" class="mega__trigger" aria-expanded="false" id="mega-btn">
+					<button type="button" class={`mega__trigger${inCatalog ? ' mega__trigger--active' : ''}`} aria-expanded="false" id="mega-btn" aria-current={inCatalog ? 'page' : undefined}>
 						Каталог
 						<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
 							<path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -59,17 +75,20 @@ import Button from './ui/Button.astro';
 											{group.hint && <span class="mega__group-hint">{group.hint}</span>}
 										</header>
 										<ul class="mega__group-list">
-											{group.items.map((item) => (
-												<li class={`mega__item-wrap${item.empty ? ' mega__item-wrap--empty' : ''}`}>
-													<a class="mega__item" href={item.href}>
-														<span class="mega__item-row">
-															<span class="mega__item-name">{item.title}</span>
-															{item.empty && <span class="mega__hint">по запросу</span>}
-														</span>
-														{item.meta && <span class="mega__item-meta">{item.meta}</span>}
-													</a>
-												</li>
-											))}
+											{group.items.map((item) => {
+												const active = isActive(item.href);
+												return (
+													<li class={`mega__item-wrap${item.empty ? ' mega__item-wrap--empty' : ''}${active ? ' mega__item-wrap--active' : ''}`}>
+														<a class="mega__item" href={item.href} aria-current={active ? 'page' : undefined}>
+															<span class="mega__item-row">
+																<span class="mega__item-name">{item.title}</span>
+																{item.empty && <span class="mega__hint">по запросу</span>}
+															</span>
+															{item.meta && <span class="mega__item-meta">{item.meta}</span>}
+														</a>
+													</li>
+												);
+											})}
 										</ul>
 									</section>
 								))
@@ -81,7 +100,7 @@ import Button from './ui/Button.astro';
 								{
 									navServices.map((s) => (
 										<li>
-											<a href={s.href}>{s.label}</a>
+											<a class={isActive(s.href) ? 'mega__svc-link--active' : ''} href={s.href} aria-current={isActive(s.href) ? 'page' : undefined}>{s.label}</a>
 										</li>
 									))
 								}
@@ -89,8 +108,22 @@ import Button from './ui/Button.astro';
 						</div>
 					</div>
 				</div>
-				{navTop.map((l) => <a class="head__link" href={l.href}>{l.label}</a>)}
-				<a class="head__link" href="/uslugi/">Услуги</a>
+				{navTop.map((l) => (
+					<a
+						class={`head__link${isActive(l.href) ? ' head__link--active' : ''}`}
+						href={l.href}
+						aria-current={isActive(l.href) ? 'page' : undefined}
+					>
+						{l.label}
+					</a>
+				))}
+				<a
+					class={`head__link${inServices ? ' head__link--active' : ''}`}
+					href="/uslugi/"
+					aria-current={inServices ? 'page' : undefined}
+				>
+					Услуги
+				</a>
 			</nav>
 			<div class="head__cta">
 				<Button href="/zapros-kp/#lead-form" variant="ghost" size="sm">Заявка</Button>
@@ -320,6 +353,10 @@ import Button from './ui/Button.astro';
 		border-bottom-color: var(--color-primary-500);
 		text-decoration: none;
 	}
+	.head__link--active {
+		color: var(--color-primary-600);
+		border-bottom-color: var(--color-primary-500);
+	}
 
 	.mega {
 		position: relative;
@@ -339,6 +376,20 @@ import Button from './ui/Button.astro';
 	}
 	.mega__trigger:hover {
 		color: var(--color-primary-500);
+	}
+	.mega__trigger--active {
+		color: var(--color-primary-600);
+		position: relative;
+	}
+	.mega__trigger--active::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 16px;
+		bottom: -2px;
+		height: 2px;
+		background: var(--color-primary-500);
+		border-radius: 2px;
 	}
 	.mega__panel {
 		position: absolute;
@@ -415,6 +466,20 @@ import Button from './ui/Button.astro';
 		background: var(--color-primary-50);
 		color: var(--color-primary-600);
 		text-decoration: none;
+	}
+	.mega__item-wrap--active .mega__item {
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
+		box-shadow: inset 3px 0 0 var(--color-primary-500);
+	}
+	.mega__item-wrap--active .mega__item-name {
+		color: var(--color-primary-600);
+		font-weight: 700;
+	}
+	.mega__svc-link--active {
+		color: var(--color-primary-600) !important;
+		background: var(--color-primary-50) !important;
+		font-weight: 600;
 	}
 	.mega__item-row {
 		display: inline-flex;
