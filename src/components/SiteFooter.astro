@@ -6,15 +6,13 @@ import { contacts, siteName } from '../data/site';
 <footer class="foot">
 	<div class="container foot__top">
 		<div class="foot__brand">
-			<div class="foot__brand-row">
-				<span class="foot__mark" aria-hidden="true">
-					<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-						<path d="M3 18l4-12h3l4 12M5.5 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-						<path d="M16 6h5v12h-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-					</svg>
+			<a class="foot__logo" href="/" aria-label={siteName}>
+				<img class="foot__logo-img" src="/img/logo.png" alt={siteName} width="44" height="44" />
+				<span class="foot__logo-text">
+					<span class="foot__title">{siteName}</span>
+					<span class="foot__tag">нержавеющий металлопрокат</span>
 				</span>
-				<strong class="foot__title">{siteName}</strong>
-			</div>
+			</a>
 			<p class="foot__about">Поставка нержавеющего металлопроката от листа до проволоки. Резка, перфорация, доставка по всей России.</p>
 			<address class="foot__addr">
 				{contacts.address}
@@ -50,11 +48,17 @@ import { contacts, siteName } from '../data/site';
 		</div>
 
 		<div class="foot__col">
-			<span class="foot__h">Контакты</span>
+			<span class="foot__h">Информация</span>
+			<ul>
+				<li><a href="/o-kompanii/">О компании</a></li>
+				<li><a href="/dostavka-i-oplata/">Доставка и оплата</a></li>
+				<li><a href="/kontakty/">Контакты</a></li>
+				<li><a href="/zapros-kp/">Запросить КП</a></li>
+				<li><a href="/karta-sayta/">Карта сайта</a></li>
+			</ul>
 			<p class="foot__contact">
 				<a href={`tel:${contacts.phoneTel}`} class="foot__phone">{contacts.phone}</a>
 				<a href={`mailto:${contacts.email}`}>{contacts.email}</a>
-				<a href="/zapros-kp/">Запросить КП →</a>
 			</p>
 		</div>
 	</div>
@@ -114,27 +118,39 @@ import { contacts, siteName } from '../data/site';
 		}
 	}
 
-	.foot__brand-row {
-		display: flex;
+	.foot__logo {
+		display: inline-flex;
 		align-items: center;
 		gap: var(--space-3);
 		margin-bottom: var(--space-3);
-	}
-	.foot__mark {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 38px;
-		height: 38px;
-		border-radius: var(--radius-md);
-		background: rgba(255, 255, 255, 0.08);
+		text-decoration: none;
 		color: #fff;
+	}
+	.foot__logo:hover { color: #fff; text-decoration: none; }
+	.foot__logo-img {
+		width: 44px;
+		height: 44px;
+		object-fit: contain;
+		display: block;
+		flex-shrink: 0;
+		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+	}
+	.foot__logo-text {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.1;
 	}
 	.foot__title {
 		color: #fff;
 		font-size: 1.05rem;
 		font-weight: 700;
 		letter-spacing: -0.01em;
+	}
+	.foot__tag {
+		color: var(--color-on-dark-muted);
+		font-size: 0.72rem;
+		font-weight: 500;
+		margin-top: 2px;
 	}
 	.foot__about {
 		font-size: 0.9rem;
