@@ -1,5 +1,5 @@
 ---
-import { navCatalog, navTop, navServices } from '../data/navigation';
+import { navGroups, navTop, navServices } from '../data/navigation';
 import { siteName, contacts } from '../data/site';
 import Button from './ui/Button.astro';
 ---
@@ -50,25 +50,28 @@ import Button from './ui/Button.astro';
 						</svg>
 					</button>
 					<div class="mega__panel" id="mega-panel" hidden>
-						<div class="mega__cols">
+						<div class="mega__groups">
 							{
-								navCatalog.map((col) => (
-									<div class={`mega__col${col.empty ? ' mega__col--empty' : ''}`}>
-										<a class="mega__title" href={col.href}>
-											{col.title}
-											{col.empty && <span class="mega__hint">по запросу</span>}
-										</a>
-										<ul>
-											{col.children.map((c) => (
-												<li class={c.empty ? 'mega__li--empty' : ''}>
-													<a href={c.href}>
-														{c.label}
-														{c.empty && <span class="mega__hint">по запросу</span>}
+								navGroups.map((group) => (
+									<section class="mega__group">
+										<header class="mega__group-head">
+											<span class="mega__group-title">{group.title}</span>
+											{group.hint && <span class="mega__group-hint">{group.hint}</span>}
+										</header>
+										<ul class="mega__group-list">
+											{group.items.map((item) => (
+												<li class={`mega__item-wrap${item.empty ? ' mega__item-wrap--empty' : ''}`}>
+													<a class="mega__item" href={item.href}>
+														<span class="mega__item-row">
+															<span class="mega__item-name">{item.title}</span>
+															{item.empty && <span class="mega__hint">по запросу</span>}
+														</span>
+														{item.meta && <span class="mega__item-meta">{item.meta}</span>}
 													</a>
 												</li>
 											))}
 										</ul>
-									</div>
+									</section>
 								))
 							}
 						</div>
@@ -341,16 +344,14 @@ import Button from './ui/Button.astro';
 		position: absolute;
 		top: calc(100% + 14px);
 		left: -1rem;
-		min-width: min(92vw, 760px);
+		min-width: min(94vw, 980px);
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-lg);
-		padding: var(--space-6);
+		padding: var(--space-5) var(--space-6) var(--space-4);
 	}
-	.mega__panel[hidden] {
-		display: none;
-	}
+	.mega__panel[hidden] { display: none; }
 	@media (max-width: 1023px) {
 		.mega__panel {
 			position: static;
@@ -361,90 +362,130 @@ import Button from './ui/Button.astro';
 			margin-top: var(--space-3);
 		}
 	}
-	.mega__cols {
+
+	/* Структурированные группы каталога — 4 колонки на десктопе */
+	.mega__groups {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		gap: var(--space-5);
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: var(--space-5) var(--space-6);
 	}
-	.mega__title {
-		font-weight: 650;
-		display: block;
-		margin-bottom: var(--space-2);
-		color: var(--color-text);
-		text-decoration: none;
-		font-size: 0.92rem;
+	.mega__group { min-width: 0; }
+	.mega__group-head {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding-bottom: var(--space-2);
+		margin-bottom: var(--space-3);
+		border-bottom: 1px solid var(--color-border);
 	}
-	.mega__title:hover {
-		color: var(--color-primary-500);
+	.mega__group-title {
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-600);
 	}
-	.mega__col ul {
+	.mega__group-hint {
+		font-size: 0.78rem;
+		color: var(--color-subtle);
+		font-weight: 400;
+	}
+	.mega__group-list {
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		font-size: 0.875rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
 	}
-	.mega__col li {
-		margin-bottom: var(--space-2);
+	.mega__item-wrap { margin: 0; }
+	.mega__item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		padding: 0.45rem 0.55rem;
+		margin-left: -0.55rem;
+		margin-right: -0.55rem;
+		border-radius: var(--radius-sm);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 	}
-	.mega__col a {
-		color: var(--color-muted);
+	.mega__item:hover {
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
 		text-decoration: none;
 	}
-	.mega__col a:hover {
-		color: var(--color-primary-500);
+	.mega__item-row {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-weight: 600;
+		font-size: 0.92rem;
+		line-height: 1.25;
 	}
-	/* Empty hubs — slightly dimmed + tiny "on request" tag */
-	.mega__col--empty .mega__title {
-		color: var(--color-muted);
-		opacity: 0.78;
+	.mega__item-name { color: inherit; }
+	.mega__item-meta {
+		font-size: 0.76rem;
+		color: var(--color-subtle);
+		line-height: 1.3;
 	}
-	.mega__col--empty .mega__title:hover { color: var(--color-primary-500); opacity: 1; }
-	.mega__li--empty a {
-		opacity: 0.7;
-	}
-	.mega__li--empty a:hover { opacity: 1; }
+	.mega__item:hover .mega__item-meta { color: var(--color-muted); }
+
+	/* «По запросу» — тоньше, но не выглядит «выключенным» */
+	.mega__item-wrap--empty .mega__item-name { color: var(--color-muted); }
+	.mega__item-wrap--empty .mega__item:hover .mega__item-name { color: var(--color-primary-600); }
 	.mega__hint {
 		display: inline-block;
-		margin-left: 0.4rem;
 		font-size: 0.62rem;
-		font-weight: 500;
+		font-weight: 600;
 		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--color-subtle, #9ca3af);
-		background: var(--color-bg-elev, #f3f4f6);
-		padding: 0.05rem 0.35rem;
-		border-radius: var(--radius-pill, 999px);
+		letter-spacing: 0.05em;
+		color: var(--color-accent);
+		background: var(--color-accent-100);
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--radius-pill);
 		vertical-align: middle;
 		white-space: nowrap;
 	}
+
 	.mega__svc {
 		margin-top: var(--space-5);
 		padding-top: var(--space-4);
 		border-top: 1px solid var(--color-border);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3) var(--space-5);
 	}
 	.mega__svc-title {
-		display: block;
-		font-weight: 600;
+		font-weight: 700;
 		font-size: 0.72rem;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: var(--color-subtle);
+		color: var(--color-primary-600);
 	}
 	.mega__svc ul {
-		margin: var(--space-2) 0 0;
+		margin: 0;
 		padding: 0;
 		list-style: none;
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-2) var(--space-4);
-		font-size: 0.875rem;
+		gap: 0.3rem 0.5rem;
+		font-size: 0.88rem;
 	}
 	.mega__svc a {
 		color: var(--color-muted);
 		text-decoration: none;
+		padding: 0.25rem 0.6rem;
+		border-radius: var(--radius-pill);
+		background: var(--color-bg-elev);
+		transition: all var(--dur-fast) var(--ease-out);
 	}
 	.mega__svc a:hover {
-		color: var(--color-primary-500);
+		color: var(--color-primary-600);
+		background: var(--color-primary-50);
+		text-decoration: none;
 	}
 
 	.head__cta {

@@ -1,10 +1,11 @@
-/** Главное меню и мегаменю.
+/** Главное меню и мегаменю — структурированное по 4 логическим группам.
  *
- * В подпунктах оставляем только ссылки с уникальным href — иначе
- * получается «меню-обманка»: разные пункты ведут на один и тот же URL.
+ * `meta` — короткая подсказка под заголовком категории в мегапанели
+ *   (например: «0,4–60 мм, AISI 304/321/430»). Помогает быстрее сориентироваться,
+ *   и одновременно содержит ключевые поисковые слова рядом со ссылками.
  *
- * Флаг `empty: true` — раздел существует, но прайса в нём нет
- * (только заявка). Меню подсветит его приглушённо + бейдж «по запросу».
+ * `empty: true` — раздел существует, но без прайса (только заявка).
+ *   Меню подсветит его тоньше и поставит тег «по запросу».
  */
 export interface NavLink {
 	label: string;
@@ -16,87 +17,59 @@ export interface NavCol {
 	title: string;
 	href: string;
 	empty?: boolean;
-	children: NavLink[];
+	meta?: string;
+	children?: NavLink[];
 }
 
-export const navCatalog: NavCol[] = [
+export interface NavGroup {
+	title: string;
+	hint?: string;
+	items: NavCol[];
+}
+
+export const navGroups: NavGroup[] = [
 	{
-		title: 'Лист нержавеющий',
-		href: '/list/',
-		children: [
-			{ label: 'Декоративные листы', href: '/dekorativnye-listy/', empty: true },
-			{ label: 'Перфорированный лист', href: '/uslugi/perforaciya-listov/' },
-			{ label: 'Рулон нержавеющий', href: '/rulon/' },
+		title: 'Листовой прокат',
+		hint: 'Лист, рулон, лента, фольга',
+		items: [
+			{ title: 'Лист нержавеющий', href: '/list/', meta: '0,4–60 мм · AISI 304/321/430' },
+			{ title: 'Рулон нержавеющий', href: '/rulon/', meta: '0,4–3 мм · ширина 500–1500' },
+			{ title: 'Декоративные листы', href: '/dekorativnye-listy/', meta: 'BA · 4N · DECO', empty: true },
+			{ title: 'Лента нержавеющая', href: '/lenta/', meta: 'штрипс, по запросу', empty: true },
+			{ title: 'Фольга нержавеющая', href: '/folga/', meta: 'тонкая, под заказ', empty: true },
 		],
 	},
 	{
-		title: 'Труба нержавеющая',
-		href: '/truba/',
-		children: [],
-	},
-	{
-		title: 'Лента нержавеющая',
-		href: '/lenta/',
-		empty: true,
-		children: [
-			{ label: 'Производство ленты / штрипса', href: '/lenta/proizvodstvo/', empty: true },
+		title: 'Трубный прокат',
+		hint: 'Труба и фитинги',
+		items: [
+			{ title: 'Труба нержавеющая', href: '/truba/', meta: 'бесшовная · ЭСВ · профильная' },
+			{ title: 'Детали трубопровода', href: '/detali-truboprovoda/', meta: 'фланцы · отводы · переходы' },
 		],
 	},
 	{
-		title: 'Круг / Квадрат / Шестигранник',
-		href: '/krug/',
-		children: [],
+		title: 'Сортовой прокат',
+		hint: 'Круг, полоса, профиль',
+		items: [
+			{ title: 'Круг / Квадрат / Шестигранник', href: '/krug/', meta: 'Ø 5–250 мм' },
+			{ title: 'Полоса нержавеющая', href: '/polosa/', meta: 'горяче- и холоднокатаная' },
+			{ title: 'Уголок / Швеллер', href: '/ugolok-shveller/', meta: 'все размеры' },
+			{ title: 'Проволока нержавеющая', href: '/provoloka/', meta: 'Ø 0,1–6 мм' },
+		],
 	},
 	{
-		title: 'Полоса нержавеющая',
-		href: '/polosa/',
-		children: [],
-	},
-	{
-		title: 'Уголок / Швеллер',
-		href: '/ugolok-shveller/',
-		children: [],
-	},
-	{
-		title: 'Рулон нержавеющий',
-		href: '/rulon/',
-		children: [],
-	},
-	{
-		title: 'Фольга нержавеющая',
-		href: '/folga/',
-		empty: true,
-		children: [],
-	},
-	{
-		title: 'Детали трубопровода',
-		href: '/detali-truboprovoda/',
-		children: [],
-	},
-	{
-		title: 'Проволока нержавеющая',
-		href: '/provoloka/',
-		children: [],
-	},
-	{
-		title: 'Метизы / Крепёж',
-		href: '/metizy/',
-		empty: true,
-		children: [],
-	},
-	{
-		title: 'Электроды нержавеющие',
-		href: '/elektrody/',
-		empty: true,
-		children: [],
-	},
-	{
-		title: 'Подшипники нержавеющие',
-		href: '/podshipniki/',
-		empty: true,
-		children: [],
+		title: 'Крепёж и спецпозиции',
+		hint: 'По заявке',
+		items: [
+			{ title: 'Метизы / Крепёж', href: '/metizy/', meta: 'DIN · ГОСТ · A2/A4', empty: true },
+			{ title: 'Электроды нержавеющие', href: '/elektrody/', meta: 'ЦЛ-11 · ОЗЛ-8 · ЭА-400', empty: true },
+			{ title: 'Подшипники нержавеющие', href: '/podshipniki/', meta: 'AISI 440C · 316', empty: true },
+		],
 	},
 ];
+
+/** Плоский список всех категорий — для footer / sitemap-консьюмеров. */
+export const navCatalog: NavCol[] = navGroups.flatMap((g) => g.items);
 
 export const navTop = [
 	{ label: 'О компании', href: '/o-kompanii/' },
