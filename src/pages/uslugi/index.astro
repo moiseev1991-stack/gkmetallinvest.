@@ -1,43 +1,486 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import Card from '../../components/ui/Card.astro';
-import { navServices } from '../../data/navigation';
+import CtaSection from '../../components/CtaSection.astro';
 
-const extra = [
-	{ href: '/uslugi/shlifovanie/', title: 'Шлифование', description: 'Подготовка поверхности листа и рулона.' },
-	{ href: '/uslugi/nanesenie-plenki/', title: 'Нанесение плёнки', description: 'Защита поверхности при транспортировке.' },
-	{ href: '/uslugi/podbor-metalla/', title: 'Подбор металла', description: 'Инженерная помощь по ТЗ.' },
+interface Service {
+	href: string;
+	title: string;
+	tagline: string;
+	desc: string;
+	specs: string[];
+	related: { label: string; href: string }[];
+	icon: 'cut' | 'perf' | 'polish' | 'grind' | 'film' | 'select';
+}
+
+const services: Service[] = [
+	{
+		href: '/uslugi/rezka-rulonov/',
+		title: 'Продольная и поперечная резка рулонов',
+		tagline: 'Рулон → лист или штрипс',
+		desc: 'Режем рулон в лист заданной длины или продольно в штрипс для собственного раскроя. Согласуем ширину, длину и допуски под производство.',
+		specs: ['Длина листа до 12 м', 'Штрипс до 4 мм', 'Шаг ширины 5 мм'],
+		related: [
+			{ label: 'Рулон нержавеющий', href: '/rulon/' },
+			{ label: 'Лента / штрипс', href: '/lenta/proizvodstvo/' },
+		],
+		icon: 'cut',
+	},
+	{
+		href: '/uslugi/perforaciya-listov/',
+		title: 'Перфорация листов',
+		tagline: 'Круглая, щелевая, по чертежу',
+		desc: 'Перфорируем нержавеющие листы на лазере и координатно-пробивном прессе. Стандартные рисунки и индивидуальные по эскизу — от пробной партии.',
+		specs: ['Толщина до 6 мм', 'Лазер и КПП', 'От пробной партии'],
+		related: [
+			{ label: 'Лист нержавеющий', href: '/list/' },
+			{ label: 'ПВЛ — просечно-вытяжной', href: '/list/' },
+		],
+		icon: 'perf',
+	},
+	{
+		href: '/uslugi/polirovka/',
+		title: 'Полировка',
+		tagline: 'До зеркала Ra ≤ 0,4 мкм',
+		desc: 'Полируем листы и трубы под архитектурные, пищевые и фармацевтические требования. Зеркальная и сатиновая поверхность по ГОСТ и отраслевым стандартам.',
+		specs: ['Ra ≤ 0,4 мкм', 'BA / 4N / 8K', 'Лист и труба'],
+		related: [
+			{ label: 'Декоративные листы', href: '/dekorativnye-listy/' },
+			{ label: 'Труба нержавеющая', href: '/truba/' },
+		],
+		icon: 'polish',
+	},
+	{
+		href: '/uslugi/shlifovanie/',
+		title: 'Шлифование',
+		tagline: 'Подготовка поверхности под проект',
+		desc: 'Шлифуем листовой и сортовой прокат — снимаем окалину, готовим поверхность под покраску или дальнейшую обработку. Зернистость подбираем под задачу.',
+		specs: ['№120–№400', 'Лист, рулон, труба', 'Под ТЗ'],
+		related: [
+			{ label: 'Лист нержавеющий', href: '/list/' },
+			{ label: 'Рулон нержавеющий', href: '/rulon/' },
+		],
+		icon: 'grind',
+	},
+	{
+		href: '/uslugi/nanesenie-plenki/',
+		title: 'Нанесение защитной плёнки',
+		tagline: 'PE / PVC — на лист и рулон',
+		desc: 'Наносим защитную плёнку на декоративные и зеркальные поверхности — предотвращает царапины при транспортировке и монтаже. Прозрачная или с логотипом.',
+		specs: ['PE 50–100 мкм', 'PVC до 200 мкм', 'Резка с плёнкой'],
+		related: [
+			{ label: 'Декоративные листы', href: '/dekorativnye-listy/' },
+			{ label: 'Лист зеркальный (BA)', href: '/list/' },
+		],
+		icon: 'film',
+	},
+	{
+		href: '/uslugi/podbor-metalla/',
+		title: 'Подбор металла по ТЗ',
+		tagline: 'Инженерная помощь до закупки',
+		desc: 'Подскажем подходящую марку и формат под среду эксплуатации, нагрузки и температуру. Подберём отечественный или импортный аналог, рассчитаем вес и стоимость.',
+		specs: ['AISI ↔ ГОСТ', 'Расчёт веса', 'Аналоги под бюджет'],
+		related: [
+			{ label: 'Запрос КП', href: '/zapros-kp/' },
+			{ label: 'О компании', href: '/o-kompanii/' },
+		],
+		icon: 'select',
+	},
+];
+
+const processSteps = [
+	{ n: 1, title: 'Заявка', text: 'Описание задачи или ТЗ — менеджер уточняет параметры в течение 30 минут.' },
+	{ n: 2, title: 'КП и образцы', text: 'Считаем стоимость материала и обработки, при необходимости готовим пробную партию.' },
+	{ n: 3, title: 'Производство', text: 'Резка, перфорация, шлифовка под согласованную спецификацию.' },
+	{ n: 4, title: 'Отгрузка', text: 'Контроль качества, документы, отгрузка со склада в день готовности.' },
 ];
 ---
 
-<BaseLayout title="Услуги" description="Резка рулонов, перфорация листов, полировка, шлифование, поставка под заказ.">
+<BaseLayout
+	title="Услуги обработки нержавеющего металлопроката"
+	description="Резка рулонов в лист и штрипс до 4 мм, перфорация, полировка до зеркала, шлифование, нанесение плёнки, подбор металла по ТЗ. Под ваш проект."
+>
 	<div class="container page">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Услуги' }]} />
-		<h1>Услуги</h1>
-		<p class="lead">Полноценные коммерческие страницы — не вспомогательный текст в футере.</p>
-		<div class="grid">
-			{navServices.filter((s) => s.href !== '/uslugi/').map((s) => (
-				<Card href={s.href} title={s.label} description="Подробности и формы заявки на странице услуги." />
-			))}
-			{extra.map((e) => (
-				<Card href={e.href} title={e.title} description={e.description} />
-			))}
-		</div>
+
+		<header class="page__hero">
+			<span class="eyebrow">Производство и обработка</span>
+			<h1>Услуги обработки металлопроката</h1>
+			<p class="page__lead">
+				Режем, шлифуем, полируем и перфорируем нержавеющие листы и рулоны на собственном
+				оборудовании. Берём проекты от пробной партии до серийного производства — с согласованием
+				допусков, образцов и документов.
+			</p>
+		</header>
+
+		<section class="services">
+			<div class="services__grid">
+				{services.map((s) => (
+					<article class="svc-card">
+						<a class="svc-card__inner" href={s.href}>
+							<div class={`svc-card__media svc-card__media--${s.icon}`}>
+								{s.icon === 'cut' && (
+									<svg class="svc-card__illo" viewBox="0 0 200 140" aria-hidden="true">
+										<defs>
+											<linearGradient id="g-cut" x1="0" x2="1" y1="0" y2="1">
+												<stop offset="0%" stop-color="#dde6f2"/><stop offset="100%" stop-color="#b9c6db"/>
+											</linearGradient>
+										</defs>
+										<rect x="10" y="50" width="180" height="40" rx="3" fill="url(#g-cut)"/>
+										<rect x="10" y="50" width="180" height="6" fill="rgba(255,255,255,0.5)"/>
+										<rect x="100" y="20" width="2" height="100" fill="#163b66"/>
+										<polygon points="100,18 95,28 105,28" fill="#163b66"/>
+										<circle cx="101" cy="70" r="14" fill="#fff" stroke="#163b66" stroke-width="2"/>
+										<circle cx="101" cy="70" r="3" fill="#163b66"/>
+										<line x1="60" y1="50" x2="60" y2="90" stroke="#c4651b" stroke-width="1.5" stroke-dasharray="3 3"/>
+										<line x1="140" y1="50" x2="140" y2="90" stroke="#c4651b" stroke-width="1.5" stroke-dasharray="3 3"/>
+									</svg>
+								)}
+								{s.icon === 'perf' && (
+									<svg class="svc-card__illo" viewBox="0 0 200 140" aria-hidden="true">
+										<defs>
+											<linearGradient id="g-perf" x1="0" x2="1" y1="0" y2="1">
+												<stop offset="0%" stop-color="#dde6f2"/><stop offset="100%" stop-color="#b9c6db"/>
+											</linearGradient>
+										</defs>
+										<rect x="20" y="20" width="160" height="100" rx="6" fill="url(#g-perf)"/>
+										{Array.from({ length: 5 }).map((_, r) =>
+											Array.from({ length: 8 }).map((_, c) => (
+												<circle cx={32 + c * 18} cy={32 + r * 18} r="4" fill="#fff" stroke="#163b66" stroke-width="1"/>
+											))
+										)}
+									</svg>
+								)}
+								{s.icon === 'polish' && (
+									<svg class="svc-card__illo" viewBox="0 0 200 140" aria-hidden="true">
+										<defs>
+											<linearGradient id="g-pol" x1="0" x2="1" y1="0" y2="1">
+												<stop offset="0%" stop-color="#f1f5fb"/>
+												<stop offset="50%" stop-color="#c5cfdd"/>
+												<stop offset="100%" stop-color="#e6ebf2"/>
+											</linearGradient>
+											<linearGradient id="g-pol-shine" x1="0" x2="1" y1="0" y2="0">
+												<stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+												<stop offset="50%" stop-color="rgba(255,255,255,0.85)"/>
+												<stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+											</linearGradient>
+										</defs>
+										<rect x="20" y="30" width="160" height="80" rx="4" fill="url(#g-pol)"/>
+										<rect x="20" y="30" width="160" height="80" rx="4" fill="url(#g-pol-shine)" opacity="0.7"/>
+										<ellipse cx="130" cy="60" rx="35" ry="6" fill="rgba(255,255,255,0.6)"/>
+										<ellipse cx="80" cy="85" rx="25" ry="4" fill="rgba(255,255,255,0.4)"/>
+									</svg>
+								)}
+								{s.icon === 'grind' && (
+									<svg class="svc-card__illo" viewBox="0 0 200 140" aria-hidden="true">
+										<defs>
+											<linearGradient id="g-grind" x1="0" x2="1" y1="0" y2="1">
+												<stop offset="0%" stop-color="#dde6f2"/><stop offset="100%" stop-color="#b9c6db"/>
+											</linearGradient>
+										</defs>
+										<rect x="10" y="60" width="180" height="40" rx="3" fill="url(#g-grind)"/>
+										{Array.from({ length: 18 }).map((_, i) => (
+											<line x1={15 + i * 10} y1="60" x2={15 + i * 10} y2="100" stroke="#163b66" stroke-width="0.6" opacity="0.4"/>
+										))}
+										<rect x="70" y="30" width="60" height="22" rx="4" fill="#163b66"/>
+										<rect x="78" y="48" width="44" height="8" fill="#11304f"/>
+										<circle cx="100" cy="30" r="4" fill="#c4651b"/>
+									</svg>
+								)}
+								{s.icon === 'film' && (
+									<svg class="svc-card__illo" viewBox="0 0 200 140" aria-hidden="true">
+										<defs>
+											<linearGradient id="g-film" x1="0" x2="1" y1="0" y2="1">
+												<stop offset="0%" stop-color="#e6ebf2"/><stop offset="100%" stop-color="#c5cfdd"/>
+											</linearGradient>
+										</defs>
+										<rect x="20" y="30" width="160" height="80" rx="4" fill="url(#g-film)"/>
+										<rect x="20" y="30" width="160" height="80" rx="4" fill="rgba(28, 75, 128, 0.12)"/>
+										<rect x="120" y="30" width="60" height="80" rx="4" fill="url(#g-film)"/>
+										<path d="M120 30 Q116 70 120 110" stroke="#163b66" stroke-width="1.5" fill="none" opacity="0.6"/>
+										<text x="148" y="74" font-size="9" fill="#163b66" font-family="Inter,sans-serif" font-weight="600" text-anchor="middle">PE FILM</text>
+									</svg>
+								)}
+								{s.icon === 'select' && (
+									<svg class="svc-card__illo" viewBox="0 0 200 140" aria-hidden="true">
+										<defs>
+											<linearGradient id="g-sel" x1="0" x2="1" y1="0" y2="1">
+												<stop offset="0%" stop-color="#dde6f2"/><stop offset="100%" stop-color="#b9c6db"/>
+											</linearGradient>
+										</defs>
+										<rect x="30" y="22" width="120" height="96" rx="4" fill="#fff" stroke="#163b66" stroke-width="1.5"/>
+										<line x1="42" y1="40" x2="138" y2="40" stroke="#163b66" stroke-width="1" opacity="0.4"/>
+										<line x1="42" y1="55" x2="120" y2="55" stroke="#163b66" stroke-width="1" opacity="0.4"/>
+										<line x1="42" y1="70" x2="130" y2="70" stroke="#163b66" stroke-width="1" opacity="0.4"/>
+										<line x1="42" y1="85" x2="100" y2="85" stroke="#163b66" stroke-width="1" opacity="0.4"/>
+										<circle cx="148" cy="100" r="22" fill="url(#g-sel)" stroke="#163b66" stroke-width="2"/>
+										<line x1="164" y1="116" x2="180" y2="132" stroke="#163b66" stroke-width="3" stroke-linecap="round"/>
+									</svg>
+								)}
+							</div>
+							<div class="svc-card__body">
+								<span class="svc-card__tag">{s.tagline}</span>
+								<h2 class="svc-card__title">{s.title}</h2>
+								<p class="svc-card__desc">{s.desc}</p>
+								<ul class="svc-card__specs">
+									{s.specs.map((sp) => <li>{sp}</li>)}
+								</ul>
+							</div>
+							<div class="svc-card__foot">
+								<span class="svc-card__more">
+									Подробнее
+									<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+										<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+									</svg>
+								</span>
+							</div>
+						</a>
+						{s.related.length > 0 && (
+							<div class="svc-card__related">
+								<span class="svc-card__related-label">Применяется к:</span>
+								{s.related.map((r) => (
+									<a class="svc-card__related-link" href={r.href}>{r.label}</a>
+								))}
+							</div>
+						)}
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="process">
+			<h2>Как работаем</h2>
+			<ol class="process__list">
+				{processSteps.map((p) => (
+					<li class="process__item">
+						<span class="process__num">{p.n}</span>
+						<div>
+							<h3 class="process__title">{p.title}</h3>
+							<p class="process__text">{p.text}</p>
+						</div>
+					</li>
+				))}
+			</ol>
+		</section>
 	</div>
+
+	<CtaSection
+		title="Опишите задачу — рассчитаем стоимость"
+		text="Менеджер свяжется в течение 30 минут, согласует допуски и пришлёт КП."
+	/>
 </BaseLayout>
 
 <style>
-	.page {
-		padding-block: var(--space-8);
+	.page { padding-block: var(--space-8); }
+	.page__hero { margin-bottom: var(--space-10); max-width: 80ch; }
+	.page__lead {
+		font-size: 1.08rem;
+		max-width: 70ch;
+		margin: var(--space-3) 0 0;
+		color: var(--color-text);
+		line-height: 1.6;
 	}
-	.lead {
-		max-width: 60ch;
-		margin-bottom: var(--space-8);
-	}
-	.grid {
+
+	.services { margin-bottom: var(--space-10); }
+	.services__grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+		gap: var(--space-5);
+	}
+
+	.svc-card {
+		display: flex;
+		flex-direction: column;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-xs);
+		overflow: hidden;
+		transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+	}
+	.svc-card:hover {
+		transform: translateY(-3px);
+		box-shadow: var(--shadow-md);
+		border-color: var(--color-primary-100);
+	}
+	.svc-card__inner {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		text-decoration: none;
+		color: inherit;
+	}
+	.svc-card__inner:hover { text-decoration: none; color: inherit; }
+
+	.svc-card__media {
+		aspect-ratio: 16 / 9;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(135deg, #f1f5fb 0%, #dde6f2 100%);
+		border-bottom: 1px solid var(--color-border);
+		position: relative;
+		overflow: hidden;
+	}
+	.svc-card__media::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			repeating-linear-gradient(0deg, rgba(255,255,255,0.4) 0 1px, transparent 1px 16px),
+			repeating-linear-gradient(90deg, rgba(255,255,255,0.4) 0 1px, transparent 1px 16px);
+		opacity: 0.3;
+		pointer-events: none;
+	}
+	.svc-card__media--perf { background: linear-gradient(135deg, #faece0 0%, #f0d4ba 100%); }
+	.svc-card__media--polish { background: linear-gradient(135deg, #e6ebf2 0%, #aab5c5 50%, #e6ebf2 100%); }
+	.svc-card__media--grind { background: linear-gradient(135deg, #eef1f6 0%, #c5cfdd 100%); }
+	.svc-card__media--film { background: linear-gradient(135deg, #e7eef7 0%, #c8d4e6 100%); }
+	.svc-card__media--select { background: linear-gradient(135deg, #f6f8fb 0%, #c5cfdd 100%); }
+	.svc-card__illo {
+		width: 80%;
+		max-width: 240px;
+		height: auto;
+		position: relative;
+		z-index: 1;
+		filter: drop-shadow(0 6px 16px rgba(15, 26, 43, 0.12));
+	}
+
+	.svc-card__body {
+		flex: 1;
+		padding: var(--space-4) var(--space-5);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+	.svc-card__tag {
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-primary-600);
+	}
+	.svc-card__title {
+		margin: 0;
+		font-size: 1.1rem;
+		line-height: 1.3;
+		letter-spacing: -0.01em;
+	}
+	.svc-card__desc {
+		margin: 0;
+		font-size: 0.92rem;
+		color: var(--color-muted);
+		line-height: 1.55;
+	}
+	.svc-card__specs {
+		margin: var(--space-2) 0 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.5rem;
+	}
+	.svc-card__specs li {
+		display: inline-flex;
+		align-items: center;
+		font-size: 0.78rem;
+		font-weight: 500;
+		color: var(--color-text);
+		background: var(--color-bg-elev);
+		padding: 0.2rem 0.6rem;
+		border-radius: var(--radius-pill);
+		border: 1px solid var(--color-border);
+	}
+
+	.svc-card__foot {
+		padding: 0 var(--space-5) var(--space-4);
+	}
+	.svc-card__more {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--color-primary-600);
+	}
+	.svc-card:hover .svc-card__more svg {
+		transform: translateX(3px);
+	}
+	.svc-card__more svg {
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+
+	.svc-card__related {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.3rem 0.5rem;
+		padding: var(--space-3) var(--space-5);
+		border-top: 1px solid var(--color-border);
+		background: var(--color-bg-elev);
+		font-size: 0.82rem;
+	}
+	.svc-card__related-label {
+		color: var(--color-subtle);
+	}
+	.svc-card__related-link {
+		color: var(--color-primary-600);
+		text-decoration: none;
+		font-weight: 500;
+	}
+	.svc-card__related-link:hover {
+		text-decoration: underline;
+	}
+
+	.process {
+		padding: var(--space-7);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-lg);
+		margin-bottom: var(--space-10);
+	}
+	.process h2 {
+		font-size: 1.4rem;
+		margin: 0 0 var(--space-5);
+		letter-spacing: -0.015em;
+	}
+	.process__list {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 		gap: var(--space-4);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.process__item {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-3);
+	}
+	.process__num {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 36px;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: var(--color-primary-500);
+		color: #fff;
+		font-weight: 700;
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+	}
+	.process__title {
+		margin: 0 0 0.2rem;
+		font-size: 1rem;
+		color: var(--color-text);
+	}
+	.process__text {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-muted);
+		line-height: 1.5;
+		max-width: 32ch;
 	}
 </style>
