@@ -27,6 +27,12 @@ const localBusinessJsonLd = {
 	],
 };
 
+/* В email подмешиваем <wbr> после @ и перед .ru — браузер сможет
+   перенести в логичном месте, а не посреди слова «gkmetallinvest». */
+const emailHtml = contacts.email
+	.replace('@', '@<wbr>')
+	.replace(/\.([a-z]{2,})$/i, '<wbr>.$1');
+
 const channels = [
 	{
 		icon: 'phone',
@@ -38,7 +44,7 @@ const channels = [
 	{
 		icon: 'mail',
 		label: 'Email',
-		value: contacts.email,
+		valueHtml: emailHtml,
 		href: `mailto:${contacts.email}`,
 		hint: 'ТЗ, чертежи, спецификации — присылайте на почту, ответим в течение часа.',
 	},
@@ -49,7 +55,14 @@ const channels = [
 		href: '/zapros-kp/#lead-form',
 		hint: 'Опишите задачу — пришлём коммерческое предложение с ценой и сроками.',
 	},
-];
+] as Array<{
+	icon: string;
+	label: string;
+	value?: string;
+	valueHtml?: string;
+	href: string;
+	hint: string;
+}>;
 
 const requisites = [
 	{ k: 'Юридическое лицо', v: contacts.company },
@@ -100,7 +113,10 @@ const yMapsSrc =
 						</span>
 						<div>
 							<span class="ch-card__label">{c.label}</span>
-							<span class="ch-card__value">{c.value}</span>
+							{c.valueHtml
+								? <span class="ch-card__value" set:html={c.valueHtml} />
+								: <span class="ch-card__value">{c.value}</span>
+							}
 							<span class="ch-card__hint">{c.hint}</span>
 						</div>
 					</a>
@@ -203,7 +219,7 @@ const yMapsSrc =
 	}
 	.contacts__channels {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
 		gap: var(--space-3);
 	}
 	.ch-card {
@@ -232,13 +248,14 @@ const yMapsSrc =
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		flex: 0 0 44px;
-		width: 44px;
-		height: 44px;
+		flex: 0 0 40px;
+		width: 40px;
+		height: 40px;
 		border-radius: var(--radius-md);
 		background: var(--color-primary-50);
 		color: var(--color-primary-500);
 	}
+	.ch-card__ico svg { width: 20px; height: 20px; }
 	.ch-card__label {
 		display: block;
 		font-size: 0.72rem;
@@ -250,19 +267,21 @@ const yMapsSrc =
 	}
 	.ch-card__value {
 		display: block;
-		font-size: 1rem;
+		font-size: 0.95rem;
 		font-weight: 700;
 		color: var(--color-text);
-		margin-bottom: 0.2rem;
-		overflow-wrap: anywhere;
-		word-break: break-word;
+		margin-bottom: 0.25rem;
+		/* break-word — мягкий перенос: ломает слова ТОЛЬКО когда без этого
+		   контент вышел бы за рамку. В сочетании с <wbr> внутри email-а
+		   браузер выбирает логичную точку переноса (после @, перед .ru). */
+		overflow-wrap: break-word;
+		line-height: 1.3;
 	}
 	.ch-card__hint {
 		display: block;
 		font-size: 0.82rem;
 		color: var(--color-muted);
 		line-height: 1.4;
-		overflow-wrap: anywhere;
 	}
 
 	.hours {
