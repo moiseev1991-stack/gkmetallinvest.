@@ -215,6 +215,7 @@ const yMapsSrc =
 		border-radius: var(--radius-lg);
 		text-decoration: none;
 		color: inherit;
+		min-width: 0;
 		transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 	}
 	.ch-card:hover {
@@ -224,6 +225,9 @@ const yMapsSrc =
 		text-decoration: none;
 		color: inherit;
 	}
+	/* Текстовая колонка внутри карточки — обязательно min-width: 0,
+	   иначе длинные слова без пробелов (email) вылезают за рамку. */
+	.ch-card > div { min-width: 0; flex: 1; }
 	.ch-card__ico {
 		display: inline-flex;
 		align-items: center;
@@ -250,12 +254,15 @@ const yMapsSrc =
 		font-weight: 700;
 		color: var(--color-text);
 		margin-bottom: 0.2rem;
+		overflow-wrap: anywhere;
+		word-break: break-word;
 	}
 	.ch-card__hint {
 		display: block;
 		font-size: 0.82rem;
 		color: var(--color-muted);
 		line-height: 1.4;
+		overflow-wrap: anywhere;
 	}
 
 	.hours {
