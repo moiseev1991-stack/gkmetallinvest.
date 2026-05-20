@@ -199,10 +199,12 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		position: sticky;
 		top: 0;
 		z-index: 40;
-		background: rgba(255, 255, 255, 0.92);
+		background: #ffffff;
 		border-bottom: 1px solid var(--color-border);
-		backdrop-filter: saturate(180%) blur(10px);
-		-webkit-backdrop-filter: saturate(180%) blur(10px);
+		/* backdrop-filter здесь использовался для «glassmorphism» эффекта,
+		   но он создаёт новый containing block для position:fixed детей —
+		   из-за этого мобильный drawer прилипал к шапке вместо viewport.
+		   Полностью убран. */
 	}
 
 	.head__strip {
