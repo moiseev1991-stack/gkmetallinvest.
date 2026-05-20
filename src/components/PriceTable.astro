@@ -152,17 +152,20 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	<div class="pt__panel">
 		<div class="pt__filters">
 			<label class="pt__field pt__field--search">
-				<svg class="pt__search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-					<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
-					<path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-				</svg>
-				<input
-					id={`${hub}-q`}
-					type="search"
-					placeholder="Поиск по марке, размеру, названию"
-					data-pt-q
-					autocomplete="off"
-				/>
+				<span class="pt__label">Поиск</span>
+				<span class="pt__search-wrap">
+					<svg class="pt__search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+						<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
+						<path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+					</svg>
+					<input
+						id={`${hub}-q`}
+						type="search"
+						placeholder="по марке, размеру, названию"
+						data-pt-q
+						autocomplete="off"
+					/>
+				</span>
 			</label>
 
 			{
@@ -778,7 +781,10 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	@media (min-width: 1024px) {
 		.pt__field--search { grid-column: 1 / 3; }
 	}
-	.pt__field--search { position: relative; }
+	.pt__search-wrap {
+		position: relative;
+		display: block;
+	}
 	.pt__field--search input {
 		width: 100%;
 		font: inherit;
