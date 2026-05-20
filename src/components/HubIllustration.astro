@@ -67,7 +67,6 @@ const TAG: Record<Props['hub'], { mark: string; sub: string }> = {
 };
 
 const src = IMG[hub];
-const { mark, sub } = TAG[hub];
 const PLACEHOLDER_LETTER: Record<Props['hub'], string> = {
 	list: 'Л',
 	truba: 'Т',
@@ -87,7 +86,7 @@ const PLACEHOLDER_LETTER: Record<Props['hub'], string> = {
 };
 ---
 
-<figure class={`hub-illo ${className}`.trim()}>
+<div class={`hub-illo ${className}`.trim()}>
 	{src ? (
 		<img
 			class="hub-illo__img"
@@ -103,11 +102,7 @@ const PLACEHOLDER_LETTER: Record<Props['hub'], string> = {
 			<span>{PLACEHOLDER_LETTER[hub]}</span>
 		</div>
 	)}
-	<figcaption class="hub-illo__cap">
-		<span class="hub-illo__mark">{mark}</span>
-		<span class="hub-illo__sub">{sub}</span>
-	</figcaption>
-</figure>
+</div>
 
 <style>
 	.hub-illo {
