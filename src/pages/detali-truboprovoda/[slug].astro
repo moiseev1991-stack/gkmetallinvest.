@@ -1,18 +1,40 @@
 ---
 import ProductDetail from '../../components/ProductDetail.astro';
+import MarkLanding from '../../components/MarkLanding.astro';
 import pricelist from '../../data/pricelist.json';
+import { marks } from '../../data/marks.ts';
 
 export async function getStaticPaths() {
 	const skus = (pricelist.hubs as any)['detali-truboprovoda'] as any[];
-	return skus.map((sku) => ({ params: { slug: sku.slug }, props: { sku } }));
+	const productPaths = skus.map((sku) => ({
+		params: { slug: sku.slug },
+		props: { kind: 'product', sku },
+	}));
+
+	const markPaths = marks
+		.filter((m) => m.hubs.includes('detali-truboprovoda'))
+		.map((m) => ({ params: { slug: m.slug }, props: { kind: 'mark', mark: m } }));
+
+	return [...markPaths, ...productPaths];
 }
 
-const { sku } = Astro.props;
+const props = Astro.props as any;
 ---
 
-<ProductDetail
-	sku={sku}
-	hubLabel="Детали трубопровода"
-	hubHref="/detali-truboprovoda/"
-	measureLabel="размер"
-/>
+{props.kind === 'mark' ? (
+	<MarkLanding
+		mark={props.mark}
+		hub="detali-truboprovoda"
+		hubLabel="Детали трубопровода"
+		hubLabelGenitive="детали трубопровода"
+		hubHref="/detali-truboprovoda/"
+		measure="размер"
+	/>
+) : (
+	<ProductDetail
+		sku={props.sku}
+		hubLabel="Детали трубопровода"
+		hubHref="/detali-truboprovoda/"
+		measureLabel="размер"
+	/>
+)}

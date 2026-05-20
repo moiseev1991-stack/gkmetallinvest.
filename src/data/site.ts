@@ -64,11 +64,12 @@ export const citiesRf = [
 	'Волгоград',
 ];
 
-/** P1: ведут на хаб листа; посадочные по маркам — фаза P2 */
+/** Марочные посадочные по топ-5 — закрывают коммерческие запросы вида
+ *  «AISI 304 лист купить». Само описание марок и алиасы — в data/marks.ts. */
 export const marksAisi = [
-	{ label: 'AISI 304', href: '/list/' },
-	{ label: 'AISI 430', href: '/list/' },
-	{ label: 'AISI 321 / 12Х18Н10Т', href: '/list/' },
-	{ label: 'AISI 316L', href: '/list/' },
-	{ label: 'AISI 201', href: '/list/' },
+	{ label: 'AISI 304', href: '/list/aisi-304/' },
+	{ label: 'AISI 430', href: '/list/aisi-430/' },
+	{ label: 'AISI 321 / 12Х18Н10Т', href: '/list/aisi-321/' },
+	{ label: 'AISI 316L', href: '/list/aisi-316l/' },
+	{ label: 'AISI 201', href: '/list/aisi-201/' },
 ];

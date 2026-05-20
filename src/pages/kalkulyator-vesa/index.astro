@@ -1,0 +1,649 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import { siteUrl, siteName } from '../../data/site';
+
+const title = 'Калькулятор веса нержавеющего металлопроката — лист, труба, круг';
+const description = 'Онлайн-расчёт веса нержавеющего металлопроката: лист, труба, круг, квадрат, шестигранник, проволока, полоса, уголок. Плотность по маркам AISI / ГОСТ.';
+
+const faq = [
+	{
+		q: 'Какая плотность у нержавейки разных марок?',
+		a: 'Аустенитные стали (AISI 304, 316L, 321, 12Х18Н10Т, 201) — 7,9 г/см³. Ферритные (AISI 430, 410, 439) — 7,7 г/см³. Мартенситные (AISI 420, 440) — 7,7 г/см³. Двухфазные (дуплекс) — 7,8 г/см³. Эти значения мы и используем в калькуляторе.',
+	},
+	{
+		q: 'Откуда берётся вес квадратного метра листа?',
+		a: 'По формуле: толщина (м) × площадь (м²) × плотность (кг/м³). Для листа 1 мм AISI 304: 0,001 × 1 × 7900 = 7,9 кг/м². Для 2 мм — 15,8 кг/м², для 3 мм — 23,7 кг/м² и так далее.',
+	},
+	{
+		q: 'Как рассчитать вес трубы?',
+		a: 'Формула: m = π × (D − S) × S × L × ρ, где D — наружный диаметр, S — толщина стенки, L — длина, ρ — плотность. Для трубы Ø 50 × 2 длиной 1 м из AISI 304: π × (50−2) × 2 × 1000 × 7,9 / 10⁶ = 2,38 кг/м.',
+	},
+	{
+		q: 'Можно ли использовать расчёт для коммерческого предложения?',
+		a: 'Да, как первичная оценка. Реальный вес партии может отличаться на ±0,5–1 % из-за допусков прокатки по толщине. В коммерческом предложении мы используем теоретический вес по ГОСТ — тот же, что показывает калькулятор.',
+	},
+	{
+		q: 'Подходит ли для углеродистой и оцинкованной стали?',
+		a: 'Калькулятор настроен на нержавейку. Для углеродистой стали плотность 7,85 г/см³, для оцинкованной — 7,85 г/см³ + ~0,03 кг/м² на цинк. Если нужен расчёт под чёрный металл — отметьте в поле «Другая плотность», вес пересчитается.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: 'Как рассчитать вес нержавеющего металлопроката',
+	description: 'Пошаговый расчёт веса листа, трубы, круга, проволоки и других видов нержавеющего проката по их геометрии и плотности материала.',
+	step: [
+		{ '@type': 'HowToStep', name: 'Выбрать вид проката', text: 'Лист, рулон, труба, круг, квадрат, шестигранник, проволока, полоса или уголок.' },
+		{ '@type': 'HowToStep', name: 'Ввести размеры', text: 'Толщину, диаметр, ширину, длину или другие параметры в миллиметрах.' },
+		{ '@type': 'HowToStep', name: 'Выбрать марку стали', text: 'AISI 304, 316L, 321, 430, дуплекс — плотность подставляется автоматически.' },
+		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Калькулятор покажет вес единицы (кг/м или кг/м²) и общий вес заданного количества.' },
+	],
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
+	<div class="container calc">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса' }]} />
+
+		<header class="calc__hero">
+			<span class="eyebrow">Инструмент</span>
+			<h1>Калькулятор веса нержавеющего металлопроката</h1>
+			<p class="calc__lead">
+				Расчёт веса листа, трубы, круга, проволоки, полосы, уголка и других видов нержавейки по
+				заданным размерам и марке стали. Плотность подставляется автоматически — от 7,7 до 7,9 г/см³
+				в зависимости от марки.
+			</p>
+		</header>
+
+		<section class="calc__widget" data-calc-root>
+			<div class="calc__panel">
+				<div class="calc__field">
+					<label class="calc__label" for="calc-shape">Вид проката</label>
+					<select class="calc__input" id="calc-shape" data-calc-shape>
+						<option value="list">Лист (плоский)</option>
+						<option value="krug">Круг (пруток)</option>
+						<option value="kvadrat">Квадрат</option>
+						<option value="shestigrannik">Шестигранник</option>
+						<option value="truba">Труба круглая</option>
+						<option value="truba-pryam">Труба прямоугольная</option>
+						<option value="provoloka">Проволока</option>
+						<option value="polosa">Полоса</option>
+						<option value="ugolok">Уголок равнополочный</option>
+					</select>
+				</div>
+
+				<div class="calc__field">
+					<label class="calc__label" for="calc-grade">Марка стали</label>
+					<select class="calc__input" id="calc-grade" data-calc-grade>
+						<option value="austenitic" selected>Аустенитная (AISI 304/316L/321/201) — 7,9 г/см³</option>
+						<option value="ferritic">Ферритная (AISI 430/410/439) — 7,7 г/см³</option>
+						<option value="martensitic">Мартенситная (AISI 420/440, 20Х13) — 7,7 г/см³</option>
+						<option value="duplex">Дуплекс — 7,8 г/см³</option>
+						<option value="custom">Своя плотность…</option>
+					</select>
+				</div>
+
+				<div class="calc__field calc__field--custom-density" data-calc-density-row hidden>
+					<label class="calc__label" for="calc-density">Плотность, г/см³</label>
+					<input class="calc__input" id="calc-density" type="number" inputmode="decimal" step="0.01" data-calc-density value="7.9" />
+				</div>
+
+				<div class="calc__dims" data-calc-dims>
+					<!-- поля по виду проката рендерятся JS -->
+				</div>
+
+				<div class="calc__field">
+					<label class="calc__label" for="calc-qty">Количество</label>
+					<input class="calc__input" id="calc-qty" type="number" inputmode="decimal" step="any" data-calc-qty value="1" min="0.01" />
+					<span class="calc__hint" data-calc-qty-hint>штук</span>
+				</div>
+			</div>
+
+			<div class="calc__result" data-calc-result>
+				<div class="calc__result-line">
+					<span class="calc__result-label">Вес 1 единицы:</span>
+					<strong class="calc__result-value" data-calc-unit-weight>—</strong>
+				</div>
+				<div class="calc__result-line calc__result-line--total">
+					<span class="calc__result-label">Общий вес:</span>
+					<strong class="calc__result-value calc__result-value--big" data-calc-total>—</strong>
+				</div>
+				<a class="calc__cta" href="/zapros-kp/#lead-form" data-calc-cta>Запросить КП с этими параметрами</a>
+			</div>
+		</section>
+
+		<section class="calc__block">
+			<h2>Формулы расчёта</h2>
+			<ul class="calc__formulas">
+				<li><strong>Лист / полоса:</strong> m = толщина × ширина × длина × плотность</li>
+				<li><strong>Круг / проволока:</strong> m = π × (диаметр / 2)² × длина × плотность</li>
+				<li><strong>Квадрат:</strong> m = сторона² × длина × плотность</li>
+				<li><strong>Шестигранник:</strong> m = (√3 / 2) × s² × длина × плотность (s — расстояние между гранями)</li>
+				<li><strong>Труба круглая:</strong> m = π × (Ø − стенка) × стенка × длина × плотность</li>
+				<li><strong>Труба прямоугольная:</strong> m = 2 × (a + b − 2 × стенка) × стенка × длина × плотность</li>
+				<li><strong>Уголок:</strong> m = (2 × сторона × толщина − толщина²) × длина × плотность</li>
+			</ul>
+			<p class="calc__note">
+				Размеры подставляются в миллиметрах, плотность в г/см³, результат — в килограммах.
+				Внутри калькулятора единицы приведены автоматически. Это теоретический вес по ГОСТ —
+				реальный может отличаться на ±0,5–1 % из-за допусков прокатки.
+			</p>
+		</section>
+
+		<section class="calc__block">
+			<h2>Плотность нержавейки по маркам</h2>
+			<table class="calc__density-table">
+				<thead>
+					<tr><th>Группа</th><th>Марки</th><th>Плотность, г/см³</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>Аустенитные</td><td>AISI 304, 304L, 316L, 316Ti, 321, 12Х18Н10Т, 201, 904L</td><td>7,9</td></tr>
+					<tr><td>Ферритные</td><td>AISI 430, 410S, 439, 08Х17</td><td>7,7</td></tr>
+					<tr><td>Мартенситные</td><td>AISI 420, 440, 20Х13, 30Х13, 40Х13</td><td>7,7</td></tr>
+					<tr><td>Двухфазные</td><td>Дуплекс, супердуплекс</td><td>7,8</td></tr>
+					<tr><td>Жаропрочные</td><td>AISI 310S, 20Х23Н18</td><td>7,9</td></tr>
+				</tbody>
+			</table>
+		</section>
+
+		<section class="calc__block">
+			<h2>Перейти в каталог</h2>
+			<p>После расчёта веса — посмотрите цены в нашем прайсе и оставьте заявку на коммерческое предложение.</p>
+			<ul class="calc__hubs">
+				<li><a href="/list/">Лист нержавеющий</a></li>
+				<li><a href="/truba/">Труба нержавеющая</a></li>
+				<li><a href="/krug/">Круг нержавеющий</a></li>
+				<li><a href="/rulon/">Рулон нержавеющий</a></li>
+				<li><a href="/polosa/">Полоса нержавеющая</a></li>
+				<li><a href="/provoloka/">Проволока нержавеющая</a></li>
+				<li><a href="/ugolok-shveller/">Уголок и швеллер</a></li>
+				<li><a href="/detali-truboprovoda/">Детали трубопровода</a></li>
+			</ul>
+		</section>
+
+		<section class="calc__faq">
+			<h2>Частые вопросы</h2>
+			<div class="calc__faq-list">
+				{faq.map((f) => (
+					<details class="calc__faq-item">
+						<summary class="calc__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Не нашли нужный формат?"
+		text="Менеджер пересчитает вес по чертежу и пришлёт КП — даже под нестандартные позиции."
+	/>
+</BaseLayout>
+
+<script>
+	type Shape = 'list' | 'krug' | 'kvadrat' | 'shestigrannik' | 'truba' | 'truba-pryam' | 'provoloka' | 'polosa' | 'ugolok';
+
+	const DENSITIES: Record<string, number> = {
+		austenitic: 7.9,
+		ferritic: 7.7,
+		martensitic: 7.7,
+		duplex: 7.8,
+	};
+
+	/* Какие поля показываем под каждый вид проката. mm — миллиметры. */
+	const FIELDS: Record<Shape, { unit: 'pcs' | 'meter' | 'sheet'; fields: { key: string; label: string; placeholder?: string; def?: number }[] }> = {
+		list: { unit: 'sheet', fields: [
+			{ key: 'thickness', label: 'Толщина, мм', def: 1 },
+			{ key: 'width', label: 'Ширина, мм', def: 1000 },
+			{ key: 'length', label: 'Длина, мм', def: 2000 },
+		]},
+		polosa: { unit: 'pcs', fields: [
+			{ key: 'thickness', label: 'Толщина, мм', def: 4 },
+			{ key: 'width', label: 'Ширина, мм', def: 40 },
+			{ key: 'length', label: 'Длина, мм', def: 6000 },
+		]},
+		krug: { unit: 'meter', fields: [
+			{ key: 'diameter', label: 'Диаметр, мм', def: 20 },
+			{ key: 'length', label: 'Длина, мм', def: 1000 },
+		]},
+		kvadrat: { unit: 'meter', fields: [
+			{ key: 'side', label: 'Сторона, мм', def: 20 },
+			{ key: 'length', label: 'Длина, мм', def: 1000 },
+		]},
+		shestigrannik: { unit: 'meter', fields: [
+			{ key: 'side', label: 'Размер «под ключ» (через грани), мм', def: 22 },
+			{ key: 'length', label: 'Длина, мм', def: 1000 },
+		]},
+		truba: { unit: 'meter', fields: [
+			{ key: 'diameter', label: 'Наружный диаметр, мм', def: 50 },
+			{ key: 'wall', label: 'Стенка, мм', def: 2 },
+			{ key: 'length', label: 'Длина, мм', def: 1000 },
+		]},
+		'truba-pryam': { unit: 'meter', fields: [
+			{ key: 'side_a', label: 'Сторона A, мм', def: 40 },
+			{ key: 'side_b', label: 'Сторона B, мм', def: 20 },
+			{ key: 'wall', label: 'Стенка, мм', def: 2 },
+			{ key: 'length', label: 'Длина, мм', def: 1000 },
+		]},
+		provoloka: { unit: 'meter', fields: [
+			{ key: 'diameter', label: 'Диаметр, мм', def: 1 },
+			{ key: 'length', label: 'Длина, мм', def: 1000 },
+		]},
+		ugolok: { unit: 'meter', fields: [
+			{ key: 'side', label: 'Полка, мм', def: 50 },
+			{ key: 'thickness', label: 'Толщина, мм', def: 5 },
+			{ key: 'length', label: 'Длина, мм', def: 6000 },
+		]},
+	};
+
+	const UNIT_LABELS: Record<'pcs' | 'meter' | 'sheet', string> = {
+		pcs: 'штук',
+		meter: 'м (длина одной)',
+		sheet: 'листов',
+	};
+
+	const root = document.querySelector('[data-calc-root]');
+	const shapeSel = root?.querySelector('[data-calc-shape]') as HTMLSelectElement | null;
+	const gradeSel = root?.querySelector('[data-calc-grade]') as HTMLSelectElement | null;
+	const densityRow = root?.querySelector('[data-calc-density-row]') as HTMLElement | null;
+	const densityInput = root?.querySelector('[data-calc-density]') as HTMLInputElement | null;
+	const dimsEl = root?.querySelector('[data-calc-dims]') as HTMLElement | null;
+	const qtyInput = root?.querySelector('[data-calc-qty]') as HTMLInputElement | null;
+	const qtyHint = root?.querySelector('[data-calc-qty-hint]') as HTMLElement | null;
+	const unitWeightEl = root?.querySelector('[data-calc-unit-weight]') as HTMLElement | null;
+	const totalEl = root?.querySelector('[data-calc-total]') as HTMLElement | null;
+	const ctaEl = root?.querySelector('[data-calc-cta]') as HTMLAnchorElement | null;
+
+	if (root && shapeSel && gradeSel && dimsEl && qtyInput && qtyHint && unitWeightEl && totalEl) {
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+
+		function getDensity(): number {
+			const g = gradeSel!.value;
+			if (g === 'custom') return parseFloat(densityInput?.value || '7.9') || 7.9;
+			return DENSITIES[g] ?? 7.9;
+		}
+
+		function renderDims() {
+			const shape = shapeSel!.value as Shape;
+			const cfg = FIELDS[shape];
+			dimsEl!.innerHTML = '';
+			cfg.fields.forEach((f) => {
+				const wrap = document.createElement('div');
+				wrap.className = 'calc__field';
+				const lbl = document.createElement('label');
+				lbl.className = 'calc__label';
+				lbl.setAttribute('for', `calc-${f.key}`);
+				lbl.textContent = f.label;
+				const inp = document.createElement('input');
+				inp.className = 'calc__input';
+				inp.id = `calc-${f.key}`;
+				inp.type = 'number';
+				inp.inputMode = 'decimal';
+				inp.step = 'any';
+				inp.min = '0.01';
+				inp.dataset.dim = f.key;
+				inp.value = String(f.def ?? '');
+				inp.addEventListener('input', recalc);
+				wrap.appendChild(lbl);
+				wrap.appendChild(inp);
+				dimsEl!.appendChild(wrap);
+			});
+			qtyHint!.textContent = UNIT_LABELS[cfg.unit];
+		}
+
+		function getDim(key: string): number {
+			const el = dimsEl!.querySelector(`[data-dim="${key}"]`) as HTMLInputElement | null;
+			return el ? parseFloat(el.value) || 0 : 0;
+		}
+
+		function calcUnitWeight(): number {
+			const shape = shapeSel!.value as Shape;
+			const rho = getDensity(); // g/cm³ = kg / 10⁶ mm³ × 1000 = kg / 1000 cm³, для расчёта в мм используем ρ/10⁶
+			/* Все размеры в мм. Возвращаем массу одной единицы в кг.
+			   Объём V (мм³) × ρ (г/см³) / 1000 = масса (г) / 1000 = кг.
+			   Или: V × ρ / 10⁶ × 1000 = V × ρ / 1000.  Проще: kg = V_мм3 × ρ_г_см3 / 10⁶. */
+			const FACTOR = 1e-6;
+			switch (shape) {
+				case 'list':
+				case 'polosa': {
+					const t = getDim('thickness');
+					const w = getDim('width');
+					const L = getDim('length');
+					return t * w * L * rho * FACTOR;
+				}
+				case 'krug':
+				case 'provoloka': {
+					const d = getDim('diameter');
+					const L = getDim('length');
+					return Math.PI * (d / 2) ** 2 * L * rho * FACTOR;
+				}
+				case 'kvadrat': {
+					const a = getDim('side');
+					const L = getDim('length');
+					return a * a * L * rho * FACTOR;
+				}
+				case 'shestigrannik': {
+					const s = getDim('side');
+					const L = getDim('length');
+					return (Math.sqrt(3) / 2) * s * s * L * rho * FACTOR;
+				}
+				case 'truba': {
+					const D = getDim('diameter');
+					const wall = getDim('wall');
+					const L = getDim('length');
+					if (wall >= D / 2) return 0;
+					return Math.PI * (D - wall) * wall * L * rho * FACTOR;
+				}
+				case 'truba-pryam': {
+					const a = getDim('side_a');
+					const b = getDim('side_b');
+					const wall = getDim('wall');
+					const L = getDim('length');
+					if (wall >= Math.min(a, b) / 2) return 0;
+					return 2 * (a + b - 2 * wall) * wall * L * rho * FACTOR;
+				}
+				case 'ugolok': {
+					const a = getDim('side');
+					const t = getDim('thickness');
+					const L = getDim('length');
+					if (t >= a) return 0;
+					return (2 * a * t - t * t) * L * rho * FACTOR;
+				}
+			}
+			return 0;
+		}
+
+		function recalc() {
+			const unitW = calcUnitWeight();
+			const qty = parseFloat(qtyInput!.value) || 0;
+			const total = unitW * qty;
+			if (unitW > 0) {
+				unitWeightEl!.textContent = `${fmt.format(unitW)} кг`;
+			} else {
+				unitWeightEl!.textContent = '—';
+			}
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl!.textContent = `${fmt.format(total / 1000)} т (${fmt.format(total)} кг)`;
+				} else {
+					totalEl!.textContent = `${fmt.format(total)} кг`;
+				}
+			} else {
+				totalEl!.textContent = '—';
+			}
+			/* CTA-ссылка с предзаполненными параметрами — попадут в форму заявки */
+			if (ctaEl) {
+				const shape = shapeSel!.value;
+				const params = new URLSearchParams({ shape, qty: String(qty), weight_kg: String(Math.round(total)) });
+				ctaEl.href = `/zapros-kp/?${params.toString()}#lead-form`;
+			}
+		}
+
+		shapeSel.addEventListener('change', () => { renderDims(); recalc(); });
+		gradeSel.addEventListener('change', () => {
+			densityRow!.hidden = gradeSel!.value !== 'custom';
+			if (gradeSel!.value !== 'custom' && densityInput) {
+				densityInput.value = String(DENSITIES[gradeSel!.value] ?? 7.9);
+			}
+			recalc();
+		});
+		densityInput?.addEventListener('input', recalc);
+		qtyInput.addEventListener('input', recalc);
+
+		renderDims();
+		recalc();
+	}
+</script>
+
+<style>
+	.calc { padding-block: var(--space-8); min-width: 0; }
+	.calc__hero { margin-bottom: var(--space-8); max-width: 80ch; }
+	.calc__lead {
+		font-size: 1.05rem;
+		line-height: 1.6;
+		max-width: 75ch;
+		color: var(--color-text);
+	}
+
+	.calc__widget {
+		display: grid;
+		grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+		gap: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		margin-bottom: var(--space-8);
+	}
+	@media (max-width: 768px) {
+		.calc__widget { grid-template-columns: minmax(0, 1fr); }
+	}
+
+	.calc__panel {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: var(--space-3);
+	}
+	@media (max-width: 480px) {
+		.calc__panel { grid-template-columns: minmax(0, 1fr); }
+	}
+
+	.calc__field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+	.calc__field--custom-density { grid-column: 1 / -1; }
+	.calc__label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-subtle);
+	}
+	.calc__input {
+		font: inherit;
+		font-size: 0.95rem;
+		padding: 0.65rem 0.8rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-bg-elev);
+		color: var(--color-text);
+		outline: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			box-shadow var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+		min-width: 0;
+		width: 100%;
+		appearance: none;
+		-webkit-appearance: none;
+	}
+	.calc__input:focus {
+		border-color: var(--color-primary-500);
+		box-shadow: 0 0 0 3px var(--color-primary-100);
+		background: #fff;
+	}
+	.calc__hint {
+		font-size: 0.78rem;
+		color: var(--color-muted);
+	}
+
+	.calc__dims {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: var(--space-3);
+		padding-top: var(--space-3);
+		border-top: 1px dashed var(--color-border);
+	}
+
+	.calc__result {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+	}
+	.calc__result-line {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-3);
+		align-items: baseline;
+	}
+	.calc__result-line--total {
+		padding-top: var(--space-3);
+		border-top: 1px solid var(--color-primary-100);
+	}
+	.calc__result-label {
+		font-size: 0.85rem;
+		color: var(--color-primary-600);
+	}
+	.calc__result-value {
+		font-family: var(--font-mono);
+		font-size: 1rem;
+		color: var(--color-primary-600);
+		font-weight: 700;
+	}
+	.calc__result-value--big {
+		font-size: 1.6rem;
+		line-height: 1.1;
+		text-align: right;
+		overflow-wrap: anywhere;
+	}
+	.calc__cta {
+		display: inline-block;
+		text-align: center;
+		padding: 0.7rem 1rem;
+		background: var(--color-accent);
+		color: #fff;
+		font-weight: 600;
+		text-decoration: none;
+		border-radius: var(--radius-md);
+		margin-top: var(--space-3);
+	}
+	.calc__cta:hover {
+		background: var(--color-accent-600);
+		color: #fff;
+		text-decoration: none;
+	}
+
+	.calc__block { margin-bottom: var(--space-8); }
+	.calc__block h2 { font-size: 1.2rem; margin-bottom: var(--space-3); }
+	.calc__formulas {
+		display: grid;
+		gap: var(--space-2);
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 80ch;
+	}
+	.calc__formulas strong { color: var(--color-text); }
+	.calc__note {
+		margin-top: var(--space-3);
+		font-size: 0.88rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+	}
+
+	.calc__density-table {
+		width: 100%;
+		max-width: 80ch;
+		border-collapse: separate;
+		border-spacing: 0;
+		font-size: 0.92rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+	}
+	.calc__density-table thead th {
+		text-align: left;
+		padding: 0.7rem 0.85rem;
+		background: var(--color-bg-elev);
+		font-weight: 600;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		border-bottom: 1px solid var(--color-border);
+	}
+	.calc__density-table tbody td {
+		padding: 0.7rem 0.85rem;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+	}
+	.calc__density-table tbody tr:last-child td { border-bottom: 0; }
+
+	.calc__hubs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		list-style: none;
+		padding: 0;
+		margin: var(--space-3) 0 0;
+	}
+	.calc__hubs a {
+		display: inline-block;
+		padding: 0.5rem 0.85rem;
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-primary-600);
+		font-weight: 500;
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+	}
+	.calc__hubs a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+	}
+
+	.calc__faq { margin-bottom: var(--space-8); }
+	.calc__faq h2 { font-size: 1.2rem; margin-bottom: var(--space-4); }
+	.calc__faq-list { display: grid; gap: var(--space-2); max-width: 80ch; }
+	.calc__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+	}
+	.calc__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.calc__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.calc__faq-q::-webkit-details-marker { display: none; }
+	.calc__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.calc__faq-item[open] .calc__faq-q svg { transform: rotate(180deg); }
+	.calc__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; }
+</style>

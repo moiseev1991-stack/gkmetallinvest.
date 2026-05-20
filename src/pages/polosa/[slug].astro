@@ -1,18 +1,40 @@
 ---
 import ProductDetail from '../../components/ProductDetail.astro';
+import MarkLanding from '../../components/MarkLanding.astro';
 import pricelist from '../../data/pricelist.json';
+import { marks } from '../../data/marks.ts';
 
 export async function getStaticPaths() {
 	const skus = (pricelist.hubs as any).polosa as any[];
-	return skus.map((sku) => ({ params: { slug: sku.slug }, props: { sku } }));
+	const productPaths = skus.map((sku) => ({
+		params: { slug: sku.slug },
+		props: { kind: 'product', sku },
+	}));
+
+	const markPaths = marks
+		.filter((m) => m.hubs.includes('polosa'))
+		.map((m) => ({ params: { slug: m.slug }, props: { kind: 'mark', mark: m } }));
+
+	return [...markPaths, ...productPaths];
 }
 
-const { sku } = Astro.props;
+const props = Astro.props as any;
 ---
 
-<ProductDetail
-	sku={sku}
-	hubLabel="Полоса нержавеющая"
-	hubHref="/polosa/"
-	measureLabel="толщина"
-/>
+{props.kind === 'mark' ? (
+	<MarkLanding
+		mark={props.mark}
+		hub="polosa"
+		hubLabel="Полоса нержавеющая"
+		hubLabelGenitive="полосу нержавеющую"
+		hubHref="/polosa/"
+		measure="толщина"
+	/>
+) : (
+	<ProductDetail
+		sku={props.sku}
+		hubLabel="Полоса нержавеющая"
+		hubHref="/polosa/"
+		measureLabel="толщина"
+	/>
+)}

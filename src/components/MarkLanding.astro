@@ -1,0 +1,336 @@
+---
+/**
+ * Марочная посадочная: /<hub>/<mark.slug>/.
+ * Закрывает запросы типа «AISI 304 лист купить», «12Х18Н10Т труба цена».
+ *
+ * - Уникальный title/H1/description с маркой
+ * - PriceTable с initialGrade — таблица сразу отфильтрована по марке
+ * - Текст про свойства, применение, аналоги
+ * - FAQ + FAQPage JSON-LD
+ * - Product JSON-LD категорийного уровня (CollectionPage)
+ * - Cross-link на ту же марку в других хабах (труба → лист → круг)
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import CtaSection from './CtaSection.astro';
+import CityBlock from './CityBlock.astro';
+import PriceTable from './PriceTable.astro';
+import type { MarkInfo } from '../data/marks.ts';
+import { marks } from '../data/marks.ts';
+import { siteUrl, siteName, contacts } from '../data/site';
+import pricelist from '../data/pricelist.json';
+
+interface Props {
+	mark: MarkInfo;
+	hub: 'list' | 'truba' | 'krug' | 'rulon' | 'polosa' | 'provoloka' | 'detali-truboprovoda' | 'ugolok-shveller';
+	hubLabel: string;
+	hubLabelGenitive: string; // «листа нержавеющего», «трубы нержавеющей» — для предложений «купить листа AISI 304»
+	hubHref: string;
+	measure: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
+}
+
+const { mark, hub, hubLabel, hubLabelGenitive, hubHref, measure } = Astro.props;
+
+/* Количество позиций по этой марке в этом хабе — для intro. */
+const skus = (pricelist.hubs as any)[hub] as any[];
+const count = skus.filter((s) =>
+	mark.aliases.some((a) => (s.grade || '').toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes((s.grade || '').toLowerCase())),
+).length;
+
+const title = `${hubLabel} ${mark.aisi} (${mark.gost}) — купить, цена за тонну в Нижнем Новгороде`;
+const description = `${hubLabel} марки ${mark.aisi} / ${mark.gost} в наличии: ${count} позиций. Сертификат завода, отгрузка в день оплаты, доставка по России. ${contacts.phone}.`;
+const h1 = `${hubLabel} ${mark.aisi} (${mark.gost})`;
+
+/* Прочие хабы, где есть эта марка — для кросс-линков «то же AISI 304 в других форматах». */
+const HUB_LABELS: Record<string, { label: string; href: string }> = {
+	list: { label: 'Лист', href: '/list/' },
+	truba: { label: 'Труба', href: '/truba/' },
+	krug: { label: 'Круг', href: '/krug/' },
+	rulon: { label: 'Рулон', href: '/rulon/' },
+	polosa: { label: 'Полоса', href: '/polosa/' },
+	provoloka: { label: 'Проволока', href: '/provoloka/' },
+	'detali-truboprovoda': { label: 'Фитинги', href: '/detali-truboprovoda/' },
+	'ugolok-shveller': { label: 'Уголок / швеллер', href: '/ugolok-shveller/' },
+};
+const otherHubs = mark.hubs.filter((h) => h !== hub).map((h) => HUB_LABELS[h]).filter(Boolean);
+
+const faq = [
+	{
+		q: `Сколько стоит ${hubLabelGenitive.toLowerCase()} ${mark.aisi} за тонну?`,
+		a: `Цена зависит от размера и поверхности. Актуальные цены в прайсе выше — обновляется ежедневно. Для коммерческого предложения с фиксацией цены на 5 рабочих дней — отправьте заявку.`,
+	},
+	{
+		q: `${mark.aisi} и ${mark.gost} — это одна и та же марка?`,
+		a: `Да, это аналоги: ${mark.aisi} — американская номенклатура (AISI/ASTM), ${mark.gost} — российская (ГОСТ 5632). Состав и свойства практически одинаковы; различие в долях процента в пределах допусков. В спецификации можно указывать любой из вариантов.`,
+	},
+	{
+		q: `Какие документы предоставляются на партию?`,
+		a: `Сертификат завода-изготовителя с указанием плавки, химсостава и механических свойств. Маркировка партии. По запросу — копии в PDF / через ЭДО до отгрузки. Подходит для тендерных закупок.`,
+	},
+	{
+		q: `Доставка ${hubLabelGenitive.toLowerCase()} ${mark.aisi} в Москву / СПб / регионы — сроки?`,
+		a: `Москва — 1–2 дня, СПб — 2–3, Урал — 3–4, Сибирь — 5–7 рабочих дней. Возим автотранспортом, ж/д контейнерами и ТК (Деловые линии, ПЭК, СДЭК). Для городов в радиусе 600 км — собственные машины с отгрузкой в день оплаты.`,
+	},
+	{
+		q: `Можно ли заказать резку, перфорацию или полировку ${hubLabelGenitive.toLowerCase()} ${mark.aisi}?`,
+		a: `Да. Резка в размер до 12 м (точность ±1 мм), перфорация по чертежу, полировка до зеркала Ra ≤ 0,4 мкм. Услуги добавляются в счёт отдельной строкой и не влияют на цену материала.`,
+	},
+	{
+		q: `Минимальная партия отгрузки?`,
+		a: `От 0,1 т (розничная цена) и от 1 т (оптовая). Возможна комплектация одной отправкой нескольких марок и форматов.`,
+	},
+];
+
+const breadcrumbs = [
+	{ label: 'Главная', href: '/' },
+	{ label: hubLabel, href: hubHref },
+	{ label: `${mark.aisi} (${mark.gost})` },
+];
+
+const canonical = `${hubHref}${mark.slug}/`;
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const collectionJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'CollectionPage',
+	name: h1,
+	description,
+	url: `${siteUrl}${canonical}`,
+	about: {
+		'@type': 'Product',
+		name: `${hubLabel} ${mark.aisi}`,
+		material: `${mark.aisi} / ${mark.gost}`,
+		brand: { '@type': 'Brand', name: siteName },
+	},
+};
+
+const TYPE_LABEL: Record<MarkInfo['type'], string> = {
+	austenitic: 'аустенитная',
+	ferritic: 'ферритная',
+	martensitic: 'мартенситная',
+	duplex: 'двухфазная (дуплекс)',
+};
+---
+
+<BaseLayout
+	title={title}
+	description={description}
+	canonical={canonical}
+	jsonLd={[collectionJsonLd, faqJsonLd]}
+>
+	<div class="container mark">
+		<Breadcrumbs items={breadcrumbs} />
+		<h1>{h1}</h1>
+
+		<div class="mark__chips">
+			<span class="mark__chip mark__chip--main">{mark.aisi}</span>
+			<span class="mark__chip">{mark.gost}</span>
+			<span class="mark__chip mark__chip--type">{TYPE_LABEL[mark.type]} нержавеющая сталь</span>
+			{count > 0 && <span class="mark__chip mark__chip--count">{count} позиций в наличии</span>}
+		</div>
+
+		<p class="mark__short">{mark.short}</p>
+
+		<PriceTable hub={hub} title={`Прайс на ${hubLabelGenitive.toLowerCase()} ${mark.aisi}`} measure={measure} initialGrade={mark.aliases} />
+
+		<section class="mark__block">
+			<h2>Свойства марки {mark.aisi}</h2>
+			<p>{mark.properties}</p>
+		</section>
+
+		<section class="mark__block">
+			<h2>Где применяется {mark.aisi}</h2>
+			<ul class="mark__list">
+				{mark.applications.map((a) => <li>{a}</li>)}
+			</ul>
+		</section>
+
+		{otherHubs.length > 0 && (
+			<section class="mark__block">
+				<h2>{mark.aisi} в других форматах</h2>
+				<p>Та же марка с тем же сертификатом и наценкой 5 % — в других видах металлопроката. Цены сопоставимы по тонне, отличается только геометрия.</p>
+				<ul class="mark__cross">
+					{otherHubs.map((h) => (
+						<li>
+							<a class="mark__cross-link" href={`${h.href}${mark.slug}/`}>
+								<span class="mark__cross-label">{h.label}</span>
+								<span class="mark__cross-mark">{mark.aisi}</span>
+							</a>
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
+
+		<section class="mark__block">
+			<h2>Документы и сертификация</h2>
+			<ul class="mark__list">
+				<li>Сертификат завода-изготовителя с химическим анализом и механическими свойствами</li>
+				<li>Маркировка партии и плавки на упаковке</li>
+				<li>Соответствие ГОСТ 5632, EN 10088, ASTM A240 / A276 / A312 (в зависимости от вида проката)</li>
+				<li>УПД с НДС, отгрузка через ЭДО — для тендерных и госзакупок</li>
+				<li>По запросу — копии в PDF до отгрузки, оригиналы курьером</li>
+			</ul>
+		</section>
+
+		<section class="mark__faq">
+			<h2>Частые вопросы по {mark.aisi}</h2>
+			<div class="mark__faq-list">
+				{faq.map((f) => (
+					<details class="mark__faq-item">
+						<summary class="mark__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+
+		<CtaSection
+			title={`Запросить КП по ${hubLabelGenitive.toLowerCase()} ${mark.aisi}`}
+			text="Менеджер пришлёт коммерческое предложение с актуальной ценой и расчётом доставки в течение 30 минут."
+		/>
+	</div>
+
+	<CityBlock hubHref={hubHref} hubLabel={`${hubLabel} ${mark.aisi}`} />
+</BaseLayout>
+
+<style>
+	.mark { padding-block: var(--space-8); min-width: 0; }
+	.mark__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0 0 var(--space-4);
+	}
+	.mark__chip {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 0.35rem 0.75rem;
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-pill);
+		color: var(--color-text);
+	}
+	.mark__chip--main {
+		background: var(--color-primary-50);
+		border-color: var(--color-primary-100);
+		color: var(--color-primary-600);
+	}
+	.mark__chip--type {
+		background: transparent;
+		font-family: var(--font-sans);
+		font-weight: 500;
+		color: var(--color-muted);
+	}
+	.mark__chip--count {
+		background: var(--color-accent-100);
+		border-color: var(--color-accent);
+		color: var(--color-accent-600);
+		font-family: var(--font-sans);
+	}
+	.mark__short {
+		font-size: 1.05rem;
+		line-height: 1.6;
+		max-width: 75ch;
+		margin-bottom: var(--space-6);
+		color: var(--color-text);
+	}
+	.mark__block { margin-bottom: var(--space-8); }
+	.mark__block h2 { font-size: 1.2rem; margin-bottom: var(--space-3); }
+	.mark__block p { max-width: 75ch; color: var(--color-muted); line-height: 1.6; }
+	.mark__list {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.mark__cross {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: var(--space-2);
+		padding: 0;
+		margin: var(--space-3) 0 0;
+	}
+	.mark__cross-link {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+		min-width: 0;
+	}
+	.mark__cross-link:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
+		text-decoration: none;
+	}
+	.mark__cross-label {
+		font-weight: 600;
+		font-size: 1rem;
+	}
+	.mark__cross-mark {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-muted);
+	}
+	.mark__cross-link:hover .mark__cross-mark { color: var(--color-primary-500); }
+
+	.mark__faq { margin-bottom: var(--space-8); }
+	.mark__faq h2 { font-size: 1.2rem; margin-bottom: var(--space-4); }
+	.mark__faq-list { display: grid; gap: var(--space-2); max-width: 80ch; }
+	.mark__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+	}
+	.mark__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.mark__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.mark__faq-q::-webkit-details-marker { display: none; }
+	.mark__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.mark__faq-item[open] .mark__faq-q svg { transform: rotate(180deg); }
+	.mark__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; }
+</style>

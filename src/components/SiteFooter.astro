@@ -62,6 +62,7 @@ const isActive = (href: string) => {
 					{ href: '/dostavka-i-oplata/', label: 'Доставка и оплата' },
 					{ href: '/kontakty/', label: 'Контакты' },
 					{ href: '/zapros-kp/', label: 'Запросить КП' },
+					{ href: '/kalkulyator-vesa/', label: 'Калькулятор веса' },
 					{ href: '/karta-sayta/', label: 'Карта сайта' },
 				].map((l) => (
 					<li><a class={isActive(l.href) ? 'foot__link--active' : ''} href={l.href} aria-current={isActive(l.href) ? 'page' : undefined}>{l.label}</a></li>

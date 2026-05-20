@@ -15,11 +15,21 @@ interface Props {
 		| 'elektrody';
 	title?: string;
 	measure?: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
+	/** Алиасы grade для предварительной фильтрации — используется на марочных
+	 *  посадочных (/list/aisi-304/), чтобы в таблице сразу были только позиции
+	 *  нужной марки. Сравнение case-insensitive по substring matching. */
+	initialGrade?: string[];
 }
 
-const { hub, title = 'Прайс-лист', measure = 'размер' } = Astro.props;
+const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade } = Astro.props;
 
-const allSkus: any[] = (pricelist.hubs as any)[hub] ?? [];
+const allSkusRaw: any[] = (pricelist.hubs as any)[hub] ?? [];
+const allSkus = initialGrade && initialGrade.length > 0
+	? allSkusRaw.filter((s) => {
+			const g = String(s.grade || '').toLowerCase();
+			return initialGrade.some((a) => g.includes(a.toLowerCase()) || a.toLowerCase().includes(g));
+		})
+	: allSkusRaw;
 
 const SUB_LABELS: Record<string, string> = {
 	nikelesod: 'Никелесодержащий',
