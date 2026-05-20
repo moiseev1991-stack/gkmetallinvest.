@@ -676,7 +676,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 </script>
 
 <style is:global>
-	.pt { margin-block: var(--space-8); }
+	.pt { margin-block: var(--space-8); min-width: 0; }
 	.pt__head {
 		display: flex;
 		align-items: end;
@@ -684,8 +684,9 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 		gap: var(--space-4);
 		flex-wrap: wrap;
 		margin-bottom: var(--space-4);
+		min-width: 0;
 	}
-	.pt__title { margin: 0 0 var(--space-1); font-size: 1.4rem; letter-spacing: -0.015em; }
+	.pt__title { margin: 0 0 var(--space-1); font-size: 1.4rem; letter-spacing: -0.015em; overflow-wrap: anywhere; }
 	.pt__sub { margin: 0; font-size: 0.88rem; color: var(--color-muted); max-width: 60ch; }
 	.pt__count {
 		font-family: var(--font-mono);
@@ -1373,29 +1374,80 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 		.pt__filters { grid-template-columns: 1fr 1fr; }
 		.pt__field--search { grid-column: 1 / -1; }
 		.pt__field--toggle { grid-column: 1 / -1; }
-		.pt__table { min-width: 0; }
+		.pt__table-wrap { overflow-x: visible; }
+		.pt__table { min-width: 0; width: 100%; table-layout: auto; }
 		.pt__table thead { display: none; }
 		.pt__table,
 		.pt__table tbody,
 		.pt__table tr { display: block; }
-		.pt__table tbody td { display: flex; justify-content: space-between; align-items: baseline; padding: 0.5rem 1rem; border: none; gap: 1rem; }
+		.pt__table tbody td {
+			/* label слева, значение справа — но если значение длинное, переносим
+			   на следующую строку, чтобы ничего не выезжало за карточку. */
+			display: grid;
+			grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+			align-items: baseline;
+			padding: 0.4rem 0.85rem;
+			border: none;
+			gap: 0.75rem;
+			min-width: 0;
+		}
 		.pt__table tbody tr {
 			border-bottom: 1px solid var(--color-border);
 			padding: 0.6rem 0;
+			min-width: 0;
 		}
 		.pt__table tbody tr:last-child { border-bottom: 0; }
 		.pt__table tbody tr:nth-child(even) td { background: transparent; }
-		.pt__cell-name { font-weight: 700; padding-top: 0.75rem !important; }
+		.pt__cell-name {
+			grid-template-columns: 1fr !important;
+			font-weight: 700;
+			padding-top: 0.75rem !important;
+			padding-bottom: 0.25rem !important;
+		}
+		.pt__cell-name .pt__name-link {
+			overflow-wrap: anywhere;
+			word-break: break-word;
+		}
 		.pt__table tbody td[data-label]::before {
 			content: attr(data-label);
 			color: var(--color-muted);
 			font-weight: 400;
 			font-size: 0.85rem;
+			min-width: 0;
 		}
-		.pt__cell-name[data-label]::before { content: ''; }
+		.pt__cell-name[data-label]::before { content: ''; display: none; }
+		.pt__cell-num,
+		.pt__cell-price {
+			text-align: right;
+			overflow-wrap: anywhere;
+		}
+		.pt__cell-grade,
+		.pt__cell-fact {
+			text-align: right;
+			overflow-wrap: anywhere;
+		}
 		.pt__cell-price--accent { background: transparent; }
 		.pt__table tbody tr:nth-child(even) .pt__cell-price--accent { background: transparent; }
-		.pt__cell-act { justify-content: flex-end; padding-bottom: 0.75rem !important; }
-		.pt__cell-act::before { content: ''; }
+		.pt__cell-act {
+			grid-template-columns: 1fr !important;
+			justify-items: end;
+			padding-bottom: 0.75rem !important;
+		}
+		.pt__cell-act::before { content: ''; display: none; }
+
+		/* Плиточный вид — на мобиле одна колонка, ширина не выходит за viewport. */
+		.pt__grid {
+			grid-template-columns: minmax(0, 1fr);
+			gap: var(--space-3);
+		}
+		.pt-tile {
+			padding: var(--space-3);
+			min-width: 0;
+		}
+		.pt-tile__name {
+			overflow-wrap: anywhere;
+			word-break: break-word;
+		}
+		.pt-tile__chips { min-width: 0; }
 	}
 </style>

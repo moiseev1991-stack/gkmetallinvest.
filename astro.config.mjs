@@ -10,12 +10,12 @@ export default defineConfig({
 	integrations: [
 		sitemap({
 			// Дубли карточек с суффиксом -2/-3/-N — те же товары с других партий;
-			// в sitemap идут только основные slug'и. Пустые хабы тоже отсекаем —
-			// они закрыты от индексации (см. BaseLayout noindex).
+			// в sitemap идут только основные slug'и. Пустые хабы (без прайса)
+			// тоже отсекаем — они закрыты от индексации и пустые с точки зрения SEO.
 			filter: (page) => {
 				const path = new URL(page).pathname;
 				if (/-\d+\/$/.test(path)) return false;
-				if (/^\/(lenta|folga|metizy|elektrody|podshipniki)(\/|$)/.test(path)) return false;
+				if (/^\/(lenta|folga|metizy|elektrody|podshipniki|dekorativnye-listy)(\/|$)/.test(path)) return false;
 				return true;
 			},
 		}),

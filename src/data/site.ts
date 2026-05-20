@@ -33,6 +33,19 @@ export const orgAddress = {
 	addressCountry: 'RU',
 };
 
+/** Координаты офиса на ул. Варварской, 32 — нужны для GeoCoordinates
+ *  в LocalBusiness JSON-LD и для Яндекс/Google Maps hasMap. */
+export const orgGeo = {
+	latitude: 56.32849,
+	longitude: 44.00465,
+};
+
+/** Ссылка на Яндекс.Карты с офисом — для hasMap в schema.org. */
+export const orgMapUrl =
+	'https://yandex.ru/maps/?text=' +
+	encodeURIComponent('Нижний Новгород, ул. Варварская, 32') +
+	`&ll=${orgGeo.longitude},${orgGeo.latitude}&z=17`;
+
 export const citiesRf = [
 	'Москва',
 	'Санкт-Петербург',

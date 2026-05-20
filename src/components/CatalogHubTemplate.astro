@@ -13,31 +13,122 @@ interface Props {
 	breadcrumbs: BreadcrumbItem[];
 	noindex?: boolean;
 	image?: string;
+	/** Префикс хаба для генерации ссылок на city-страницы /<hub>/v-<city>/. */
+	hubHref?: string;
+	/** Подпись хаба (например, «Лист нержавеющий»). */
+	hubLabel?: string;
+	/** FAQ-блок: вопросы/ответы. Если передан — рендерится секция + FAQPage JSON-LD. */
+	faq?: { q: string; a: string }[];
 }
-const { title, description, h1, intro, breadcrumbs, noindex, image } = Astro.props;
+const { title, description, h1, intro, breadcrumbs, noindex, image, hubHref, hubLabel, faq } = Astro.props;
+
+const faqJsonLd = faq && faq.length
+	? {
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			mainEntity: faq.map((f) => ({
+				'@type': 'Question',
+				name: f.q,
+				acceptedAnswer: { '@type': 'Answer', text: f.a },
+			})),
+	  }
+	: null;
 ---
 
-<BaseLayout title={title} description={description} noindex={noindex} image={image}>
+<BaseLayout
+	title={title}
+	description={description}
+	noindex={noindex}
+	image={image}
+	jsonLd={faqJsonLd ?? undefined}
+>
 	<div class="container hub">
 		<Breadcrumbs items={breadcrumbs} />
 		<h1>{h1}</h1>
 		<p class="hub__intro">{intro}</p>
 		<slot />
+
+		{faq && faq.length > 0 && (
+			<section class="hub__faq">
+				<h2>Частые вопросы</h2>
+				<div class="hub__faq-list">
+					{faq.map((f) => (
+						<details class="hub__faq-item">
+							<summary class="hub__faq-q">
+								<span>{f.q}</span>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p class="hub__faq-a">{f.a}</p>
+						</details>
+					))}
+				</div>
+			</section>
+		)}
+
 		<CtaSection
 			title="Нужна цена и сроки?"
 			text="Отправьте заявку — подберём марку, формат и логистику."
 		/>
-		<CityBlock />
 	</div>
+	<CityBlock hubHref={hubHref} hubLabel={hubLabel} />
 </BaseLayout>
 
 <style>
 	.hub {
 		padding-block: var(--space-8);
+		min-width: 0;
 	}
 	.hub__intro {
 		font-size: 1.05rem;
 		margin-bottom: var(--space-6);
 		max-width: 65ch;
+	}
+	.hub__faq {
+		margin: var(--space-10) 0 var(--space-8);
+	}
+	.hub__faq h2 {
+		font-size: 1.25rem;
+		margin-bottom: var(--space-4);
+	}
+	.hub__faq-list {
+		display: grid;
+		gap: var(--space-2);
+		max-width: 80ch;
+	}
+	.hub__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+	}
+	.hub__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.hub__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.hub__faq-q::-webkit-details-marker { display: none; }
+	.hub__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.hub__faq-item[open] .hub__faq-q svg {
+		transform: rotate(180deg);
+	}
+	.hub__faq-a {
+		margin: var(--space-3) 0 0;
+		color: var(--color-muted);
+		max-width: 70ch;
 	}
 </style>

@@ -1,18 +1,56 @@
 ---
-import { citiesRf } from '../data/site';
+/**
+ * Блок «доставка в города» для страниц хабов.
+ * Принимает `hubHref` (например, /list/) — и рендерит сетку ссылок
+ * /{hub}v-{city}/ для каждого города из cities.ts. Если хаб не указан,
+ * показывает плоский список названий (как раньше — для главной).
+ */
+import { cities } from '../data/cities';
+
+interface Props {
+	/** Базовый хаб, к которому генерируется ссылка вида /{hubHref}v-{slug}/.
+	 *  Если не передан — рендерим только названия городов без ссылок. */
+	hubHref?: string;
+	/** Подпись хаба для заголовка («Доставка листа в города»). */
+	hubLabel?: string;
+}
+
+const { hubHref, hubLabel } = Astro.props;
+
+const heading = hubLabel
+	? `Доставка «${hubLabel}» по городам России`
+	: 'Поставляем по всей России';
+const lead = hubHref
+	? 'Перейдите на страницу города — там цены те же, расчёт доставки и сроки для конкретного региона.'
+	: 'Работаем с юридическими и частными заказчиками, организуем логистику и страхование груза.';
+
+const base = hubHref ? hubHref.replace(/\/?$/, '/') : null;
 ---
 
 <section class="geo" aria-labelledby="geo-title">
 	<div class="container">
-		<h2 id="geo-title" class="geo__h">Поставляем по всей России</h2>
-		<p class="geo__lead">
-			Работаем с юридическими и частными заказчиками, организуем логистику и страхование груза.
-		</p>
-		<ul class="geo__cities">
-			{citiesRf.map((c) => <li>{c}</li>)}
+		<h2 id="geo-title" class="geo__h">{heading}</h2>
+		<p class="geo__lead">{lead}</p>
+		<ul class={`geo__cities${base ? ' geo__cities--links' : ''}`}>
+			{cities.map((c) => {
+				const label = c.name;
+				const sub = `${c.transit}`;
+				if (base) {
+					return (
+						<li>
+							<a class="geo__chip" href={`${base}v-${c.slug}/`}>
+								<span class="geo__chip-city">{label}</span>
+								<span class="geo__chip-meta">{sub}</span>
+							</a>
+						</li>
+					);
+				}
+				return <li class="geo__plain">{label}</li>;
+			})}
 		</ul>
 		<p class="geo__note">
-			Шаблон гео-страниц под города — в дорожной карте (фаза P3): <code>/dostavka/&#123;gorod&#125;/</code>
+			Нужного города нет? <a href="/zapros-kp/">Отправьте заявку</a> — рассчитаем
+			логистику до любого региона России и СНГ.
 		</p>
 	</div>
 </section>
@@ -27,26 +65,61 @@ import { citiesRf } from '../data/site';
 		margin-bottom: var(--space-3);
 	}
 	.geo__lead {
-		max-width: 50ch;
+		max-width: 60ch;
 		margin-bottom: var(--space-6);
 	}
 	.geo__cities {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-		gap: var(--space-2) var(--space-4);
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: var(--space-3);
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		font-size: 0.95rem;
 		color: var(--color-muted);
 	}
+	.geo__plain {
+		padding: var(--space-2) 0;
+	}
+	.geo__chip {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-text);
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out),
+			transform var(--dur-fast) var(--ease-out);
+		min-width: 0;
+	}
+	.geo__chip:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
+		text-decoration: none;
+		transform: translateY(-2px);
+	}
+	.geo__chip-city {
+		font-weight: 600;
+		font-size: 1rem;
+		letter-spacing: -0.01em;
+		overflow-wrap: anywhere;
+	}
+	.geo__chip-meta {
+		font-size: 0.78rem;
+		color: var(--color-muted);
+	}
+	.geo__chip:hover .geo__chip-meta {
+		color: var(--color-primary-500);
+	}
 	.geo__note {
 		margin-top: var(--space-6);
-		font-size: 0.8rem;
+		font-size: 0.85rem;
 		color: var(--color-muted);
 		max-width: none;
-	}
-	.geo__note code {
-		font-size: 0.85em;
 	}
 </style>

@@ -139,9 +139,17 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	const megaBtn = document.getElementById('mega-btn');
 	const megaPanel = document.getElementById('mega-panel');
 
+	const closeDrawer = () => {
+		drawer?.classList.remove('head__nav-wrap--open');
+		toggle?.setAttribute('aria-expanded', 'false');
+		document.body.style.overflow = '';
+	};
+
 	toggle?.addEventListener('click', () => {
 		const open = drawer?.classList.toggle('head__nav-wrap--open');
 		toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+		// На мобиле — блокируем скролл body когда drawer открыт; на десктопе
+		// drawer вообще не существует как fixed-оверлей, поэтому проверяем класс.
 		document.body.style.overflow = open ? 'hidden' : '';
 	});
 
@@ -160,10 +168,26 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	document.addEventListener('click', (e) => {
 		if (!megaPanel || !megaBtn) return;
 		const target = e.target as Node;
+		// На мобиле мегапанель — часть drawer'а; не закрываем её при клике внутри drawer.
+		if (drawer?.contains(target)) return;
 		if (!megaPanel.contains(target) && !megaBtn.contains(target)) {
 			megaPanel.setAttribute('hidden', '');
 			megaBtn.setAttribute('aria-expanded', 'false');
 		}
+	});
+
+	// Закрываем drawer при клике на любую ссылку внутри — иначе пользователь
+	// нажал ссылку, ушёл на новую страницу, drawer открылся обратно (но скролл body
+	// остался заблокированным до релоада).
+	drawer?.querySelectorAll('a').forEach((a) => {
+		a.addEventListener('click', () => {
+			if (drawer.classList.contains('head__nav-wrap--open')) closeDrawer();
+		});
+	});
+
+	// Esc закрывает drawer
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && drawer?.classList.contains('head__nav-wrap--open')) closeDrawer();
 	});
 </script>
 
@@ -316,11 +340,21 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			flex-direction: column;
 			gap: var(--space-5);
 			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
 			transform: translateX(100%);
-			transition: transform var(--dur-base) var(--ease-out);
+			transition: transform var(--dur-base) var(--ease-out),
+				visibility 0s linear var(--dur-base);
+			z-index: 50;
+			/* visibility hidden пока закрыт — чтобы скрытый drawer не «съедал»
+			   тап-события на тех Android-браузерах, где fixed-элемент с translate
+			   всё ещё ловит указатель. */
+			visibility: hidden;
 		}
 		.head__nav-wrap--open {
 			transform: translateX(0);
+			visibility: visible;
+			transition: transform var(--dur-base) var(--ease-out),
+				visibility 0s linear 0s;
 		}
 	}
 	@media (min-width: 1024px) {

@@ -1,6 +1,31 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import HubExtras from '../../components/HubExtras.astro';
 import PriceTable from '../../components/PriceTable.astro';
+import pricelist from '../../data/pricelist.json';
+
+const skus = (pricelist.hubs as any)['ugolok-shveller'] as any[];
+const grades = [...new Set(skus.map((s) => s.grade).filter(Boolean))] as string[];
+grades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+
+const faq = [
+	{
+		q: 'Резку уголка и швеллера в размер делаете?',
+		a: 'Да, режем дисковой пилой в размер от 1 хлыста с точностью ±1 мм. Возможен раскрой по чертежу с фасочными надрезами под сварку.',
+	},
+	{
+		q: 'Какие марки используются для нержавеющего профиля?',
+		a: 'Основные — AISI 304 (08Х18Н10) и AISI 316L. Для жаростойкого исполнения — AISI 321 / 12Х18Н10Т. Чисто декоративные элементы — допустимо AISI 430 (ферритная, безникелевая, дешевле).',
+	},
+	{
+		q: 'Подойдёт ли уголок 50×50×5 для каркаса оборудования?',
+		a: 'Для опор и каркасов лёгкого оборудования (стол, рама, навес) — да. Для нагруженных конструкций — расчёт по ГОСТ 14249 / СП 16.13330. Уточняйте у инженера проекта или присылайте ТЗ — подскажем сечение.',
+	},
+	{
+		q: 'Какие документы выдаются?',
+		a: 'Сертификат завода по ГОСТ 8509 (уголок) или ГОСТ 8240 (швеллер). Маркировка плавки и партии. По запросу — копии до отгрузки через ЭДО.',
+	},
+];
 ---
 
 <CatalogHubTemplate
@@ -9,8 +34,18 @@ import PriceTable from '../../components/PriceTable.astro';
 	h1="Уголок / Швеллер нержавеющий"
 	intro="Сортовой нержавеющий профильный прокат для каркасов, опор и обвязок в коррозионно-стойком исполнении. Уголок равнополочный 20×20…100×100 мм и швеллер №№ 8, 10, 12, 14, 16, 18, 20. Стандартные длины 6 м, резка в размер по заявке. Никелесодержащие марки AISI 304, 316L, 12Х18Н10Т."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Уголок / Швеллер' }]}
+	hubHref="/ugolok-shveller/"
+	hubLabel="Уголок и швеллер нержавеющий"
+	faq={faq}
 >
 	<PriceTable hub="ugolok-shveller" title="Прайс на уголок и швеллер" measure="размер" />
+
+	<HubExtras
+		hubHref="/ugolok-shveller/"
+		hubLabel="Уголок и швеллер"
+		hubLabelGenitive="уголок и швеллер нержавеющие"
+		grades={grades}
+	/>
 
 	<section class="block">
 		<h2>Сортамент</h2>

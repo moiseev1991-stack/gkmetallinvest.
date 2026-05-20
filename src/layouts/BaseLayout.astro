@@ -77,11 +77,19 @@ const jsonLdItems = jsonLd
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
 
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			rel="stylesheet"
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+			rel="preload"
+			href="/fonts/Inter-Regular.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/Inter-SemiBold.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
 		/>
 
 		<title>{fullTitle}</title>

@@ -4,6 +4,7 @@ import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import pricelist from '../data/pricelist.json';
 import { siteName, siteUrl, contacts } from '../data/site';
+import { cities } from '../data/cities';
 
 interface SKU {
 	hub: string;
@@ -324,14 +325,15 @@ const priceLine = sku.price
 const seoDescription = `${titleSeo} — ${priceLine}. Сертификат завода, отгрузка из Нижнего Новгорода, доставка по России. ${sku.fact ? 'В наличии' : 'Под заказ'}. ${contacts.phone}.`;
 
 /* Product / Offer JSON-LD. На дубли тоже отдаём — но т.к. они носят canonical
-   на основной, поисковики не сделают два rich snippet'а на один товар. */
+   на основной, поисковики не сделают два rich snippet'а на один товар.
+   `mpn` не отдаём: у нас нет настоящего Manufacturer Part Number, а slug
+   к этому полю отношения не имеет — Google Search Console ругается. */
 const productJsonLd: Record<string, any> = {
 	'@context': 'https://schema.org/',
 	'@type': 'Product',
 	name: titleSeo,
 	description: seoDescription,
 	sku: sku.slug,
-	mpn: sku.slug,
 	category: `${hubLabel}${subLabel ? ' · ' + subLabel : ''}`,
 	brand: { '@type': 'Brand', name: siteName },
 	url: `${siteUrl}${canonicalPath}`,
@@ -384,6 +386,8 @@ if (sku.price != null) {
 					width="640"
 					height="640"
 					loading="eager"
+					fetchpriority="high"
+					decoding="async"
 					onerror="this.style.display='none'; this.parentElement.classList.add('product__media--missing');"
 				/>
 				<figcaption class="product__media-caption">{hubLabel} · {subLabel}</figcaption>
@@ -585,6 +589,24 @@ if (sku.price != null) {
 				</p>
 			</section>
 		)}
+
+		<section class="delivery-cities" aria-labelledby="delivery-cities-title">
+			<h2 id="delivery-cities-title">Доставка в ваш город</h2>
+			<p class="delivery-cities__lead">
+				Отгружаем со склада в Нижнем Новгороде. Стоимость доставки рассчитывается отдельно,
+				цена на товар одинаковая для всех регионов.
+			</p>
+			<ul class="delivery-cities__grid">
+				{cities.map((c) => (
+					<li>
+						<a class="delivery-cities__chip" href={`${hubHref}v-${c.slug}/`}>
+							<span class="delivery-cities__city">{c.name}</span>
+							<span class="delivery-cities__transit">{c.transit}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
 
 		<section class="faq">
 			<h2>Частые вопросы</h2>
@@ -1162,6 +1184,55 @@ if (sku.price != null) {
 		border-color: var(--color-primary-500);
 		color: #fff;
 		cursor: default;
+	}
+
+	/* Доставка в города */
+	.delivery-cities { margin-bottom: var(--space-8); }
+	.delivery-cities h2 { font-size: 1.15rem; margin: 0 0 var(--space-2); }
+	.delivery-cities__lead {
+		max-width: 70ch;
+		color: var(--color-muted);
+		margin: 0 0 var(--space-4);
+	}
+	.delivery-cities__grid {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+		gap: var(--space-2);
+		padding: 0;
+		margin: 0;
+	}
+	.delivery-cities__chip {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: var(--space-2) var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-text);
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.delivery-cities__chip:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
+		text-decoration: none;
+	}
+	.delivery-cities__city {
+		font-weight: 600;
+		font-size: 0.95rem;
+	}
+	.delivery-cities__transit {
+		font-size: 0.74rem;
+		color: var(--color-muted);
+	}
+	.delivery-cities__chip:hover .delivery-cities__transit {
+		color: var(--color-primary-500);
 	}
 
 	/* FAQ */

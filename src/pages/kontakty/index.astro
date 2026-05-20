@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CtaSection from '../../components/CtaSection.astro';
-import { siteName, siteUrl, contacts, orgAddress } from '../../data/site';
+import { siteName, siteUrl, contacts, orgAddress, orgGeo, orgMapUrl } from '../../data/site';
 
 const localBusinessJsonLd = {
 	'@context': 'https://schema.org',
@@ -17,6 +17,8 @@ const localBusinessJsonLd = {
 	taxID: contacts.inn,
 	priceRange: '₽₽',
 	address: { '@type': 'PostalAddress', ...orgAddress },
+	geo: { '@type': 'GeoCoordinates', latitude: orgGeo.latitude, longitude: orgGeo.longitude },
+	hasMap: orgMapUrl,
 	openingHoursSpecification: [
 		{
 			'@type': 'OpeningHoursSpecification',

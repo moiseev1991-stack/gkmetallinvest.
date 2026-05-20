@@ -1,0 +1,123 @@
+---
+/**
+ * Универсальный блок для хабов: «Купить в городах» + (опц.) «Марки в наличии».
+ * Используется внутри слота CatalogHubTemplate.
+ *
+ * Когда хаб «пустой» (нет SKU) — передаёте только `hubHref/hubLabel`,
+ * марки можно опустить. Для хабов с прайсом — передаёте grades.
+ */
+import { cities } from '../data/cities';
+
+interface Props {
+	hubHref: string;
+	hubLabel: string;
+	hubLabelGenitive?: string;
+	grades?: string[];
+	surfaces?: string[];
+}
+const { hubHref, hubLabel, hubLabelGenitive, grades = [], surfaces = [], } = Astro.props;
+const labelGen = hubLabelGenitive ?? hubLabel.toLowerCase();
+---
+
+{grades.length > 0 && (
+	<section class="hex-block">
+		<h2>Марки в наличии</h2>
+		<p>В прайсе выше выберите марку через фильтр. Российские номенклатурные обозначения (08Х18Н10, 12Х18Н10Т, 03Х17Н14М2) указаны в карточках товара рядом с AISI.</p>
+		<ul class="hex-chip-grid">
+			{grades.map((g) => <li><span class="hex-chip">{g}</span></li>)}
+		</ul>
+	</section>
+)}
+
+{surfaces.length > 0 && (
+	<section class="hex-block">
+		<h2>Поверхности и переделы</h2>
+		<ul class="hex-chip-grid">
+			{surfaces.map((s) => <li><span class="hex-chip hex-chip--accent">{s}</span></li>)}
+		</ul>
+	</section>
+)}
+
+<section class="hex-block">
+	<h2>{`Купить ${labelGen} в городах России`}</h2>
+	<p>Цены на всех страницах одинаковые — на странице города рассчитан срок доставки и логистика именно для этого региона.</p>
+	<ul class="hex-city-grid">
+		{cities.map((c) => (
+			<li>
+				<a class="hex-city" href={`${hubHref}v-${c.slug}/`}>
+					<span class="hex-city__name">в {c.loc}</span>
+					<span class="hex-city__sub">{c.transit}</span>
+				</a>
+			</li>
+		))}
+	</ul>
+</section>
+
+<style>
+	.hex-block { margin-bottom: var(--space-8); }
+	.hex-block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
+	.hex-block p { max-width: 70ch; color: var(--color-muted); }
+
+	.hex-chip-grid {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		padding: 0;
+		margin: var(--space-3) 0 0;
+	}
+	.hex-chip {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 0.35rem 0.75rem;
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-pill);
+		color: var(--color-text);
+	}
+	.hex-chip--accent {
+		background: var(--color-primary-50);
+		border-color: var(--color-primary-100);
+		color: var(--color-primary-600);
+	}
+
+	.hex-city-grid {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: var(--space-2);
+		padding: 0;
+		margin: var(--space-3) 0 0;
+	}
+	.hex-city {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		padding: var(--space-2) var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-text);
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.hex-city:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
+		text-decoration: none;
+	}
+	.hex-city__name {
+		font-weight: 600;
+	}
+	.hex-city__sub {
+		font-size: 0.74rem;
+		color: var(--color-muted);
+	}
+	.hex-city:hover .hex-city__sub { color: var(--color-primary-500); }
+</style>

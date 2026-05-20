@@ -1,0 +1,418 @@
+---
+/**
+ * Шаблон страницы одной услуги: hero, что делаем, оборудование, материалы,
+ * процесс, прайс, FAQ, СTA. Принимает контент через props — мы хотим, чтобы
+ * каждая услуга имела уникальный наполненный контент (600+ слов) для SEO.
+ *
+ * Service JSON-LD рендерится автоматически на основе пропсов.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import CtaSection from './CtaSection.astro';
+import { siteName, siteUrl, contacts } from '../data/site';
+
+interface SpecRow {
+	label: string;
+	value: string;
+}
+interface StepRow {
+	n: number;
+	title: string;
+	text: string;
+}
+interface FaqRow {
+	q: string;
+	a: string;
+}
+
+interface Props {
+	title: string; // SEO title
+	description: string; // SEO description
+	h1: string;
+	tagline: string; // короткая подпись над H1
+	intro: string; // 2-3 абзаца
+	specs: SpecRow[]; // спецификация / характеристики
+	process: StepRow[]; // 4-6 шагов
+	materials: string[]; // марки и материалы, с которыми работаем
+	applications: string[]; // области применения
+	limitations?: string[]; // ограничения / что не делаем
+	relatedHubs: { label: string; href: string }[]; // связанные товарные хабы
+	faq: FaqRow[];
+	pricingNote?: string; // абзац про ценообразование
+}
+const {
+	title,
+	description,
+	h1,
+	tagline,
+	intro,
+	specs,
+	process,
+	materials,
+	applications,
+	limitations,
+	relatedHubs,
+	faq,
+	pricingNote,
+} = Astro.props;
+
+const path = Astro.url.pathname;
+const fullUrl = `${siteUrl.replace(/\/$/, '')}${path}`;
+
+const serviceJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Service',
+	name: h1,
+	description,
+	url: fullUrl,
+	serviceType: tagline,
+	areaServed: { '@type': 'Country', name: 'Россия' },
+	provider: {
+		'@type': 'Organization',
+		name: siteName,
+		telephone: contacts.phone,
+		address: {
+			'@type': 'PostalAddress',
+			addressLocality: 'Нижний Новгород',
+			addressCountry: 'RU',
+		},
+	},
+};
+
+const faqJsonLd = faq && faq.length
+	? {
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			mainEntity: faq.map((f) => ({
+				'@type': 'Question',
+				name: f.q,
+				acceptedAnswer: { '@type': 'Answer', text: f.a },
+			})),
+	  }
+	: null;
+
+const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
+---
+
+<BaseLayout title={title} description={description} jsonLd={jsonLd}>
+	<div class="container svc-page">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, { label: h1 }]} />
+
+		<header class="svc-page__hero">
+			<span class="svc-page__tag">{tagline}</span>
+			<h1>{h1}</h1>
+			<p class="svc-page__lead" set:html={intro} />
+		</header>
+
+		<section class="svc-page__block">
+			<h2>Технические параметры</h2>
+			<dl class="svc-page__specs">
+				{specs.map((s) => (
+					<div class="svc-page__spec-row">
+						<dt>{s.label}</dt>
+						<dd>{s.value}</dd>
+					</div>
+				))}
+			</dl>
+		</section>
+
+		<section class="svc-page__block">
+			<h2>Материалы, с которыми работаем</h2>
+			<ul class="svc-page__chips">
+				{materials.map((m) => <li><span class="svc-page__chip">{m}</span></li>)}
+			</ul>
+		</section>
+
+		<section class="svc-page__block">
+			<h2>Применение</h2>
+			<ul class="svc-page__list">
+				{applications.map((a) => <li>{a}</li>)}
+			</ul>
+		</section>
+
+		{limitations && limitations.length > 0 && (
+			<section class="svc-page__block svc-page__block--note">
+				<h2>Ограничения и нюансы</h2>
+				<ul class="svc-page__list">
+					{limitations.map((l) => <li>{l}</li>)}
+				</ul>
+			</section>
+		)}
+
+		<section class="svc-page__block">
+			<h2>Как работаем</h2>
+			<ol class="svc-page__steps">
+				{process.map((p) => (
+					<li class="svc-page__step">
+						<span class="svc-page__step-n">{p.n}</span>
+						<div>
+							<h3>{p.title}</h3>
+							<p>{p.text}</p>
+						</div>
+					</li>
+				))}
+			</ol>
+		</section>
+
+		{pricingNote && (
+			<section class="svc-page__block svc-page__pricing">
+				<h2>Стоимость</h2>
+				<p set:html={pricingNote} />
+				<p class="svc-page__pricing-cta">
+					<a href="/zapros-kp/#lead-form">Отправить ТЗ — пришлём расчёт</a>
+				</p>
+			</section>
+		)}
+
+		<section class="svc-page__block">
+			<h2>Связанные товарные категории</h2>
+			<ul class="svc-page__related">
+				{relatedHubs.map((r) => (
+					<li><a class="svc-page__related-link" href={r.href}>{r.label} →</a></li>
+				))}
+			</ul>
+		</section>
+
+		<section class="svc-page__block svc-page__faq">
+			<h2>Частые вопросы</h2>
+			<div class="svc-page__faq-list">
+				{faq.map((f) => (
+					<details class="svc-page__faq-item">
+						<summary class="svc-page__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title={`Запросить расчёт услуги «${h1.toLowerCase()}»`}
+		text="Пришлите чертёж или опишите задачу — рассчитаем стоимость и сроки в течение часа."
+	/>
+</BaseLayout>
+
+<style>
+	.svc-page { padding-block: var(--space-8); min-width: 0; }
+	.svc-page__hero { margin-bottom: var(--space-8); max-width: 80ch; }
+	.svc-page__tag {
+		display: inline-block;
+		font-size: 0.74rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+		margin-bottom: var(--space-2);
+	}
+	.svc-page__lead {
+		font-size: 1.05rem;
+		line-height: 1.65;
+		max-width: 75ch;
+		color: var(--color-text);
+	}
+	.svc-page__lead :global(p) {
+		margin: 0 0 var(--space-3);
+		color: var(--color-text);
+	}
+
+	.svc-page__block { margin-bottom: var(--space-8); }
+	.svc-page__block h2 {
+		font-size: 1.2rem;
+		margin-bottom: var(--space-3);
+	}
+	.svc-page__block--note {
+		background: var(--color-accent-100);
+		border: 1px solid var(--color-accent);
+		border-color: var(--color-accent);
+		border-radius: var(--radius-md);
+		padding: var(--space-4) var(--space-5);
+	}
+	.svc-page__block--note h2 { color: var(--color-accent-600); }
+
+	.svc-page__specs {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-2) var(--space-5);
+		margin: 0;
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+	.svc-page__spec-row {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding: var(--space-2) 0;
+		border-bottom: 1px solid var(--color-border);
+		min-width: 0;
+	}
+	.svc-page__spec-row:last-child { border-bottom: 0; }
+	.svc-page__spec-row dt {
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		flex: 0 0 auto;
+		overflow-wrap: anywhere;
+	}
+	.svc-page__spec-row dd {
+		margin: 0;
+		font-weight: 600;
+		color: var(--color-text);
+		text-align: right;
+		overflow-wrap: anywhere;
+	}
+
+	.svc-page__chips {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0;
+		padding: 0;
+	}
+	.svc-page__chip {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 0.35rem 0.75rem;
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-pill);
+	}
+
+	.svc-page__list {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.svc-page__steps {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: var(--space-4);
+	}
+	.svc-page__step {
+		display: flex;
+		gap: var(--space-3);
+		align-items: flex-start;
+		padding: var(--space-4);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+		min-width: 0;
+	}
+	.svc-page__step-n {
+		flex: 0 0 36px;
+		width: 36px;
+		height: 36px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		background: var(--color-primary-500);
+		color: #fff;
+		font-weight: 700;
+		font-family: var(--font-mono);
+	}
+	.svc-page__step h3 {
+		margin: 0 0 0.2rem;
+		font-size: 1rem;
+		color: var(--color-text);
+	}
+	.svc-page__step p {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-muted);
+		line-height: 1.5;
+	}
+
+	.svc-page__pricing {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-5);
+	}
+	.svc-page__pricing-cta {
+		margin: var(--space-3) 0 0;
+	}
+	.svc-page__pricing-cta a {
+		font-weight: 600;
+		color: var(--color-primary-600);
+	}
+
+	.svc-page__related {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+	.svc-page__related-link {
+		display: inline-block;
+		padding: 0.5rem 0.9rem;
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-primary-600);
+		font-weight: 500;
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+	}
+	.svc-page__related-link:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+	}
+
+	.svc-page__faq-list {
+		display: grid;
+		gap: var(--space-2);
+		max-width: 80ch;
+	}
+	.svc-page__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+	}
+	.svc-page__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.svc-page__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.svc-page__faq-q::-webkit-details-marker { display: none; }
+	.svc-page__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.svc-page__faq-item[open] .svc-page__faq-q svg { transform: rotate(180deg); }
+	.svc-page__faq-item p {
+		margin: var(--space-3) 0 0;
+		color: var(--color-muted);
+		max-width: 70ch;
+	}
+</style>

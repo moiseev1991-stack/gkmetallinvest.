@@ -4,7 +4,7 @@ import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Icon from '../components/ui/Icon.astro';
 import LeadForm from '../components/LeadForm.astro';
-import { siteName, siteUrl, contacts, orgAddress } from '../data/site';
+import { siteName, siteUrl, contacts, orgAddress, orgGeo, orgMapUrl } from '../data/site';
 import {
 	heroBullets,
 	heroProducts,
@@ -74,6 +74,8 @@ const localBusinessJsonLd = {
 	email: contacts.email,
 	priceRange: '₽₽',
 	address: { '@type': 'PostalAddress', ...orgAddress },
+	geo: { '@type': 'GeoCoordinates', latitude: orgGeo.latitude, longitude: orgGeo.longitude },
+	hasMap: orgMapUrl,
 	openingHoursSpecification: [
 		{
 			'@type': 'OpeningHoursSpecification',
@@ -91,6 +93,14 @@ const websiteJsonLd = {
 	name: siteName,
 	inLanguage: 'ru-RU',
 	publisher: { '@id': `${siteUrl}/#organization` },
+	potentialAction: {
+		'@type': 'SearchAction',
+		target: {
+			'@type': 'EntryPoint',
+			urlTemplate: `${siteUrl}/?q={search_term_string}`,
+		},
+		'query-input': 'required name=search_term_string',
+	},
 };
 ---
 
@@ -105,11 +115,11 @@ const websiteJsonLd = {
 			<div class="hero__copy">
 				<span class="hero__pill">
 					<span class="hero__pill-dot" aria-hidden="true"></span>
-					Прайс обновлён {priceUpdatedDisplay} · {totalSkus.toLocaleString('ru')} позиций
+					<span class="hero__pill-text">Прайс обновлён {priceUpdatedDisplay} · {totalSkus.toLocaleString('ru')} позиций</span>
 				</span>
 				<h1 id="hero-title" class="hero__h1">
-					Нержавеющий <span class="hero__h1-accent">металлопрокат</span><br />
-					поставки по всей России
+					Нержавеющий <span class="hero__h1-accent">металлопрокат</span>
+					<span class="hero__h1-sub">поставки по всей России</span>
 				</h1>
 				<p class="hero__lead">
 					Лист, труба, рулон, круг, проволока. Подбор марки и формата, обработка на заказ — от одной тонны до объёмных партий.
@@ -779,6 +789,7 @@ const websiteJsonLd = {
 		color: var(--color-on-dark);
 		padding: var(--space-10) 0 var(--space-12);
 		overflow: hidden;
+		max-width: 100%;
 		background:
 			radial-gradient(60% 60% at 80% 10%, rgba(196, 101, 27, 0.18), transparent 60%),
 			radial-gradient(40% 60% at 10% 90%, rgba(108, 125, 146, 0.22), transparent 60%),
@@ -802,9 +813,12 @@ const websiteJsonLd = {
 	}
 	.hero__grid {
 		display: grid;
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-7);
 		align-items: center;
+	}
+	.hero__copy {
+		min-width: 0;
 	}
 	@media (min-width: 960px) {
 		.hero__grid {
@@ -825,6 +839,11 @@ const websiteJsonLd = {
 		border-radius: var(--radius-pill);
 		margin-bottom: var(--space-4);
 		backdrop-filter: blur(8px);
+		max-width: 100%;
+	}
+	.hero__pill-text {
+		min-width: 0;
+		overflow-wrap: anywhere;
 	}
 	.hero__pill-dot {
 		width: 6px;
@@ -832,14 +851,21 @@ const websiteJsonLd = {
 		border-radius: 50%;
 		background: #4ade80;
 		box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18);
+		flex: 0 0 auto;
 	}
 	.hero__h1 {
 		color: #fff;
 		max-width: 24ch;
 		margin-bottom: var(--space-3);
 		font-weight: 700;
-		font-size: clamp(1.6rem, 3vw, 2.25rem);
+		font-size: clamp(1.6rem, 5.5vw, 2.25rem);
 		line-height: 1.15;
+		overflow-wrap: anywhere;
+		word-break: break-word;
+		hyphens: auto;
+	}
+	.hero__h1-sub {
+		display: block;
 	}
 	.hero__h1-accent {
 		background: linear-gradient(135deg, #f4a261 0%, #e76f51 100%);
@@ -883,6 +909,15 @@ const websiteJsonLd = {
 		flex-wrap: wrap;
 		gap: var(--space-3);
 		margin-bottom: var(--space-5);
+	}
+	@media (max-width: 480px) {
+		.hero__cta {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.hero__cta :global(.btn) {
+			width: 100%;
+		}
 	}
 	.hero__metrics {
 		display: flex;
