@@ -81,18 +81,6 @@ const LABEL = '#5a6878';
 		</filter>
 	</defs>
 
-	<style>{`
-		.lab { font: 600 11px var(--font-mono, ui-monospace, monospace); fill: ${LABEL}; }
-		.lab-sm { font: 500 9.5px var(--font-mono, ui-monospace, monospace); fill: ${LABEL}; }
-		.lab-tag { font: 700 10px var(--font-sans, system-ui); fill: ${NAVY}; }
-		.tag-bg { fill: #ffffff; stroke: ${LABEL}; stroke-width: 0.7; }
-		.tag-bg-accent { fill: ${ACCENT}; }
-		.tag-fg-accent { fill: #ffffff; }
-		.dim { stroke: ${LABEL}; stroke-width: 0.7; fill: none; }
-		.dim-arr { fill: ${LABEL}; }
-		.outline { fill: none; stroke: ${STEEL_STROKE}; stroke-width: 1.2; }
-	`}</style>
-
 	{hub === 'list' && (
 		<g>
 			{/* стопка из 4 листов с виден ракурс торца + размерные подписи */}
@@ -123,19 +111,19 @@ const LABEL = '#5a6878';
 			</g>
 			{/* размерная вертикаль — толщина */}
 			<g transform="translate(28 95)">
-				<line class="dim" x1="0" y1="0" x2="0" y2="86" />
-				<polygon class="dim-arr" points="0,0 -3,5 3,5" />
-				<polygon class="dim-arr" points="0,86 -3,81 3,81" />
-				<line class="dim" x1="-4" y1="0" x2="6" y2="0" />
-				<line class="dim" x1="-4" y1="86" x2="6" y2="86" />
-				<text class="lab-sm" x="-30" y="50" transform="rotate(-90 -30 50)">0,4–60 мм</text>
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="0" y1="0" x2="0" y2="86" />
+				<polygon fill="#5a6878" points="0,0 -3,5 3,5" />
+				<polygon fill="#5a6878" points="0,86 -3,81 3,81" />
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="-4" y1="0" x2="6" y2="0" />
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="-4" y1="86" x2="6" y2="86" />
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" font-weight="500" fill="#5a6878" x="-30" y="50" transform="rotate(-90 -30 50)">0,4–60 мм</text>
 			</g>
 			{/* tag марки */}
 			<g transform="translate(255 220)">
-				<rect class="tag-bg-accent" x="0" y="0" width="92" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="46" y="15" text-anchor="middle">AISI 304</text>
+				<rect fill="#c4651b" x="0" y="0" width="92" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="46" y="15" text-anchor="middle">AISI 304</text>
 			</g>
-			<text class="lab" x="60" y="260">Холоднокатаный · горячекатаный · ПВЛ</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="60" y="260">Холоднокатаный · горячекатаный · ПВЛ</text>
 		</g>
 	)}
 
@@ -162,21 +150,21 @@ const LABEL = '#5a6878';
 			</g>
 			{/* размерные подписи */}
 			<g>
-				<line class="dim" x1="35" y1="60" x2="35" y2="200" />
-				<line class="dim" x1="22" y1="200" x2="48" y2="200" />
-				<text class="lab" x="35" y="216" text-anchor="middle">Ø 6–273 мм</text>
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="35" y1="60" x2="35" y2="200" />
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="22" y1="200" x2="48" y2="200" />
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="35" y="216" text-anchor="middle">Ø 6–273 мм</text>
 			</g>
 			<g transform="translate(96 56)">
-				<line class="dim" x1="0" y1="0" x2="36" y2="0" />
-				<polygon class="dim-arr" points="0,0 5,-3 5,3" />
-				<polygon class="dim-arr" points="36,0 31,-3 31,3" />
-				<text class="lab-sm" x="18" y="-4" text-anchor="middle">стенка 1–16 мм</text>
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="0" y1="0" x2="36" y2="0" />
+				<polygon fill="#5a6878" points="0,0 5,-3 5,3" />
+				<polygon fill="#5a6878" points="36,0 31,-3 31,3" />
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" font-weight="500" fill="#5a6878" x="18" y="-4" text-anchor="middle">стенка 1–16 мм</text>
 			</g>
 			<g transform="translate(255 220)">
-				<rect class="tag-bg-accent" x="0" y="0" width="92" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="46" y="15" text-anchor="middle">AISI 321</text>
+				<rect fill="#c4651b" x="0" y="0" width="92" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="46" y="15" text-anchor="middle">AISI 321</text>
 			</g>
-			<text class="lab" x="60" y="260">Бесшовная · ЭСВ · профильная</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="60" y="260">Бесшовная · ЭСВ · профильная</text>
 		</g>
 	)}
 
@@ -206,17 +194,17 @@ const LABEL = '#5a6878';
 				<polygon points="0,-12 11,-6 11,6 0,12 -11,6 -11,-6" fill="none" stroke={STEEL_STROKE} stroke-width="0.5" opacity="0.5" />
 			</g>
 			<g>
-				<text class="lab" x="200" y="68" text-anchor="middle">круг · квадрат · шестигранник</text>
-				<line class="dim" x1="50" y1="90" x2="50" y2="138" />
-				<polygon class="dim-arr" points="50,90 47,95 53,95" />
-				<polygon class="dim-arr" points="50,138 47,133 53,133" />
-				<text class="lab-sm" x="22" y="116" transform="rotate(-90 22 116)">Ø 5–250 мм</text>
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="200" y="68" text-anchor="middle">круг · квадрат · шестигранник</text>
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="50" y1="90" x2="50" y2="138" />
+				<polygon fill="#5a6878" points="50,90 47,95 53,95" />
+				<polygon fill="#5a6878" points="50,138 47,133 53,133" />
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" font-weight="500" fill="#5a6878" x="22" y="116" transform="rotate(-90 22 116)">Ø 5–250 мм</text>
 			</g>
 			<g transform="translate(60 230)">
-				<rect class="tag-bg-accent" x="0" y="0" width="92" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="46" y="15" text-anchor="middle">калиброванный</text>
+				<rect fill="#c4651b" x="0" y="0" width="92" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="46" y="15" text-anchor="middle">калиброванный</text>
 			</g>
-			<text class="lab" x="162" y="245">h9 / h11 — под токарную</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="162" y="245">h9 / h11 — под токарную</text>
 		</g>
 	)}
 
@@ -241,16 +229,16 @@ const LABEL = '#5a6878';
 				<ellipse cx="50" cy="50" rx="22" ry="14" fill="rgba(255,255,255,0.5)" />
 			</g>
 			<g>
-				<line class="dim" x1="50" y1="60" x2="50" y2="196" />
-				<polygon class="dim-arr" points="50,60 47,65 53,65" />
-				<polygon class="dim-arr" points="50,196 47,191 53,191" />
-				<text class="lab-sm" x="22" y="128" transform="rotate(-90 22 128)">ширина 1000–1500 мм</text>
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="50" y1="60" x2="50" y2="196" />
+				<polygon fill="#5a6878" points="50,60 47,65 53,65" />
+				<polygon fill="#5a6878" points="50,196 47,191 53,191" />
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" font-weight="500" fill="#5a6878" x="22" y="128" transform="rotate(-90 22 128)">ширина 1000–1500 мм</text>
 			</g>
 			<g transform="translate(255 215)">
-				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">0,4–3 мм</text>
+				<rect fill="#c4651b" x="0" y="0" width="100" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="50" y="15" text-anchor="middle">0,4–3 мм</text>
 			</g>
-			<text class="lab" x="60" y="255">Холоднокатаный · 2B · BA · 4N · DECO</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="60" y="255">Холоднокатаный · 2B · BA · 4N · DECO</text>
 		</g>
 	)}
 
@@ -272,17 +260,17 @@ const LABEL = '#5a6878';
 				))}
 			</g>
 			<g>
-				<text class="lab" x="200" y="60" text-anchor="middle">горячекатаная · калиброванная</text>
-				<line class="dim" x1="30" y1="76" x2="30" y2="190" />
-				<polygon class="dim-arr" points="30,76 27,81 33,81" />
-				<polygon class="dim-arr" points="30,190 27,185 33,185" />
-				<text class="lab-sm" x="6" y="132" transform="rotate(-90 6 132)">ширина 25–300 мм</text>
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="200" y="60" text-anchor="middle">горячекатаная · калиброванная</text>
+				<line stroke="#5a6878" stroke-width="0.7" fill="none" x1="30" y1="76" x2="30" y2="190" />
+				<polygon fill="#5a6878" points="30,76 27,81 33,81" />
+				<polygon fill="#5a6878" points="30,190 27,185 33,185" />
+				<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" font-weight="500" fill="#5a6878" x="6" y="132" transform="rotate(-90 6 132)">ширина 25–300 мм</text>
 			</g>
 			<g transform="translate(255 230)">
-				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">4–50 мм</text>
+				<rect fill="#c4651b" x="0" y="0" width="100" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="50" y="15" text-anchor="middle">4–50 мм</text>
 			</g>
-			<text class="lab" x="60" y="255">ГОСТ 103 · EN 10058 · AISI 304/316L</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="60" y="255">ГОСТ 103 · EN 10058 · AISI 304/316L</text>
 		</g>
 	)}
 
@@ -319,10 +307,10 @@ const LABEL = '#5a6878';
 				<circle cx="290" cy="145" r="3.5" fill={ACCENT} />
 			</g>
 			<g transform="translate(255 220)">
-				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">Ø 0,1–6 мм</text>
+				<rect fill="#c4651b" x="0" y="0" width="100" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="50" y="15" text-anchor="middle">Ø 0,1–6 мм</text>
 			</g>
-			<text class="lab" x="60" y="250">Сварочная · вязальная · пружинная</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="60" y="250">Сварочная · вязальная · пружинная</text>
 		</g>
 	)}
 
@@ -362,10 +350,10 @@ const LABEL = '#5a6878';
 				<ellipse cx="103" cy="124" rx="13" ry="3.5" fill={NAVY} />
 			</g>
 			<g transform="translate(60 220)">
-				<rect class="tag-bg-accent" x="0" y="0" width="120" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="60" y="15" text-anchor="middle">ГОСТ 12820</text>
+				<rect fill="#c4651b" x="0" y="0" width="120" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="60" y="15" text-anchor="middle">ГОСТ 12820</text>
 			</g>
-			<text class="lab" x="190" y="235">фланцы · отводы · тройники · задвижки</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="190" y="235">фланцы · отводы · тройники · задвижки</text>
 		</g>
 	)}
 
@@ -389,10 +377,10 @@ const LABEL = '#5a6878';
 				<polygon points="16,14 48,0 122,0 90,14" fill="rgba(0,0,0,0.05)" />
 			</g>
 			<g transform="translate(60 220)">
-				<rect class="tag-bg" x="0" y="0" width="140" height="22" rx="11" />
-				<text class="lab-tag" x="70" y="15" text-anchor="middle">ГОСТ 8509 · 8240</text>
+				<rect fill="#ffffff" stroke="#5a6878" stroke-width="0.7" x="0" y="0" width="140" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#0a1f3d" x="70" y="15" text-anchor="middle">ГОСТ 8509 · 8240</text>
 			</g>
-			<text class="lab" x="60" y="255">равнополочный · №№ 8–20</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="60" y="255">равнополочный · №№ 8–20</text>
 		</g>
 	)}
 
@@ -428,10 +416,10 @@ const LABEL = '#5a6878';
 				<ellipse cx="20" cy="14" rx="18" ry="4" fill="rgba(255,255,255,0.55)" />
 			</g>
 			<g transform="translate(50 230)">
-				<rect class="tag-bg-accent" x="0" y="0" width="80" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="40" y="15" text-anchor="middle">A2 / A4</text>
+				<rect fill="#c4651b" x="0" y="0" width="80" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="40" y="15" text-anchor="middle">A2 / A4</text>
 			</g>
-			<text class="lab" x="140" y="245">DIN · ГОСТ · М4–М48</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="140" y="245">DIN · ГОСТ · М4–М48</text>
 		</g>
 	)}
 
@@ -462,10 +450,10 @@ const LABEL = '#5a6878';
 				<circle cx="84" cy="84" r="22" fill="none" stroke="#3a4a62" stroke-width="0.5" />
 			</g>
 			<g transform="translate(60 230)">
-				<rect class="tag-bg-accent" x="0" y="0" width="110" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="55" y="15" text-anchor="middle">AISI 440C</text>
+				<rect fill="#c4651b" x="0" y="0" width="110" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="55" y="15" text-anchor="middle">AISI 440C</text>
 			</g>
-			<text class="lab" x="180" y="245">шариковые · роликовые · игольчатые</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="180" y="245">шариковые · роликовые · игольчатые</text>
 		</g>
 	)}
 
@@ -491,10 +479,10 @@ const LABEL = '#5a6878';
 			<rect x="34" y="58" width="334" height="18" rx="9" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1.3" />
 			<rect x="40" y="61" width="322" height="4" fill={`url(#gr-shine-${hub})`} opacity="0.7" />
 			<g transform="translate(60 235)">
-				<rect class="tag-bg-accent" x="0" y="0" width="120" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="60" y="15" text-anchor="middle">EN 1090</text>
+				<rect fill="#c4651b" x="0" y="0" width="120" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="60" y="15" text-anchor="middle">EN 1090</text>
 			</g>
-			<text class="lab" x="190" y="250">стойки · поручни · стеклодержатели</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="190" y="250">стойки · поручни · стеклодержатели</text>
 		</g>
 	)}
 
@@ -508,12 +496,12 @@ const LABEL = '#5a6878';
 			<line x1="60" y1="140" x2="340" y2="140" stroke="rgba(255,255,255,0.4)" stroke-width="0.7" />
 			{/* плёнка с уголком */}
 			<polygon points="340,50 340,90 300,50" fill="rgba(28, 75, 128, 0.35)" stroke={STEEL_STROKE} stroke-width="0.8" />
-			<text class="lab-sm" x="312" y="74" text-anchor="middle">PE</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" font-weight="500" fill="#5a6878" x="312" y="74" text-anchor="middle">PE</text>
 			<g transform="translate(60 240)">
-				<rect class="tag-bg-accent" x="0" y="0" width="90" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="45" y="15" text-anchor="middle">BA · 4N · 8K</text>
+				<rect fill="#c4651b" x="0" y="0" width="90" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="45" y="15" text-anchor="middle">BA · 4N · 8K</text>
 			</g>
-			<text class="lab" x="160" y="255">с защитной плёнкой PE / PVC</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="160" y="255">с защитной плёнкой PE / PVC</text>
 		</g>
 	)}
 
@@ -529,10 +517,10 @@ const LABEL = '#5a6878';
 			<path d="M30 80 Q90 50 150 80 T270 80 T370 80" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" />
 			<path d="M30 130 Q90 160 150 130 T270 130 T370 130" fill="none" stroke="rgba(15, 26, 43, 0.18)" stroke-width="1" />
 			<g transform="translate(60 220)">
-				<rect class="tag-bg-accent" x="0" y="0" width="120" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="60" y="15" text-anchor="middle">штрипс · фольга</text>
+				<rect fill="#c4651b" x="0" y="0" width="120" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="60" y="15" text-anchor="middle">штрипс · фольга</text>
 			</g>
-			<text class="lab" x="190" y="235">0,05–4 мм · шаг ширины 5 мм</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="190" y="235">0,05–4 мм · шаг ширины 5 мм</text>
 		</g>
 	)}
 
@@ -547,10 +535,10 @@ const LABEL = '#5a6878';
 				</g>
 			))}
 			<g transform="translate(60 230)">
-				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
-				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">ЦЛ-11</text>
+				<rect fill="#c4651b" x="0" y="0" width="100" height="22" rx="11" />
+				<text font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#ffffff" x="50" y="15" text-anchor="middle">ЦЛ-11</text>
 			</g>
-			<text class="lab" x="170" y="245">ОЗЛ-8 · ЭА-400 · 2,5–5 мм</text>
+			<text font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" font-weight="600" fill="#5a6878" x="170" y="245">ОЗЛ-8 · ЭА-400 · 2,5–5 мм</text>
 		</g>
 	)}
 </svg>
