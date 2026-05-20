@@ -64,7 +64,6 @@ export const navGroups: NavGroup[] = [
 			{ title: 'Нержавеющие метизы', href: '/metizy/', meta: 'болты · гайки · шпильки · DIN/ГОСТ', empty: true },
 			{ title: 'Комплектующие для лестничных ограждений', href: '/lestnichnye-ograzhdeniya/', meta: 'стойки · поручни · стеклодержатели', empty: true },
 			{ title: 'Подшипники и промышленные компоненты', href: '/podshipniki/', meta: 'AISI 440C · 316 · промкомплектующие', empty: true },
-			{ title: 'Электроды нержавеющие', href: '/elektrody/', meta: 'ЦЛ-11 · ОЗЛ-8 · ЭА-400', empty: true },
 		],
 	},
 ];
