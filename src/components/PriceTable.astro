@@ -113,7 +113,9 @@ const updatedAtDisplay = (() => {
 	return `${parseInt(m[3], 10)} ${months[parseInt(m[2], 10) - 1]} ${m[1]}`;
 })();
 
-const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Размер';
+/* Единица очевидно в мм — выносим в заголовок колонки, чтобы числа в ячейках
+   оставались чистыми (0,4 × 1000 а не 0,4 × 1000 мм + nbsp). */
+const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : 'Размер, мм';
 ---
 
 <section class="pt" data-hub={hub}>
@@ -291,7 +293,6 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 				{hasFact && <col class="pt__col-fact" />}
 				{hasUniquePrices && <col class="pt__col-price" />}
 				<col class="pt__col-price pt__col-price--main" />
-				<col class="pt__col-act" />
 			</colgroup>
 			<thead>
 				<tr>
@@ -345,7 +346,6 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 							</span>
 						</span>
 					</th>
-					<th class="pt__th pt__th--act"><span class="sr-only">Действие</span></th>
 				</tr>
 			</thead>
 			<tbody data-pt-body></tbody>
@@ -474,7 +474,8 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 			const name = s.name || `${SUB_LABELS[s.sub] || s.sub || ''} ${s.grade || ''}`.trim();
 			const priceUnitCell = s.priceUnit != null ? `<strong>${fmt(s.priceUnit)}</strong>` : '<span class="pt__on-request">по запросу</span>';
 			const priceCell = s.price != null ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
-			const sizeSuffix = String(s.size).startsWith('Ø') ? '' : ' <span class="pt__unit-suffix">мм</span>';
+			/* Размер: чистое значение без «мм» — единица очевидна из контекста колонки. */
+			const sizeText = escapeHtml(String(s.size));
 			const dlinaTd = HAS_DLINA
 				? `<td class="pt__cell-num pt__cell-muted" data-label="Длина">${escapeHtml(s.dlina || '—')}</td>`
 				: '';
@@ -485,19 +486,16 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 				? `<td class="pt__cell-price" data-label="Цена розн.">${priceUnitCell}</td>`
 				: '';
 			const priceLabel = HAS_UNIQUE_PRICES ? 'Цена от 1т' : 'Цена';
+			/* Марка в одну строку: убираем переносы и принудительный nbsp вокруг скобок. */
+			const gradeClean = escapeHtml((s.grade || '—').replace(/\s+/g, ' ').replace(/\s*\(/g, ' ('));
 			return `<tr class="pt__row">
-				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/">${escapeHtml(name)}</a></td>
-				<td class="pt__cell-num" data-label="Размер">${escapeHtml(s.size)}${sizeSuffix}</td>
-				<td class="pt__cell-grade" data-label="Марка">${escapeHtml(s.grade || '—')}</td>
+				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(name)}">${escapeHtml(name)}</a></td>
+				<td class="pt__cell-num" data-label="Размер">${sizeText}</td>
+				<td class="pt__cell-grade" data-label="Марка" title="${gradeClean}">${gradeClean}</td>
 				${dlinaTd}
 				${factTd}
 				${priceUnitTd}
 				<td class="pt__cell-price pt__cell-price--accent" data-label="${priceLabel}">${priceCell}</td>
-				<td class="pt__cell-act"><a class="pt__cta" href="/zapros-kp/#lead-form?sku=${encodeURIComponent(s.slug)}" aria-label="Запросить КП по этой позиции" title="Запросить КП">
-					<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-						<path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-					</svg>
-				</a></td>
 			</tr>`;
 		}
 
@@ -1031,19 +1029,18 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 		border-collapse: separate;
 		border-spacing: 0;
 		font-size: 0.94rem;
-		/* Сумма фиксированных ширин ниже = ~960px при всех включённых колонках;
-		   таблица влезает в стандартный desktop без горизонтального скролла. */
-		min-width: 960px;
+		/* Без act-колонки минимальная ширина уменьшилась — таблица влезает
+		   в стандартный desktop без горизонтального скролла. */
+		min-width: 900px;
 		table-layout: fixed;
 	}
-	.pt__col-name { width: auto; min-width: 220px; }
-	.pt__col-size { width: 108px; }
-	.pt__col-grade { width: 168px; }
+	.pt__col-name { width: auto; min-width: 240px; }
+	.pt__col-size { width: 116px; }
+	.pt__col-grade { width: 180px; }
 	.pt__col-len { width: 72px; }
-	.pt__col-fact { width: 124px; }
-	.pt__col-price { width: 112px; }
-	.pt__col-price--main { width: 128px; }
-	.pt__col-act { width: 56px; }
+	.pt__col-fact { width: 132px; }
+	.pt__col-price { width: 116px; }
+	.pt__col-price--main { width: 136px; }
 
 	.pt__table thead th {
 		position: sticky;
@@ -1062,7 +1059,6 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 		user-select: none;
 	}
 	.pt__th--main { background: var(--color-primary-50); }
-	.pt__th--act { padding: 0; }
 	/* inline-flex, чтобы стрелка всегда жилась рядом с подписью —
 	   а text-align на th прижимает весь блок к нужному краю колонки. */
 	.pt__th-inner {
@@ -1140,12 +1136,23 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 		font-weight: 500;
 		line-height: 1.35;
 		display: block;
+		font-size: 0.95rem;
 	}
 	.pt__name-link:hover { color: var(--color-primary-600); text-decoration: underline; }
 	.pt__cell-num { text-align: right; font-family: var(--font-mono); font-weight: 600; white-space: nowrap; }
 	.pt__cell-muted { color: var(--color-muted); font-weight: 400; }
 	.pt__unit-suffix { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-subtle); font-weight: 400; margin-left: 0.15rem; }
-	.pt__cell-grade { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-text); }
+	/* Марка — единой строкой моноширинным, без переноса. white-space:nowrap +
+	   text-overflow:ellipsis отрезает «AISI 304 (08Х18Н10)» при узкой колонке —
+	   полное имя видно по hover/click через title-атрибут. */
+	.pt__cell-grade {
+		font-family: var(--font-mono);
+		font-size: 0.88rem;
+		color: var(--color-text);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 	.pt__cell-fact { color: var(--color-text); font-size: 0.9rem; }
 	.pt__fact-wrap { display: block; }
 	.pt__fact { display: block; }
@@ -1179,29 +1186,6 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 	.pt__table tbody tr:hover .pt__cell-price--accent { background: var(--color-primary-100); }
 	.pt__cell-price--accent strong { color: var(--color-primary-600); font-size: 1.05rem; }
 	.pt__on-request { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-accent); font-weight: 600; }
-
-	.pt__cell-act { text-align: center; padding: 0.5rem 0.6rem; }
-	.pt__cta {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 34px;
-		height: 34px;
-		border-radius: var(--radius-md);
-		border: 1px solid var(--color-border);
-		color: var(--color-primary-600);
-		background: var(--color-surface);
-		text-decoration: none;
-		transition: all var(--dur-fast) var(--ease-out);
-	}
-	.pt__cta:hover {
-		color: #fff;
-		background: var(--color-primary-500);
-		border-color: var(--color-primary-500);
-		transform: translateX(1px);
-		box-shadow: var(--shadow-sm);
-		text-decoration: none;
-	}
 
 	/* Grid view — альтернатива таблице, плиточный вид */
 	.pt__grid {
@@ -1438,12 +1422,6 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст.' : 'Раз�
 		}
 		.pt__cell-price--accent { background: transparent; }
 		.pt__table tbody tr:nth-child(even) .pt__cell-price--accent { background: transparent; }
-		.pt__cell-act {
-			grid-template-columns: 1fr !important;
-			justify-items: end;
-			padding-bottom: 0.75rem !important;
-		}
-		.pt__cell-act::before { content: ''; display: none; }
 
 		/* Плиточный вид — на мобиле одна колонка, ширина не выходит за viewport. */
 		.pt__grid {

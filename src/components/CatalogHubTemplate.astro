@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import CityBlock from './CityBlock.astro';
+import HubIllustration from './HubIllustration.astro';
 import type { BreadcrumbItem } from '../types';
 
 interface Props {
@@ -17,10 +18,27 @@ interface Props {
 	hubHref?: string;
 	/** Подпись хаба (например, «Лист нержавеющий»). */
 	hubLabel?: string;
+	/** Ключ хаба для подбора SVG-иллюстрации в hero. */
+	hubKey?:
+		| 'list'
+		| 'truba'
+		| 'krug'
+		| 'rulon'
+		| 'polosa'
+		| 'provoloka'
+		| 'detali-truboprovoda'
+		| 'ugolok-shveller'
+		| 'metizy'
+		| 'podshipniki'
+		| 'lestnichnye-ograzhdeniya'
+		| 'dekorativnye-listy'
+		| 'lenta'
+		| 'folga'
+		| 'elektrody';
 	/** FAQ-блок: вопросы/ответы. Если передан — рендерится секция + FAQPage JSON-LD. */
 	faq?: { q: string; a: string }[];
 }
-const { title, description, h1, intro, breadcrumbs, noindex, image, hubHref, hubLabel, faq } = Astro.props;
+const { title, description, h1, intro, breadcrumbs, noindex, image, hubHref, hubLabel, hubKey, faq } = Astro.props;
 
 const faqJsonLd = faq && faq.length
 	? {
@@ -44,8 +62,17 @@ const faqJsonLd = faq && faq.length
 >
 	<div class="container hub">
 		<Breadcrumbs items={breadcrumbs} />
-		<h1>{h1}</h1>
-		<p class="hub__intro">{intro}</p>
+		<div class="hub__hero">
+			<div class="hub__hero-text">
+				<h1>{h1}</h1>
+				<p class="hub__intro">{intro}</p>
+			</div>
+			{hubKey && (
+				<div class="hub__hero-illo" aria-hidden="true">
+					<HubIllustration hub={hubKey} />
+				</div>
+			)}
+		</div>
 		<slot />
 
 		{faq && faq.length > 0 && (
@@ -80,9 +107,33 @@ const faqJsonLd = faq && faq.length
 		padding-block: var(--space-8);
 		min-width: 0;
 	}
+	.hub__hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-6);
+		align-items: center;
+		margin-bottom: var(--space-6);
+	}
+	@media (min-width: 900px) {
+		.hub__hero {
+			grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+			gap: var(--space-8);
+		}
+	}
+	.hub__hero-text { min-width: 0; }
+	.hub__hero-text h1 { margin-bottom: var(--space-3); }
+	.hub__hero-illo {
+		display: flex;
+		justify-content: center;
+		min-width: 0;
+		padding: var(--space-4);
+		background: linear-gradient(135deg, var(--color-bg-elev) 0%, var(--color-primary-50) 100%);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-lg);
+	}
 	.hub__intro {
 		font-size: 1.05rem;
-		margin-bottom: var(--space-6);
+		margin: 0;
 		max-width: 65ch;
 	}
 	.hub__faq {

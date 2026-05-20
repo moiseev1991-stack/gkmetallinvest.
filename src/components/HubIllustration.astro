@@ -1,0 +1,315 @@
+---
+/**
+ * SVG-иллюстрация под конкретный хаб каталога. Рисуется чисто, в стилистике
+ * «технический blueprint» — изометричный объект из 2-3 тонов, тёплая
+ * акцентная подсветка. Используется в hero шаблона CatalogHubTemplate.
+ *
+ * Не картинка — чтобы не платить за загрузку и не плодить версии под retina.
+ * Цвета привязаны к токенам var(--color-primary-*).
+ */
+interface Props {
+	hub:
+		| 'list'
+		| 'truba'
+		| 'krug'
+		| 'rulon'
+		| 'polosa'
+		| 'provoloka'
+		| 'detali-truboprovoda'
+		| 'ugolok-shveller'
+		| 'metizy'
+		| 'podshipniki'
+		| 'lestnichnye-ograzhdeniya'
+		| 'dekorativnye-listy'
+		| 'lenta'
+		| 'folga'
+		| 'elektrody';
+	/** Доп. класс — например, для размера/раскладки на хабе. */
+	class?: string;
+}
+const { hub, class: className = '' } = Astro.props;
+---
+
+<svg
+	class={`hub-illo ${className}`.trim()}
+	viewBox="0 0 320 220"
+	xmlns="http://www.w3.org/2000/svg"
+	aria-hidden="true"
+	role="presentation"
+>
+	<defs>
+		<linearGradient id={`hi-steel-${hub}`} x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0%" stop-color="#eef2f8" />
+			<stop offset="55%" stop-color="#c5cfdd" />
+			<stop offset="100%" stop-color="#9fadc1" />
+		</linearGradient>
+		<linearGradient id={`hi-shine-${hub}`} x1="0" x2="1" y1="0" y2="0">
+			<stop offset="0%" stop-color="rgba(255,255,255,0)" />
+			<stop offset="50%" stop-color="rgba(255,255,255,0.85)" />
+			<stop offset="100%" stop-color="rgba(255,255,255,0)" />
+		</linearGradient>
+		<linearGradient id={`hi-edge-${hub}`} x1="0" x2="0" y1="0" y2="1">
+			<stop offset="0%" stop-color="#dde3ec" />
+			<stop offset="100%" stop-color="#8c9aae" />
+		</linearGradient>
+	</defs>
+
+	{hub === 'list' && (
+		<g>
+			{/* стопка трёх листов в изометрии */}
+			<g transform="translate(40 70)">
+				<polygon points="0,40 200,40 240,20 40,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" stroke-linejoin="round" />
+				<polygon points="0,40 200,40 200,55 0,55" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="200,40 240,20 240,35 200,55" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			</g>
+			<g transform="translate(40 90)">
+				<polygon points="0,40 200,40 240,20 40,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="0,40 200,40 200,55 0,55" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="200,40 240,20 240,35 200,55" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			</g>
+			<g transform="translate(40 110)">
+				<polygon points="0,40 200,40 240,20 40,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="0,40 200,40 200,55 0,55" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="200,40 240,20 240,35 200,55" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			</g>
+			<rect x="42" y="111" width="195" height="6" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
+		</g>
+	)}
+
+	{hub === 'truba' && (
+		<g>
+			{/* большая труба + малая позади */}
+			<g transform="translate(40 60)">
+				<ellipse cx="40" cy="50" rx="38" ry="46" fill="#9fadc1" stroke="#5a6878" stroke-width="1.5" />
+				<ellipse cx="40" cy="50" rx="26" ry="32" fill="#0a1f3d" />
+				<rect x="40" y="4" width="200" height="92" fill={`url(#hi-steel-${hub})`} />
+				<ellipse cx="240" cy="50" rx="38" ry="46" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<ellipse cx="240" cy="50" rx="26" ry="32" fill="#1c2540" />
+				<rect x="40" y="4" width="200" height="14" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
+				<line x1="40" y1="4" x2="240" y2="4" stroke="#5a6878" stroke-width="1.5" />
+				<line x1="40" y1="96" x2="240" y2="96" stroke="#5a6878" stroke-width="1.5" />
+			</g>
+			<g transform="translate(20 130)" opacity="0.7">
+				<ellipse cx="25" cy="30" rx="22" ry="26" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+				<ellipse cx="25" cy="30" rx="14" ry="17" fill="#0a1f3d" />
+				<rect x="25" y="4" width="120" height="52" fill={`url(#hi-steel-${hub})`} />
+				<ellipse cx="145" cy="30" rx="22" ry="26" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<ellipse cx="145" cy="30" rx="14" ry="17" fill="#1c2540" />
+			</g>
+		</g>
+	)}
+
+	{hub === 'krug' && (
+		<g>
+			{/* три прутка разного диаметра */}
+			<g transform="translate(40 50)">
+				<ellipse cx="32" cy="32" rx="30" ry="32" fill="#9fadc1" stroke="#5a6878" stroke-width="1.5" />
+				<ellipse cx="32" cy="32" rx="22" ry="23" fill={`url(#hi-steel-${hub})`} />
+				<rect x="32" y="2" width="220" height="60" fill={`url(#hi-steel-${hub})`} />
+				<ellipse cx="252" cy="32" rx="30" ry="32" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<rect x="32" y="2" width="220" height="10" fill={`url(#hi-shine-${hub})`} opacity="0.6" />
+				<line x1="32" y1="2" x2="252" y2="2" stroke="#5a6878" stroke-width="1.5" />
+				<line x1="32" y1="62" x2="252" y2="62" stroke="#5a6878" stroke-width="1.5" />
+			</g>
+			<g transform="translate(60 130)" opacity="0.85">
+				<ellipse cx="20" cy="20" rx="18" ry="20" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+				<rect x="20" y="0" width="180" height="40" fill={`url(#hi-steel-${hub})`} />
+				<ellipse cx="200" cy="20" rx="18" ry="20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+			</g>
+			<g transform="translate(110 175)" opacity="0.7">
+				<ellipse cx="12" cy="14" rx="10" ry="12" fill="#bcc7d6" stroke="#5a6878" stroke-width="1" />
+				<rect x="12" y="2" width="140" height="24" fill={`url(#hi-steel-${hub})`} />
+				<ellipse cx="152" cy="14" rx="10" ry="12" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+			</g>
+		</g>
+	)}
+
+	{hub === 'rulon' && (
+		<g>
+			{/* рулон с разматывающимся хвостом */}
+			<g transform="translate(80 50)">
+				<ellipse cx="60" cy="60" rx="58" ry="58" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<ellipse cx="60" cy="60" rx="44" ry="44" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<ellipse cx="60" cy="60" rx="30" ry="30" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+				<ellipse cx="60" cy="60" rx="16" ry="16" fill="#0a1f3d" />
+				{/* спираль */}
+				<path d="M60 16 A44 44 0 0 1 104 60 A30 30 0 0 0 60 30 A30 30 0 0 1 90 60" fill="none" stroke="#5a6878" stroke-width="1" />
+				<path d="M104 60 L260 60 L260 76 L104 76 Z" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<rect x="104" y="60" width="156" height="5" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
+			</g>
+		</g>
+	)}
+
+	{hub === 'polosa' && (
+		<g>
+			{/* три длинные полосы */}
+			<g transform="translate(30 60)">
+				<polygon points="0,10 260,10 270,0 10,0" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="0,10 260,10 260,28 0,28" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="260,10 270,0 270,18 260,28" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+			</g>
+			<g transform="translate(30 100)">
+				<polygon points="0,10 260,10 270,0 10,0" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="0,10 260,10 260,28 0,28" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="260,10 270,0 270,18 260,28" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+			</g>
+			<g transform="translate(30 140)">
+				<polygon points="0,10 260,10 270,0 10,0" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="0,10 260,10 260,28 0,28" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<polygon points="260,10 270,0 270,18 260,28" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+			</g>
+		</g>
+	)}
+
+	{hub === 'provoloka' && (
+		<g>
+			{/* катушка с проволокой */}
+			<g transform="translate(60 50)">
+				<ellipse cx="100" cy="60" rx="100" ry="58" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<ellipse cx="100" cy="60" rx="100" ry="50" fill={`url(#hi-steel-${hub})`} />
+				{/* витки */}
+				{Array.from({ length: 14 }).map((_, i) => (
+					<ellipse cx="100" cy={28 + i * 5} rx={100 - Math.abs(7 - i) * 3} ry="2" fill="none" stroke="#5a6878" stroke-width="0.7" opacity="0.55" />
+				))}
+				<ellipse cx="100" cy="22" rx="100" ry="14" fill={`url(#hi-shine-${hub})`} opacity="0.5" />
+			</g>
+			<line x1="58" y1="105" x2="60" y2="180" stroke="#c4651b" stroke-width="2" stroke-linecap="round" />
+			<line x1="60" y1="180" x2="100" y2="195" stroke="#c4651b" stroke-width="2" stroke-linecap="round" />
+		</g>
+	)}
+
+	{hub === 'detali-truboprovoda' && (
+		<g>
+			{/* фланец слева + отвод справа */}
+			<g transform="translate(30 50)">
+				<ellipse cx="56" cy="60" rx="54" ry="54" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<ellipse cx="56" cy="60" rx="42" ry="42" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<ellipse cx="56" cy="60" rx="22" ry="22" fill="#0a1f3d" />
+				{Array.from({ length: 8 }).map((_, i) => {
+					const angle = (i * Math.PI) / 4;
+					const x = 56 + Math.cos(angle) * 47;
+					const y = 60 + Math.sin(angle) * 47;
+					return <circle cx={x} cy={y} r="3.5" fill="#0a1f3d" />;
+				})}
+			</g>
+			<g transform="translate(180 70)">
+				<path d="M0 10 L0 35 Q0 70 35 70 L60 70 L60 95 L82 95 L82 70 L82 45 Q82 0 35 0 L0 0 Z" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<path d="M0 10 L0 25 L60 25 L60 60 L82 60 L82 25 Q82 10 60 10 Z" fill="#aab5c5" opacity="0.5" />
+				<ellipse cx="0" cy="17" rx="3" ry="11" fill="#0a1f3d" />
+				<ellipse cx="71" cy="95" rx="11" ry="3" fill="#0a1f3d" />
+			</g>
+		</g>
+	)}
+
+	{hub === 'ugolok-shveller' && (
+		<g>
+			{/* уголок в изометрии + швеллер */}
+			<g transform="translate(50 55)">
+				<polygon points="0,90 0,30 60,0 60,15 15,40 15,90" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<polygon points="0,90 90,90 90,75 15,75 15,90" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<polygon points="60,0 90,0 90,75 60,15" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+				<polygon points="90,0 105,-10 105,65 90,75" fill="#bcc7d6" stroke="#5a6878" stroke-width="1" />
+			</g>
+			<g transform="translate(180 70)">
+				<polygon points="0,90 0,0 70,0 70,15 15,15 15,75 70,75 70,90" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<polygon points="70,0 95,-12 95,78 70,90" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+				<polygon points="0,0 25,-12 95,-12 70,0" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			</g>
+		</g>
+	)}
+
+	{hub === 'metizy' && (
+		<g>
+			{/* болт + гайка + шайба */}
+			<g transform="translate(40 60)">
+				<polygon points="20,0 50,0 60,20 50,40 20,40 10,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<rect x="28" y="40" width="14" height="80" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				{Array.from({ length: 8 }).map((_, i) => (
+					<line key={i} x1="28" y1={50 + i * 10} x2="42" y2={50 + i * 10} stroke="#5a6878" stroke-width="0.8" opacity="0.6" />
+				))}
+			</g>
+			<g transform="translate(180 60)">
+				<polygon points="20,10 50,10 60,30 50,50 20,50 10,30" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<polygon points="25,18 45,18 50,30 45,42 25,42 20,30" fill="#0a1f3d" />
+			</g>
+			<g transform="translate(180 130)">
+				<ellipse cx="35" cy="20" rx="35" ry="10" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<ellipse cx="35" cy="20" rx="14" ry="4" fill="#0a1f3d" />
+			</g>
+		</g>
+	)}
+
+	{hub === 'podshipniki' && (
+		<g>
+			{/* радиальный подшипник */}
+			<g transform="translate(80 30)">
+				<circle cx="80" cy="80" r="80" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+				<circle cx="80" cy="80" r="64" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+				<circle cx="80" cy="80" r="44" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+				<circle cx="80" cy="80" r="28" fill="#0a1f3d" />
+				{Array.from({ length: 10 }).map((_, i) => {
+					const angle = (i * Math.PI * 2) / 10;
+					const x = 80 + Math.cos(angle) * 54;
+					const y = 80 + Math.sin(angle) * 54;
+					return <circle cx={x} cy={y} r="7" fill="#dde3ec" stroke="#5a6878" stroke-width="1" />;
+				})}
+			</g>
+		</g>
+	)}
+
+	{hub === 'lestnichnye-ograzhdeniya' && (
+		<g>
+			{/* три стойки с поручнем */}
+			<line x1="40" y1="180" x2="280" y2="180" stroke="#5a6878" stroke-width="2" />
+			<rect x="55" y="50" width="10" height="130" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+			<rect x="155" y="50" width="10" height="130" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+			<rect x="255" y="50" width="10" height="130" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+			{/* поручень */}
+			<rect x="35" y="38" width="240" height="14" rx="7" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+			<rect x="40" y="40" width="230" height="4" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
+			{/* ригели */}
+			<line x1="65" y1="95" x2="255" y2="95" stroke="#5a6878" stroke-width="2" />
+			<line x1="65" y1="130" x2="255" y2="130" stroke="#5a6878" stroke-width="2" />
+		</g>
+	)}
+
+	{hub === 'dekorativnye-listy' && (
+		<g>
+			{/* зеркальный лист с отражением */}
+			<rect x="60" y="40" width="200" height="140" rx="4" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+			<ellipse cx="160" cy="100" rx="80" ry="40" fill="rgba(255,255,255,0.55)" />
+			<ellipse cx="100" cy="160" rx="50" ry="14" fill="rgba(255,255,255,0.35)" />
+			<line x1="60" y1="180" x2="260" y2="180" stroke="#5a6878" stroke-width="1.5" />
+		</g>
+	)}
+
+	{(hub === 'lenta' || hub === 'folga') && (
+		<g>
+			{/* лента/фольга змейкой */}
+			<path d="M20 60 Q80 30 140 60 T260 60 T260 110 Q200 140 140 110 T20 110 Z" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
+			<path d="M20 60 Q80 30 140 60 T260 60" fill="none" stroke={`url(#hi-shine-${hub})`} stroke-width="3" opacity="0.7" />
+		</g>
+	)}
+
+	{hub === 'elektrody' && (
+		<g>
+			{/* пучок электродов */}
+			{Array.from({ length: 6 }).map((_, i) => (
+				<g transform={`translate(${50 + i * 36} ${40 + (i % 2) * 10})`}>
+					<rect x="0" y="0" width="14" height="140" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+					<rect x="0" y="0" width="14" height="20" fill="#c4651b" stroke="#5a6878" stroke-width="1" />
+				</g>
+			))}
+		</g>
+	)}
+</svg>
+
+<style>
+	.hub-illo {
+		display: block;
+		width: 100%;
+		height: auto;
+		max-width: 380px;
+		filter: drop-shadow(0 10px 22px rgba(15, 26, 43, 0.15));
+	}
+</style>
