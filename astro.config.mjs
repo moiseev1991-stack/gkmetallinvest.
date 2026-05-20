@@ -15,7 +15,7 @@ export default defineConfig({
 			filter: (page) => {
 				const path = new URL(page).pathname;
 				if (/-\d+\/$/.test(path)) return false;
-				if (/^\/(lenta|folga|metizy|elektrody|podshipniki|dekorativnye-listy)(\/|$)/.test(path)) return false;
+				if (/^\/(lenta|folga|metizy|elektrody|podshipniki|dekorativnye-listy|lestnichnye-ograzhdeniya)(\/|$)/.test(path)) return false;
 				return true;
 			},
 		}),

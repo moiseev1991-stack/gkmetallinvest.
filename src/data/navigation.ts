@@ -44,7 +44,7 @@ export const navGroups: NavGroup[] = [
 		hint: 'Труба и фитинги',
 		items: [
 			{ title: 'Труба нержавеющая', href: '/truba/', meta: 'бесшовная · ЭСВ · профильная' },
-			{ title: 'Детали трубопровода', href: '/detali-truboprovoda/', meta: 'фланцы · отводы · переходы' },
+			{ title: 'Детали трубопровода, задвижки', href: '/detali-truboprovoda/', meta: 'фланцы · отводы · переходы · задвижки' },
 		],
 	},
 	{
@@ -61,9 +61,10 @@ export const navGroups: NavGroup[] = [
 		title: 'Крепёж и спецпозиции',
 		hint: 'По заявке',
 		items: [
-			{ title: 'Метизы / Крепёж', href: '/metizy/', meta: 'DIN · ГОСТ · A2/A4', empty: true },
+			{ title: 'Нержавеющие метизы', href: '/metizy/', meta: 'болты · гайки · шпильки · DIN/ГОСТ', empty: true },
+			{ title: 'Комплектующие для лестничных ограждений', href: '/lestnichnye-ograzhdeniya/', meta: 'стойки · поручни · стеклодержатели', empty: true },
+			{ title: 'Подшипники и промышленные компоненты', href: '/podshipniki/', meta: 'AISI 440C · 316 · промкомплектующие', empty: true },
 			{ title: 'Электроды нержавеющие', href: '/elektrody/', meta: 'ЦЛ-11 · ОЗЛ-8 · ЭА-400', empty: true },
-			{ title: 'Подшипники нержавеющие', href: '/podshipniki/', meta: 'AISI 440C · 316', empty: true },
 		],
 	},
 ];
