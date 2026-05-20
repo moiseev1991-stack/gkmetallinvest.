@@ -399,6 +399,7 @@ if (sku.price != null) {
 					{sku.grade}
 					{sku.size && <span class="product__size">{sku.size} мм</span>}
 				</h1>
+
 				{(roll || surface || sku.alloy) && (
 					<p class="product__tags">
 						{roll && <span class="tag">{roll}</span>}
@@ -406,6 +407,7 @@ if (sku.price != null) {
 						{sku.alloy && <span class="tag">{sku.alloy}</span>}
 					</p>
 				)}
+
 				{sku.fact && (
 					<p class="product__stock">
 						<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -413,6 +415,51 @@ if (sku.price != null) {
 						</svg>
 						В наличии — {sku.fact}{sku.ostatok != null && ` · ${sku.ostatok} ${sku.unit}`}
 					</p>
+				)}
+
+				{/* Лид-абзац: марка + формат, краткое описание из gradeMeta. Заполняет
+				    середину hero — без него title-wrap был визуально пуст. */}
+				<p class="product__lead">
+					{hubLabel} {sku.grade}{surface ? ` · ${surface}` : ''}{sku.size ? `, ${measureLabel} ${sku.size} мм` : ''}.
+					{gradeMeta ? ` ${gradeMeta.applications}` : ` Поставка со склада в Нижнем Новгороде, доставка по России. Сертификат завода-изготовителя на каждую партию.`}
+				</p>
+
+				{/* Key facts grid: 2-4 ключевых параметра крупно — вес, аналоги,
+				    единица. Из data, без хардкода. */}
+				<dl class="product__keys">
+					{weightLine && (
+						<div class="product__key">
+							<dt>{weightLine.label}</dt>
+							<dd>{weightLine.value}</dd>
+						</div>
+					)}
+					{aliases.length > 0 && (
+						<div class="product__key">
+							<dt>Аналог</dt>
+							<dd>{aliases[0]}</dd>
+						</div>
+					)}
+					<div class="product__key">
+						<dt>Единица</dt>
+						<dd>{sku.unit}</dd>
+					</div>
+					{sku.dlina && (
+						<div class="product__key">
+							<dt>Длина</dt>
+							<dd>{sku.dlina} мм</dd>
+						</div>
+					)}
+				</dl>
+
+				{services.length > 0 && (
+					<div class="product__quick-svc">
+						<span class="product__quick-svc-label">Услуги по позиции:</span>
+						<ul>
+							{services.map((s) => (
+								<li><a href={s.href}>{s.label}</a></li>
+							))}
+						</ul>
+					</div>
 				)}
 			</div>
 
@@ -752,6 +799,89 @@ if (sku.price != null) {
 		border: 1px solid var(--color-success-100, #dcfce7);
 		padding: 0.35rem 0.7rem;
 		border-radius: var(--radius-pill);
+	}
+
+	.product__title-wrap {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		min-width: 0;
+	}
+	.product__title-wrap > * { margin: 0; }
+
+	.product__lead {
+		font-size: 0.95rem;
+		line-height: 1.55;
+		color: var(--color-muted);
+		max-width: 60ch;
+	}
+
+	.product__keys {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+		gap: var(--space-2);
+		padding: var(--space-3);
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		margin: 0;
+	}
+	.product__key {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		min-width: 0;
+	}
+	.product__key dt {
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-subtle);
+	}
+	.product__key dd {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--color-text);
+		overflow-wrap: anywhere;
+	}
+
+	.product__quick-svc {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+	}
+	.product__quick-svc-label {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+	}
+	.product__quick-svc ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.product__quick-svc a {
+		display: inline-block;
+		font-size: 0.82rem;
+		padding: 0.3rem 0.7rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-pill);
+		color: var(--color-primary-600);
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+	}
+	.product__quick-svc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
 	}
 	.product__price-retail {
 		display: block;
