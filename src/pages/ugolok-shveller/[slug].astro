@@ -1,0 +1,18 @@
+---
+import ProductDetail from '../../components/ProductDetail.astro';
+import pricelist from '../../data/pricelist.json';
+
+export async function getStaticPaths() {
+	const skus = (pricelist.hubs as any)['ugolok-shveller'] as any[];
+	return skus.map((sku) => ({ params: { slug: sku.slug }, props: { sku } }));
+}
+
+const { sku } = Astro.props;
+---
+
+<ProductDetail
+	sku={sku}
+	hubLabel="Уголок / Швеллер нержавеющий"
+	hubHref="/ugolok-shveller/"
+	measureLabel="размер"
+/>

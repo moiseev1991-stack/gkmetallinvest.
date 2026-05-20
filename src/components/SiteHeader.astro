@@ -56,6 +56,7 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			<span class="head__burger-icon"></span>
 		</button>
 
+		<div class="head__nav-backdrop" data-nav-backdrop aria-hidden="true"></div>
 		<div class="head__nav-wrap" id="nav-drawer">
 			<nav class="head__nav" aria-label="Основное">
 				<div class="mega">
@@ -139,19 +140,21 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	const megaBtn = document.getElementById('mega-btn');
 	const megaPanel = document.getElementById('mega-panel');
 
+	const backdrop = document.querySelector('[data-nav-backdrop]');
 	const closeDrawer = () => {
 		drawer?.classList.remove('head__nav-wrap--open');
+		backdrop?.classList.remove('head__nav-backdrop--open');
 		toggle?.setAttribute('aria-expanded', 'false');
 		document.body.style.overflow = '';
 	};
 
 	toggle?.addEventListener('click', () => {
 		const open = drawer?.classList.toggle('head__nav-wrap--open');
+		backdrop?.classList.toggle('head__nav-backdrop--open', !!open);
 		toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
-		// На мобиле — блокируем скролл body когда drawer открыт; на десктопе
-		// drawer вообще не существует как fixed-оверлей, поэтому проверяем класс.
 		document.body.style.overflow = open ? 'hidden' : '';
 	});
+	backdrop?.addEventListener('click', closeDrawer);
 
 	megaBtn?.addEventListener('click', () => {
 		if (!megaPanel || !megaBtn) return;
@@ -326,35 +329,82 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			0 7px 0 currentColor;
 	}
 
+	/* Drawer backdrop — затемнённая подложка под открытым меню. На десктопе скрыт. */
+	.head__nav-backdrop {
+		display: none;
+	}
+
 	@media (max-width: 1023px) {
 		.head__burger {
 			display: block;
 			margin-left: auto;
 		}
-		.head__nav-wrap {
+		.head__nav-backdrop {
+			display: block;
 			position: fixed;
-			inset: calc(var(--header-h) + 1px) 0 0 0;
+			top: var(--header-h);
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(15, 26, 43, 0.55);
+			backdrop-filter: blur(2px);
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity var(--dur-base) var(--ease-out);
+			z-index: 38;
+		}
+		.head__nav-backdrop--open {
+			opacity: 1;
+			pointer-events: auto;
+		}
+		.head__nav-wrap {
+			position: fixed !important;
+			top: var(--header-h);
+			right: 0;
+			bottom: 0;
+			left: auto;
+			width: min(86vw, 360px);
 			background: var(--color-surface);
 			padding: var(--space-5);
-			display: flex;
+			display: flex !important;
 			flex-direction: column;
-			gap: var(--space-5);
+			gap: var(--space-4);
 			overflow-y: auto;
 			-webkit-overflow-scrolling: touch;
 			transform: translateX(100%);
-			transition: transform var(--dur-base) var(--ease-out),
-				visibility 0s linear var(--dur-base);
-			z-index: 50;
-			/* visibility hidden пока закрыт — чтобы скрытый drawer не «съедал»
-			   тап-события на тех Android-браузерах, где fixed-элемент с translate
-			   всё ещё ловит указатель. */
-			visibility: hidden;
+			transition: transform var(--dur-base) var(--ease-out);
+			z-index: 39;
+			box-shadow: -12px 0 28px rgba(15, 26, 43, 0.18);
+			border-left: 1px solid var(--color-border);
 		}
 		.head__nav-wrap--open {
 			transform: translateX(0);
-			visibility: visible;
-			transition: transform var(--dur-base) var(--ease-out),
-				visibility 0s linear 0s;
+		}
+		/* Внутри drawer — пункты в столбик, чтобы было читаемо */
+		.head__nav-wrap .head__nav {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0;
+			width: 100%;
+		}
+		.head__nav-wrap .head__link {
+			display: block;
+			padding: var(--space-3) 0;
+			border-bottom: 1px solid var(--color-border);
+			font-size: 1rem;
+			border-left: 0;
+		}
+		.head__nav-wrap .head__link--active {
+			border-bottom-color: var(--color-primary-500);
+		}
+		.head__nav-wrap .mega {
+			border-bottom: 1px solid var(--color-border);
+		}
+		.head__nav-wrap .mega__trigger {
+			width: 100%;
+			justify-content: space-between;
+			padding: var(--space-3) 0;
+			font-size: 1rem;
 		}
 	}
 	@media (min-width: 1024px) {
