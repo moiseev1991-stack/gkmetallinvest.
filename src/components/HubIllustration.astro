@@ -1,11 +1,12 @@
 ---
 /**
- * SVG-иллюстрация под конкретный хаб каталога. Рисуется чисто, в стилистике
- * «технический blueprint» — изометричный объект из 2-3 тонов, тёплая
- * акцентная подсветка. Используется в hero шаблона CatalogHubTemplate.
+ * SVG-инфографика под конкретный хаб каталога. В отличие от просто картинки,
+ * каждая иллюстрация показывает характерные размеры и параметры товара —
+ * как мини-чертёж: с размерными линиями, подписями типа «толщина 0,4–60 мм»,
+ * «Ø 6–273 мм», маркой стали.
  *
- * Не картинка — чтобы не платить за загрузку и не плодить версии под retina.
- * Цвета привязаны к токенам var(--color-primary-*).
+ * Цвета и градиенты — через CSS-токены проекта; формы — изометрические,
+ * пропорции близки к реальным металлоизделиям.
  */
 interface Props {
 	hub:
@@ -24,282 +25,532 @@ interface Props {
 		| 'lenta'
 		| 'folga'
 		| 'elektrody';
-	/** Доп. класс — например, для размера/раскладки на хабе. */
 	class?: string;
 }
 const { hub, class: className = '' } = Astro.props;
+
+/* Общие константы стиля */
+const STEEL_STROKE = '#3d4a5e';
+const NAVY = '#0a1f3d';
+const ACCENT = '#c4651b';
+const LABEL = '#5a6878';
 ---
 
 <svg
 	class={`hub-illo ${className}`.trim()}
-	viewBox="0 0 320 220"
+	viewBox="0 0 400 280"
 	xmlns="http://www.w3.org/2000/svg"
 	aria-hidden="true"
 	role="presentation"
 >
 	<defs>
-		<linearGradient id={`hi-steel-${hub}`} x1="0" x2="1" y1="0" y2="1">
-			<stop offset="0%" stop-color="#eef2f8" />
-			<stop offset="55%" stop-color="#c5cfdd" />
-			<stop offset="100%" stop-color="#9fadc1" />
+		<linearGradient id={`gr-steel-${hub}`} x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0%" stop-color="#f1f5fb" />
+			<stop offset="30%" stop-color="#d8dfeb" />
+			<stop offset="60%" stop-color="#aab5c5" />
+			<stop offset="100%" stop-color="#7d8a9d" />
 		</linearGradient>
-		<linearGradient id={`hi-shine-${hub}`} x1="0" x2="1" y1="0" y2="0">
+		<linearGradient id={`gr-steel-h-${hub}`} x1="0" x2="0" y1="0" y2="1">
+			<stop offset="0%" stop-color="#e8ecf2" />
+			<stop offset="40%" stop-color="#c0c9d6" />
+			<stop offset="100%" stop-color="#8c98ab" />
+		</linearGradient>
+		<linearGradient id={`gr-end-${hub}`} x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0%" stop-color="#bcc7d6" />
+			<stop offset="100%" stop-color="#6d7a8e" />
+		</linearGradient>
+		<linearGradient id={`gr-mirror-${hub}`} x1="0" x2="0.7" y1="0" y2="1">
+			<stop offset="0%" stop-color="#ffffff" />
+			<stop offset="35%" stop-color="#dee5ee" />
+			<stop offset="55%" stop-color="#f4f7fb" />
+			<stop offset="80%" stop-color="#aab5c5" />
+			<stop offset="100%" stop-color="#dfe5ed" />
+		</linearGradient>
+		<linearGradient id={`gr-shine-${hub}`} x1="0" x2="1" y1="0" y2="0">
 			<stop offset="0%" stop-color="rgba(255,255,255,0)" />
-			<stop offset="50%" stop-color="rgba(255,255,255,0.85)" />
+			<stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
 			<stop offset="100%" stop-color="rgba(255,255,255,0)" />
 		</linearGradient>
-		<linearGradient id={`hi-edge-${hub}`} x1="0" x2="0" y1="0" y2="1">
-			<stop offset="0%" stop-color="#dde3ec" />
-			<stop offset="100%" stop-color="#8c9aae" />
-		</linearGradient>
+		<radialGradient id={`gr-disc-${hub}`} cx="0.35" cy="0.35" r="0.7">
+			<stop offset="0%" stop-color="#f4f7fb" />
+			<stop offset="60%" stop-color="#c0c9d6" />
+			<stop offset="100%" stop-color="#6d7a8e" />
+		</radialGradient>
+		<filter id={`f-soft-${hub}`} x="-20%" y="-20%" width="140%" height="140%">
+			<feGaussianBlur stdDeviation="1.2" />
+		</filter>
 	</defs>
+
+	<style>{`
+		.lab { font: 600 11px var(--font-mono, ui-monospace, monospace); fill: ${LABEL}; }
+		.lab-sm { font: 500 9.5px var(--font-mono, ui-monospace, monospace); fill: ${LABEL}; }
+		.lab-tag { font: 700 10px var(--font-sans, system-ui); fill: ${NAVY}; }
+		.tag-bg { fill: #ffffff; stroke: ${LABEL}; stroke-width: 0.7; }
+		.tag-bg-accent { fill: ${ACCENT}; }
+		.tag-fg-accent { fill: #ffffff; }
+		.dim { stroke: ${LABEL}; stroke-width: 0.7; fill: none; }
+		.dim-arr { fill: ${LABEL}; }
+		.outline { fill: none; stroke: ${STEEL_STROKE}; stroke-width: 1.2; }
+	`}</style>
 
 	{hub === 'list' && (
 		<g>
-			{/* стопка трёх листов в изометрии */}
-			<g transform="translate(40 70)">
-				<polygon points="0,40 200,40 240,20 40,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" stroke-linejoin="round" />
-				<polygon points="0,40 200,40 200,55 0,55" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="200,40 240,20 240,35 200,55" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			{/* стопка из 4 листов с виден ракурс торца + размерные подписи */}
+			<g transform="translate(60 88)">
+				{[0, 1, 2, 3].map((i) => {
+					const dy = i * 18;
+					const tone = ['#cbd5e3', '#c0cbdc', '#b8c3d5', '#aeb9cb'][i];
+					return (
+						<g transform={`translate(0 ${dy})`}>
+							<polygon
+								points={`0,40 220,40 252,18 32,18`}
+								fill={tone}
+								stroke={STEEL_STROKE}
+								stroke-width="0.9"
+								stroke-linejoin="round"
+							/>
+							<polygon
+								points={`220,40 252,18 252,28 220,50`}
+								fill={`url(#gr-end-${hub})`}
+								stroke={STEEL_STROKE}
+								stroke-width="0.9"
+							/>
+							<line x1="0" y1="40" x2="220" y2="40" stroke={STEEL_STROKE} stroke-width="0.9" />
+							<rect x="6" y="22" width="200" height="3" fill={`url(#gr-shine-${hub})`} opacity="0.5" />
+						</g>
+					);
+				})}
 			</g>
-			<g transform="translate(40 90)">
-				<polygon points="0,40 200,40 240,20 40,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="0,40 200,40 200,55 0,55" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="200,40 240,20 240,35 200,55" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			{/* размерная вертикаль — толщина */}
+			<g transform="translate(28 95)">
+				<line class="dim" x1="0" y1="0" x2="0" y2="86" />
+				<polygon class="dim-arr" points="0,0 -3,5 3,5" />
+				<polygon class="dim-arr" points="0,86 -3,81 3,81" />
+				<line class="dim" x1="-4" y1="0" x2="6" y2="0" />
+				<line class="dim" x1="-4" y1="86" x2="6" y2="86" />
+				<text class="lab-sm" x="-30" y="50" transform="rotate(-90 -30 50)">0,4–60 мм</text>
 			</g>
-			<g transform="translate(40 110)">
-				<polygon points="0,40 200,40 240,20 40,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="0,40 200,40 200,55 0,55" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="200,40 240,20 240,35 200,55" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			{/* tag марки */}
+			<g transform="translate(255 220)">
+				<rect class="tag-bg-accent" x="0" y="0" width="92" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="46" y="15" text-anchor="middle">AISI 304</text>
 			</g>
-			<rect x="42" y="111" width="195" height="6" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
+			<text class="lab" x="60" y="260">Холоднокатаный · горячекатаный · ПВЛ</text>
 		</g>
 	)}
 
 	{hub === 'truba' && (
 		<g>
-			{/* большая труба + малая позади */}
-			<g transform="translate(40 60)">
-				<ellipse cx="40" cy="50" rx="38" ry="46" fill="#9fadc1" stroke="#5a6878" stroke-width="1.5" />
-				<ellipse cx="40" cy="50" rx="26" ry="32" fill="#0a1f3d" />
-				<rect x="40" y="4" width="200" height="92" fill={`url(#hi-steel-${hub})`} />
-				<ellipse cx="240" cy="50" rx="38" ry="46" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<ellipse cx="240" cy="50" rx="26" ry="32" fill="#1c2540" />
-				<rect x="40" y="4" width="200" height="14" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
-				<line x1="40" y1="4" x2="240" y2="4" stroke="#5a6878" stroke-width="1.5" />
-				<line x1="40" y1="96" x2="240" y2="96" stroke="#5a6878" stroke-width="1.5" />
+			{/* большая бесшовная труба с торцом и стенкой + сварной шов */}
+			<g transform="translate(60 90)">
+				{/* тело */}
+				<rect x="36" y="0" width="240" height="110" fill={`url(#gr-steel-h-${hub})`} />
+				{/* шов */}
+				<line x1="36" y1="40" x2="276" y2="40" stroke={STEEL_STROKE} stroke-width="0.6" stroke-dasharray="2 3" opacity="0.5" />
+				{/* блик */}
+				<rect x="36" y="4" width="240" height="14" fill={`url(#gr-shine-${hub})`} opacity="0.65" />
+				{/* левый торец — диск с отверстием */}
+				<ellipse cx="36" cy="55" rx="38" ry="55" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				<ellipse cx="36" cy="55" rx="22" ry="35" fill={NAVY} />
+				<ellipse cx="34" cy="50" rx="20" ry="32" fill="none" stroke="#3a4a62" stroke-width="0.7" />
+				{/* правый торец */}
+				<ellipse cx="276" cy="55" rx="38" ry="55" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				<ellipse cx="276" cy="55" rx="22" ry="35" fill={NAVY} />
+				{/* верхнее и нижнее ребро */}
+				<line x1="36" y1="0" x2="276" y2="0" stroke={STEEL_STROKE} stroke-width="1" />
+				<line x1="36" y1="110" x2="276" y2="110" stroke={STEEL_STROKE} stroke-width="1" />
 			</g>
-			<g transform="translate(20 130)" opacity="0.7">
-				<ellipse cx="25" cy="30" rx="22" ry="26" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
-				<ellipse cx="25" cy="30" rx="14" ry="17" fill="#0a1f3d" />
-				<rect x="25" y="4" width="120" height="52" fill={`url(#hi-steel-${hub})`} />
-				<ellipse cx="145" cy="30" rx="22" ry="26" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<ellipse cx="145" cy="30" rx="14" ry="17" fill="#1c2540" />
+			{/* размерные подписи */}
+			<g>
+				<line class="dim" x1="35" y1="60" x2="35" y2="200" />
+				<line class="dim" x1="22" y1="200" x2="48" y2="200" />
+				<text class="lab" x="35" y="216" text-anchor="middle">Ø 6–273 мм</text>
 			</g>
+			<g transform="translate(96 56)">
+				<line class="dim" x1="0" y1="0" x2="36" y2="0" />
+				<polygon class="dim-arr" points="0,0 5,-3 5,3" />
+				<polygon class="dim-arr" points="36,0 31,-3 31,3" />
+				<text class="lab-sm" x="18" y="-4" text-anchor="middle">стенка 1–16 мм</text>
+			</g>
+			<g transform="translate(255 220)">
+				<rect class="tag-bg-accent" x="0" y="0" width="92" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="46" y="15" text-anchor="middle">AISI 321</text>
+			</g>
+			<text class="lab" x="60" y="260">Бесшовная · ЭСВ · профильная</text>
 		</g>
 	)}
 
 	{hub === 'krug' && (
 		<g>
-			{/* три прутка разного диаметра */}
-			<g transform="translate(40 50)">
-				<ellipse cx="32" cy="32" rx="30" ry="32" fill="#9fadc1" stroke="#5a6878" stroke-width="1.5" />
-				<ellipse cx="32" cy="32" rx="22" ry="23" fill={`url(#hi-steel-${hub})`} />
-				<rect x="32" y="2" width="220" height="60" fill={`url(#hi-steel-${hub})`} />
-				<ellipse cx="252" cy="32" rx="30" ry="32" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<rect x="32" y="2" width="220" height="10" fill={`url(#hi-shine-${hub})`} opacity="0.6" />
-				<line x1="32" y1="2" x2="252" y2="2" stroke="#5a6878" stroke-width="1.5" />
-				<line x1="32" y1="62" x2="252" y2="62" stroke="#5a6878" stroke-width="1.5" />
+			{/* круг + квадрат + шестигранник — три типа сортового проката */}
+			{/* круг */}
+			<g transform="translate(80 80)">
+				<rect x="30" y="0" width="240" height="48" fill={`url(#gr-steel-h-${hub})`} />
+				<rect x="30" y="2" width="240" height="6" fill={`url(#gr-shine-${hub})`} opacity="0.7" />
+				<ellipse cx="30" cy="24" rx="20" ry="24" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1.1" />
+				<ellipse cx="30" cy="24" rx="13" ry="16" fill="none" stroke={STEEL_STROKE} stroke-width="0.5" opacity="0.5" />
+				<ellipse cx="270" cy="24" rx="20" ry="24" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1.1" />
+				<line x1="30" y1="0" x2="270" y2="0" stroke={STEEL_STROKE} stroke-width="0.9" />
+				<line x1="30" y1="48" x2="270" y2="48" stroke={STEEL_STROKE} stroke-width="0.9" />
 			</g>
-			<g transform="translate(60 130)" opacity="0.85">
-				<ellipse cx="20" cy="20" rx="18" ry="20" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
-				<rect x="20" y="0" width="180" height="40" fill={`url(#hi-steel-${hub})`} />
-				<ellipse cx="200" cy="20" rx="18" ry="20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+			{/* квадрат (повёрнутый ромбом) */}
+			<g transform="translate(80 152)">
+				<polygon points="30,18 270,18 270,42 30,42" fill={`url(#gr-steel-h-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+				<polygon points="30,18 12,30 12,54 30,42" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+				<polygon points="30,42 12,54 252,54 270,42" fill="#a5b1c4" stroke={STEEL_STROKE} stroke-width="1" />
+				<rect x="32" y="20" width="236" height="4" fill={`url(#gr-shine-${hub})`} opacity="0.6" />
 			</g>
-			<g transform="translate(110 175)" opacity="0.7">
-				<ellipse cx="12" cy="14" rx="10" ry="12" fill="#bcc7d6" stroke="#5a6878" stroke-width="1" />
-				<rect x="12" y="2" width="140" height="24" fill={`url(#hi-steel-${hub})`} />
-				<ellipse cx="152" cy="14" rx="10" ry="12" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
+			{/* шестигранник — торец */}
+			<g transform="translate(330 178)">
+				<polygon points="0,-22 19,-11 19,11 0,22 -19,11 -19,-11" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+				<polygon points="0,-12 11,-6 11,6 0,12 -11,6 -11,-6" fill="none" stroke={STEEL_STROKE} stroke-width="0.5" opacity="0.5" />
 			</g>
+			<g>
+				<text class="lab" x="200" y="68" text-anchor="middle">круг · квадрат · шестигранник</text>
+				<line class="dim" x1="50" y1="90" x2="50" y2="138" />
+				<polygon class="dim-arr" points="50,90 47,95 53,95" />
+				<polygon class="dim-arr" points="50,138 47,133 53,133" />
+				<text class="lab-sm" x="22" y="116" transform="rotate(-90 22 116)">Ø 5–250 мм</text>
+			</g>
+			<g transform="translate(60 230)">
+				<rect class="tag-bg-accent" x="0" y="0" width="92" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="46" y="15" text-anchor="middle">калиброванный</text>
+			</g>
+			<text class="lab" x="162" y="245">h9 / h11 — под токарную</text>
 		</g>
 	)}
 
 	{hub === 'rulon' && (
 		<g>
-			{/* рулон с разматывающимся хвостом */}
-			<g transform="translate(80 50)">
-				<ellipse cx="60" cy="60" rx="58" ry="58" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<ellipse cx="60" cy="60" rx="44" ry="44" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<ellipse cx="60" cy="60" rx="30" ry="30" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
-				<ellipse cx="60" cy="60" rx="16" ry="16" fill="#0a1f3d" />
-				{/* спираль */}
-				<path d="M60 16 A44 44 0 0 1 104 60 A30 30 0 0 0 60 30 A30 30 0 0 1 90 60" fill="none" stroke="#5a6878" stroke-width="1" />
-				<path d="M104 60 L260 60 L260 76 L104 76 Z" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<rect x="104" y="60" width="156" height="5" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
+			{/* рулон, изометрия с разматывающимся листом */}
+			<g transform="translate(70 50)">
+				{/* боковая сторона диска */}
+				<ellipse cx="70" cy="80" rx="68" ry="68" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1.4" />
+				{/* спираль слоёв */}
+				<ellipse cx="70" cy="80" rx="58" ry="58" fill="none" stroke="#7d8a9d" stroke-width="0.5" />
+				<ellipse cx="70" cy="80" rx="48" ry="48" fill="none" stroke="#7d8a9d" stroke-width="0.5" />
+				<ellipse cx="70" cy="80" rx="38" ry="38" fill="none" stroke="#7d8a9d" stroke-width="0.5" />
+				<ellipse cx="70" cy="80" rx="28" ry="28" fill="none" stroke="#7d8a9d" stroke-width="0.5" />
+				{/* центральное отверстие */}
+				<ellipse cx="70" cy="80" rx="18" ry="18" fill={NAVY} />
+				<ellipse cx="68" cy="78" rx="17" ry="17" fill="none" stroke="#3a4a62" stroke-width="0.7" />
+				{/* выходящий хвост листа */}
+				<path d="M138 80 L138 95 L300 92 L300 76 Z" fill={`url(#gr-steel-h-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+				<rect x="140" y="78" width="158" height="3" fill={`url(#gr-shine-${hub})`} opacity="0.6" />
+				{/* лёгкий блик на катушке */}
+				<ellipse cx="50" cy="50" rx="22" ry="14" fill="rgba(255,255,255,0.5)" />
 			</g>
+			<g>
+				<line class="dim" x1="50" y1="60" x2="50" y2="196" />
+				<polygon class="dim-arr" points="50,60 47,65 53,65" />
+				<polygon class="dim-arr" points="50,196 47,191 53,191" />
+				<text class="lab-sm" x="22" y="128" transform="rotate(-90 22 128)">ширина 1000–1500 мм</text>
+			</g>
+			<g transform="translate(255 215)">
+				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">0,4–3 мм</text>
+			</g>
+			<text class="lab" x="60" y="255">Холоднокатаный · 2B · BA · 4N · DECO</text>
 		</g>
 	)}
 
 	{hub === 'polosa' && (
 		<g>
-			{/* три длинные полосы */}
-			<g transform="translate(30 60)">
-				<polygon points="0,10 260,10 270,0 10,0" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="0,10 260,10 260,28 0,28" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="260,10 270,0 270,18 260,28" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+			{/* три длинные полосы разной ширины в перспективе */}
+			<g transform="translate(50 70)">
+				{[
+					{ y: 0, w: 12, tone: '#cbd5e3' },
+					{ y: 38, w: 20, tone: '#c0cbdc' },
+					{ y: 90, w: 30, tone: '#aeb9cb' },
+				].map((p) => (
+					<g transform={`translate(0 ${p.y})`}>
+						<polygon points={`0,${p.w} 270,${p.w} 296,2 26,2`} fill={p.tone} stroke={STEEL_STROKE} stroke-width="1" />
+						<polygon points={`270,${p.w} 296,2 296,${p.w - 4} 270,${p.w + 16}`} fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+						<polygon points={`0,${p.w} 270,${p.w} 270,${p.w + 16} 0,${p.w + 16}`} fill={`url(#gr-steel-h-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+						<rect x="8" y={p.w + 1} width="258" height="3" fill={`url(#gr-shine-${hub})`} opacity="0.5" />
+					</g>
+				))}
 			</g>
-			<g transform="translate(30 100)">
-				<polygon points="0,10 260,10 270,0 10,0" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="0,10 260,10 260,28 0,28" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="260,10 270,0 270,18 260,28" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+			<g>
+				<text class="lab" x="200" y="60" text-anchor="middle">горячекатаная · калиброванная</text>
+				<line class="dim" x1="30" y1="76" x2="30" y2="190" />
+				<polygon class="dim-arr" points="30,76 27,81 33,81" />
+				<polygon class="dim-arr" points="30,190 27,185 33,185" />
+				<text class="lab-sm" x="6" y="132" transform="rotate(-90 6 132)">ширина 25–300 мм</text>
 			</g>
-			<g transform="translate(30 140)">
-				<polygon points="0,10 260,10 270,0 10,0" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="0,10 260,10 260,28 0,28" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<polygon points="260,10 270,0 270,18 260,28" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
+			<g transform="translate(255 230)">
+				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">4–50 мм</text>
 			</g>
+			<text class="lab" x="60" y="255">ГОСТ 103 · EN 10058 · AISI 304/316L</text>
 		</g>
 	)}
 
 	{hub === 'provoloka' && (
 		<g>
-			{/* катушка с проволокой */}
-			<g transform="translate(60 50)">
-				<ellipse cx="100" cy="60" rx="100" ry="58" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<ellipse cx="100" cy="60" rx="100" ry="50" fill={`url(#hi-steel-${hub})`} />
-				{/* витки */}
-				{Array.from({ length: 14 }).map((_, i) => (
-					<ellipse cx="100" cy={28 + i * 5} rx={100 - Math.abs(7 - i) * 3} ry="2" fill="none" stroke="#5a6878" stroke-width="0.7" opacity="0.55" />
-				))}
-				<ellipse cx="100" cy="22" rx="100" ry="14" fill={`url(#hi-shine-${hub})`} opacity="0.5" />
+			{/* катушка с проволокой и сама проволока кольцом */}
+			<g transform="translate(50 75)">
+				{/* барабан катушки сбоку */}
+				<ellipse cx="105" cy="65" rx="105" ry="58" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1.3" />
+				<ellipse cx="105" cy="65" rx="105" ry="48" fill={`url(#gr-steel-${hub})`} />
+				{/* витки проволоки */}
+				{Array.from({ length: 22 }).map((_, i) => {
+					const yOff = 24 + i * 3.2;
+					const dxa = i * 0.25;
+					return (
+						<ellipse
+							cx="105"
+							cy={yOff}
+							rx={105 - Math.abs(11 - i) * 1.8 - dxa}
+							ry={1.6}
+							fill="none"
+							stroke="#5a6878"
+							stroke-width="0.45"
+							opacity="0.6"
+						/>
+					);
+				})}
+				{/* блик сверху */}
+				<ellipse cx="80" cy="22" rx="80" ry="9" fill="rgba(255,255,255,0.65)" />
+				{/* нижний край барабана */}
+				<path d="M0 65 A105 58 0 0 0 210 65" fill="none" stroke={STEEL_STROKE} stroke-width="1.3" />
+				{/* отходящая проволока */}
+				<path d="M195 90 Q230 105 240 125 Q250 145 290 145" fill="none" stroke={ACCENT} stroke-width="2" stroke-linecap="round" />
+				<circle cx="290" cy="145" r="3.5" fill={ACCENT} />
 			</g>
-			<line x1="58" y1="105" x2="60" y2="180" stroke="#c4651b" stroke-width="2" stroke-linecap="round" />
-			<line x1="60" y1="180" x2="100" y2="195" stroke="#c4651b" stroke-width="2" stroke-linecap="round" />
+			<g transform="translate(255 220)">
+				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">Ø 0,1–6 мм</text>
+			</g>
+			<text class="lab" x="60" y="250">Сварочная · вязальная · пружинная</text>
 		</g>
 	)}
 
 	{hub === 'detali-truboprovoda' && (
 		<g>
-			{/* фланец слева + отвод справа */}
-			<g transform="translate(30 50)">
-				<ellipse cx="56" cy="60" rx="54" ry="54" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<ellipse cx="56" cy="60" rx="42" ry="42" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<ellipse cx="56" cy="60" rx="22" ry="22" fill="#0a1f3d" />
+			{/* фланец слева + отвод 90° справа */}
+			<g transform="translate(40 60)">
+				{/* фланец */}
+				<ellipse cx="65" cy="80" rx="60" ry="60" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1.3" />
+				<ellipse cx="65" cy="80" rx="46" ry="46" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="0.9" />
+				<ellipse cx="65" cy="80" rx="22" ry="22" fill={NAVY} />
 				{Array.from({ length: 8 }).map((_, i) => {
-					const angle = (i * Math.PI) / 4;
-					const x = 56 + Math.cos(angle) * 47;
-					const y = 60 + Math.sin(angle) * 47;
-					return <circle cx={x} cy={y} r="3.5" fill="#0a1f3d" />;
+					const a = (i * Math.PI) / 4;
+					const x = 65 + Math.cos(a) * 53;
+					const y = 80 + Math.sin(a) * 53;
+					return <circle cx={x} cy={y} r="4" fill={NAVY} stroke={STEEL_STROKE} stroke-width="0.6" />;
 				})}
+				{/* блик на фланце */}
+				<ellipse cx="48" cy="55" rx="20" ry="10" fill="rgba(255,255,255,0.55)" />
 			</g>
-			<g transform="translate(180 70)">
-				<path d="M0 10 L0 35 Q0 70 35 70 L60 70 L60 95 L82 95 L82 70 L82 45 Q82 0 35 0 L0 0 Z" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<path d="M0 10 L0 25 L60 25 L60 60 L82 60 L82 25 Q82 10 60 10 Z" fill="#aab5c5" opacity="0.5" />
-				<ellipse cx="0" cy="17" rx="3" ry="11" fill="#0a1f3d" />
-				<ellipse cx="71" cy="95" rx="11" ry="3" fill="#0a1f3d" />
+			<g transform="translate(200 70)">
+				{/* отвод 90° */}
+				<path
+					d="M0 0 L0 50 Q0 90 40 90 L90 90 L90 124 L116 124 L116 90 Q116 0 40 0 Z"
+					fill={`url(#gr-steel-${hub})`}
+					stroke={STEEL_STROKE}
+					stroke-width="1.3"
+				/>
+				<path
+					d="M12 0 L12 50 Q12 78 40 78 L102 78 L102 0 Q102 0 60 0 Z"
+					fill="none"
+					stroke={STEEL_STROKE}
+					stroke-width="0.5"
+					opacity="0.5"
+				/>
+				<ellipse cx="0" cy="14" rx="5" ry="14" fill={NAVY} />
+				<ellipse cx="103" cy="124" rx="13" ry="3.5" fill={NAVY} />
 			</g>
+			<g transform="translate(60 220)">
+				<rect class="tag-bg-accent" x="0" y="0" width="120" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="60" y="15" text-anchor="middle">ГОСТ 12820</text>
+			</g>
+			<text class="lab" x="190" y="235">фланцы · отводы · тройники · задвижки</text>
 		</g>
 	)}
 
 	{hub === 'ugolok-shveller' && (
 		<g>
 			{/* уголок в изометрии + швеллер */}
-			<g transform="translate(50 55)">
-				<polygon points="0,90 0,30 60,0 60,15 15,40 15,90" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<polygon points="0,90 90,90 90,75 15,75 15,90" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<polygon points="60,0 90,0 90,75 60,15" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
-				<polygon points="90,0 105,-10 105,65 90,75" fill="#bcc7d6" stroke="#5a6878" stroke-width="1" />
+			<g transform="translate(50 60)">
+				{/* лицевая полка */}
+				<polygon points="0,140 0,30 80,0 80,12 16,38 16,140" fill={`url(#gr-steel-h-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				{/* нижняя полка */}
+				<polygon points="0,140 130,140 130,128 16,128 16,140" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				{/* боковина (изометрический торец) */}
+				<polygon points="80,0 130,-12 130,128 80,12" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+				<polygon points="130,-12 144,-20 144,116 130,128" fill="#a5b1c4" stroke={STEEL_STROKE} stroke-width="0.9" />
 			</g>
-			<g transform="translate(180 70)">
-				<polygon points="0,90 0,0 70,0 70,15 15,15 15,75 70,75 70,90" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<polygon points="70,0 95,-12 95,78 70,90" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
-				<polygon points="0,0 25,-12 95,-12 70,0" fill="#aab5c5" stroke="#5a6878" stroke-width="1" />
+			<g transform="translate(220 75)">
+				{/* швеллер П-образный */}
+				<polygon points="0,140 0,0 90,0 90,14 16,14 16,126 90,126 90,140" fill={`url(#gr-steel-h-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				<polygon points="90,0 122,-14 122,126 90,140" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+				<polygon points="0,0 32,-14 122,-14 90,0" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1.1" />
+				<polygon points="16,14 48,0 122,0 90,14" fill="rgba(0,0,0,0.05)" />
 			</g>
+			<g transform="translate(60 220)">
+				<rect class="tag-bg" x="0" y="0" width="140" height="22" rx="11" />
+				<text class="lab-tag" x="70" y="15" text-anchor="middle">ГОСТ 8509 · 8240</text>
+			</g>
+			<text class="lab" x="60" y="255">равнополочный · №№ 8–20</text>
 		</g>
 	)}
 
 	{hub === 'metizy' && (
 		<g>
-			{/* болт + гайка + шайба */}
-			<g transform="translate(40 60)">
-				<polygon points="20,0 50,0 60,20 50,40 20,40 10,20" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<rect x="28" y="40" width="14" height="80" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				{Array.from({ length: 8 }).map((_, i) => (
-					<line key={i} x1="28" y1={50 + i * 10} x2="42" y2={50 + i * 10} stroke="#5a6878" stroke-width="0.8" opacity="0.6" />
+			{/* болт с реальной шестигранной головкой + шайба + гайка */}
+			{/* болт */}
+			<g transform="translate(70 60)">
+				{/* шляпка вид сверху-сбоку */}
+				<polygon points="0,18 18,0 56,0 74,18 56,36 18,36" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				<polygon points="6,18 22,4 52,4 68,18 52,32 22,32" fill="none" stroke={STEEL_STROKE} stroke-width="0.5" opacity="0.6" />
+				<line x1="0" y1="18" x2="-2" y2="22" stroke={STEEL_STROKE} stroke-width="0.7" />
+				{/* стержень */}
+				<rect x="22" y="36" width="30" height="120" fill={`url(#gr-steel-h-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				{/* резьба */}
+				{Array.from({ length: 14 }).map((_, i) => (
+					<line x1="22" y1={50 + i * 8} x2="52" y2={54 + i * 8} stroke={STEEL_STROKE} stroke-width="0.6" opacity="0.55" />
+				))}
+				<polygon points="22,156 37,170 52,156" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+			</g>
+			{/* гайка отдельно */}
+			<g transform="translate(220 80)">
+				<polygon points="0,22 18,0 56,0 74,22 56,44 18,44" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="1.3" />
+				<polygon points="14,22 26,8 48,8 60,22 48,36 26,36" fill={NAVY} />
+				{Array.from({ length: 6 }).map((_, i) => (
+					<line x1="22" y1={14 + i * 3} x2="52" y2={14 + i * 3} stroke="#3a4a62" stroke-width="0.4" />
 				))}
 			</g>
-			<g transform="translate(180 60)">
-				<polygon points="20,10 50,10 60,30 50,50 20,50 10,30" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<polygon points="25,18 45,18 50,30 45,42 25,42 20,30" fill="#0a1f3d" />
+			{/* шайба */}
+			<g transform="translate(230 160)">
+				<ellipse cx="35" cy="20" rx="50" ry="14" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1.2" />
+				<ellipse cx="35" cy="20" rx="16" ry="5" fill={NAVY} />
+				<ellipse cx="20" cy="14" rx="18" ry="4" fill="rgba(255,255,255,0.55)" />
 			</g>
-			<g transform="translate(180 130)">
-				<ellipse cx="35" cy="20" rx="35" ry="10" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<ellipse cx="35" cy="20" rx="14" ry="4" fill="#0a1f3d" />
+			<g transform="translate(50 230)">
+				<rect class="tag-bg-accent" x="0" y="0" width="80" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="40" y="15" text-anchor="middle">A2 / A4</text>
 			</g>
+			<text class="lab" x="140" y="245">DIN · ГОСТ · М4–М48</text>
 		</g>
 	)}
 
 	{hub === 'podshipniki' && (
 		<g>
-			{/* радиальный подшипник */}
-			<g transform="translate(80 30)">
-				<circle cx="80" cy="80" r="80" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-				<circle cx="80" cy="80" r="64" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-				<circle cx="80" cy="80" r="44" fill="#9fadc1" stroke="#5a6878" stroke-width="1" />
-				<circle cx="80" cy="80" r="28" fill="#0a1f3d" />
+			{/* радиальный подшипник в разрезе */}
+			<g transform="translate(110 30)">
+				{/* внешнее кольцо */}
+				<circle cx="90" cy="90" r="90" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1.4" />
+				<circle cx="90" cy="90" r="74" fill="#a5b1c4" stroke={STEEL_STROKE} stroke-width="0.9" />
+				{/* сепаратор */}
+				<circle cx="90" cy="90" r="60" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="0.7" stroke-dasharray="3 2" opacity="0.7" />
+				{/* шарики */}
 				{Array.from({ length: 10 }).map((_, i) => {
-					const angle = (i * Math.PI * 2) / 10;
-					const x = 80 + Math.cos(angle) * 54;
-					const y = 80 + Math.sin(angle) * 54;
-					return <circle cx={x} cy={y} r="7" fill="#dde3ec" stroke="#5a6878" stroke-width="1" />;
+					const a = (i * Math.PI * 2) / 10 - Math.PI / 2;
+					const x = 90 + Math.cos(a) * 60;
+					const y = 90 + Math.sin(a) * 60;
+					return (
+						<g>
+							<circle cx={x} cy={y} r="12" fill={`url(#gr-disc-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+							<circle cx={x - 3} cy={y - 3} r="4" fill="rgba(255,255,255,0.7)" />
+						</g>
+					);
 				})}
+				{/* внутреннее кольцо */}
+				<circle cx="90" cy="90" r="46" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+				<circle cx="90" cy="90" r="30" fill={NAVY} />
+				<circle cx="84" cy="84" r="22" fill="none" stroke="#3a4a62" stroke-width="0.5" />
 			</g>
+			<g transform="translate(60 230)">
+				<rect class="tag-bg-accent" x="0" y="0" width="110" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="55" y="15" text-anchor="middle">AISI 440C</text>
+			</g>
+			<text class="lab" x="180" y="245">шариковые · роликовые · игольчатые</text>
 		</g>
 	)}
 
 	{hub === 'lestnichnye-ograzhdeniya' && (
 		<g>
-			{/* три стойки с поручнем */}
-			<line x1="40" y1="180" x2="280" y2="180" stroke="#5a6878" stroke-width="2" />
-			<rect x="55" y="50" width="10" height="130" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-			<rect x="155" y="50" width="10" height="130" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-			<rect x="255" y="50" width="10" height="130" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
+			{/* стойки + поручень + стеклянная панель */}
+			<line x1="40" y1="220" x2="370" y2="220" stroke={STEEL_STROKE} stroke-width="2" />
+			{/* стеклянная панель */}
+			<rect x="76" y="92" width="248" height="116" fill="rgba(120, 180, 220, 0.18)" stroke="rgba(120, 180, 220, 0.55)" stroke-width="1" rx="2" />
+			<line x1="120" y1="100" x2="120" y2="200" stroke="rgba(255,255,255,0.65)" stroke-width="1.5" />
+			<line x1="280" y1="100" x2="280" y2="200" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
+			{/* стойки (3 шт) */}
+			{[60, 200, 340].map((x) => (
+				<g>
+					<rect x={x - 6} y="70" width="12" height="150" fill={`url(#gr-steel-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+					<rect x={x - 8} y="216" width="16" height="6" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="0.9" />
+					{/* стеклодержатель */}
+					<rect x={x - 12} y="108" width="24" height="8" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="0.9" />
+					<rect x={x - 12} y="170" width="24" height="8" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="0.9" />
+				</g>
+			))}
 			{/* поручень */}
-			<rect x="35" y="38" width="240" height="14" rx="7" fill={`url(#hi-edge-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-			<rect x="40" y="40" width="230" height="4" fill={`url(#hi-shine-${hub})`} opacity="0.7" />
-			{/* ригели */}
-			<line x1="65" y1="95" x2="255" y2="95" stroke="#5a6878" stroke-width="2" />
-			<line x1="65" y1="130" x2="255" y2="130" stroke="#5a6878" stroke-width="2" />
+			<rect x="34" y="58" width="334" height="18" rx="9" fill={`url(#gr-end-${hub})`} stroke={STEEL_STROKE} stroke-width="1.3" />
+			<rect x="40" y="61" width="322" height="4" fill={`url(#gr-shine-${hub})`} opacity="0.7" />
+			<g transform="translate(60 235)">
+				<rect class="tag-bg-accent" x="0" y="0" width="120" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="60" y="15" text-anchor="middle">EN 1090</text>
+			</g>
+			<text class="lab" x="190" y="250">стойки · поручни · стеклодержатели</text>
 		</g>
 	)}
 
 	{hub === 'dekorativnye-listy' && (
 		<g>
-			{/* зеркальный лист с отражением */}
-			<rect x="60" y="40" width="200" height="140" rx="4" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-			<ellipse cx="160" cy="100" rx="80" ry="40" fill="rgba(255,255,255,0.55)" />
-			<ellipse cx="100" cy="160" rx="50" ry="14" fill="rgba(255,255,255,0.35)" />
-			<line x1="60" y1="180" x2="260" y2="180" stroke="#5a6878" stroke-width="1.5" />
+			{/* зеркальный лист с реалистичным отражением — горизонт + горы */}
+			<rect x="60" y="50" width="280" height="180" rx="5" fill={`url(#gr-mirror-${hub})`} stroke={STEEL_STROKE} stroke-width="1.4" />
+			{/* «отражение» — стилизованные горы и небо */}
+			<path d="M60 140 L130 95 L165 120 L215 80 L270 115 L340 95 L340 140 Z" fill="rgba(108, 125, 146, 0.45)" />
+			<path d="M60 160 L120 130 L170 150 L220 125 L275 145 L340 130 L340 160 Z" fill="rgba(108, 125, 146, 0.35)" />
+			<line x1="60" y1="140" x2="340" y2="140" stroke="rgba(255,255,255,0.4)" stroke-width="0.7" />
+			{/* плёнка с уголком */}
+			<polygon points="340,50 340,90 300,50" fill="rgba(28, 75, 128, 0.35)" stroke={STEEL_STROKE} stroke-width="0.8" />
+			<text class="lab-sm" x="312" y="74" text-anchor="middle">PE</text>
+			<g transform="translate(60 240)">
+				<rect class="tag-bg-accent" x="0" y="0" width="90" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="45" y="15" text-anchor="middle">BA · 4N · 8K</text>
+			</g>
+			<text class="lab" x="160" y="255">с защитной плёнкой PE / PVC</text>
 		</g>
 	)}
 
 	{(hub === 'lenta' || hub === 'folga') && (
 		<g>
-			{/* лента/фольга змейкой */}
-			<path d="M20 60 Q80 30 140 60 T260 60 T260 110 Q200 140 140 110 T20 110 Z" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1.5" />
-			<path d="M20 60 Q80 30 140 60 T260 60" fill="none" stroke={`url(#hi-shine-${hub})`} stroke-width="3" opacity="0.7" />
+			{/* лента/фольга — лента с волной + перфорированная отдельно */}
+			<path
+				d="M30 80 Q90 50 150 80 T270 80 T370 80 L370 130 Q310 160 250 130 T130 130 T30 130 Z"
+				fill={`url(#gr-steel-h-${hub})`}
+				stroke={STEEL_STROKE}
+				stroke-width="1.2"
+			/>
+			<path d="M30 80 Q90 50 150 80 T270 80 T370 80" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" />
+			<path d="M30 130 Q90 160 150 130 T270 130 T370 130" fill="none" stroke="rgba(15, 26, 43, 0.18)" stroke-width="1" />
+			<g transform="translate(60 220)">
+				<rect class="tag-bg-accent" x="0" y="0" width="120" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="60" y="15" text-anchor="middle">штрипс · фольга</text>
+			</g>
+			<text class="lab" x="190" y="235">0,05–4 мм · шаг ширины 5 мм</text>
 		</g>
 	)}
 
 	{hub === 'elektrody' && (
 		<g>
-			{/* пучок электродов */}
-			{Array.from({ length: 6 }).map((_, i) => (
-				<g transform={`translate(${50 + i * 36} ${40 + (i % 2) * 10})`}>
-					<rect x="0" y="0" width="14" height="140" fill={`url(#hi-steel-${hub})`} stroke="#5a6878" stroke-width="1" />
-					<rect x="0" y="0" width="14" height="20" fill="#c4651b" stroke="#5a6878" stroke-width="1" />
+			{/* пучок электродов с обмазкой */}
+			{Array.from({ length: 5 }).map((_, i) => (
+				<g transform={`translate(${70 + i * 50} ${50 + (i % 2) * 8})`}>
+					<rect x="0" y="0" width="20" height="170" fill={`url(#gr-steel-h-${hub})`} stroke={STEEL_STROKE} stroke-width="1" />
+					<rect x="0" y="0" width="20" height="32" fill={ACCENT} stroke={STEEL_STROKE} stroke-width="1" />
+					<rect x="3" y="2" width="14" height="3" fill="rgba(255,255,255,0.55)" />
 				</g>
 			))}
+			<g transform="translate(60 230)">
+				<rect class="tag-bg-accent" x="0" y="0" width="100" height="22" rx="11" />
+				<text class="lab-tag tag-fg-accent" x="50" y="15" text-anchor="middle">ЦЛ-11</text>
+			</g>
+			<text class="lab" x="170" y="245">ОЗЛ-8 · ЭА-400 · 2,5–5 мм</text>
 		</g>
 	)}
 </svg>
@@ -309,7 +560,7 @@ const { hub, class: className = '' } = Astro.props;
 		display: block;
 		width: 100%;
 		height: auto;
-		max-width: 380px;
-		filter: drop-shadow(0 10px 22px rgba(15, 26, 43, 0.15));
+		max-width: 420px;
+		filter: drop-shadow(0 12px 26px rgba(15, 26, 43, 0.18));
 	}
 </style>
