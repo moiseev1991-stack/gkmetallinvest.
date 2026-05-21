@@ -80,6 +80,14 @@ const facts = uniq(allSkus.map((s) => s.fact)).sort((a: any, b: any) =>
 const subs = uniq(allSkus.map((s) => s.sub)).sort((a: any, b: any) =>
 	(SUB_LABELS[a] ?? a).localeCompare(SUB_LABELS[b] ?? b, 'ru'),
 );
+/* Подсчёт позиций на каждый подтип — для чипов быстрого фильтра.
+   Сортируем по количеству убывающе, чтобы самые массовые типы шли первыми. */
+const subCounts: Array<{ key: string; label: string; count: number }> = (subs as string[])
+	.map((k) => ({ key: k, label: SUB_LABELS[k] ?? k, count: allSkus.filter((s) => (s.sub || '') === k).length }))
+	.sort((a, b) => b.count - a.count);
+/* Чипы рисуем, только если есть смысл — минимум 3 подтипа, иначе дублирует
+   select. Для хабов с 1–2 подтипами select сам по себе компактнее. */
+const showSubChips = subCounts.length >= 3;
 const surfaces = uniq(allSkus.map((s) => s.surface)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
@@ -152,6 +160,21 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			</div>
 		</div>
 	</header>
+
+	{showSubChips && (
+		<nav class="pt__subchips" aria-label="Быстрый выбор типа">
+			<button type="button" class="pt__subchip pt__subchip--active" data-pt-subchip="" data-pt-subchip-count={allSkus.length}>
+				<span>Все</span>
+				<span class="pt__subchip-count">{allSkus.length}</span>
+			</button>
+			{subCounts.map((s) => (
+				<button type="button" class="pt__subchip" data-pt-subchip={s.key} data-pt-subchip-count={s.count}>
+					<span>{s.label}</span>
+					<span class="pt__subchip-count">{s.count}</span>
+				</button>
+			))}
+		</nav>
+	)}
 
 	<div class="pt__panel">
 		<div class="pt__filters">
@@ -327,7 +350,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 							</svg>
 						</span></span>
 					</th>
-					{hasDlina && <th class="pt__th pt__th--num"><span class="pt__th-inner">Длина</span></th>}
+					{hasDlina && <th class="pt__th pt__th--num pt__th--dlina"><span class="pt__th-inner">Длина</span></th>}
 					{hasFact && <th class="pt__th"><span class="pt__th-inner">Склад</span></th>}
 					{hasUniquePrices && (
 						<th class="pt__th pt__th--price" data-sort="priceUnit">
@@ -382,6 +405,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 		const countEl = root.querySelector('[data-pt-count]');
 		const emptyEl = root.querySelector('[data-pt-empty]');
 		const chipsEl = root.querySelector('[data-pt-chips]');
+		const subChips = root.querySelectorAll('[data-pt-subchip]');
 		const pager = root.querySelector('[data-pt-pager]');
 		const pagesEl = root.querySelector('[data-pt-pages]');
 		const prevBtn = root.querySelector('[data-pt-prev]');
@@ -496,7 +520,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			/* Размер: чистое значение без «мм» — единица очевидна из контекста колонки. */
 			const sizeText = escapeHtml(String(s.size));
 			const dlinaTd = HAS_DLINA
-				? `<td class="pt__cell-num pt__cell-muted" data-label="Длина">${escapeHtml(s.dlina || '—')}</td>`
+				? `<td class="pt__cell-num pt__cell-muted pt__cell-dlina" data-label="Длина">${escapeHtml(s.dlina || '—')}</td>`
 				: '';
 			const factTd = HAS_FACT
 				? `<td class="pt__cell-fact" data-label="Склад"><span class="pt__fact-wrap"><span class="pt__fact">${escapeHtml(s.fact || '—')}</span>${s.ostatok ? `<span class="pt__ost"><span class="pt__ost-dot" aria-hidden="true"></span>${s.ostatok}</span>` : ''}</span></td>`
@@ -631,6 +655,16 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 
 			countEl.textContent = `${filtered.length} позиций`;
 			emptyEl.hidden = filtered.length > 0;
+
+			/* Колонка «Длина» уже отрендерена для хаба, но в конкретной выборке
+			   у всех строк длина может быть пустой (например, в /detali-truboprovoda/
+			   у Отводов dlina=null поголовно). Прячем колонку через CSS-класс
+			   на корне, чтобы не оставлять столбец из «—». */
+			if (HAS_DLINA) {
+				const anyDlina = filtered.some((s) => s.dlina != null && s.dlina !== '');
+				root.classList.toggle('pt--hide-dlina', !anyDlina);
+			}
+
 			if (state.view === 'grid') {
 				gridEl.innerHTML = visible.map(renderTile).join('');
 				gridEl.hidden = false;
@@ -664,6 +698,13 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				if (el.type === 'checkbox') active = !!el.checked;
 				else active = !!(el.value && el.value !== '');
 				fld.classList.toggle('pt__field--active', active);
+			});
+
+			/* Sync sub-chip active state with the underlying select. */
+			const subVal = inputs.sub?.value || '';
+			subChips.forEach((c) => {
+				const key = c.getAttribute('data-pt-subchip') || '';
+				c.classList.toggle('pt__subchip--active', key === subVal);
 			});
 		}
 
@@ -702,6 +743,16 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 		});
 
 		resetAllBtn?.addEventListener('click', () => { resetAll(); });
+
+		subChips.forEach((c) => {
+			c.addEventListener('click', () => {
+				if (!inputs.sub) return;
+				const key = c.getAttribute('data-pt-subchip') || '';
+				inputs.sub.value = key;
+				state.page = 1;
+				render();
+			});
+		});
 
 		render();
 	}
@@ -1001,6 +1052,68 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	.pt__toggle-text { font-size: 0.9rem; font-weight: 500; color: var(--color-text); white-space: nowrap; }
 	.pt__field--toggle input:focus-visible ~ .pt__toggle-track {
 		box-shadow: 0 0 0 3px var(--color-primary-100);
+	}
+
+	/* Быстрые фильтры по подтипу — горизонтальная лента над панелью.
+	   Скроллится на мобильных, на десктопе оборачивается во второй ряд. */
+	.pt__subchips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-bottom: var(--space-3);
+		min-width: 0;
+	}
+	.pt__subchip {
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 500;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.45rem 0.85rem;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		border-radius: var(--radius-pill);
+		cursor: pointer;
+		transition: all var(--dur-fast) var(--ease-out);
+		white-space: nowrap;
+		line-height: 1.2;
+	}
+	.pt__subchip:hover {
+		border-color: var(--color-primary-200, var(--color-primary-100));
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
+	}
+	.pt__subchip-count {
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--color-muted);
+		background: var(--color-bg-elev);
+		padding: 0.05rem 0.4rem;
+		border-radius: var(--radius-sm);
+		font-weight: 600;
+	}
+	.pt__subchip--active {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-500);
+		color: #fff;
+	}
+	.pt__subchip--active .pt__subchip-count {
+		background: rgba(255, 255, 255, 0.2);
+		color: #fff;
+	}
+	.pt__subchip:focus-visible {
+		outline: 2px solid var(--color-primary-500);
+		outline-offset: 2px;
+	}
+
+	/* Колонка «Длина» скрывается, когда в текущей выборке у всех строк она пустая
+	   (например, при фильтре «Тип: Отводы» в /detali-truboprovoda/). */
+	.pt--hide-dlina .pt__col-len,
+	.pt--hide-dlina .pt__th--dlina,
+	.pt--hide-dlina .pt__cell-dlina {
+		display: none;
 	}
 
 	/* Active filter chips */
