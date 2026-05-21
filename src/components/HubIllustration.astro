@@ -30,20 +30,20 @@ const { hub, class: className = '' } = Astro.props;
 /* Маппинг хаб → путь к картинке. Файлы лежат в public/img/catalog/.
    Если для хаба фотографии нет, ключ отсутствует — рендерим плейсхолдер. */
 const IMG: Partial<Record<Props['hub'], string>> = {
-	list: '/img/catalog/list.png',
+	list: '/img/catalog/list.jpg',
 	truba: '/img/catalog/truba.png',
 	krug: '/img/catalog/krug.jpg',
-	rulon: '/img/catalog/rulon.png',
+	rulon: '/img/catalog/rulon.jpg',
 	polosa: '/img/catalog/polosa.jpg',
 	provoloka: '/img/catalog/provoloka.jpg',
 	'detali-truboprovoda': '/img/catalog/detali-truboprovoda.jpg',
 	'ugolok-shveller': '/img/catalog/ugolok-shveller.jpg',
 	'dekorativnye-listy': '/img/catalog/dekorativnye.webp',
-	lenta: '/img/catalog/lenta.png',
-	folga: '/img/catalog/folga.jpg',
-	metizy: '/img/catalog/metizy/cover.webp',
-	podshipniki: '/img/catalog/podshipniki/cover.webp',
-	elektrody: '/img/catalog/elektrody/cover.webp',
+	lenta: '/img/catalog/lenta.jpg',
+	folga: '/img/catalog/folga.avif',
+	metizy: '/img/catalog/metizy.jpg',
+	/* podshipniki / elektrody — годных фото без watermark не нашлось,
+	   рендерим плейсхолдер с инициалом до появления нормальных кадров. */
 };
 
 /* Подписи на акцентной плашке под/над изображением — характерные параметры
