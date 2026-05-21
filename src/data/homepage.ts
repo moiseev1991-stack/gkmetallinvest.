@@ -26,7 +26,7 @@ export const heroProducts: Array<{
 	href: string;
 }> = [
 	{ title: 'Трубы ЭСВ', hint: 'AISI 304 / 321', image: '/img/catalog/truba.png', href: '/truba/' },
-	{ title: 'Рулоны', hint: '0.4–4 мм, 1000–1500', image: '/img/catalog/rulon.png', href: '/rulon/' },
+	{ title: 'Рулоны', hint: '0.4–4 мм, 1000–1500', image: '/img/catalog/rulon.jpg', href: '/rulon/' },
 	{ title: 'Декоративные', hint: 'BA, 4N, DECO', image: '/img/catalog/dekorativnye.webp', href: '/dekorativnye-listy/' },
 ];
 
@@ -47,19 +47,19 @@ export const catalogCategories: Array<{
 	image: string | null;
 	alt?: string;
 }> = [
-	{ href: '/list/', title: 'Лист нержавеющий', description: 'Холоднокатаный, горячекатаный, рифленый, декоративный и перфорированный лист.', image: '/img/catalog/list.png' },
+	{ href: '/list/', title: 'Лист нержавеющий', description: 'Холоднокатаный, горячекатаный, рифленый, декоративный и перфорированный лист.', image: '/img/catalog/list.jpg' },
 	{ href: '/truba/', title: 'Труба нержавеющая', description: 'Круглая бесшовная, электросварная, прямоугольная и квадратная.', image: '/img/catalog/truba.png' },
 	{ href: '/krug/', title: 'Круг / Квадрат / Шестигранник', description: 'Сортовой нержавеющий прокат по маркам.', image: '/img/catalog/krug.jpg' },
 	{ href: '/polosa/', title: 'Полоса нержавеющая', description: 'Полоса нержавеющая по маркам.', image: '/img/catalog/polosa.jpg' },
 	{ href: '/ugolok-shveller/', title: 'Уголок / Швеллер', description: 'Уголок и швеллер по маркам.', image: '/img/catalog/ugolok-shveller.jpg' },
-	{ href: '/rulon/', title: 'Рулон нержавеющий', description: 'Рулонный прокат AISI 304, 316L, 321. Толщины 0,4–3 мм.', image: '/img/catalog/rulon.png' },
+	{ href: '/rulon/', title: 'Рулон нержавеющий', description: 'Рулонный прокат AISI 304, 316L, 321. Толщины 0,4–3 мм.', image: '/img/catalog/rulon.jpg' },
 	{ href: '/detali-truboprovoda/', title: 'Детали трубопровода', description: 'Фланцы, отводы, переходы, тройники, задвижки, клапаны.', image: '/img/catalog/detali-truboprovoda.jpg' },
 	{ href: '/provoloka/', title: 'Проволока нержавеющая', description: 'Проволока AISI 304, 316L, 12Х18Н10Т, Ø 0,1–6 мм.', image: '/img/catalog/provoloka.jpg' },
-	{ href: '/metizy/', title: 'Метизы / Крепёж', description: 'Болты, гайки, винты, шайбы DIN/ГОСТ. A2, A4.', image: '/img/catalog/metizy/cover.webp' },
-	{ href: '/elektrody/', title: 'Электроды нержавеющие', description: 'ЦЛ-11, ЭА-400/10У, ОЗЛ-8 для нерж. и жаропрочных.', image: '/img/catalog/elektrody/cover.webp' },
-	{ href: '/podshipniki/', title: 'Подшипники нержавеющие', description: 'Шариковые, роликовые. AISI 440C, 316. По заявке.', image: '/img/catalog/podshipniki/cover.webp' },
-	{ href: '/lenta/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: '/img/catalog/lenta.png' },
-	{ href: '/folga/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: '/img/catalog/folga.jpg' },
+	{ href: '/metizy/', title: 'Метизы / Крепёж', description: 'Болты, гайки, винты, шайбы DIN/ГОСТ. A2, A4.', image: '/img/catalog/metizy.jpg' },
+	{ href: '/elektrody/', title: 'Электроды нержавеющие', description: 'ЦЛ-11, ЭА-400/10У, ОЗЛ-8 для нерж. и жаропрочных.', image: null },
+	{ href: '/podshipniki/', title: 'Подшипники нержавеющие', description: 'Шариковые, роликовые. AISI 440C, 316. По заявке.', image: null },
+	{ href: '/lenta/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: '/img/catalog/lenta.jpg' },
+	{ href: '/folga/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: '/img/catalog/folga.avif' },
 	{ href: '/dekorativnye-listy/', title: 'Декоративные листы', description: 'BA, 4N, шлифовка, ткань — для интерьера и фасадов.', image: '/img/catalog/dekorativnye.webp' },
 ];
 
