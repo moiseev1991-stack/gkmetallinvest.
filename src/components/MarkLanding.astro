@@ -38,7 +38,7 @@ const count = skus.filter((s) =>
 ).length;
 
 const title = `${hubLabel} ${mark.aisi} (${mark.gost}) — купить, цена за тонну в Нижнем Новгороде`;
-const description = `${hubLabel} марки ${mark.aisi} / ${mark.gost} в наличии: ${count} позиций. Сертификат завода, отгрузка в день оплаты, доставка по России. ${contacts.phone}.`;
+const description = `${hubLabel} марки ${mark.aisi} / ${mark.gost} в наличии: ${count} позиций. Характеристики, химический состав, ГОСТы и аналоги. Сертификат завода, отгрузка в день оплаты, доставка по России. ${contacts.phone}.`;
 const h1 = `${hubLabel} ${mark.aisi} (${mark.gost})`;
 
 /* Прочие хабы, где есть эта марка — для кросс-линков «то же AISI 304 в других форматах». */
@@ -54,14 +54,26 @@ const HUB_LABELS: Record<string, { label: string; href: string }> = {
 };
 const otherHubs = mark.hubs.filter((h) => h !== hub).map((h) => HUB_LABELS[h]).filter(Boolean);
 
+/* AISI-номер из gost-обозначения — для FAQ-ответа «какой AISI-аналог у 12Х18Н10Т».
+   Закрывает высокочастотный «12х18н10т аналог aisi» = 838 точных/мес. */
+const aisiNumber = mark.aisi.replace(/^AISI\s*/, '');
+
 const faq = [
-	{
-		q: `Сколько стоит ${hubLabelGenitive.toLowerCase()} ${mark.aisi} за тонну?`,
-		a: `Цена зависит от размера и поверхности. Актуальные цены в прайсе выше — обновляется ежедневно. Для коммерческого предложения с фиксацией цены на 5 рабочих дней — отправьте заявку.`,
-	},
 	{
 		q: `${mark.aisi} и ${mark.gost} — это одна и та же марка?`,
 		a: `Да, это аналоги: ${mark.aisi} — американская номенклатура (AISI/ASTM), ${mark.gost} — российская (ГОСТ 5632). Состав и свойства практически одинаковы; различие в долях процента в пределах допусков. В спецификации можно указывать любой из вариантов.`,
+	},
+	{
+		q: `Какой AISI-аналог у ${mark.gost}?`,
+		a: `${mark.gost} по российскому ГОСТ 5632 соответствует ${mark.aisi} по американскому стандарту AISI/ASTM. Европейский аналог — ${mark.analogues.find((a) => a.system.startsWith('EN'))?.code ?? 'см. таблицу ниже'}. Это одна и та же сталь под разными обозначениями.`,
+	},
+	{
+		q: `Какие ГОСТы регламентируют ${hubLabelGenitive.toLowerCase()} ${mark.aisi}?`,
+		a: `${mark.standards.slice(0, 3).map((s) => s.code).join(', ')} — основные ГОСТы для марки ${mark.gost} в формате «${hubLabel.toLowerCase()}». Полный список стандартов и зарубежных аналогов — в разделе «Стандарты и ГОСТы» выше. Сертификат на партию ссылается на эти ГОСТы.`,
+	},
+	{
+		q: `Сколько стоит ${hubLabelGenitive.toLowerCase()} ${mark.aisi} за тонну?`,
+		a: `Цена зависит от размера и поверхности. Актуальные цены в прайсе выше — обновляется ежедневно. Для коммерческого предложения с фиксацией цены на 5 рабочих дней — отправьте заявку.`,
 	},
 	{
 		q: `Какие документы предоставляются на партию?`,
@@ -143,8 +155,12 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 		<PriceTable hub={hub} title={`Прайс на ${hubLabelGenitive.toLowerCase()} ${mark.aisi}`} measure={measure} initialGrade={mark.aliases} />
 
 		<section class="mark__block">
-			<h2>Свойства марки {mark.aisi}</h2>
+			<h2>Характеристики и химический состав {mark.aisi} ({mark.gost})</h2>
 			<p>{mark.properties}</p>
+			<div class="mark__composition">
+				<div class="mark__composition-label">Химический состав по {mark.standards[0]?.code ?? 'ГОСТ 5632'}:</div>
+				<div class="mark__composition-value">{mark.composition}</div>
+			</div>
 		</section>
 
 		<section class="mark__block">
@@ -154,10 +170,43 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 			</ul>
 		</section>
 
+		<section class="mark__block">
+			<h2>Аналоги марки {mark.aisi} в международных стандартах</h2>
+			<p>{mark.aisi} ({mark.gost}) обозначается по-разному в разных системах. Все обозначения ниже относятся к одной и той же стали — состав и механические свойства совпадают в пределах допусков. В технической документации можно указывать любой из вариантов.</p>
+			<table class="mark__analogues">
+				<thead>
+					<tr>
+						<th>Система обозначений</th>
+						<th>Код марки</th>
+					</tr>
+				</thead>
+				<tbody>
+					{mark.analogues.map((a) => (
+						<tr>
+							<td>{a.system}</td>
+							<td><code>{a.code}</code></td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</section>
+
+		<section class="mark__block">
+			<h2>Стандарты и ГОСТы для {mark.aisi}</h2>
+			<p>{mark.gost} ({mark.aisi}) регламентируется следующими стандартами в зависимости от вида проката. На каждую партию даём сертификат завода со ссылкой на актуальный ГОСТ.</p>
+			<ul class="mark__standards">
+				{mark.standards.map((s) => (
+					<li>
+						<strong>{s.code}</strong> — {s.label}
+					</li>
+				))}
+			</ul>
+		</section>
+
 		{otherHubs.length > 0 && (
 			<section class="mark__block">
-				<h2>{mark.aisi} в других форматах</h2>
-				<p>Та же марка с тем же сертификатом и наценкой 5 % — в других видах металлопроката. Цены сопоставимы по тонне, отличается только геометрия.</p>
+				<h2>{mark.aisi} в других форматах металлопроката</h2>
+				<p>Та же марка с тем же сертификатом и наценкой 5 % — в других видах нержавеющего металлопроката. Цены сопоставимы по тонне, отличается только геометрия.</p>
 				<ul class="mark__cross">
 					{otherHubs.map((h) => (
 						<li>
@@ -172,11 +221,11 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 		)}
 
 		<section class="mark__block">
-			<h2>Документы и сертификация</h2>
+			<h2>Документы и сертификация на {mark.aisi}</h2>
 			<ul class="mark__list">
 				<li>Сертификат завода-изготовителя с химическим анализом и механическими свойствами</li>
 				<li>Маркировка партии и плавки на упаковке</li>
-				<li>Соответствие ГОСТ 5632, EN 10088, ASTM A240 / A276 / A312 (в зависимости от вида проката)</li>
+				<li>Соответствие {mark.standards.slice(0, 2).map((s) => s.code).join(', ')} и международным стандартам</li>
 				<li>УПД с НДС, отгрузка через ЭДО — для тендерных и госзакупок</li>
 				<li>По запросу — копии в PDF до отгрузки, оригиналы курьером</li>
 			</ul>
@@ -261,6 +310,94 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 		max-width: 70ch;
 		display: grid;
 		gap: var(--space-2);
+	}
+
+	.mark__composition {
+		margin-top: var(--space-4);
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-primary-50);
+		border-left: 3px solid var(--color-primary-500);
+		border-radius: var(--radius-sm);
+		max-width: 75ch;
+	}
+	.mark__composition-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-primary-600);
+		margin-bottom: 0.35rem;
+	}
+	.mark__composition-value {
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		color: var(--color-text);
+		line-height: 1.6;
+	}
+
+	.mark__analogues {
+		margin-top: var(--space-3);
+		width: 100%;
+		max-width: 600px;
+		border-collapse: separate;
+		border-spacing: 0;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		font-size: 0.92rem;
+	}
+	.mark__analogues thead th {
+		background: var(--color-bg-elev);
+		text-align: left;
+		padding: 0.6rem 0.85rem;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-muted);
+		font-weight: 600;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.mark__analogues tbody td {
+		padding: 0.6rem 0.85rem;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+	}
+	.mark__analogues tbody tr:last-child td { border-bottom: 0; }
+	.mark__analogues tbody td:first-child {
+		color: var(--color-muted);
+		width: 38%;
+	}
+	.mark__analogues code {
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		color: var(--color-text);
+		font-weight: 600;
+		background: transparent;
+		padding: 0;
+	}
+
+	.mark__standards {
+		list-style: none;
+		padding: 0;
+		margin: var(--space-3) 0 0;
+		display: grid;
+		gap: 0.45rem;
+		max-width: 75ch;
+	}
+	.mark__standards li {
+		padding: 0.55rem 0.85rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		color: var(--color-muted);
+		font-size: 0.92rem;
+		line-height: 1.5;
+	}
+	.mark__standards strong {
+		color: var(--color-primary);
+		font-family: var(--font-mono);
+		font-weight: 600;
+		margin-right: 0.3rem;
 	}
 
 	.mark__cross {
