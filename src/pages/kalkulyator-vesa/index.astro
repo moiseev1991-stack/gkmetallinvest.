@@ -52,6 +52,39 @@ const howToJsonLd = {
 		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Калькулятор покажет вес единицы (кг/м или кг/м²) и общий вес заданного количества.' },
 	],
 };
+
+/* Виды проката + SVG-иконки для плиток-селектора. Иконки — линейные, на 28×28,
+   stroke=currentColor, чтобы менять цвет при активном состоянии через CSS. */
+const shapes = [
+	{ key: 'list', label: 'Лист', hubHref: '/list/' },
+	{ key: 'truba', label: 'Труба Ø', hubHref: '/truba/' },
+	{ key: 'truba-pryam', label: 'Труба □', hubHref: '/truba/' },
+	{ key: 'krug', label: 'Круг', hubHref: '/krug/' },
+	{ key: 'kvadrat', label: 'Квадрат', hubHref: '/krug/' },
+	{ key: 'shestigrannik', label: 'Шестигранник', hubHref: '/krug/' },
+	{ key: 'polosa', label: 'Полоса', hubHref: '/polosa/' },
+	{ key: 'provoloka', label: 'Проволока', hubHref: '/provoloka/' },
+	{ key: 'ugolok', label: 'Уголок', hubHref: '/ugolok-shveller/' },
+];
+
+const densityRows = [
+	{ group: 'Аустенитные', marks: 'AISI 304, 304L, 316L, 316Ti, 321, 12Х18Н10Т, 201, 904L', density: '7,9', tone: 'austenitic' },
+	{ group: 'Ферритные', marks: 'AISI 430, 410S, 439, 08Х17', density: '7,7', tone: 'ferritic' },
+	{ group: 'Мартенситные', marks: 'AISI 420, 440, 20Х13, 30Х13, 40Х13', density: '7,7', tone: 'martensitic' },
+	{ group: 'Двухфазные', marks: 'Дуплекс, супердуплекс', density: '7,8', tone: 'duplex' },
+	{ group: 'Жаропрочные', marks: 'AISI 310S, 20Х23Н18', density: '7,9', tone: 'heat' },
+];
+
+const hubs = [
+	{ href: '/list/', label: 'Лист' },
+	{ href: '/truba/', label: 'Труба' },
+	{ href: '/krug/', label: 'Круг' },
+	{ href: '/rulon/', label: 'Рулон' },
+	{ href: '/polosa/', label: 'Полоса' },
+	{ href: '/provoloka/', label: 'Проволока' },
+	{ href: '/ugolok-shveller/', label: 'Уголок / швеллер' },
+	{ href: '/detali-truboprovoda/', label: 'Детали трубопровода' },
+];
 ---
 
 <BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
@@ -59,123 +92,299 @@ const howToJsonLd = {
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса' }]} />
 
 		<header class="calc__hero">
-			<span class="eyebrow">Инструмент</span>
-			<h1>Калькулятор веса нержавеющего металлопроката</h1>
+			<span class="calc__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4" />
+					<path d="M5 6h6M5 9h2M9 9h2M5 12h2M9 12h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+				</svg>
+				Инструмент
+			</span>
+			<h1 class="calc__h1">Калькулятор веса <span class="calc__h1-accent">нержавеющего металлопроката</span></h1>
 			<p class="calc__lead">
-				Расчёт веса листа, трубы, круга, проволоки, полосы, уголка и других видов нержавейки по
-				заданным размерам и марке стали. Плотность подставляется автоматически — от 7,7 до 7,9 г/см³
-				в зависимости от марки.
+				Считает вес листа, трубы, круга, проволоки, полосы, уголка и других видов нержавейки
+				по размерам и марке стали. Плотность подставляется автоматически — от 7,7 до 7,9 г/см³.
 			</p>
+			<ul class="calc__perks">
+				<li><strong>9</strong> видов проката</li>
+				<li><strong>4</strong> группы марок + своя плотность</li>
+				<li><strong>1 сек</strong> от ввода до результата</li>
+				<li><strong>±0,5%</strong> от теоретического веса ГОСТ</li>
+			</ul>
 		</header>
 
 		<section class="calc__widget" data-calc-root>
-			<div class="calc__panel">
-				<div class="calc__field">
-					<label class="calc__label" for="calc-shape">Вид проката</label>
-					<select class="calc__input" id="calc-shape" data-calc-shape>
-						<option value="list">Лист (плоский)</option>
-						<option value="krug">Круг (пруток)</option>
-						<option value="kvadrat">Квадрат</option>
-						<option value="shestigrannik">Шестигранник</option>
-						<option value="truba">Труба круглая</option>
-						<option value="truba-pryam">Труба прямоугольная</option>
-						<option value="provoloka">Проволока</option>
-						<option value="polosa">Полоса</option>
-						<option value="ugolok">Уголок равнополочный</option>
-					</select>
+			<div class="calc__widget-glow" aria-hidden="true"></div>
+
+			<div class="calc__widget-inner">
+				<div class="calc__form">
+					<div class="calc__step">
+						<div class="calc__step-num">1</div>
+						<div class="calc__step-title">Выберите вид проката</div>
+					</div>
+					<div class="calc__shapes" role="radiogroup" aria-label="Вид проката">
+						{shapes.map((s) => (
+							<button
+								type="button"
+								class={`calc__shape${s.key === 'list' ? ' calc__shape--active' : ''}`}
+								data-calc-shape-btn={s.key}
+								role="radio"
+								aria-checked={s.key === 'list' ? 'true' : 'false'}
+							>
+								<span class="calc__shape-icon" aria-hidden="true">
+									{s.key === 'list' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<path d="M5 22l12-9 14 5v8L19 31 5 26v-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											<path d="M5 22l14 5 12-9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+										</svg>
+									)}
+									{s.key === 'truba' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<ellipse cx="18" cy="9" rx="11" ry="3.5" stroke="currentColor" stroke-width="1.7" />
+											<path d="M7 9v18a11 3.5 0 0 0 22 0V9" stroke="currentColor" stroke-width="1.7" />
+											<ellipse cx="18" cy="27" rx="11" ry="3.5" stroke="currentColor" stroke-width="1.7" />
+											<ellipse cx="18" cy="9" rx="6.5" ry="2" stroke="currentColor" stroke-width="1.3" opacity="0.55" />
+										</svg>
+									)}
+									{s.key === 'truba-pryam' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<path d="M5 11l6-4h18l-6 4H5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											<path d="M5 11v18l6 4h18V15l-6-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											<path d="M23 15v18l6-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											<path d="M5 11l6 4M11 15v18" stroke="currentColor" stroke-width="1.3" opacity="0.55" />
+										</svg>
+									)}
+									{s.key === 'krug' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<circle cx="18" cy="18" r="11" stroke="currentColor" stroke-width="1.7" />
+											<circle cx="18" cy="18" r="6" stroke="currentColor" stroke-width="1.3" opacity="0.5" />
+										</svg>
+									)}
+									{s.key === 'kvadrat' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<rect x="7" y="7" width="22" height="22" rx="2" stroke="currentColor" stroke-width="1.7" />
+											<path d="M7 7l22 22M29 7L7 29" stroke="currentColor" stroke-width="1" opacity="0.35" />
+										</svg>
+									)}
+									{s.key === 'shestigrannik' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<path d="M18 5l11 6.5v13L18 31 7 24.5v-13L18 5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											<path d="M18 12l5 3v6l-5 3-5-3v-6l5-3z" stroke="currentColor" stroke-width="1.2" opacity="0.5" stroke-linejoin="round" />
+										</svg>
+									)}
+									{s.key === 'polosa' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<rect x="4" y="14" width="28" height="8" rx="1.5" stroke="currentColor" stroke-width="1.7" />
+											<path d="M4 18h28" stroke="currentColor" stroke-width="1" opacity="0.35" />
+										</svg>
+									)}
+									{s.key === 'provoloka' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<path d="M4 18c2 -4 5 -4 7 0s4 4 6 0 5 -4 7 0 5 4 8 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+											<circle cx="4" cy="18" r="1.2" fill="currentColor" />
+											<circle cx="32" cy="18" r="1.2" fill="currentColor" />
+										</svg>
+									)}
+									{s.key === 'ugolok' && (
+										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+											<path d="M8 6h4v22h20v4H8V6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+										</svg>
+									)}
+								</span>
+								<span class="calc__shape-label">{s.label}</span>
+							</button>
+						))}
+					</div>
+
+					<div class="calc__step calc__step--mt">
+						<div class="calc__step-num">2</div>
+						<div class="calc__step-title">Марка стали</div>
+					</div>
+					<div class="calc__grades" role="radiogroup" aria-label="Группа марок">
+						<button type="button" class="calc__grade calc__grade--active" data-calc-grade-btn="austenitic" data-tone="austenitic" role="radio" aria-checked="true">
+							<span class="calc__grade-dot" aria-hidden="true"></span>
+							<span class="calc__grade-text">
+								<strong>Аустенитные</strong>
+								<small>304 · 316L · 321 · 201 — 7,9</small>
+							</span>
+						</button>
+						<button type="button" class="calc__grade" data-calc-grade-btn="ferritic" data-tone="ferritic" role="radio" aria-checked="false">
+							<span class="calc__grade-dot" aria-hidden="true"></span>
+							<span class="calc__grade-text">
+								<strong>Ферритные</strong>
+								<small>430 · 410S · 439 — 7,7</small>
+							</span>
+						</button>
+						<button type="button" class="calc__grade" data-calc-grade-btn="martensitic" data-tone="martensitic" role="radio" aria-checked="false">
+							<span class="calc__grade-dot" aria-hidden="true"></span>
+							<span class="calc__grade-text">
+								<strong>Мартенситные</strong>
+								<small>420 · 440 · 20Х13 — 7,7</small>
+							</span>
+						</button>
+						<button type="button" class="calc__grade" data-calc-grade-btn="duplex" data-tone="duplex" role="radio" aria-checked="false">
+							<span class="calc__grade-dot" aria-hidden="true"></span>
+							<span class="calc__grade-text">
+								<strong>Дуплекс</strong>
+								<small>двухфазные — 7,8</small>
+							</span>
+						</button>
+						<button type="button" class="calc__grade" data-calc-grade-btn="custom" data-tone="custom" role="radio" aria-checked="false">
+							<span class="calc__grade-dot" aria-hidden="true"></span>
+							<span class="calc__grade-text">
+								<strong>Другая</strong>
+								<small>ввести плотность</small>
+							</span>
+						</button>
+					</div>
+
+					<div class="calc__field calc__field--inline" data-calc-density-row hidden>
+						<label class="calc__label" for="calc-density">Плотность, г/см³</label>
+						<input class="calc__input" id="calc-density" type="number" inputmode="decimal" step="0.01" data-calc-density value="7.9" />
+					</div>
+
+					<div class="calc__step calc__step--mt">
+						<div class="calc__step-num">3</div>
+						<div class="calc__step-title">Размеры и количество</div>
+					</div>
+					<div class="calc__dims" data-calc-dims>
+						<!-- поля по виду проката рендерятся JS -->
+					</div>
+
+					<div class="calc__field calc__field--qty">
+						<label class="calc__label" for="calc-qty">Количество</label>
+						<div class="calc__qty-wrap">
+							<button type="button" class="calc__qty-step" data-calc-qty-minus aria-label="Меньше">−</button>
+							<input class="calc__input calc__qty-input" id="calc-qty" type="number" inputmode="decimal" step="any" data-calc-qty value="1" min="0.01" />
+							<button type="button" class="calc__qty-step" data-calc-qty-plus aria-label="Больше">+</button>
+							<span class="calc__qty-unit" data-calc-qty-hint>шт</span>
+						</div>
+					</div>
 				</div>
 
-				<div class="calc__field">
-					<label class="calc__label" for="calc-grade">Марка стали</label>
-					<select class="calc__input" id="calc-grade" data-calc-grade>
-						<option value="austenitic" selected>Аустенитная (AISI 304/316L/321/201) — 7,9 г/см³</option>
-						<option value="ferritic">Ферритная (AISI 430/410/439) — 7,7 г/см³</option>
-						<option value="martensitic">Мартенситная (AISI 420/440, 20Х13) — 7,7 г/см³</option>
-						<option value="duplex">Дуплекс — 7,8 г/см³</option>
-						<option value="custom">Своя плотность…</option>
-					</select>
-				</div>
+				<aside class="calc__result" data-calc-result>
+					<div class="calc__result-card">
+						<div class="calc__result-eyebrow">
+							<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M2 14V6l6-4 6 4v8H2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+								<path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.4" />
+							</svg>
+							Расчёт веса
+						</div>
 
-				<div class="calc__field calc__field--custom-density" data-calc-density-row hidden>
-					<label class="calc__label" for="calc-density">Плотность, г/см³</label>
-					<input class="calc__input" id="calc-density" type="number" inputmode="decimal" step="0.01" data-calc-density value="7.9" />
-				</div>
+						<div class="calc__result-row">
+							<span>Вес 1 единицы</span>
+							<strong data-calc-unit-weight>—</strong>
+						</div>
 
-				<div class="calc__dims" data-calc-dims>
-					<!-- поля по виду проката рендерятся JS -->
-				</div>
+						<div class="calc__result-total">
+							<span class="calc__result-total-label">Общий вес</span>
+							<div class="calc__result-total-value" data-calc-total>—</div>
+							<div class="calc__result-total-sub" data-calc-total-sub></div>
+						</div>
 
-				<div class="calc__field">
-					<label class="calc__label" for="calc-qty">Количество</label>
-					<input class="calc__input" id="calc-qty" type="number" inputmode="decimal" step="any" data-calc-qty value="1" min="0.01" />
-					<span class="calc__hint" data-calc-qty-hint>штук</span>
-				</div>
-			</div>
+						<dl class="calc__result-meta" data-calc-meta>
+							<div><dt>Плотность</dt><dd data-calc-density-display>7,9 г/см³</dd></div>
+							<div><dt>Объём</dt><dd data-calc-volume>—</dd></div>
+							<div><dt>Стоимость*</dt><dd data-calc-cost>уточняйте</dd></div>
+						</dl>
 
-			<div class="calc__result" data-calc-result>
-				<div class="calc__result-line">
-					<span class="calc__result-label">Вес 1 единицы:</span>
-					<strong class="calc__result-value" data-calc-unit-weight>—</strong>
-				</div>
-				<div class="calc__result-line calc__result-line--total">
-					<span class="calc__result-label">Общий вес:</span>
-					<strong class="calc__result-value calc__result-value--big" data-calc-total>—</strong>
-				</div>
-				<a class="calc__cta" href="/zapros-kp/#lead-form" data-calc-cta>Запросить КП с этими параметрами</a>
+						<a class="calc__cta" href="/zapros-kp/#lead-form" data-calc-cta>
+							<span>Запросить КП с этими параметрами</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<button type="button" class="calc__copy" data-calc-copy>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<rect x="4" y="4" width="9" height="10" rx="1.3" stroke="currentColor" stroke-width="1.4" />
+								<path d="M4 4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.4" />
+								<path d="M3 4H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1" stroke="currentColor" stroke-width="1.4" opacity="0.5" />
+							</svg>
+							<span data-calc-copy-text>Скопировать расчёт</span>
+						</button>
+
+						<p class="calc__result-foot">
+							Теоретический вес по ГОСТ. Реальный отличается на ±0,5–1 % из-за допусков прокатки.
+						</p>
+					</div>
+				</aside>
 			</div>
 		</section>
 
 		<section class="calc__block">
-			<h2>Формулы расчёта</h2>
-			<ul class="calc__formulas">
-				<li><strong>Лист / полоса:</strong> m = толщина × ширина × длина × плотность</li>
-				<li><strong>Круг / проволока:</strong> m = π × (диаметр / 2)² × длина × плотность</li>
-				<li><strong>Квадрат:</strong> m = сторона² × длина × плотность</li>
-				<li><strong>Шестигранник:</strong> m = (√3 / 2) × s² × длина × плотность (s — расстояние между гранями)</li>
-				<li><strong>Труба круглая:</strong> m = π × (Ø − стенка) × стенка × длина × плотность</li>
-				<li><strong>Труба прямоугольная:</strong> m = 2 × (a + b − 2 × стенка) × стенка × длина × плотность</li>
-				<li><strong>Уголок:</strong> m = (2 × сторона × толщина − толщина²) × длина × плотность</li>
-			</ul>
+			<h2 class="calc__h2">Формулы расчёта</h2>
+			<div class="calc__formulas">
+				<div class="calc__formula">
+					<div class="calc__formula-head">Лист / полоса</div>
+					<code class="calc__formula-eq">m = t × w × L × ρ</code>
+					<small>t — толщина, w — ширина, L — длина</small>
+				</div>
+				<div class="calc__formula">
+					<div class="calc__formula-head">Круг / проволока</div>
+					<code class="calc__formula-eq">m = π × (D / 2)² × L × ρ</code>
+					<small>D — диаметр, L — длина</small>
+				</div>
+				<div class="calc__formula">
+					<div class="calc__formula-head">Квадрат</div>
+					<code class="calc__formula-eq">m = a² × L × ρ</code>
+					<small>a — сторона, L — длина</small>
+				</div>
+				<div class="calc__formula">
+					<div class="calc__formula-head">Шестигранник</div>
+					<code class="calc__formula-eq">m = (√3 / 2) × s² × L × ρ</code>
+					<small>s — размер «под ключ» (между гранями)</small>
+				</div>
+				<div class="calc__formula">
+					<div class="calc__formula-head">Труба круглая</div>
+					<code class="calc__formula-eq">m = π × (D − S) × S × L × ρ</code>
+					<small>D — Ø, S — стенка, L — длина</small>
+				</div>
+				<div class="calc__formula">
+					<div class="calc__formula-head">Труба прямоугольная</div>
+					<code class="calc__formula-eq">m = 2 × (a + b − 2S) × S × L × ρ</code>
+					<small>a, b — стороны, S — стенка</small>
+				</div>
+				<div class="calc__formula calc__formula--wide">
+					<div class="calc__formula-head">Уголок равнополочный</div>
+					<code class="calc__formula-eq">m = (2 × a × t − t²) × L × ρ</code>
+					<small>a — полка, t — толщина, L — длина</small>
+				</div>
+			</div>
 			<p class="calc__note">
 				Размеры подставляются в миллиметрах, плотность в г/см³, результат — в килограммах.
-				Внутри калькулятора единицы приведены автоматически. Это теоретический вес по ГОСТ —
-				реальный может отличаться на ±0,5–1 % из-за допусков прокатки.
+				Внутри калькулятора единицы приведены автоматически.
 			</p>
 		</section>
 
 		<section class="calc__block">
-			<h2>Плотность нержавейки по маркам</h2>
-			<table class="calc__density-table">
-				<thead>
-					<tr><th>Группа</th><th>Марки</th><th>Плотность, г/см³</th></tr>
-				</thead>
-				<tbody>
-					<tr><td>Аустенитные</td><td>AISI 304, 304L, 316L, 316Ti, 321, 12Х18Н10Т, 201, 904L</td><td>7,9</td></tr>
-					<tr><td>Ферритные</td><td>AISI 430, 410S, 439, 08Х17</td><td>7,7</td></tr>
-					<tr><td>Мартенситные</td><td>AISI 420, 440, 20Х13, 30Х13, 40Х13</td><td>7,7</td></tr>
-					<tr><td>Двухфазные</td><td>Дуплекс, супердуплекс</td><td>7,8</td></tr>
-					<tr><td>Жаропрочные</td><td>AISI 310S, 20Х23Н18</td><td>7,9</td></tr>
-				</tbody>
-			</table>
+			<h2 class="calc__h2">Плотность нержавейки по маркам</h2>
+			<div class="calc__density">
+				{densityRows.map((r) => (
+					<div class="calc__density-row" data-tone={r.tone}>
+						<div class="calc__density-group">
+							<span class="calc__density-badge"></span>
+							<strong>{r.group}</strong>
+						</div>
+						<div class="calc__density-marks">{r.marks}</div>
+						<div class="calc__density-val">{r.density} <span>г/см³</span></div>
+					</div>
+				))}
+			</div>
 		</section>
 
 		<section class="calc__block">
-			<h2>Перейти в каталог</h2>
-			<p>После расчёта веса — посмотрите цены в нашем прайсе и оставьте заявку на коммерческое предложение.</p>
+			<h2 class="calc__h2">Перейти в каталог</h2>
+			<p class="calc__hub-lead">После расчёта посмотрите цены в прайсе и оставьте заявку на КП.</p>
 			<ul class="calc__hubs">
-				<li><a href="/list/">Лист нержавеющий</a></li>
-				<li><a href="/truba/">Труба нержавеющая</a></li>
-				<li><a href="/krug/">Круг нержавеющий</a></li>
-				<li><a href="/rulon/">Рулон нержавеющий</a></li>
-				<li><a href="/polosa/">Полоса нержавеющая</a></li>
-				<li><a href="/provoloka/">Проволока нержавеющая</a></li>
-				<li><a href="/ugolok-shveller/">Уголок и швеллер</a></li>
-				<li><a href="/detali-truboprovoda/">Детали трубопровода</a></li>
+				{hubs.map((h) => (
+					<li><a href={h.href}>{h.label}<svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+				))}
 			</ul>
 		</section>
 
 		<section class="calc__faq">
-			<h2>Частые вопросы</h2>
+			<h2 class="calc__h2">Частые вопросы</h2>
 			<div class="calc__faq-list">
 				{faq.map((f) => (
 					<details class="calc__faq-item">
@@ -208,8 +417,28 @@ const howToJsonLd = {
 		duplex: 7.8,
 	};
 
+	const SHAPE_LABEL: Record<Shape, string> = {
+		list: 'Лист',
+		krug: 'Круг',
+		kvadrat: 'Квадрат',
+		shestigrannik: 'Шестигранник',
+		truba: 'Труба круглая',
+		'truba-pryam': 'Труба прямоугольная',
+		provoloka: 'Проволока',
+		polosa: 'Полоса',
+		ugolok: 'Уголок',
+	};
+
+	const GRADE_LABEL: Record<string, string> = {
+		austenitic: 'Аустенитная',
+		ferritic: 'Ферритная',
+		martensitic: 'Мартенситная',
+		duplex: 'Дуплекс',
+		custom: 'Своя плотность',
+	};
+
 	/* Какие поля показываем под каждый вид проката. mm — миллиметры. */
-	const FIELDS: Record<Shape, { unit: 'pcs' | 'meter' | 'sheet'; fields: { key: string; label: string; placeholder?: string; def?: number }[] }> = {
+	const FIELDS: Record<Shape, { unit: 'pcs' | 'meter' | 'sheet'; fields: { key: string; label: string; def?: number }[] }> = {
 		list: { unit: 'sheet', fields: [
 			{ key: 'thickness', label: 'Толщина, мм', def: 1 },
 			{ key: 'width', label: 'Ширина, мм', def: 1000 },
@@ -255,14 +484,12 @@ const howToJsonLd = {
 	};
 
 	const UNIT_LABELS: Record<'pcs' | 'meter' | 'sheet', string> = {
-		pcs: 'штук',
-		meter: 'м (длина одной)',
-		sheet: 'листов',
+		pcs: 'шт',
+		meter: 'м',
+		sheet: 'лист',
 	};
 
 	const root = document.querySelector('[data-calc-root]');
-	const shapeSel = root?.querySelector('[data-calc-shape]') as HTMLSelectElement | null;
-	const gradeSel = root?.querySelector('[data-calc-grade]') as HTMLSelectElement | null;
 	const densityRow = root?.querySelector('[data-calc-density-row]') as HTMLElement | null;
 	const densityInput = root?.querySelector('[data-calc-density]') as HTMLInputElement | null;
 	const dimsEl = root?.querySelector('[data-calc-dims]') as HTMLElement | null;
@@ -270,20 +497,29 @@ const howToJsonLd = {
 	const qtyHint = root?.querySelector('[data-calc-qty-hint]') as HTMLElement | null;
 	const unitWeightEl = root?.querySelector('[data-calc-unit-weight]') as HTMLElement | null;
 	const totalEl = root?.querySelector('[data-calc-total]') as HTMLElement | null;
+	const totalSubEl = root?.querySelector('[data-calc-total-sub]') as HTMLElement | null;
+	const volumeEl = root?.querySelector('[data-calc-volume]') as HTMLElement | null;
+	const densityDisplay = root?.querySelector('[data-calc-density-display]') as HTMLElement | null;
 	const ctaEl = root?.querySelector('[data-calc-cta]') as HTMLAnchorElement | null;
+	const qtyMinus = root?.querySelector('[data-calc-qty-minus]') as HTMLButtonElement | null;
+	const qtyPlus = root?.querySelector('[data-calc-qty-plus]') as HTMLButtonElement | null;
+	const copyBtn = root?.querySelector('[data-calc-copy]') as HTMLButtonElement | null;
+	const copyText = root?.querySelector('[data-calc-copy-text]') as HTMLElement | null;
 
-	if (root && shapeSel && gradeSel && dimsEl && qtyInput && qtyHint && unitWeightEl && totalEl) {
+	let currentShape: Shape = 'list';
+	let currentGrade = 'austenitic';
+
+	if (root && dimsEl && qtyInput && qtyHint && unitWeightEl && totalEl) {
 		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+		const fmtVol = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 4 });
 
 		function getDensity(): number {
-			const g = gradeSel!.value;
-			if (g === 'custom') return parseFloat(densityInput?.value || '7.9') || 7.9;
-			return DENSITIES[g] ?? 7.9;
+			if (currentGrade === 'custom') return parseFloat(densityInput?.value || '7.9') || 7.9;
+			return DENSITIES[currentGrade] ?? 7.9;
 		}
 
 		function renderDims() {
-			const shape = shapeSel!.value as Shape;
-			const cfg = FIELDS[shape];
+			const cfg = FIELDS[currentShape];
 			dimsEl!.innerHTML = '';
 			cfg.fields.forEach((f) => {
 				const wrap = document.createElement('div');
@@ -314,43 +550,32 @@ const howToJsonLd = {
 			return el ? parseFloat(el.value) || 0 : 0;
 		}
 
-		function calcUnitWeight(): number {
-			const shape = shapeSel!.value as Shape;
-			const rho = getDensity(); // g/cm³ = kg / 10⁶ mm³ × 1000 = kg / 1000 cm³, для расчёта в мм используем ρ/10⁶
-			/* Все размеры в мм. Возвращаем массу одной единицы в кг.
-			   Объём V (мм³) × ρ (г/см³) / 1000 = масса (г) / 1000 = кг.
-			   Или: V × ρ / 10⁶ × 1000 = V × ρ / 1000.  Проще: kg = V_мм3 × ρ_г_см3 / 10⁶. */
-			const FACTOR = 1e-6;
+		function calcVolumeMm3(): number {
+			const shape = currentShape;
 			switch (shape) {
 				case 'list':
 				case 'polosa': {
-					const t = getDim('thickness');
-					const w = getDim('width');
-					const L = getDim('length');
-					return t * w * L * rho * FACTOR;
+					return getDim('thickness') * getDim('width') * getDim('length');
 				}
 				case 'krug':
 				case 'provoloka': {
 					const d = getDim('diameter');
-					const L = getDim('length');
-					return Math.PI * (d / 2) ** 2 * L * rho * FACTOR;
+					return Math.PI * (d / 2) ** 2 * getDim('length');
 				}
 				case 'kvadrat': {
 					const a = getDim('side');
-					const L = getDim('length');
-					return a * a * L * rho * FACTOR;
+					return a * a * getDim('length');
 				}
 				case 'shestigrannik': {
 					const s = getDim('side');
-					const L = getDim('length');
-					return (Math.sqrt(3) / 2) * s * s * L * rho * FACTOR;
+					return (Math.sqrt(3) / 2) * s * s * getDim('length');
 				}
 				case 'truba': {
 					const D = getDim('diameter');
 					const wall = getDim('wall');
 					const L = getDim('length');
 					if (wall >= D / 2) return 0;
-					return Math.PI * (D - wall) * wall * L * rho * FACTOR;
+					return Math.PI * (D - wall) * wall * L;
 				}
 				case 'truba-pryam': {
 					const a = getDim('side_a');
@@ -358,55 +583,155 @@ const howToJsonLd = {
 					const wall = getDim('wall');
 					const L = getDim('length');
 					if (wall >= Math.min(a, b) / 2) return 0;
-					return 2 * (a + b - 2 * wall) * wall * L * rho * FACTOR;
+					return 2 * (a + b - 2 * wall) * wall * L;
 				}
 				case 'ugolok': {
 					const a = getDim('side');
 					const t = getDim('thickness');
 					const L = getDim('length');
 					if (t >= a) return 0;
-					return (2 * a * t - t * t) * L * rho * FACTOR;
+					return (2 * a * t - t * t) * L;
 				}
 			}
 			return 0;
+		}
+
+		function calcUnitWeight(): number {
+			/* Объём V (мм³) × ρ (г/см³) / 10⁶ = масса (кг). */
+			return calcVolumeMm3() * getDensity() / 1e6;
 		}
 
 		function recalc() {
 			const unitW = calcUnitWeight();
 			const qty = parseFloat(qtyInput!.value) || 0;
 			const total = unitW * qty;
-			if (unitW > 0) {
-				unitWeightEl!.textContent = `${fmt.format(unitW)} кг`;
-			} else {
-				unitWeightEl!.textContent = '—';
-			}
+			const rho = getDensity();
+			const volMm3 = calcVolumeMm3();
+
+			unitWeightEl!.textContent = unitW > 0 ? `${fmt.format(unitW)} кг` : '—';
+
 			if (total > 0) {
 				if (total >= 1000) {
-					totalEl!.textContent = `${fmt.format(total / 1000)} т (${fmt.format(total)} кг)`;
+					totalEl!.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl!.textContent = `${fmt.format(total)} кг`;
 				} else {
 					totalEl!.textContent = `${fmt.format(total)} кг`;
+					totalSubEl!.textContent = '';
 				}
 			} else {
 				totalEl!.textContent = '—';
+				totalSubEl!.textContent = '';
 			}
-			/* CTA-ссылка с предзаполненными параметрами — попадут в форму заявки */
+
+			if (densityDisplay) densityDisplay.textContent = `${rho.toString().replace('.', ',')} г/см³`;
+			if (volumeEl) {
+				const volTotalMm3 = volMm3 * qty;
+				if (volTotalMm3 > 0) {
+					const m3 = volTotalMm3 / 1e9;
+					if (m3 >= 0.001) {
+						volumeEl.textContent = `${fmtVol.format(m3)} м³`;
+					} else {
+						const dm3 = volTotalMm3 / 1e6;
+						volumeEl.textContent = `${fmtVol.format(dm3)} дм³`;
+					}
+				} else {
+					volumeEl.textContent = '—';
+				}
+			}
+
 			if (ctaEl) {
-				const shape = shapeSel!.value;
-				const params = new URLSearchParams({ shape, qty: String(qty), weight_kg: String(Math.round(total)) });
+				const params = new URLSearchParams({
+					shape: currentShape,
+					qty: String(qty),
+					weight_kg: String(Math.round(total)),
+				});
 				ctaEl.href = `/zapros-kp/?${params.toString()}#lead-form`;
 			}
 		}
 
-		shapeSel.addEventListener('change', () => { renderDims(); recalc(); });
-		gradeSel.addEventListener('change', () => {
-			densityRow!.hidden = gradeSel!.value !== 'custom';
-			if (gradeSel!.value !== 'custom' && densityInput) {
-				densityInput.value = String(DENSITIES[gradeSel!.value] ?? 7.9);
-			}
-			recalc();
+		/* Кнопки-плитки видов проката */
+		root.querySelectorAll('[data-calc-shape-btn]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const k = (btn as HTMLElement).dataset.calcShapeBtn as Shape;
+				if (!k) return;
+				currentShape = k;
+				root!.querySelectorAll('[data-calc-shape-btn]').forEach((b) => {
+					const active = (b as HTMLElement).dataset.calcShapeBtn === k;
+					b.classList.toggle('calc__shape--active', active);
+					b.setAttribute('aria-checked', active ? 'true' : 'false');
+				});
+				renderDims();
+				recalc();
+			});
 		});
+
+		/* Кнопки-плитки групп марок */
+		root.querySelectorAll('[data-calc-grade-btn]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const k = (btn as HTMLElement).dataset.calcGradeBtn as string;
+				if (!k) return;
+				currentGrade = k;
+				root!.querySelectorAll('[data-calc-grade-btn]').forEach((b) => {
+					const active = (b as HTMLElement).dataset.calcGradeBtn === k;
+					b.classList.toggle('calc__grade--active', active);
+					b.setAttribute('aria-checked', active ? 'true' : 'false');
+				});
+				if (densityRow) densityRow.hidden = k !== 'custom';
+				if (k !== 'custom' && densityInput) {
+					densityInput.value = String(DENSITIES[k] ?? 7.9);
+				}
+				/* Подкрашиваем виджет в тон группы — через data-tone на корне */
+				(root as HTMLElement).dataset.gradeTone = k;
+				recalc();
+			});
+		});
+
 		densityInput?.addEventListener('input', recalc);
 		qtyInput.addEventListener('input', recalc);
+
+		qtyMinus?.addEventListener('click', () => {
+			const v = parseFloat(qtyInput.value) || 0;
+			const next = Math.max(0.01, v - 1);
+			qtyInput.value = String(Number.isInteger(next) ? next : +next.toFixed(2));
+			recalc();
+		});
+		qtyPlus?.addEventListener('click', () => {
+			const v = parseFloat(qtyInput.value) || 0;
+			qtyInput.value = String(v + 1);
+			recalc();
+		});
+
+		copyBtn?.addEventListener('click', async () => {
+			const shape = SHAPE_LABEL[currentShape];
+			const grade = GRADE_LABEL[currentGrade];
+			const rho = getDensity();
+			const unit = calcUnitWeight();
+			const qty = parseFloat(qtyInput.value) || 0;
+			const total = unit * qty;
+			const dims = Array.from(dimsEl!.querySelectorAll('[data-dim]'))
+				.map((el) => {
+					const inp = el as HTMLInputElement;
+					const lbl = dimsEl!.querySelector(`label[for="${inp.id}"]`);
+					return `${lbl?.textContent ?? inp.dataset.dim}: ${inp.value}`;
+				})
+				.join('; ');
+			const text =
+				`${shape} (${grade}, ρ=${rho} г/см³)\n` +
+				`${dims}\n` +
+				`Вес 1 ед.: ${fmt.format(unit)} кг\n` +
+				`Кол-во: ${qty} ${UNIT_LABELS[FIELDS[currentShape].unit]}\n` +
+				`Общий вес: ${total >= 1000 ? fmt.format(total / 1000) + ' т (' + fmt.format(total) + ' кг)' : fmt.format(total) + ' кг'}`;
+			try {
+				await navigator.clipboard.writeText(text);
+				if (copyText) {
+					const prev = copyText.textContent;
+					copyText.textContent = 'Скопировано';
+					setTimeout(() => { if (copyText) copyText.textContent = prev ?? 'Скопировать расчёт'; }, 1600);
+				}
+			} catch (e) {
+				/* clipboard mode unavailable — silent fallback */
+			}
+		});
 
 		renderDims();
 		recalc();
@@ -415,44 +740,222 @@ const howToJsonLd = {
 
 <style>
 	.calc { padding-block: var(--space-8); min-width: 0; }
-	.calc__hero { margin-bottom: var(--space-8); max-width: 80ch; }
-	.calc__lead {
-		font-size: 1.05rem;
-		line-height: 1.6;
-		max-width: 75ch;
-		color: var(--color-text);
-	}
 
-	.calc__widget {
-		display: grid;
-		grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-		gap: var(--space-5);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		padding: var(--space-5);
-		margin-bottom: var(--space-8);
-	}
-	@media (max-width: 768px) {
-		.calc__widget { grid-template-columns: minmax(0, 1fr); }
-	}
-
-	.calc__panel {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		gap: var(--space-3);
-	}
-	@media (max-width: 480px) {
-		.calc__panel { grid-template-columns: minmax(0, 1fr); }
-	}
-
-	.calc__field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
-	.calc__field--custom-density { grid-column: 1 / -1; }
-	.calc__label {
+	/* ---------- Hero ---------- */
+	.calc__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.calc__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
 		font-size: 0.78rem;
 		font-weight: 600;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.calc__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.5rem);
+		line-height: 1.15;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.02em;
+	}
+	.calc__h1-accent {
+		background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary));
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+	.calc__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0 0 var(--space-4); }
+	.calc__perks {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.calc__perks li {
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		padding: 0.4rem 0.75rem;
+		border-radius: var(--radius-pill);
+	}
+	.calc__perks strong { color: var(--color-primary-500); font-weight: 700; }
+
+	/* ---------- Widget ---------- */
+	.calc__widget {
+		position: relative;
+		background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-xl);
+		padding: var(--space-6);
+		margin-bottom: var(--space-10);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+	}
+	.calc__widget-glow {
+		position: absolute;
+		inset: -50%;
+		background:
+			radial-gradient(40% 30% at 80% 10%, rgba(28, 75, 128, 0.10), transparent 70%),
+			radial-gradient(35% 30% at 5% 95%, rgba(196, 101, 27, 0.08), transparent 70%);
+		pointer-events: none;
+		z-index: 0;
+	}
+	.calc__widget-inner {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+		gap: var(--space-6);
+	}
+	@media (max-width: 900px) {
+		.calc__widget { padding: var(--space-4); }
+		.calc__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+	}
+
+	/* ---------- Steps ---------- */
+	.calc__step {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-3);
+	}
+	.calc__step--mt { margin-top: var(--space-5); }
+	.calc__step-num {
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		background: var(--color-primary-500);
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.85rem;
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		box-shadow: 0 0 0 4px var(--color-primary-50);
+	}
+	.calc__step-title {
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	/* ---------- Shapes grid ---------- */
+	.calc__shapes {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+		gap: 0.5rem;
+	}
+	.calc__shape {
+		appearance: none;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: 0.85rem 0.4rem 0.7rem;
+		cursor: pointer;
+		color: var(--color-muted);
+		transition: all var(--dur-fast) var(--ease-out);
+		min-height: 84px;
+		font: inherit;
+	}
+	.calc__shape:hover {
+		border-color: var(--color-primary-400);
+		color: var(--color-primary-500);
+		transform: translateY(-1px);
+	}
+	.calc__shape--active {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		color: var(--color-primary);
+		box-shadow: 0 0 0 3px rgba(28, 75, 128, 0.10);
+	}
+	.calc__shape-icon {
+		color: inherit;
+		opacity: 0.9;
+	}
+	.calc__shape-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-align: center;
+		line-height: 1.15;
+	}
+
+	/* ---------- Grades grid ---------- */
+	.calc__grades {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: 0.5rem;
+	}
+	.calc__grade {
+		appearance: none;
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: 0.7rem 0.85rem;
+		cursor: pointer;
+		text-align: left;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+		font: inherit;
+	}
+	.calc__grade:hover { border-color: var(--color-primary-400); transform: translateY(-1px); }
+	.calc__grade--active {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		box-shadow: 0 0 0 3px rgba(28, 75, 128, 0.08);
+	}
+	.calc__grade-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		border: 2px solid transparent;
+		background: var(--color-border-strong);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.calc__grade[data-tone="austenitic"] .calc__grade-dot { background: #4f9c7a; }
+	.calc__grade[data-tone="ferritic"] .calc__grade-dot { background: #6c7d92; }
+	.calc__grade[data-tone="martensitic"] .calc__grade-dot { background: #8b7250; }
+	.calc__grade[data-tone="duplex"] .calc__grade-dot { background: #b76a3b; }
+	.calc__grade[data-tone="custom"] .calc__grade-dot {
+		background: linear-gradient(135deg, #4f9c7a, #6c7d92, #8b7250, #b76a3b);
+	}
+	.calc__grade--active .calc__grade-dot {
+		box-shadow: 0 0 0 3px var(--color-primary-100);
+	}
+	.calc__grade-text { display: flex; flex-direction: column; min-width: 0; gap: 0.05rem; }
+	.calc__grade-text strong { font-size: 0.9rem; line-height: 1.2; color: var(--color-text); font-weight: 600; }
+	.calc__grade-text small { font-size: 0.76rem; color: var(--color-muted); line-height: 1.25; }
+
+	/* ---------- Fields ---------- */
+	.calc__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.calc__field--inline {
+		grid-column: 1 / -1;
+		max-width: 260px;
+		margin-top: var(--space-3);
+	}
+	.calc__field--qty { margin-top: var(--space-4); max-width: 280px; }
+	.calc__label {
+		font-size: 0.74rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
 		color: var(--color-subtle);
 	}
 	.calc__input {
@@ -461,7 +964,7 @@ const howToJsonLd = {
 		padding: 0.65rem 0.8rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
-		background: var(--color-bg-elev);
+		background: var(--color-surface);
 		color: var(--color-text);
 		outline: none;
 		transition: border-color var(--dur-fast) var(--ease-out),
@@ -477,152 +980,352 @@ const howToJsonLd = {
 		box-shadow: 0 0 0 3px var(--color-primary-100);
 		background: #fff;
 	}
-	.calc__hint {
-		font-size: 0.78rem;
-		color: var(--color-muted);
-	}
 
 	.calc__dims {
-		grid-column: 1 / -1;
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-		gap: var(--space-3);
-		padding-top: var(--space-3);
-		border-top: 1px dashed var(--color-border);
+		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+		gap: 0.6rem;
 	}
 
-	.calc__result {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-3);
-		padding: var(--space-4);
-		background: var(--color-primary-50);
-		border: 1px solid var(--color-primary-100);
-		border-radius: var(--radius-md);
-	}
-	.calc__result-line {
-		display: flex;
-		justify-content: space-between;
-		gap: var(--space-3);
-		align-items: baseline;
-	}
-	.calc__result-line--total {
-		padding-top: var(--space-3);
-		border-top: 1px solid var(--color-primary-100);
-	}
-	.calc__result-label {
-		font-size: 0.85rem;
-		color: var(--color-primary-600);
-	}
-	.calc__result-value {
-		font-family: var(--font-mono);
-		font-size: 1rem;
-		color: var(--color-primary-600);
-		font-weight: 700;
-	}
-	.calc__result-value--big {
-		font-size: 1.6rem;
-		line-height: 1.1;
-		text-align: right;
-		overflow-wrap: anywhere;
-	}
-	.calc__cta {
-		display: inline-block;
-		text-align: center;
-		padding: 0.7rem 1rem;
-		background: var(--color-accent);
-		color: #fff;
-		font-weight: 600;
-		text-decoration: none;
-		border-radius: var(--radius-md);
-		margin-top: var(--space-3);
-	}
-	.calc__cta:hover {
-		background: var(--color-accent-600);
-		color: #fff;
-		text-decoration: none;
-	}
-
-	.calc__block { margin-bottom: var(--space-8); }
-	.calc__block h2 { font-size: 1.2rem; margin-bottom: var(--space-3); }
-	.calc__formulas {
+	/* ---------- Quantity stepper ---------- */
+	.calc__qty-wrap {
 		display: grid;
-		gap: var(--space-2);
-		margin: 0;
-		padding-left: 1.2rem;
-		color: var(--color-muted);
-		max-width: 80ch;
-	}
-	.calc__formulas strong { color: var(--color-text); }
-	.calc__note {
-		margin-top: var(--space-3);
-		font-size: 0.88rem;
-		color: var(--color-muted);
-		max-width: 70ch;
-	}
-
-	.calc__density-table {
-		width: 100%;
-		max-width: 80ch;
-		border-collapse: separate;
-		border-spacing: 0;
-		font-size: 0.92rem;
+		grid-template-columns: 36px minmax(0, 1fr) 36px auto;
+		align-items: stretch;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		overflow: hidden;
+		transition: border-color var(--dur-fast) var(--ease-out);
+	}
+	.calc__qty-wrap:focus-within { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); }
+	.calc__qty-step {
+		background: transparent;
+		border: 0;
+		font-size: 1.2rem;
+		font-weight: 600;
+		cursor: pointer;
+		color: var(--color-muted);
+		display: grid;
+		place-items: center;
+		transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+	}
+	.calc__qty-step:hover { background: var(--color-primary-50); color: var(--color-primary-500); }
+	.calc__qty-input {
+		border: 0 !important;
+		border-radius: 0 !important;
+		background: transparent !important;
+		text-align: center;
+		font-weight: 600;
+		font-size: 1rem;
+		padding-inline: 0.5rem !important;
+		box-shadow: none !important;
+	}
+	.calc__qty-input:focus { background: transparent !important; }
+	.calc__qty-unit {
+		padding: 0 0.85rem;
+		display: grid;
+		place-items: center;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		border-left: 1px solid var(--color-border);
+		background: var(--color-bg-elev);
+	}
+
+	/* ---------- Result card ---------- */
+	.calc__result {
+		position: sticky;
+		top: calc(var(--header-h) + 1rem);
+		align-self: flex-start;
+	}
+	@media (max-width: 900px) {
+		.calc__result { position: static; }
+	}
+	.calc__result-card {
+		background: var(--grad-hero);
+		color: var(--color-on-dark);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-glow);
+		position: relative;
 		overflow: hidden;
 	}
-	.calc__density-table thead th {
-		text-align: left;
-		padding: 0.7rem 0.85rem;
-		background: var(--color-bg-elev);
+	.calc__result-card::before {
+		content: '';
+		position: absolute;
+		inset: -50%;
+		background: var(--grad-hero-glow);
+		pointer-events: none;
+	}
+	.calc__result-card > * { position: relative; z-index: 1; }
+	.calc__result-eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.72rem;
 		font-weight: 600;
-		font-size: 0.78rem;
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-muted);
-		border-bottom: 1px solid var(--color-border);
+		letter-spacing: 0.1em;
+		color: var(--color-accent-100);
+		margin-bottom: var(--space-4);
+		opacity: 0.95;
 	}
-	.calc__density-table tbody td {
-		padding: 0.7rem 0.85rem;
-		border-bottom: 1px solid var(--color-border);
-		vertical-align: top;
+	.calc__result-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: var(--space-3);
+		padding: 0.6rem 0;
+		border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
 	}
-	.calc__density-table tbody tr:last-child td { border-bottom: 0; }
+	.calc__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.calc__result-row strong {
+		font-family: var(--font-mono);
+		font-size: 1rem;
+		color: #fff;
+		font-weight: 600;
+	}
 
+	.calc__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.calc__result-total-label {
+		display: block;
+		font-size: 0.85rem;
+		color: var(--color-on-dark-muted);
+		margin-bottom: 0.35rem;
+	}
+	.calc__result-total-value {
+		font-family: var(--font-mono);
+		font-size: clamp(2.2rem, 4.6vw, 3.2rem);
+		font-weight: 700;
+		line-height: 1.05;
+		color: var(--color-accent-100);
+		letter-spacing: -0.02em;
+		overflow-wrap: anywhere;
+	}
+	.calc__result-total-sub {
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		color: var(--color-on-dark-muted);
+		margin-top: 0.25rem;
+		min-height: 1.2em;
+	}
+
+	.calc__result-meta {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--space-3);
+		margin: var(--space-4) 0 var(--space-4);
+		padding-top: var(--space-3);
+		border-top: 1px solid rgba(255, 255, 255, 0.12);
+	}
+	.calc__result-meta div { min-width: 0; }
+	.calc__result-meta dt {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--color-on-dark-muted);
+		margin-bottom: 0.2rem;
+	}
+	.calc__result-meta dd {
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		color: #fff;
+		margin: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.calc__cta {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		text-align: center;
+		padding: 0.85rem 1rem;
+		background: var(--grad-cta-warm);
+		color: #fff;
+		font-weight: 600;
+		text-decoration: none;
+		border-radius: var(--radius-md);
+		font-size: 0.95rem;
+		transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+		box-shadow: var(--shadow-warm-glow);
+	}
+	.calc__cta:hover {
+		color: #fff;
+		text-decoration: none;
+		transform: translateY(-1px);
+		box-shadow: 0 14px 36px rgba(196, 101, 27, 0.35);
+	}
+	.calc__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.calc__cta:hover svg { transform: translateX(2px); }
+
+	.calc__copy {
+		appearance: none;
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		color: var(--color-on-dark);
+		font: inherit;
+		font-size: 0.85rem;
+		padding: 0.55rem 0.85rem;
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		margin-top: 0.6rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		width: 100%;
+		transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+	}
+	.calc__copy:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.3); }
+
+	.calc__result-foot {
+		margin: var(--space-4) 0 0;
+		font-size: 0.75rem;
+		line-height: 1.5;
+		color: var(--color-on-dark-muted);
+		opacity: 0.85;
+	}
+
+	/* ---------- Section heads ---------- */
+	.calc__block { margin-bottom: var(--space-10); }
+	.calc__h2 {
+		font-size: 1.5rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+
+	/* ---------- Formulas grid ---------- */
+	.calc__formulas {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-3);
+	}
+	.calc__formula {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+	}
+	.calc__formula:hover {
+		border-color: var(--color-primary-400);
+		transform: translateY(-2px);
+	}
+	.calc__formula--wide { grid-column: span 1; }
+	.calc__formula-head {
+		font-weight: 600;
+		font-size: 0.95rem;
+		color: var(--color-text);
+	}
+	.calc__formula-eq {
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		background: var(--color-primary-50);
+		color: var(--color-primary);
+		padding: 0.5rem 0.7rem;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--color-primary-100);
+		white-space: nowrap;
+		overflow-x: auto;
+	}
+	.calc__formula small {
+		font-size: 0.78rem;
+		color: var(--color-muted);
+	}
+	.calc__note { margin-top: var(--space-4); font-size: 0.88rem; color: var(--color-muted); max-width: 70ch; }
+
+	/* ---------- Density rows ---------- */
+	.calc__density {
+		display: grid;
+		gap: 0.6rem;
+		max-width: 900px;
+	}
+	.calc__density-row {
+		display: grid;
+		grid-template-columns: minmax(160px, 1.1fr) minmax(0, 2.4fr) auto;
+		align-items: center;
+		gap: var(--space-4);
+		padding: 0.85rem var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+	}
+	.calc__density-row:hover {
+		border-color: var(--color-primary-400);
+		transform: translateX(2px);
+	}
+	@media (max-width: 640px) {
+		.calc__density-row { grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+	}
+	.calc__density-group { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
+	.calc__density-group strong { font-size: 0.95rem; font-weight: 600; }
+	.calc__density-badge {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	.calc__density-row[data-tone="austenitic"] .calc__density-badge { background: #4f9c7a; }
+	.calc__density-row[data-tone="ferritic"] .calc__density-badge { background: #6c7d92; }
+	.calc__density-row[data-tone="martensitic"] .calc__density-badge { background: #8b7250; }
+	.calc__density-row[data-tone="duplex"] .calc__density-badge { background: #b76a3b; }
+	.calc__density-row[data-tone="heat"] .calc__density-badge { background: #c4651b; }
+	.calc__density-marks { font-size: 0.88rem; color: var(--color-muted); line-height: 1.4; }
+	.calc__density-val {
+		font-family: var(--font-mono);
+		font-size: 1.15rem;
+		font-weight: 700;
+		color: var(--color-primary);
+		white-space: nowrap;
+	}
+	.calc__density-val span { font-size: 0.75rem; color: var(--color-muted); font-weight: 400; margin-left: 0.2rem; }
+
+	/* ---------- Hub chips ---------- */
+	.calc__hub-lead { color: var(--color-muted); margin: 0 0 var(--space-3); }
 	.calc__hubs {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
 		list-style: none;
 		padding: 0;
-		margin: var(--space-3) 0 0;
+		margin: 0;
 	}
 	.calc__hubs a {
-		display: inline-block;
-		padding: 0.5rem 0.85rem;
-		background: var(--color-bg-elev);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.55rem 0.95rem;
+		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		color: var(--color-primary-600);
+		border-radius: var(--radius-pill);
+		color: var(--color-primary);
 		font-weight: 500;
+		font-size: 0.92rem;
 		text-decoration: none;
-		transition: border-color var(--dur-fast) var(--ease-out),
-			background var(--dur-fast) var(--ease-out);
+		transition: all var(--dur-fast) var(--ease-out);
 	}
+	.calc__hubs a svg { color: var(--color-subtle); transition: transform var(--dur-fast) var(--ease-out); }
 	.calc__hubs a:hover {
 		border-color: var(--color-primary-500);
 		background: var(--color-primary-50);
 		text-decoration: none;
 	}
+	.calc__hubs a:hover svg { transform: translateX(2px); color: var(--color-primary-500); }
 
+	/* ---------- FAQ ---------- */
 	.calc__faq { margin-bottom: var(--space-8); }
-	.calc__faq h2 { font-size: 1.2rem; margin-bottom: var(--space-4); }
-	.calc__faq-list { display: grid; gap: var(--space-2); max-width: 80ch; }
+	.calc__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
 	.calc__faq-item {
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 	}
 	.calc__faq-item[open] {
 		border-color: var(--color-primary-100);
@@ -645,5 +1348,5 @@ const howToJsonLd = {
 		transition: transform var(--dur-fast) var(--ease-out);
 	}
 	.calc__faq-item[open] .calc__faq-q svg { transform: rotate(180deg); }
-	.calc__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; }
+	.calc__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
 </style>
