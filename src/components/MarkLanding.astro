@@ -168,6 +168,12 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 			<ul class="mark__list">
 				{mark.applications.map((a) => <li>{a}</li>)}
 			</ul>
+			{mark.hubContext?.[hub] && (
+				<div class="mark__hub-context">
+					<div class="mark__hub-context-label">{hubLabel} {mark.aisi} — специфика формата</div>
+					<p>{mark.hubContext[hub]}</p>
+				</div>
+			)}
 		</section>
 
 		<section class="mark__block">
@@ -319,6 +325,29 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 		border-left: 3px solid var(--color-primary-500);
 		border-radius: var(--radius-sm);
 		max-width: 75ch;
+	}
+
+	.mark__hub-context {
+		margin-top: var(--space-4);
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-accent-100);
+		border-left: 3px solid var(--color-accent);
+		border-radius: var(--radius-sm);
+		max-width: 75ch;
+	}
+	.mark__hub-context-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-600);
+		margin-bottom: 0.35rem;
+	}
+	.mark__hub-context p {
+		margin: 0;
+		font-size: 0.95rem;
+		color: var(--color-text);
+		line-height: 1.6;
 	}
 	.mark__composition-label {
 		font-size: 0.78rem;
