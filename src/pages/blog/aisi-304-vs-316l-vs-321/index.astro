@@ -1,0 +1,623 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import { siteUrl, siteName } from '../../../data/site';
+
+const title = 'AISI 304 vs 316L vs 321 — какую марку нержавейки выбрать';
+const description = 'AISI 304 — общие задачи, 316L — хлориды и морская вода, 321 (12Х18Н10Т) — горячие сварные узлы. Сравнение по составу, цене и температурному диапазону.';
+
+const datePublished = '2026-05-23';
+const dateModified = '2026-05-23';
+const url = `${siteUrl.replace(/\/$/, '')}/blog/aisi-304-vs-316l-vs-321/`;
+
+/* Структура поста — массив H2-секций. Используется для TOC. */
+const sections = [
+	{
+		id: 'sostav',
+		anchor: 'Состав и обозначения',
+		title: 'Состав и обозначения',
+		summary: 'Cr-Ni у 304, +Mo у 316L, +Ti у 321.',
+	},
+	{
+		id: 'korroziya',
+		anchor: 'Коррозионная стойкость',
+		title: 'Коррозионная стойкость — где какая работает',
+		summary: 'Хлориды → 316L. Сварка с нагревом → 321.',
+	},
+	{
+		id: 'temperatura',
+		anchor: 'Температура',
+		title: 'Температурный диапазон',
+		summary: '321 — самая жаропрочная из трёх.',
+	},
+	{
+		id: 'cena',
+		anchor: 'Цена за тонну',
+		title: 'Цена за тонну — соотношение',
+		summary: '304 базовая, 321 +5–15 %, 316L +50–100 %.',
+	},
+	{
+		id: 'scenarii',
+		anchor: 'Сценарии выбора',
+		title: 'Как выбрать — практические сценарии',
+		summary: 'Пищёвка, морская вода, пар, фарма, архитектура, тендеры.',
+	},
+];
+
+const compareRows = [
+	{
+		param: 'ГОСТ-обозначение',
+		v304: '08Х18Н10',
+		v316l: '03Х17Н14М2',
+		v321: '12Х18Н10Т',
+	},
+	{
+		param: 'EN (1.4xxx)',
+		v304: '1.4301',
+		v316l: '1.4404',
+		v321: '1.4541',
+	},
+	{
+		param: 'Хром, %',
+		v304: '18,0–20,0',
+		v316l: '16,0–18,0',
+		v321: '17,0–19,0',
+	},
+	{
+		param: 'Никель, %',
+		v304: '8,0–10,5',
+		v316l: '10,0–14,0',
+		v321: '9,0–12,0',
+	},
+	{
+		param: 'Молибден, %',
+		v304: '—',
+		v316l: '2,0–3,0',
+		v321: '—',
+	},
+	{
+		param: 'Титан, %',
+		v304: '—',
+		v316l: '—',
+		v321: '5×C ÷ 0,7',
+	},
+	{
+		param: 'Углерод, % (max)',
+		v304: '0,08',
+		v316l: '0,03',
+		v321: '0,12',
+	},
+	{
+		param: 'Структура',
+		v304: 'аустенит',
+		v316l: 'аустенит',
+		v321: 'аустенит',
+	},
+];
+
+const faq = [
+	{
+		q: 'Можно ли заменить AISI 316L на AISI 304 для экономии?',
+		a: 'В нейтральных и пищевых средах без хлоридов — можно, и это нормальная практика. В морской воде, рассолах, маринадах, дезрастворах на хлорной основе, фармацевтических CIP-моях — нельзя. AISI 304 покрывается точечной (питтинговой) коррозией там, где 316L держится годами. Молибден 2–3 % в составе 316L даёт стойкость к питтингу, у 304 этой добавки нет. Экономия 50–100 % за тонну оборачивается заменой узла через сезон.',
+	},
+	{
+		q: 'AISI 321 и 12Х18Н10Т — это одно и то же?',
+		a: 'Да, это одна и та же сталь под двумя обозначениями. AISI 321 — американский шифр по ASTM/AISI, 12Х18Н10Т — российский по ГОСТ 5632. Состав практически идентичный: 17–19 % Cr, 9–12 % Ni, титан 5×%C. Европейский эквивалент — 1.4541 по EN 10088. В сертификатах часто пишут оба варианта через дробь.',
+	},
+	{
+		q: 'Какая марка магнитится из трёх — 304, 316L или 321?',
+		a: 'В отожжённом состоянии не магнитится ни одна — все три аустенитные с ГЦК-решёткой. После холодной деформации (гибка, штамповка, резка) может появиться слабое локальное притяжение к магниту из-за мартенсита деформации. Подробный разбор — в статье <a href="/blog/magnitit-li-nerzhaveika/">магнитится ли нержавейка</a>. У 316L склонность к деформационному мартенситу ниже, чем у 304 — за счёт более высокого никеля.',
+	},
+	{
+		q: 'Какая марка лучше сваривается?',
+		a: 'AISI 321 (12Х18Н10Т) — лучше всех по стойкости шва к межкристаллитной коррозии. Титан связывает углерод в стабильные карбиды TiC, и хром остаётся в твёрдом растворе. После сварки и нагрева 450–850 °C шов не теряет коррозионную стойкость. У 316L тот же эффект достигается за счёт пониженного углерода (≤ 0,03 %). У обычного 304 (углерод ≤ 0,08 %) после сварки толстых деталей может возникать МКК — для ответственных швов берут 304L или 321.',
+	},
+	{
+		q: 'Какая марка самая дорогая?',
+		a: 'AISI 316L. Молибден 2–3 % — самый дорогой легирующий элемент в составе, биржевая цена молибдена в 8–10 раз выше никеля. Тонна 316L стоит на 50–100 % дороже 304. AISI 321 дороже 304 на 5–15 % за счёт титана. Самая дешёвая из аустенитных — AISI 304. Если нужна экономия с сохранением аустенитной структуры — есть ещё AISI 201 (никель частично замещён марганцем), на 15–25 % дешевле 304, но с потерей коррозионной стойкости.',
+	},
+];
+
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: 'AISI 304 vs 316L vs 321 — какую марку нержавейки выбрать',
+	description,
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	datePublished,
+	dateModified,
+	author: { '@type': 'Organization', name: siteName, url: siteUrl },
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+		logo: { '@type': 'ImageObject', url: `${siteUrl.replace(/\/$/, '')}/favicon.svg` },
+	},
+};
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+	<div class="container post">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Блог', href: '/blog/' },
+			{ label: 'AISI 304 vs 316L vs 321' },
+		]} />
+
+		<header class="post__hero">
+			<span class="post__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M4 2v6a4 4 0 0 0 8 0V2M4 2h2v3H4M10 2h2v3h-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+				</svg>
+				Статья · сравнение марок
+			</span>
+			<h1 class="post__h1">AISI 304 vs 316L vs 321 — какую марку нержавейки выбрать</h1>
+			<div class="post__meta">
+				<time datetime={datePublished}>23 мая 2026</time>
+				<span>·</span>
+				<span>чтение 6 минут</span>
+			</div>
+			<p class="post__lead">
+				<strong>Прямой ответ:</strong> AISI 304 — для общих задач, 316L — для агрессивных
+				сред (хлориды, морская вода, фарма), 321 (12Х18Н10Т) — для горячих узлов и сварных
+				конструкций. Различаются составом, ценой и температурным диапазоном. Дальше —
+				детали и таблица сравнения.
+			</p>
+		</header>
+
+		<nav class="post__toc" aria-label="Содержание">
+			<div class="post__toc-title">На странице</div>
+			<ul>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<article class="post__body">
+			<section class="post__section" id="sostav">
+				<h2>Состав и обозначения</h2>
+				<p>
+					Все три марки относятся к аустенитному классу хромоникелевых нержавеющих сталей
+					по ГОСТ 5632-2014. База — 17–20 % хрома и 8–14 % никеля. Различает их один-два
+					легирующих элемента, и эти элементы определяют, для какой задачи марка нужна.
+				</p>
+				<div class="post__table-wrap">
+					<table class="post__table">
+						<thead>
+							<tr>
+								<th scope="col">Параметр</th>
+								<th scope="col">AISI 304</th>
+								<th scope="col">AISI 316L</th>
+								<th scope="col">AISI 321</th>
+							</tr>
+						</thead>
+						<tbody>
+							{compareRows.map((row) => (
+								<tr>
+									<th scope="row">{row.param}</th>
+									<td>{row.v304}</td>
+									<td>{row.v316l}</td>
+									<td>{row.v321}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+				<p>
+					<strong>Главное отличие:</strong> AISI 316L (03Х17Н14М2) — это 304 плюс молибден
+					2–3 %. AISI 321 (12Х18Н10Т) — это 304 плюс титан в пропорции 5×%C. Молибден даёт
+					коррозионную стойкость в хлоридах, титан — стойкость шва к МКК после сварки.
+					Подробные карточки марок: <a href="/list/aisi-304/">AISI 304</a>,
+					<a href="/list/aisi-316l/"> AISI 316L</a>,
+					<a href="/list/aisi-321/"> AISI 321</a>.
+				</p>
+			</section>
+
+			<section class="post__section" id="korroziya">
+				<h2>Коррозионная стойкость — где какая марка работает</h2>
+				<p>
+					<strong>AISI 304 (08Х18Н10).</strong> Работает в атмосфере, пресной воде,
+					пищевых средах без хлоридов и кислот, слабоагрессивных растворах. Стандарт для
+					ёмкостей молочных и пивоваренных линий, корпусов оборудования, архитектурных
+					фасадов. <strong>Не подходит:</strong> морская вода, рассолы и маринады с
+					концентрацией хлоридов от 200 мг/л, концентрированные кислоты, дезрастворы на
+					хлорной основе.
+				</p>
+				<p>
+					<strong>AISI 316L (03Х17Н14М2).</strong> Молибден 2–3 % смещает потенциал
+					питтинговой коррозии и даёт стойкость в хлоридных средах: морская вода,
+					опреснение, маринады, рассолы, реагенты целлюлозно-бумажной промышленности.
+					Низкий углерод (≤ 0,03 %) предотвращает выпадение карбидов хрома по границам
+					зёрен после сварки. 316L — стандарт для фармацевтики, биореакторов и CIP-моек
+					со щелочными растворами в горячем цикле.
+				</p>
+				<p>
+					<strong>AISI 321 (12Х18Н10Т).</strong> По стойкости в нейтральных средах близка
+					к 304. Главное преимущество — стабилизация титаном: после сварки и эксплуатации
+					при 450–850 °C сталь сохраняет коррозионную стойкость и не подвержена МКК
+					(межкристаллитной коррозии). Это критично для паропроводов, котельной обвязки,
+					сварных нефтехимических узлов.
+				</p>
+				<p>
+					<strong>Ключевая разница:</strong> 316L — для хлоридов, 321 — для термического
+					цикла со сваркой. Базу для всего остального закрывает 304.
+				</p>
+			</section>
+
+			<section class="post__section" id="temperatura">
+				<h2>Температурный диапазон</h2>
+				<ul>
+					<li>
+						<strong>AISI 304</strong> — длительно до +800 °C, кратковременно до +900 °C.
+						Универсальный диапазон для пищёвки, архитектуры, бытовой техники.
+					</li>
+					<li>
+						<strong>AISI 316L</strong> — длительно до +800 °C, но хуже сопротивляется
+						ползучести при температурах выше +600 °C из-за более высокого никеля и
+						молибдена. Для горячих режимов предпочтительнее 316Ti (с титаном) или 321.
+					</li>
+					<li>
+						<strong>AISI 321 (12Х18Н10Т)</strong> — длительно до +800 °C, кратковременно до
+						+1100 °C. Самая жаропрочная из трёх. Сохраняет коррозионную стойкость после
+						длительной выдержки в опасном интервале 450–850 °C — критично для пара и
+						нефтехимии.
+					</li>
+				</ul>
+				<p>
+					Если узел работает при температуре выше +600 °C постоянно либо нагревается под
+					сварку — берите 321. Если нагрев эпизодический и хлоридов нет — хватит 304.
+				</p>
+			</section>
+
+			<section class="post__section" id="cena">
+				<h2>Цена за тонну — соотношение</h2>
+				<ul>
+					<li>
+						<strong>AISI 304</strong> — базовая цена, ориентир рынка.
+					</li>
+					<li>
+						<strong>AISI 321 (12Х18Н10Т)</strong> — на 5–15 % дороже 304 за счёт титана.
+					</li>
+					<li>
+						<strong>AISI 316L</strong> — на 50–100 % дороже 304. Молибден 2–3 % — самый
+						дорогой легирующий элемент в составе, его биржевая цена в 8–10 раз выше никеля.
+					</li>
+				</ul>
+				<p>
+					Точные цены за тонну обновляются ежедневно по плавкам и партиям. Текущие прайсы
+					по форматам проката — в каталогах: <a href="/list/">лист нержавеющий</a>,
+					<a href="/truba/"> труба нержавеющая</a>,
+					<a href="/krug/"> круг нержавеющий</a>. Розница — от 0,1 т, наценка 5 %,
+					отгрузка со склада в Нижнем Новгороде.
+				</p>
+			</section>
+
+			<section class="post__section" id="scenarii">
+				<h2>Как выбрать — практические сценарии</h2>
+				<ul>
+					<li>
+						<strong>Пищевые ёмкости и трубопроводы (нейтральная среда):</strong>
+						AISI 304 — стандарт. Молоко, пиво, вода, сухие продукты, нейтральные соусы.
+					</li>
+					<li>
+						<strong>Морская вода, опреснение, химия с хлоридами:</strong> AISI 316L —
+						обязательно. Молибден держит шов и тело металла в хлоридной среде, 304 здесь
+						даст питтинг за сезон.
+					</li>
+					<li>
+						<strong>Паропровод, котельная обвязка, сварные узлы с нагревом:</strong>
+						AISI 321 (12Х18Н10Т) — стандарт по ГОСТ. Стабилизация титаном сохраняет
+						коррозионную стойкость шва после сварки и термоциклирования.
+					</li>
+					<li>
+						<strong>Фармацевтика, CIP-мойки, биореакторы:</strong> AISI 316L —
+						единственно правильный выбор. Щелочные растворы в горячем цикле плюс
+						остаточные хлориды — для 304 это путь к точечной коррозии.
+					</li>
+					<li>
+						<strong>Архитектура, фасады, декор:</strong> AISI 304 — оптимум. Если речь о
+						сухом интерьере (лифты, мебель, накладки) — можно сэкономить и взять
+						<a href="/list/aisi-430/"> AISI 430</a> или AISI 201.
+					</li>
+					<li>
+						<strong>Тендерные госзакупки в РФ:</strong> в большинстве случаев
+						12Х18Н10Т (AISI 321) идёт по ГОСТу. Российские спецификации на арматуру пара
+						и горячей воды прописывают именно эту марку — заменители без титана через
+						тендер не проходят. Справочник стандартов — <a href="/gost/">/gost/</a>.
+					</li>
+				</ul>
+			</section>
+
+			<section class="post__faq">
+				<h2>Частые вопросы</h2>
+				<div class="post__faq-list">
+					{faq.map((f) => (
+						<details class="post__faq-item">
+							<summary class="post__faq-q">
+								<span>{f.q}</span>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p set:html={f.a} />
+						</details>
+					))}
+				</div>
+			</section>
+
+			<aside class="post__related">
+				<h2>Смежные страницы</h2>
+				<ul>
+					<li><a href="/list/aisi-304/">Лист AISI 304 (08Х18Н10) — каталог и цена</a></li>
+					<li><a href="/list/aisi-316l/">Лист AISI 316L (03Х17Н14М2)</a></li>
+					<li><a href="/list/aisi-321/">Лист AISI 321 (12Х18Н10Т)</a></li>
+					<li><a href="/truba/">Труба нержавеющая — все марки и сортамент</a></li>
+					<li><a href="/krug/">Круг нержавеющий — сортовой прокат</a></li>
+					<li><a href="/gost/">Справочник ГОСТов на нержавеющий металлопрокат</a></li>
+					<li><a href="/blog/magnitit-li-nerzhaveika/">Магнитится ли нержавейка</a></li>
+				</ul>
+			</aside>
+		</article>
+	</div>
+
+	<CtaSection
+		title="Не определились с маркой?"
+		text="Менеджер подберёт 304, 316L или 321 под вашу задачу и среду — пришлёт КП с химанализом плавки в течение 30 минут."
+	/>
+</BaseLayout>
+
+<style>
+	.post { padding-block: var(--space-8); min-width: 0; }
+
+	/* Hero */
+	.post__hero { margin-bottom: var(--space-6); max-width: 75ch; }
+	.post__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.post__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-2);
+	}
+	.post__meta {
+		display: flex;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: var(--space-4);
+	}
+	.post__lead {
+		font-size: 1.08rem;
+		line-height: 1.6;
+		max-width: 70ch;
+		color: var(--color-text);
+		margin: 0;
+	}
+	.post__lead strong { color: var(--color-primary); }
+
+	/* TOC */
+	.post__toc {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+		max-width: 80ch;
+	}
+	.post__toc-title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.post__toc ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-2);
+	}
+	.post__toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.post__toc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.post__toc a strong {
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		font-weight: 600;
+	}
+	.post__toc a span {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		line-height: 1.35;
+	}
+
+	/* Body */
+	.post__body {
+		max-width: 75ch;
+		display: grid;
+		gap: var(--space-7);
+	}
+	.post__section {
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+	.post__section h2 {
+		font-size: 1.35rem;
+		line-height: 1.3;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__section p,
+	.post__section ul,
+	.post__section ol {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--color-text);
+		margin: 0 0 var(--space-3);
+	}
+	.post__section ul,
+	.post__section ol {
+		padding-left: 1.3rem;
+	}
+	.post__section li {
+		margin-bottom: 0.4rem;
+		line-height: 1.6;
+	}
+	.post__section li:last-child { margin-bottom: 0; }
+	.post__section a {
+		color: var(--color-primary-600);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.post__section a:hover { color: var(--color-primary); }
+
+	/* Compare table */
+	.post__table-wrap {
+		overflow-x: auto;
+		margin: 0 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+	.post__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 540px;
+	}
+	.post__table th,
+	.post__table td {
+		padding: 0.6rem 0.85rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+		line-height: 1.4;
+	}
+	.post__table thead th {
+		background: var(--color-bg-elev);
+		font-weight: 600;
+		color: var(--color-text);
+		font-size: 0.88rem;
+	}
+	.post__table tbody th {
+		font-weight: 500;
+		color: var(--color-muted);
+		background: var(--color-bg-elev);
+	}
+	.post__table tbody tr:last-child th,
+	.post__table tbody tr:last-child td { border-bottom: none; }
+
+	/* FAQ */
+	.post__faq h2 {
+		font-size: 1.35rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+	.post__faq-list { display: grid; gap: 0.6rem; }
+	.post__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.post__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.post__faq-q::-webkit-details-marker { display: none; }
+	.post__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] .post__faq-q svg { transform: rotate(180deg); }
+	.post__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); line-height: 1.6; }
+	.post__faq-item p a { color: var(--color-primary-600); text-decoration: underline; text-underline-offset: 2px; }
+
+	/* Related */
+	.post__related {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+	}
+	.post__related h2 {
+		font-size: 1.05rem;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__related ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.post__related a {
+		color: var(--color-primary-600);
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+	.post__related a:hover {
+		color: var(--color-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+</style>
