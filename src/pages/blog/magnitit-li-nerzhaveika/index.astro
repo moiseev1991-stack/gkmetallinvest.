@@ -1,0 +1,490 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import { siteUrl, siteName } from '../../../data/site';
+
+const title = 'Магнитится ли нержавейка — ответ с примерами марок AISI 304, 430';
+const description = 'Нержавейка магнитится или нет — зависит от структуры. Аустенит (AISI 304, 316L, 321) — нет, феррит и мартенсит (AISI 430, 20Х13, 40Х13) — да.';
+
+const datePublished = '2026-05-22';
+const dateModified = '2026-05-22';
+const url = `${siteUrl.replace(/\/$/, '')}/blog/magnitit-li-nerzhaveika/`;
+
+/* Структура поста — массив H2-секций. Удобно итерировать и рендерить TOC. */
+const sections = [
+	{
+		id: 'austenit',
+		anchor: 'Аустенит',
+		title: 'Аустенитные марки — НЕ магнитятся',
+		summary: 'AISI 304, 316L, 321 — гранецентрированная решётка γ-Fe.',
+	},
+	{
+		id: 'ferrit-martensit',
+		anchor: 'Феррит и мартенсит',
+		title: 'Ферритные и мартенситные — магнитятся',
+		summary: 'AISI 430, 20Х13, 40Х13 — объёмно-центрированная α-Fe.',
+	},
+	{
+		id: 'naklep',
+		anchor: 'Наклёп AISI 304',
+		title: 'Почему AISI 304 может слабо притягивать магнит',
+		summary: 'Мартенсит деформации α′-Fe после прокатки, гибки, сверления.',
+	},
+	{
+		id: 'proverit',
+		anchor: 'Проверка дома',
+		title: 'Как проверить марку магнитом дома',
+		summary: 'Неодимовый магнит, точки замера, интерпретация результата.',
+	},
+];
+
+const faq = [
+	{
+		q: 'Магнитится ли AISI 304?',
+		a: 'В свежекатаном отожжённом состоянии — нет. AISI 304 (08Х18Н10) — аустенитная сталь, её кристаллическая решётка парамагнитна. После холодной деформации (гибка, штамповка, сверление) края и зоны наклёпа могут слабо притягивать магнит — это нормально по EN 10088 и не означает брак.',
+	},
+	{
+		q: 'Магнитится ли AISI 316L?',
+		a: 'Нет. AISI 316L (03Х17Н14М2) содержит 10–14 % никеля и 2–3 % молибдена, аустенитная структура устойчивее, чем у AISI 304. После наклёпа притяжение к магниту почти не появляется — поэтому 316L часто используют там, где немагнитность критична (МРТ-помещения, кораблестроение).',
+	},
+	{
+		q: 'Магнитится ли AISI 321 / 12Х18Н10Т?',
+		a: 'Нет. AISI 321 (12Х18Н10Т) — тоже аустенит, стабилизированный титаном. Магнитом не определяется. После сильного наклёпа поведение такое же, как у AISI 304: слабое локальное притяжение по сгибам и краям.',
+	},
+	{
+		q: 'Как отличить пищевую нержавейку от обычной стали магнитом?',
+		a: 'Магнит даёт ограниченный сигнал. Углеродистая сталь без покрытия — магнитится сильно. AISI 430 (ферритная пищевая нержавейка) — тоже магнитится, и магнит этого не различит. Надёжно отличить пищевую AISI 304/316L от углеродки магнит позволяет; различить два класса нержавейки между собой — нет, нужен искровой или химический анализ.',
+	},
+	{
+		q: 'Если нержавейка магнитится — это брак?',
+		a: 'Нет, если в сертификате указана ферритная или мартенситная марка (AISI 430, 20Х13, 30Х13, 40Х13) — они магнитятся штатно. Если в сертификате стоит AISI 304/316L/321 и магнитится только зона у реза или гиба — это мартенсит деформации, тоже штатное явление. Брак — только если по документам аустенит, а сплошное прилипание по всему листу без следов деформации.',
+	},
+];
+
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: 'Магнитится ли нержавейка',
+	description,
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	datePublished,
+	dateModified,
+	author: { '@type': 'Organization', name: siteName, url: siteUrl },
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+		logo: { '@type': 'ImageObject', url: `${siteUrl.replace(/\/$/, '')}/favicon.svg` },
+	},
+};
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+	<div class="container post">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Блог', href: '/blog/' },
+			{ label: 'Магнитится ли нержавейка' },
+		]} />
+
+		<header class="post__hero">
+			<span class="post__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M4 2v6a4 4 0 0 0 8 0V2M4 2h2v3H4M10 2h2v3h-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+				</svg>
+				Статья · разбор
+			</span>
+			<h1 class="post__h1">Магнитится ли нержавейка</h1>
+			<div class="post__meta">
+				<time datetime={datePublished}>22 мая 2026</time>
+				<span>·</span>
+				<span>чтение 4 минуты</span>
+			</div>
+			<p class="post__lead">
+				<strong>Короткий ответ: и да, и нет — зависит от структуры стали.</strong>
+				Аустенитные марки (AISI 304, 316L, 321) в свежекатаном виде не магнитятся.
+				Ферритные (AISI 430) и мартенситные (20Х13, 40Х13) — магнитятся. Аустенит может
+				слабо притягивать магнит после холодного наклёпа — это нормально. Ниже —
+				почему так и как проверить марку дома.
+			</p>
+		</header>
+
+		<nav class="post__toc" aria-label="Содержание">
+			<div class="post__toc-title">На странице</div>
+			<ul>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<article class="post__body">
+			<section class="post__section" id="austenit">
+				<h2>Аустенитные марки — НЕ магнитятся</h2>
+				<p>
+					Аустенитные нержавеющие стали — это всё ходовое «пищевое» и «промышленное»
+					семейство: AISI 304 (08Х18Н10), AISI 316L (03Х17Н14М2), AISI 321 (12Х18Н10Т),
+					экономичная AISI 201, жаропрочная AISI 310S. Их объединяет одно — высокое
+					содержание никеля (8–14 %), который стабилизирует γ-фазу железа.
+				</p>
+				<p>
+					γ-Fe (гамма-железо) кристаллизуется в гранецентрированной кубической решётке
+					(ГЦК). Эта решётка <strong>парамагнитна</strong> — постоянное магнитное поле
+					в ней не выстраивается. Поэтому если приложить магнит к листу AISI 304 толщиной
+					2 мм или к трубе AISI 316L — реакции не будет. Эту проверку часто называют «тест
+					магнитом», но она показывает только структуру, а не марку: магнит не отличит
+					304 от 316L, обе аустенитные.
+				</p>
+				<p>
+					LSI-варианты этого факта в выдаче: «нержавейка 304 магнит», «aisi 304 магнитится»,
+					«нержавейка магнитная или нет». Ответ один: аустенит — нет.
+				</p>
+			</section>
+
+			<section class="post__section" id="ferrit-martensit">
+				<h2>Ферритные и мартенситные — магнитятся</h2>
+				<p>
+					<strong>Ферритные марки</strong> — AISI 430 (08Х17), AISI 410S, AISI 439. Это
+					хромистые стали без никеля или с минимальным его содержанием (до 0,5 %).
+					Кристаллическая решётка — α-Fe (альфа-железо), объёмно-центрированная кубическая
+					(ОЦК). Она <strong>ферромагнитна</strong> — магнит к ней прилипает плотно.
+				</p>
+				<p>
+					<strong>Мартенситные марки</strong> — AISI 420, AISI 440, 20Х13, 30Х13, 40Х13,
+					12Х13. Содержат 0,16–0,45 % углерода и закаливаются на твёрдость. Мартенсит — это
+					пересыщенный твёрдый раствор углерода в α-Fe, той же ОЦК-решётке, что и феррит,
+					только с искажениями. Магнитные свойства те же — притяжение есть.
+				</p>
+				<p>
+					Поэтому если у вас в руках лист AISI 430 (популярная пищевая ферритная), мойка
+					раковины из «нержавейки эконом-класса» или вал из 20Х13 — магнит притянется
+					уверенно. Это не подделка: ферритные и мартенситные стали действительно
+					нержавеющие, просто другого класса по структуре. См. <a href="/list/aisi-430/">AISI 430</a>
+					и <a href="/krug/">сортовой прокат 20Х13–40Х13</a>.
+				</p>
+			</section>
+
+			<section class="post__section" id="naklep">
+				<h2>Почему AISI 304 может слабо притягивать магнит</h2>
+				<p>
+					Самая частая ситуация в цеху: пришёл лист AISI 304 с сертификатом, на ровном
+					участке магнит не липнет — но по краю реза, по сгибу или вокруг просверленного
+					отверстия магнит начинает чувствоваться. Покупатель решает, что подсунули
+					фальсификат. На самом деле это штатное физическое явление — <strong>мартенситное
+					превращение при деформации</strong>.
+				</p>
+				<p>
+					Холодная пластическая деформация (прокатка, гибка, штамповка, сверление,
+					гильотинная резка) даёт локальный нагрев и одновременно сильные сдвиговые
+					напряжения. Часть γ-Fe в этих зонах превращается в α′-Fe (α-штрих) — мартенсит
+					деформации с искажённой ОЦК-решёткой. Этот α′-мартенсит ферромагнитен, отсюда
+					и слабое прилипание магнита по краям и сгибам. Стандарт EN 10088-2 такое
+					поведение допускает и не считает дефектом.
+				</p>
+				<p>
+					Вернуть аустенитное состояние можно отжигом на твёрдый раствор: нагрев до
+					1040–1080 °C, выдержка, быстрое охлаждение в воде. После такой обработки
+					α′ превращается обратно в γ, и магнит перестаёт чувствоваться даже у сильно
+					наклёпанной детали. У AISI 316L склонность к деформационному мартенситу ниже,
+					чем у 304 — за счёт более высокого никеля и молибдена.
+				</p>
+			</section>
+
+			<section class="post__section" id="proverit">
+				<h2>Как проверить марку магнитом дома</h2>
+				<p>
+					Бытовой ферритовый магнит со старой колонки или холодильника слабоват — он может
+					ложно «не показать» наклёпанный аустенит и наоборот не отличить сильное
+					притяжение от слабого. Возьмите <strong>неодимовый магнит</strong> диаметром
+					от 10 мм — это рабочий инструмент.
+				</p>
+				<ol>
+					<li>
+						<strong>Приложите к ровному участку.</strong> Середина листа, гладкая часть
+						трубы, тело круга — туда, где металл не пилили и не гнули.
+					</li>
+					<li>
+						<strong>Приложите к краю после реза.</strong> Гильотинный или болгарочный рез
+						даёт максимум наклёпа.
+					</li>
+					<li>
+						<strong>Приложите к сгибу или зоне сверления.</strong> Это вторая горячая точка
+						деформационного мартенсита.
+					</li>
+				</ol>
+				<p>Интерпретация:</p>
+				<ul>
+					<li>
+						<strong>Прилип везде уверенно</strong> — ферритная или мартенситная сталь
+						(AISI 430, 20Х13, 40Х13). Всё ещё нержавейка, но другого класса.
+					</li>
+					<li>
+						<strong>Прилип только по краям и сгибам, в середине отпускает</strong> —
+						аустенит после холодной деформации (AISI 304 / 316L / 321 с наклёпом).
+					</li>
+					<li>
+						<strong>Не прилипает нигде</strong> — отожжённый аустенит. Чаще всего AISI 316L
+						или AISI 321 после термообработки на твёрдый раствор.
+					</li>
+				</ul>
+				<p>
+					Магнит не отличит AISI 304 от AISI 316L — для этого нужен искровой тест,
+					спектрометр или сертификат с химанализом плавки. Если нужна точная марка под
+					ответственный объект, заказывайте прокат с сертификатом завода-изготовителя по
+					<a href="/gost/#gost-5632"> ГОСТ 5632-2014</a>.
+				</p>
+			</section>
+
+			<section class="post__faq">
+				<h2>Частые вопросы</h2>
+				<div class="post__faq-list">
+					{faq.map((f) => (
+						<details class="post__faq-item">
+							<summary class="post__faq-q">
+								<span>{f.q}</span>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p>{f.a}</p>
+						</details>
+					))}
+				</div>
+			</section>
+
+			<aside class="post__related">
+				<h2>Смежные страницы</h2>
+				<ul>
+					<li><a href="/list/aisi-304/">Лист AISI 304 (08Х18Н10) — каталог и цена</a></li>
+					<li><a href="/list/aisi-316l/">Лист AISI 316L (03Х17Н14М2)</a></li>
+					<li><a href="/list/aisi-321/">Лист AISI 321 (12Х18Н10Т)</a></li>
+					<li><a href="/list/aisi-430/">Лист AISI 430 (08Х17) — ферритная нержавейка</a></li>
+					<li><a href="/gost/">Справочник ГОСТов на нержавеющий металлопрокат</a></li>
+				</ul>
+			</aside>
+		</article>
+	</div>
+
+	<CtaSection
+		title="Нужна нержавейка с сертификатом плавки?"
+		text="Менеджер пришлёт позиции с химанализом и подтверждением марки по ГОСТ 5632 — в течение 30 минут."
+	/>
+</BaseLayout>
+
+<style>
+	.post { padding-block: var(--space-8); min-width: 0; }
+
+	/* Hero */
+	.post__hero { margin-bottom: var(--space-6); max-width: 75ch; }
+	.post__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.post__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-2);
+	}
+	.post__meta {
+		display: flex;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: var(--space-4);
+	}
+	.post__lead {
+		font-size: 1.08rem;
+		line-height: 1.6;
+		max-width: 70ch;
+		color: var(--color-text);
+		margin: 0;
+	}
+	.post__lead strong { color: var(--color-primary); }
+
+	/* TOC */
+	.post__toc {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+		max-width: 80ch;
+	}
+	.post__toc-title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.post__toc ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-2);
+	}
+	.post__toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.post__toc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.post__toc a strong {
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		font-weight: 600;
+	}
+	.post__toc a span {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		line-height: 1.35;
+	}
+
+	/* Body */
+	.post__body {
+		max-width: 75ch;
+		display: grid;
+		gap: var(--space-7);
+	}
+	.post__section {
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+	.post__section h2 {
+		font-size: 1.35rem;
+		line-height: 1.3;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__section p,
+	.post__section ul,
+	.post__section ol {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--color-text);
+		margin: 0 0 var(--space-3);
+	}
+	.post__section ul,
+	.post__section ol {
+		padding-left: 1.3rem;
+	}
+	.post__section li {
+		margin-bottom: 0.4rem;
+		line-height: 1.6;
+	}
+	.post__section li:last-child { margin-bottom: 0; }
+	.post__section a {
+		color: var(--color-primary-600);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.post__section a:hover { color: var(--color-primary); }
+
+	/* FAQ */
+	.post__faq h2 {
+		font-size: 1.35rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+	.post__faq-list { display: grid; gap: 0.6rem; }
+	.post__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.post__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.post__faq-q::-webkit-details-marker { display: none; }
+	.post__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] .post__faq-q svg { transform: rotate(180deg); }
+	.post__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); line-height: 1.6; }
+
+	/* Related */
+	.post__related {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+	}
+	.post__related h2 {
+		font-size: 1.05rem;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__related ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.post__related a {
+		color: var(--color-primary-600);
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+	.post__related a:hover {
+		color: var(--color-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+</style>
