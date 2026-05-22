@@ -307,14 +307,72 @@ const isDup = dupIdx >= 2;
 const baseSlug = isDup ? sku.slug.replace(/-\d+$/, '') : sku.slug;
 const canonicalPath = `${hubHref}${baseSlug}/`;
 
-/* SEO-title — короче и читабельнее: «Лист AISI 304 BA 0,4 мм — купить, цена ...».
-   В intro/description — то же содержимое плюс цена. */
+/* SEO-title начинается с размера в естественной форме — это ловит размерные
+   хвосты Wordstat: «лист нержавеющий 1 мм», «пруток нержавеющий 12мм» и т.д.
+   Формат: «Лист нержавеющий 1 мм AISI 304 — купить в Нижнем Новгороде». */
+
+// «0.4» / «0,4» → «0,4» (российский формат: запятая вместо точки)
+function ruNum(s: string): string {
+	return s.replace('.', ',');
+}
+
+// Извлекает главный размер из sku.size по типу хаба.
+// Возвращает строку вида «1 мм», «Ø 50 × 2», «20 мм» — для подстановки в title.
+function extractMainSize(hub: string, size: string | null | undefined): string {
+	if (!size) return '';
+	const raw = String(size).trim();
+	// Для трубы: формат «Ø6 × 1» / «Ø100.0 × 2» → «Ø 6 × 1 мм»
+	if (hub === 'truba') {
+		const m = raw.match(/Ø?\s*([\d.,]+)\s*[×x]\s*([\d.,]+)/i);
+		if (m) return `Ø ${ruNum(m[1])} × ${ruNum(m[2])} мм`;
+		const m1 = raw.match(/Ø?\s*([\d.,]+)/);
+		if (m1) return `Ø ${ruNum(m1[1])} мм`;
+		return raw;
+	}
+	// Лист в рулоне: «0,4 × 1000» → первое число (толщина) — это и есть ключ.
+	// Лист / полоса / уголок / круг / проволока / детали — первое число.
+	const m = raw.match(/([\d.,]+)/);
+	if (m) {
+		const n = ruNum(m[1]);
+		return `${n} мм`;
+	}
+	return raw;
+}
+
+// Короткое обозначение марки для title:
+// «AISI 304 (08Х18Н10)» → «AISI 304»
+// «AISI 201 12Х15Г9НД» → «AISI 201»
+// «12Х18Н10Т» → «12Х18Н10Т» (без изменений)
+function shortGrade(grade: string | null | undefined): string {
+	if (!grade) return '';
+	let g = String(grade).trim();
+	// Отрезаем скобку: «AISI 304 (08Х18Н10)» → «AISI 304»
+	const p = g.indexOf('(');
+	if (p >= 0) g = g.slice(0, p).trim();
+	// Если в строке два обозначения через пробел («AISI 201 12Х15Г9НД»),
+	// оставляем только AISI-часть как более узнаваемую.
+	const aisiMatch = g.match(/^(AISI\s*\S+)/i);
+	if (aisiMatch) return aisiMatch[1].replace(/\s+/g, ' ');
+	return g;
+}
+
+const mainSize = extractMainSize(sku.hub, sku.size);
+const shortGradeLabel = shortGrade(sku.grade);
+
+// Title с размером и маркой первыми. Цель — полный <title> ≤ 70 знаков
+// (BaseLayout приклеит « — ГК Металлинвест» = 19 знаков, значит наш part ≤ 51).
 const titleSeo = (() => {
-	const bits = [hubLabel];
-	if (sku.grade) bits.push(sku.grade);
-	if (sku.surface) bits.push(sku.surface);
-	if (sku.size) bits.push(`${sku.size} мм`);
-	return bits.join(' ');
+	const head = [hubLabel, mainSize, shortGradeLabel].filter(Boolean).join(' ');
+	const BUDGET = 51; // 70 − длина « — ГК Металлинвест»
+	const longSuffix = ' — купить в Нижнем Новгороде';
+	const midSuffix = ' — купить за тонну с НДС';
+	const shortSuffix = ' — купить';
+	if ((head + longSuffix).length <= BUDGET) return head + longSuffix;
+	if ((head + midSuffix).length <= BUDGET) return head + midSuffix;
+	if ((head + shortSuffix).length <= BUDGET) return head + shortSuffix;
+	// Если даже самый короткий хвост не влезает — отдаём только head.
+	// (Превышение бюджета приемлемо, т.к. размер+марка важнее.)
+	return head;
 })();
 
 const fmtPrice = (p: number | null | undefined) =>
@@ -322,7 +380,21 @@ const fmtPrice = (p: number | null | undefined) =>
 const priceLine = sku.price
 	? `от ${fmtPrice(sku.price)} ₽/${sku.unit}`
 	: 'цена по запросу';
-const seoDescription = `${titleSeo} — ${priceLine}. Сертификат завода, отгрузка из Нижнего Новгорода, доставка по России. ${sku.fact ? 'В наличии' : 'Под заказ'}. ${contacts.phone}.`;
+// ostatok приходит в исходных единицах (часто в кг для тонн — даёт значения
+// типа «314060 т», что выглядит абсурдно в description). Поэтому показываем
+// «в наличии» / «под заказ» без числа — это надёжнее в SERP.
+const stockPhrase = (sku.ostatok != null && sku.ostatok > 0) || sku.fact
+	? 'в наличии'
+	: 'под заказ';
+// Description 140-160 знаков с размером и маркой в первой фразе.
+const seoDescription = (() => {
+	const head = [hubLabel, mainSize, shortGradeLabel].filter(Boolean).join(' ');
+	const full = `${head} — ${stockPhrase}. Сертификат завода, отгрузка из Нижнего Новгорода, доставка по РФ. Цена ${priceLine}.`;
+	if (full.length <= 160) return full;
+	const mid = `${head} — ${stockPhrase}. Сертификат завода, отгрузка из Нижнего Новгорода. Цена ${priceLine}.`;
+	if (mid.length <= 160) return mid;
+	return `${head} — ${stockPhrase}. Сертификат завода. Цена ${priceLine}.`;
+})();
 
 /* Product / Offer JSON-LD. На дубли тоже отдаём — но т.к. они носят canonical
    на основной, поисковики не сделают два rich snippet'а на один товар.
