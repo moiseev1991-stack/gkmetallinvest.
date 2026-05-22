@@ -23,8 +23,11 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# local Claude Code harness config (permission settings, not for repo)
-.claude/
+# local Claude Code harness config (permission settings, not for repo).
+# Исключение: .claude/agents/ — это проектные субагенты, должны быть в репо
+# и одинаково работать у всех, кто работает над сайтом.
+.claude/*
+!.claude/agents/
 
 # local working materials (not part of the site)
 планы/
