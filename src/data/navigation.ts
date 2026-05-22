@@ -83,4 +83,5 @@ export const navServices = [
 	{ label: 'Перфорация листов', href: '/uslugi/perforaciya-listov/' },
 	{ label: 'Полировка и шлифование', href: '/uslugi/polirovka/' },
 	{ label: 'Калькулятор веса', href: '/kalkulyator-vesa/' },
+	{ label: 'Справочник ГОСТов', href: '/gost/' },
 ];

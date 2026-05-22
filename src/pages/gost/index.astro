@@ -1,0 +1,394 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'ГОСТы на нержавеющий металлопрокат — справочник: 9941, 5582, 7350';
+const description = 'Справочник ГОСТов на нержавейку: 9941 (трубы), 5582 и 7350 (лист), 5949 (сорт), 5632 (марки). Состав, размеры, аналоги AISI. Склад в Нижнем Новгороде.';
+
+/* Структурированные данные для рендеринга 8 H2-блоков. У каждого — короткое
+   описание (для list-блока сверху страницы как «оглавление») и развёрнутый
+   текст. Это удобнее, чем повторять разметку для каждого ГОСТа. */
+const sections = [
+	{
+		id: 'gost-5582-19903',
+		anchor: 'ГОСТ 5582-75, 19903-2015',
+		title: 'ГОСТ 5582-75 и ГОСТ 19903-2015 — тонколистовая нержавейка',
+		summary: 'Холоднокатаный лист до 4 мм и горячекатаный сортамент.',
+		hubHref: '/list/',
+		hubLabel: 'хабе листа',
+		text: [
+			'ГОСТ 5582-75 регулирует тонколистовой холоднокатаный прокат толщиной до 4 мм из коррозионно-стойких и жаростойких сталей. ГОСТ 19903-2015 задаёт сортамент горячекатаного листа: толщины, ширину, длину, предельные отклонения.',
+			'По этим стандартам поставляется большинство ходовых марок аустенитного и ферритного класса: AISI 304 (08Х18Н10), AISI 321 (12Х18Н10Т), AISI 316L (03Х17Н14М2), AISI 430 (08Х17). Типовые толщины холоднокатаного листа — 0,4; 0,5; 0,8; 1; 1,5; 2; 3; 4 мм, форматы 1000×2000 и 1250×2500 мм, поверхности 2B, BA, 4N. На нашем сайте этот сортамент собран в хабе листа.',
+		],
+	},
+	{
+		id: 'gost-7350',
+		anchor: 'ГОСТ 7350-77',
+		title: 'ГОСТ 7350-77 — толстолистовая нержавейка',
+		summary: 'Лист от 4 до 50 мм, корпусные конструкции и ёмкости.',
+		hubHref: '/list/',
+		hubLabel: 'хаб листа',
+		text: [
+			'ГОСТ 7350-77 распространяется на толстолистовой горячекатаный и холоднокатаный прокат из коррозионно-стойких, жаростойких и жаропрочных сталей толщиной от 4 до 50 мм. Стандарт определяет химический состав, механические свойства, требования к поверхности и термообработке.',
+			'Типовые марки по ГОСТ 7350 — 08Х18Н10 (AISI 304), 12Х18Н10Т (AISI 321), 03Х17Н14М2 (AISI 316L), 20Х23Н18 (AISI 310S), а также ферритные 08Х17 и 12Х17. Размерный ряд толстого листа — 4; 5; 6; 8; 10; 12; 14; 16; 20; 25; 30; 40; 50 мм; форматы 1500×6000 и 2000×6000 мм. Этот прокат идёт на корпусные конструкции, ёмкости, теплообменники, фланцевые заготовки.',
+		],
+	},
+	{
+		id: 'gost-9941-9940',
+		anchor: 'ГОСТ 9941-81, 9940-81',
+		title: 'ГОСТ 9941-81 и ГОСТ 9940-81 — бесшовные трубы',
+		summary: 'Холодно- и горячедеформированные трубы Ø 5–325 мм.',
+		hubHref: '/truba/',
+		hubLabel: 'хабе трубы',
+		text: [
+			'ГОСТ 9941-81 — стандарт на бесшовные холоднодеформированные трубы из коррозионно-стойких сталей: тянутые и катаные на холодных станах. Регулирует диаметры 5–250 мм, толщины стенки 0,2–22 мм, точность размеров (П, В, Н), длины (немерные, мерные, кратные).',
+			'ГОСТ 9940-81 — на бесшовные горячедеформированные трубы диаметром 57–325 мм со стенкой 3,5–32 мм. По обоим стандартам поставляются 12Х18Н10Т (AISI 321), 08Х18Н10 (AISI 304), 10Х17Н13М2Т, 03Х17Н14М2 (AISI 316L) и жаропрочная 20Х23Н18 (AISI 310S). Бесшовка по ГОСТ 9941 — рабочая лошадка тепловых сетей, котельной обвязки, химического и нефтегазового оборудования.',
+		],
+	},
+	{
+		id: 'gost-11068',
+		anchor: 'ГОСТ 11068-81',
+		title: 'ГОСТ 11068-81 — электросварные трубы',
+		summary: 'Прямошовные ЭСВ-трубы Ø 8–102 мм, дешевле бесшовки на 20–40 %.',
+		hubHref: '/truba/',
+		hubLabel: 'общем хабе труб',
+		text: [
+			'ГОСТ 11068-81 регулирует электросварные прямошовные трубы из коррозионно-стойкой стали диаметром 8–102 мм со стенкой 0,5–4 мм. Их формируют из ленты или штрипса и сваривают продольным швом аргонодуговой сваркой (TIG) или плазменно-дуговым методом. Дешевле бесшовки на 20–40 % при сопоставимой коррозионной стойкости в большинстве сред.',
+			'По ГОСТ 11068 идут марки AISI 304 (08Х18Н10), AISI 321 (12Х18Н10Т), AISI 316L (03Х17Н14М2), AISI 430 (08Х17). Применение — пищевые трубопроводы, перила и ограждения, декоративные конструкции, дымоходы, мебельные каркасы. Профильные трубы (квадрат, прямоугольник) для пищевых и архитектурных задач делают по тому же ГОСТ 11068 либо по ТУ заводов-изготовителей.',
+		],
+	},
+	{
+		id: 'gost-5949',
+		anchor: 'ГОСТ 5949-2018',
+		title: 'ГОСТ 5949-2018 — сортовой прокат (круг, квадрат, шестигранник)',
+		summary: 'Круг 5–270 мм, квадрат, шестигранник, полоса.',
+		hubHref: '/krug/',
+		hubLabel: 'хабе круга',
+		text: [
+			'ГОСТ 5949-2018 — основной стандарт на сортовой и калиброванный прокат из нержавеющих и жаропрочных сталей: круг, квадрат, шестигранник, полоса. Регулирует диаметр круга 5–270 мм, стороны квадрата 8–200 мм, размер «под ключ» шестигранника 8–100 мм.',
+			'Задаёт классы точности, состояние поставки (горячекатаный, кованый, калиброванный), требования к макроструктуре и обезуглероженному слою. Под этот стандарт поставляются 12Х18Н10Т (AISI 321), 08Х18Н10 (AISI 304), 03Х17Н14М2 (AISI 316L), мартенситные 20Х13, 30Х13, 40Х13, ферритная 12Х13, жаропрочная 20Х23Н18, супераустенитная 06ХН28МДТ. Круг и шестигранник идут под токарную обработку валов, осей, метизов, фланцевых заготовок.',
+		],
+	},
+	{
+		id: 'gost-18143',
+		anchor: 'ГОСТ 18143-72',
+		title: 'ГОСТ 18143-72 — проволока нержавеющая',
+		summary: 'Тянутая проволока Ø 0,2–6 мм, мягкое и твёрдое состояние.',
+		hubHref: '/provoloka/',
+		hubLabel: 'хабе проволоки',
+		text: [
+			'ГОСТ 18143-72 регулирует тянутую проволоку из коррозионно-стойких и жаростойких сталей. Диаметры — от 0,2 до 6 мм, состояние поставки — мягкое (М), полутвёрдое, твёрдое. Стандарт определяет химический состав, временное сопротивление разрыву, относительное удлинение, требования к поверхности и упаковке (бухты, катушки).',
+			'По ГОСТ 18143 идёт сварочная проволока 12Х18Н10Т, 08Х18Н10, 03Х17Н14М2 (AISI 304, 321, 316L) — для аргонодуговой сварки и автоматической сварки под флюсом. Отдельно по ГОСТ 2246 поставляется сварочная проволока специальных марок (Св-04Х19Н11М3, Св-06Х19Н9Т). Вязальная и пружинная проволока — те же марки, но в твёрдом состоянии.',
+		],
+	},
+	{
+		id: 'gost-4986',
+		anchor: 'ГОСТ 4986-79',
+		title: 'ГОСТ 4986-79 — лента нержавеющая холоднокатаная',
+		summary: 'Толщина 0,05–4 мм, ширина 4–600 мм, штрипс под трубу.',
+		hubHref: '/lenta/',
+		hubLabel: 'хабе ленты',
+		text: [
+			'ГОСТ 4986-79 регулирует холоднокатаную ленту из коррозионно-стойких и жаростойких сталей. Толщины — 0,05–4 мм, ширина — 4–600 мм. Стандарт задаёт точность по толщине (нормальная, повышенная, высокая), классы поверхности (матовая, светлая, полированная), состояние (нагартованное, отожжённое).',
+			'По ГОСТ 4986 поставляются AISI 304 (08Х18Н10), AISI 321 (12Х18Н10Т), AISI 316L (03Х17Н14М2), AISI 430 (08Х17), 20Х13, 30Х13, 40Х13. Узкая лента (штрипс) шириной до 600 мм — заготовка для электросварных труб, пружин, упругих элементов, ножевой стали, заклёпок, бритвенных лезвий. Тонкая лента 0,05–0,2 мм называется фольгой и идёт на прокладки, экраны, гофры теплообменников.',
+		],
+	},
+	{
+		id: 'gost-5632',
+		anchor: 'ГОСТ 5632-2014',
+		title: 'ГОСТ 5632-2014 — базовый стандарт состава нержавеющих сталей',
+		summary: '200+ марок, химический состав и обозначения по российской системе.',
+		hubHref: '/postavka-nerzhaveyushchego-metalloprokata/',
+		hubLabel: 'сводном каталоге',
+		text: [
+			'ГОСТ 5632-2014 — фундамент всей системы российских стандартов на нержавейку. Не регулирует сортамент или размеры — только химический состав сталей и сплавов: 200 с лишним марок коррозионно-стойких, жаростойких и жаропрочных сталей с допустимыми границами содержания C, Cr, Ni, Mo, Ti, Mn, Si, S, P.',
+			'Именно по этому ГОСТу прописаны российские обозначения 08Х18Н10, 12Х18Н10Т, 03Х17Н14М2, 08Х17, 20Х13, 30Х13, 40Х13, 12Х13, 20Х23Н18, 06ХН28МДТ. В сертификатах завода-изготовителя ссылка на ГОСТ 5632 идёт обязательно — это подтверждает, что химия плавки попадает в допуски. Зарубежные аналоги — AISI/ASTM A959 и EN 10088-1.',
+		],
+	},
+];
+
+const faq = [
+	{
+		q: 'По какому ГОСТу заказать нержавеющую трубу?',
+		a: 'Для бесшовной — ГОСТ 9941-81 (холоднодеформированная) или ГОСТ 9940-81 (горячедеформированная). Для электросварной — ГОСТ 11068-81. Профильную (квадрат, прямоугольник) делают по ГОСТ 11068 либо по ТУ конкретного завода.',
+	},
+	{
+		q: 'Чем отличается ГОСТ 5582 от ГОСТ 7350?',
+		a: 'ГОСТ 5582-75 — тонкий холоднокатаный лист до 4 мм. ГОСТ 7350-77 — толстый горячекатаный и холоднокатаный лист от 4 до 50 мм. Разные станы прокатки, разные требования к поверхности и допускам.',
+	},
+	{
+		q: 'По какому ГОСТу AISI 304, 316L и 321?',
+		a: 'Состав AISI 304 (08Х18Н10), AISI 316L (03Х17Н14М2) и AISI 321 (12Х18Н10Т) прописан в ГОСТ 5632-2014. Прокат идёт по сортаментным ГОСТам: 5582 и 7350 на лист, 9941 и 9940 на бесшовные трубы, 5949 на круг и сорт, 18143 на проволоку, 4986 на ленту.',
+	},
+	{
+		q: 'Можно ли в одну партию собрать прокат из 20Х13, 30Х13 и 40Х13?',
+		a: 'Да. Все три мартенситные хромистые марки прописаны в ГОСТ 5632-2014 и поставляются по ГОСТ 5949-2018 (круг, квадрат, шестигранник) и ГОСТ 4986-79 (лента). Отличие — содержание углерода: 0,16–0,25 % у 20Х13, 0,26–0,35 % у 30Х13, 0,36–0,45 % у 40Х13. Чем выше C, тем выше твёрдость после закалки.',
+	},
+	{
+		q: 'Какой ГОСТ закрывает жаропрочные марки 20Х23Н18 и 06ХН28МДТ?',
+		a: 'Состав — ГОСТ 5632-2014. Сортовой прокат и круг — ГОСТ 5949-2018. Толстый лист 20Х23Н18 (AISI 310S) идёт по ГОСТ 7350-77, бесшовные трубы — по ГОСТ 9941 и 9940. Сплав 06ХН28МДТ (AISI 904L) — супераустенит для сернокислотных сред, чаще поставляется кругом и листом под заказ.',
+	},
+	{
+		q: 'Что должно быть указано в сертификате завода?',
+		a: 'Номер плавки, марка по ГОСТ 5632, ссылка на сортаментный ГОСТ (5582 / 7350 / 9941 / 5949 / 18143 / 4986), химический анализ, механические свойства, режим термообработки. Без сертификата с этими данными прокат не принимается на ответственные объекты.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={faqJsonLd}>
+	<div class="container gost">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'ГОСТы — справочник' }]} />
+
+		<header class="gost__hero">
+			<span class="gost__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4" />
+					<path d="M5 6h6M5 9h6M5 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+				</svg>
+				Справочник
+			</span>
+			<h1 class="gost__h1">ГОСТы для нержавеющего металлопроката</h1>
+			<p class="gost__lead">
+				На странице собраны ключевые стандарты, по которым поставляется нержавеющая сталь:
+				ГОСТ 9941 и 9940 на бесшовные трубы, ГОСТ 5582 и 7350 на лист, ГОСТ 5949 на сортовой
+				прокат, ГОСТ 5632 на химический состав марок. По каждому стандарту указано, что он
+				регулирует, какие марки в него попадают (08Х18Н10, 12Х18Н10Т, 03Х17Н14М2 и другие)
+				и в каком хабе нашего каталога его искать.
+			</p>
+		</header>
+
+		<nav class="gost__toc" aria-label="Содержание">
+			<div class="gost__toc-title">На странице</div>
+			<ul>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<div class="gost__sections">
+			{sections.map((s) => (
+				<section class="gost__section" id={s.id}>
+					<h2>{s.title}</h2>
+					{s.text.map((p) => <p>{p}</p>)}
+					<a class="gost__hub-link" href={s.hubHref}>
+						<span>Смотреть прокат по этому ГОСТу в {s.hubLabel}</span>
+						<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+							<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</a>
+				</section>
+			))}
+		</div>
+
+		<section class="gost__faq">
+			<h2>Частые вопросы про ГОСТы</h2>
+			<div class="gost__faq-list">
+				{faq.map((f) => (
+					<details class="gost__faq-item">
+						<summary class="gost__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Не нашли нужный ГОСТ или марку?"
+		text="Менеджер пришлёт точные позиции с сертификатами под ваш ГОСТ и марку — в течение 30 минут."
+	/>
+</BaseLayout>
+
+<style>
+	.gost { padding-block: var(--space-8); min-width: 0; }
+
+	/* Hero */
+	.gost__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.gost__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.gost__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-3);
+	}
+	.gost__lead {
+		font-size: 1.05rem;
+		line-height: 1.6;
+		max-width: 75ch;
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	/* TOC — список ГОСТов сверху */
+	.gost__toc {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+	}
+	.gost__toc-title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.gost__toc ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: var(--space-2);
+	}
+	.gost__toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost__toc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.gost__toc a strong {
+		font-family: var(--font-mono);
+		font-size: 0.88rem;
+		color: var(--color-primary-600);
+		font-weight: 700;
+	}
+	.gost__toc a span {
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		line-height: 1.35;
+	}
+
+	/* Разделы */
+	.gost__sections {
+		display: grid;
+		gap: var(--space-7);
+		max-width: 80ch;
+		margin-bottom: var(--space-10);
+	}
+	.gost__section {
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+	.gost__section h2 {
+		font-size: 1.3rem;
+		line-height: 1.3;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.gost__section p {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--color-text);
+		margin: 0 0 var(--space-3);
+	}
+	.gost__section p:last-of-type { margin-bottom: var(--space-4); }
+
+	.gost__hub-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.55rem 0.95rem;
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-pill);
+		color: var(--color-primary-600);
+		font-weight: 500;
+		font-size: 0.92rem;
+		text-decoration: none;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost__hub-link:hover {
+		background: var(--color-primary-100);
+		border-color: var(--color-primary-500);
+		text-decoration: none;
+	}
+	.gost__hub-link svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.gost__hub-link:hover svg { transform: translateX(2px); }
+
+	/* FAQ */
+	.gost__faq { margin-bottom: var(--space-8); max-width: 80ch; }
+	.gost__faq h2 {
+		font-size: 1.3rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+	.gost__faq-list { display: grid; gap: 0.6rem; }
+	.gost__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+	}
+	.gost__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.gost__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.gost__faq-q::-webkit-details-marker { display: none; }
+	.gost__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.gost__faq-item[open] .gost__faq-q svg { transform: rotate(180deg); }
+	.gost__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>
