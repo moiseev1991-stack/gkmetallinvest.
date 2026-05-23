@@ -30,6 +30,20 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 				</svg>
 				Нижний Новгород · доставка по РФ
 			</span>
+			<a class="head__strip-link head__strip-link--util" href="/kalkulyator-vesa/">
+				<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<rect x="2.5" y="2" width="11" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4" />
+					<path d="M5 5.5h6M5 8.5h2M8.5 8.5h2.5M5 11.5h2M8.5 11.5h2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+				</svg>
+				Калькулятор веса
+			</a>
+			<a class="head__strip-link head__strip-link--util" href="/gost/">
+				<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M3.5 2.5h6L12.5 5.5v8a1 1 0 01-1 1h-8a1 1 0 01-1-1v-10a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+					<path d="M9.5 2.5v3h3M5 9h6M5 11.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+				ГОСТы
+			</a>
 			<a class="head__strip-link" href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
 			<a class="head__strip-link" href={`mailto:${contacts.email}`}>{contacts.email}</a>
 		</div>
@@ -241,6 +255,29 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	.head__strip-link:hover {
 		color: #fff;
 		text-decoration: underline;
+	}
+	.head__strip-link--util {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		color: var(--color-on-dark-muted);
+	}
+	.head__strip-link--util svg {
+		opacity: 0.8;
+	}
+	.head__strip-link--util:hover {
+		color: #fff;
+		text-decoration: none;
+	}
+	.head__strip-link--util:hover svg {
+		opacity: 1;
+	}
+	/* На узких экранах между 768px и 1100px — две утилитарные ссылки скрываем,
+	   чтобы строка не ломалась. Контакты остаются. */
+	@media (min-width: 768px) and (max-width: 1100px) {
+		.head__strip-link--util {
+			display: none;
+		}
 	}
 
 	.head__inner {
