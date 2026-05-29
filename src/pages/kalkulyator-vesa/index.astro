@@ -326,51 +326,6 @@ const hubs = [
 		</section>
 
 		<section class="calc__block">
-			<h2 class="calc__h2">Формулы расчёта</h2>
-			<div class="calc__formulas">
-				<div class="calc__formula">
-					<div class="calc__formula-head">Лист / полоса</div>
-					<code class="calc__formula-eq">m = t × w × L × ρ</code>
-					<small>t — толщина, w — ширина, L — длина</small>
-				</div>
-				<div class="calc__formula">
-					<div class="calc__formula-head">Круг / проволока</div>
-					<code class="calc__formula-eq">m = π × (D / 2)² × L × ρ</code>
-					<small>D — диаметр, L — длина</small>
-				</div>
-				<div class="calc__formula">
-					<div class="calc__formula-head">Квадрат</div>
-					<code class="calc__formula-eq">m = a² × L × ρ</code>
-					<small>a — сторона, L — длина</small>
-				</div>
-				<div class="calc__formula">
-					<div class="calc__formula-head">Шестигранник</div>
-					<code class="calc__formula-eq">m = (√3 / 2) × s² × L × ρ</code>
-					<small>s — размер «под ключ» (между гранями)</small>
-				</div>
-				<div class="calc__formula">
-					<div class="calc__formula-head">Труба круглая</div>
-					<code class="calc__formula-eq">m = π × (D − S) × S × L × ρ</code>
-					<small>D — Ø, S — стенка, L — длина</small>
-				</div>
-				<div class="calc__formula">
-					<div class="calc__formula-head">Труба прямоугольная</div>
-					<code class="calc__formula-eq">m = 2 × (a + b − 2S) × S × L × ρ</code>
-					<small>a, b — стороны, S — стенка</small>
-				</div>
-				<div class="calc__formula calc__formula--wide">
-					<div class="calc__formula-head">Уголок равнополочный</div>
-					<code class="calc__formula-eq">m = (2 × a × t − t²) × L × ρ</code>
-					<small>a — полка, t — толщина, L — длина</small>
-				</div>
-			</div>
-			<p class="calc__note">
-				Размеры подставляются в миллиметрах, плотность в г/см³, результат — в килограммах.
-				Внутри калькулятора единицы приведены автоматически.
-			</p>
-		</section>
-
-		<section class="calc__block">
 			<h2 class="calc__h2">Плотность нержавейки по маркам</h2>
 			<div class="calc__density">
 				{densityRows.map((r) => (
@@ -1207,49 +1162,6 @@ const hubs = [
 		margin-bottom: var(--space-4);
 		letter-spacing: -0.01em;
 	}
-
-	/* ---------- Formulas grid ---------- */
-	.calc__formulas {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-		gap: var(--space-3);
-	}
-	.calc__formula {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		padding: var(--space-4);
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
-	}
-	.calc__formula:hover {
-		border-color: var(--color-primary-400);
-		transform: translateY(-2px);
-	}
-	.calc__formula--wide { grid-column: span 1; }
-	.calc__formula-head {
-		font-weight: 600;
-		font-size: 0.95rem;
-		color: var(--color-text);
-	}
-	.calc__formula-eq {
-		font-family: var(--font-mono);
-		font-size: 0.92rem;
-		background: var(--color-primary-50);
-		color: var(--color-primary);
-		padding: 0.5rem 0.7rem;
-		border-radius: var(--radius-sm);
-		border: 1px solid var(--color-primary-100);
-		white-space: nowrap;
-		overflow-x: auto;
-	}
-	.calc__formula small {
-		font-size: 0.78rem;
-		color: var(--color-muted);
-	}
-	.calc__note { margin-top: var(--space-4); font-size: 0.88rem; color: var(--color-muted); max-width: 70ch; }
 
 	/* ---------- Density rows ---------- */
 	.calc__density {
