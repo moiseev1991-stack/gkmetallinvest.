@@ -16,6 +16,14 @@
     { "source": "/lenta", "destination": "/lenta/proizvodstvo/", "permanent": true },
     { "source": "/rulon", "destination": "/rulon/", "permanent": true },
     { "source": "/listdeco", "destination": "/dekorativnye-listy/", "permanent": true },
-    { "source": "/uslugi/perforation", "destination": "/uslugi/perforaciya-listov/", "permanent": true }
+    { "source": "/uslugi/perforation", "destination": "/uslugi/perforaciya-listov/", "permanent": true },
+    { "source": "/list/v-perme/", "destination": "/list/v-permi/", "permanent": true },
+    { "source": "/truba/v-perme/", "destination": "/truba/v-permi/", "permanent": true },
+    { "source": "/krug/v-perme/", "destination": "/krug/v-permi/", "permanent": true },
+    { "source": "/rulon/v-perme/", "destination": "/rulon/v-permi/", "permanent": true },
+    { "source": "/polosa/v-perme/", "destination": "/polosa/v-permi/", "permanent": true },
+    { "source": "/provoloka/v-perme/", "destination": "/provoloka/v-permi/", "permanent": true },
+    { "source": "/ugolok-shveller/v-perme/", "destination": "/ugolok-shveller/v-permi/", "permanent": true },
+    { "source": "/detali-truboprovoda/v-perme/", "destination": "/detali-truboprovoda/v-permi/", "permanent": true }
   ]
 }

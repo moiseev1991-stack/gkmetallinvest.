@@ -146,7 +146,7 @@ export const cities: CityInfo[] = [
 		],
 	},
 	{
-		slug: 'perme',
+		slug: 'permi',
 		name: 'Пермь',
 		loc: 'Перми',
 		from: 'Пермь',
