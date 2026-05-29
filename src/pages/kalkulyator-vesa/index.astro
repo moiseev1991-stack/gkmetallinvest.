@@ -69,8 +69,8 @@ const howToJsonLd = {
    stroke=currentColor, чтобы менять цвет при активном состоянии через CSS. */
 const shapes = [
 	{ key: 'list', label: 'Лист', hubHref: '/list/' },
-	{ key: 'truba', label: 'Труба Ø', hubHref: '/truba/' },
-	{ key: 'truba-pryam', label: 'Труба □', hubHref: '/truba/' },
+	{ key: 'truba', label: 'Труба круглая', hubHref: '/truba/' },
+	{ key: 'truba-pryam', label: 'Труба профильная', hubHref: '/truba/' },
 	{ key: 'krug', label: 'Круг', hubHref: '/krug/' },
 	{ key: 'kvadrat', label: 'Квадрат', hubHref: '/krug/' },
 	{ key: 'shestigrannik', label: 'Шестигранник', hubHref: '/krug/' },
@@ -160,10 +160,12 @@ const hubs = [
 									)}
 									{s.key === 'truba-pryam' && (
 										<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-											<path d="M5 11l6-4h18l-6 4H5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
-											<path d="M5 11v18l6 4h18V15l-6-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
-											<path d="M23 15v18l6-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
-											<path d="M5 11l6 4M11 15v18" stroke="currentColor" stroke-width="1.3" opacity="0.55" />
+											{/* Изометрическая профильная труба: видим переднюю грань, верхнюю и правую — со стенкой */}
+											<path d="M6 12l6-4h17l-6 4H6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											<path d="M6 12v17l6 4h17V16l-6-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											<path d="M23 16v17l6-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+											{/* Внутренний контур — показывает стенку */}
+											<path d="M9 14l4-3h13M9 14v14M13 11v18" stroke="currentColor" stroke-width="1.2" opacity="0.6" stroke-linejoin="round" />
 										</svg>
 									)}
 									{s.key === 'krug' && (
@@ -271,6 +273,18 @@ const hubs = [
 							<button type="button" class="calc__qty-step" data-calc-qty-plus aria-label="Больше">+</button>
 							<span class="calc__qty-unit" data-calc-qty-hint>шт</span>
 						</div>
+					</div>
+
+					<div class="calc__field calc__field--mass">
+						<label class="calc__label" for="calc-mass">Или нужная масса</label>
+						<div class="calc__mass-wrap">
+							<input class="calc__input calc__mass-input" id="calc-mass" type="number" inputmode="decimal" step="any" data-calc-mass min="0" placeholder="—" />
+							<select class="calc__mass-unit-sel" data-calc-mass-unit aria-label="Единицы массы">
+								<option value="t" selected>т</option>
+								<option value="kg">кг</option>
+							</select>
+						</div>
+						<p class="calc__mass-hint">Введите нужную массу — пересчитаем, сколько <span data-calc-mass-hint-unit>штук</span> взять</p>
 					</div>
 				</div>
 
@@ -391,7 +405,7 @@ const hubs = [
 		kvadrat: 'Квадрат',
 		shestigrannik: 'Шестигранник',
 		truba: 'Труба круглая',
-		'truba-pryam': 'Труба прямоугольная',
+		'truba-pryam': 'Труба профильная',
 		provoloka: 'Проволока',
 		polosa: 'Полоса',
 		ugolok: 'Уголок',
@@ -463,6 +477,9 @@ const hubs = [
 	const dimsEl = root?.querySelector('[data-calc-dims]') as HTMLElement | null;
 	const qtyInput = root?.querySelector('[data-calc-qty]') as HTMLInputElement | null;
 	const qtyHint = root?.querySelector('[data-calc-qty-hint]') as HTMLElement | null;
+	const massInput = root?.querySelector('[data-calc-mass]') as HTMLInputElement | null;
+	const massUnitSel = root?.querySelector('[data-calc-mass-unit]') as HTMLSelectElement | null;
+	const massHintUnit = root?.querySelector('[data-calc-mass-hint-unit]') as HTMLElement | null;
 	const unitWeightEl = root?.querySelector('[data-calc-unit-weight]') as HTMLElement | null;
 	const totalEl = root?.querySelector('[data-calc-total]') as HTMLElement | null;
 	const totalSubEl = root?.querySelector('[data-calc-total-sub]') as HTMLElement | null;
@@ -474,8 +491,17 @@ const hubs = [
 	const copyBtn = root?.querySelector('[data-calc-copy]') as HTMLButtonElement | null;
 	const copyText = root?.querySelector('[data-calc-copy-text]') as HTMLElement | null;
 
+	const UNIT_HINT: Record<'pcs' | 'meter' | 'sheet', string> = {
+		pcs: 'штук',
+		meter: 'метров',
+		sheet: 'листов',
+	};
+
 	let currentShape: Shape = 'list';
 	let currentGrade = 'austenitic';
+	/* Какое поле редактировалось последним: количество или масса.
+	   Определяет направление пересчёта — другое поле обновляется автоматически. */
+	let lastEdited: 'qty' | 'mass' = 'qty';
 
 	if (root && dimsEl && qtyInput && qtyHint && unitWeightEl && totalEl) {
 		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
@@ -505,12 +531,14 @@ const hubs = [
 				inp.min = '0.01';
 				inp.dataset.dim = f.key;
 				inp.value = String(f.def ?? '');
-				inp.addEventListener('input', recalc);
+				/* Изменение размера — пересчёт идёт от количества к массе. */
+				inp.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
 				wrap.appendChild(lbl);
 				wrap.appendChild(inp);
 				dimsEl!.appendChild(wrap);
 			});
 			qtyHint!.textContent = UNIT_LABELS[cfg.unit];
+			if (massHintUnit) massHintUnit.textContent = UNIT_HINT[cfg.unit];
 		}
 
 		function getDim(key: string): number {
@@ -571,7 +599,25 @@ const hubs = [
 
 		function recalc() {
 			const unitW = calcUnitWeight();
-			const qty = parseFloat(qtyInput!.value) || 0;
+			let qty = parseFloat(qtyInput!.value) || 0;
+
+			/* Двусторонняя связь Количество ⇄ Масса.
+			   Если последним редактировали массу — qty пересчитывается из неё.
+			   Иначе — масса пересчитывается из qty. */
+			if (lastEdited === 'mass' && massInput && unitW > 0) {
+				const massRaw = parseFloat(massInput.value) || 0;
+				const massKg = massUnitSel?.value === 't' ? massRaw * 1000 : massRaw;
+				qty = massKg / unitW;
+				if (qty > 0) qtyInput!.value = String(+qty.toFixed(3));
+				else qtyInput!.value = '0';
+			} else if (massInput && unitW > 0 && qty > 0) {
+				const totalKg = unitW * qty;
+				const inT = massUnitSel?.value === 't';
+				massInput.value = String(+(inT ? totalKg / 1000 : totalKg).toFixed(3));
+			} else if (massInput && (qty <= 0 || unitW <= 0)) {
+				massInput.value = '';
+			}
+
 			const total = unitW * qty;
 			const rho = getDensity();
 			const volMm3 = calcVolumeMm3();
@@ -628,6 +674,7 @@ const hubs = [
 					b.classList.toggle('calc__shape--active', active);
 					b.setAttribute('aria-checked', active ? 'true' : 'false');
 				});
+				lastEdited = 'qty';
 				renderDims();
 				recalc();
 			});
@@ -650,20 +697,27 @@ const hubs = [
 				}
 				/* Подкрашиваем виджет в тон группы — через data-tone на корне */
 				(root as HTMLElement).dataset.gradeTone = k;
+				lastEdited = 'qty';
 				recalc();
 			});
 		});
 
-		densityInput?.addEventListener('input', recalc);
-		qtyInput.addEventListener('input', recalc);
+		densityInput?.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		qtyInput.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		massInput?.addEventListener('input', () => { lastEdited = 'mass'; recalc(); });
+		/* Смена единицы массы: пересчитываем поле к новой единице,
+		   ведущим оставляем количество. */
+		massUnitSel?.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
 
 		qtyMinus?.addEventListener('click', () => {
+			lastEdited = 'qty';
 			const v = parseFloat(qtyInput.value) || 0;
 			const next = Math.max(0.01, v - 1);
 			qtyInput.value = String(Number.isInteger(next) ? next : +next.toFixed(2));
 			recalc();
 		});
 		qtyPlus?.addEventListener('click', () => {
+			lastEdited = 'qty';
 			const v = parseFloat(qtyInput.value) || 0;
 			qtyInput.value = String(v + 1);
 			recalc();
@@ -998,6 +1052,54 @@ const hubs = [
 		color: var(--color-muted);
 		border-left: 1px solid var(--color-border);
 		background: var(--color-bg-elev);
+	}
+
+	/* ---------- Mass input (обратный пересчёт) ---------- */
+	.calc__field--mass { margin-top: var(--space-3); max-width: 280px; }
+	.calc__mass-wrap {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: stretch;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		overflow: hidden;
+		transition: border-color var(--dur-fast) var(--ease-out);
+	}
+	.calc__mass-wrap:focus-within { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); }
+	.calc__mass-input {
+		border: 0 !important;
+		border-radius: 0 !important;
+		background: transparent !important;
+		text-align: center;
+		font-weight: 600;
+		font-size: 1rem;
+		padding-inline: 0.5rem !important;
+		box-shadow: none !important;
+	}
+	.calc__mass-input:focus { background: transparent !important; }
+	.calc__mass-unit-sel {
+		border: 0;
+		border-left: 1px solid var(--color-border);
+		background: var(--color-bg-elev);
+		padding: 0 0.5rem 0 0.85rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		cursor: pointer;
+		appearance: none;
+		-webkit-appearance: none;
+		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+		background-repeat: no-repeat;
+		background-position: right 0.45rem center;
+		background-size: 0.9rem;
+		padding-right: 1.6rem;
+	}
+	.calc__mass-unit-sel:focus { outline: none; }
+	.calc__mass-hint {
+		font-size: 0.78rem;
+		color: var(--color-muted);
+		margin: 0.45rem 0 0;
+		line-height: 1.4;
 	}
 
 	/* ---------- Result card ---------- */
