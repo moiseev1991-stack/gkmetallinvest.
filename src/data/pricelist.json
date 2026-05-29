@@ -30,17 +30,9 @@
       "total": 24,
       "withPrice": 24
     },
-    "podshipniki": {
-      "total": 0,
-      "withPrice": 0
-    },
     "rulon": {
       "total": 77,
       "withPrice": 77
-    },
-    "elektrody": {
-      "total": 0,
-      "withPrice": 0
     }
   },
   "hubs": {
@@ -58215,7 +58207,6 @@
         "name": "сталь сорт нерж никел швеллер горячекатаный 140x60x7"
       }
     ],
-    "podshipniki": [],
     "rulon": [
       {
         "hub": "rulon",
@@ -59526,7 +59517,6 @@
         "ostatok": 258000,
         "name": "горячекатаный нержавеющий лист н/с 6х1500 No1 AISI 304 (08Х18Н10)"
       }
-    ],
-    "elektrody": []
+    ]
   }
 }

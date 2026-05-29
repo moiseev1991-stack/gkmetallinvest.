@@ -16,13 +16,9 @@ interface Props {
 		| 'provoloka'
 		| 'detali-truboprovoda'
 		| 'ugolok-shveller'
-		| 'metizy'
-		| 'podshipniki'
-		| 'lestnichnye-ograzhdeniya'
 		| 'dekorativnye-listy'
 		| 'lenta'
-		| 'folga'
-		| 'elektrody';
+		| 'folga';
 	class?: string;
 }
 const { hub, class: className = '' } = Astro.props;
@@ -41,18 +37,15 @@ const IMG: Partial<Record<Props['hub'], string>> = {
 	'dekorativnye-listy': '/img/catalog/dekorativnye.webp',
 	lenta: '/img/catalog/lenta.jpg',
 	folga: '/img/catalog/folga.avif',
-	metizy: '/img/catalog/metizy.jpg',
-	/* podshipniki / elektrody — годных фото без watermark не нашлось,
-	   рендерим плейсхолдер с инициалом до появления нормальных кадров. */
 };
 
 /* Подписи на акцентной плашке под/над изображением — характерные параметры
    раздела. Для пустых хабов плашка может быть пустой. */
 const TAG: Record<Props['hub'], { mark: string; sub: string }> = {
-	list: { mark: 'AISI 304', sub: 'толщина 0,4–60 мм · поверхности 2B / BA / 4N' },
+	list: { mark: 'AISI 304', sub: 'толщина 0,4–120 мм · поверхности 2B / BA / 4N' },
 	truba: { mark: 'AISI 321', sub: 'Ø 6–273 мм · стенка 1–16 мм' },
 	krug: { mark: 'h9 / h11', sub: 'Ø 5–250 мм · калиброванный и горячекатаный' },
-	rulon: { mark: '0,4–3 мм', sub: 'ширина 1000–1500 мм · 2B / BA / 4N' },
+	rulon: { mark: '0,4–8 мм', sub: 'ширина 1000–1500 мм · 2B / BA / 4N' },
 	polosa: { mark: '4–50 мм', sub: 'ширина 25–300 мм · ГОСТ 103' },
 	provoloka: { mark: 'Ø 0,1–6 мм', sub: 'сварочная · вязальная · пружинная' },
 	'detali-truboprovoda': { mark: 'ГОСТ 12820', sub: 'фланцы · отводы · тройники · задвижки' },
@@ -60,10 +53,6 @@ const TAG: Record<Props['hub'], { mark: string; sub: string }> = {
 	'dekorativnye-listy': { mark: 'BA · 4N · 8K', sub: 'с защитной плёнкой PE / PVC' },
 	lenta: { mark: 'штрипс', sub: 'толщина 0,05–4 мм · шаг ширины 5 мм' },
 	folga: { mark: 'фольга', sub: 'тонкая нержавеющая, по запросу' },
-	metizy: { mark: 'A2 / A4', sub: 'болты · гайки · шпильки · DIN / ГОСТ' },
-	podshipniki: { mark: 'AISI 440C', sub: 'шариковые · роликовые · игольчатые' },
-	elektrody: { mark: 'ЦЛ-11', sub: 'ОЗЛ-8 · ЭА-400 · 2,5–5 мм' },
-	'lestnichnye-ograzhdeniya': { mark: 'EN 1090', sub: 'стойки · поручни · стеклодержатели' },
 };
 
 const src = IMG[hub];
@@ -79,10 +68,6 @@ const PLACEHOLDER_LETTER: Record<Props['hub'], string> = {
 	'dekorativnye-listy': 'Д',
 	lenta: 'Л',
 	folga: 'Ф',
-	metizy: 'М',
-	podshipniki: 'П',
-	elektrody: 'Э',
-	'lestnichnye-ograzhdeniya': 'О',
 };
 ---
 
