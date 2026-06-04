@@ -492,7 +492,7 @@ if (sku.price != null) {
 				{/* Лид-абзац: марка + формат, краткое описание из gradeMeta. Заполняет
 				    середину hero — без него title-wrap был визуально пуст. */}
 				<p class="product__lead">
-					{hubLabel} {sku.grade}{surface ? ` · ${surface}` : ''}{sku.size ? `, ${measureLabel} ${sku.size} мм` : ''}.
+					{hubLabel} {sku.grade}{surface ? ` · ${surface}` : ''}{sku.size ? `, ${sku.hub === 'truba' ? sku.size : `${measureLabel} ${sku.size}`} мм` : ''}.
 					{gradeMeta ? ` ${gradeMeta.applications}` : ` Поставка со склада в Нижнем Новгороде, доставка по России. Сертификат завода-изготовителя на каждую партию.`}
 				</p>
 
