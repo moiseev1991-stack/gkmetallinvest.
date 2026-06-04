@@ -34,15 +34,46 @@ interface Props {
 const { sku, hubLabel, hubHref, measureLabel } = Astro.props;
 
 const SUB_LABELS: Record<string, string> = {
+	// list / rulon / polosa
 	nikelesod: 'Никелесодержащий',
 	beznikelya: 'Без никеля',
+	duplex: 'Дуплекс',
+	profnastil: 'Профнастил',
+	pvl: 'ПВЛ — просечно-вытяжной',
+	// krug
 	zharoprochnyj: 'Жаропрочный',
 	kvadrat: 'Квадрат',
-	nikelevyj: 'Круг никелесодержащий',
+	nikelevyj: 'Никелесодержащий',
 	shestigrannik: 'Шестигранник',
+	// truba
+	besshovnaya: 'Бесшовная',
+	elsvarnaya: 'Электросварная',
+	'elsvarnaya-kvadrat': 'Электросварная квадратная',
+	'elsvarnaya-pryamougolnaya': 'Электросварная прямоугольная',
+	perforirovannaya: 'Перфорированная',
+	// provoloka
 	osnovnaya: 'Проволока',
+	// ugolok-shveller
+	shveller: 'Швеллер',
+	ugolok: 'Уголок',
+	// detali-truboprovoda
 	flanec: 'Фланец',
+	'flanec-nastennyy': 'Фланец настенный',
 	otvod: 'Отвод',
+	troynik: 'Тройник',
+	perehod: 'Переход',
+	zaglushka: 'Заглушка',
+	zadvizhka: 'Задвижка',
+	klapan: 'Клапан',
+	povoroty: 'Поворот',
+	nakonechniki: 'Наконечник',
+	// detali-truboprovoda — ограждения / лестничные элементы
+	'dekorativnyy-niz': 'Декоративный низ',
+	'derzhatel-rigelya': 'Держатель ригеля',
+	'krepleniya-stoek': 'Крепление стоек',
+	'lestn-osnovnye': 'Лестничные элементы',
+	pristennye: 'Пристенный крепёж',
+	stekloderzhateli: 'Стеклодержатель',
 };
 
 const subLabel = SUB_LABELS[sku.sub] ?? sku.sub;
@@ -174,8 +205,8 @@ const fmt = (p: number | null) => (p == null ? null : new Intl.NumberFormat('ru-
 
 const detailRows: { label: string; value: string }[] = [
 	{ label: 'Марка стали', value: sku.grade },
-	{ label: 'Категория', value: subLabel },
 ];
+// «Категория» (subLabel) уже отрисована в eyebrow над H1 — здесь не дублируем.
 if (roll) detailRows.push({ label: 'Передел', value: roll });
 if (surface) detailRows.push({ label: 'Поверхность', value: surface });
 // «Тип сплава» обычно дублирует «Категорию» (никелесодержащий/без никеля).
@@ -462,13 +493,15 @@ if (sku.price != null) {
 					decoding="async"
 					onerror="this.style.display='none'; this.parentElement.classList.add('product__media--missing');"
 				/>
-				<figcaption class="product__media-caption">{hubLabel} · {subLabel}</figcaption>
 			</figure>
 
 			<div class="product__title-wrap">
-				<span class="product__eyebrow">{hubLabel} · {subLabel}</span>
+				{subLabel && subLabel.toLowerCase() !== hubLabel.toLowerCase() && (
+						<span class="product__eyebrow">{subLabel}</span>
+					)}
 				<h1 class="product__title">
-					{sku.grade}
+					<span class="product__title-hub">{hubLabel}</span>
+					<span class="product__title-grade">{sku.grade}</span>
 					{sku.size && <span class="product__size">{sku.size} мм</span>}
 				</h1>
 
@@ -522,17 +555,6 @@ if (sku.price != null) {
 						</div>
 					)}
 				</dl>
-
-				{services.length > 0 && (
-					<div class="product__quick-svc">
-						<span class="product__quick-svc-label">Услуги по позиции:</span>
-						<ul>
-							{services.map((s) => (
-								<li><a href={s.href}>{s.label}</a></li>
-							))}
-						</ul>
-					</div>
-				)}
 			</div>
 
 			<aside class="product__price" data-product-price>
@@ -920,41 +942,6 @@ if (sku.price != null) {
 		overflow-wrap: anywhere;
 	}
 
-	.product__quick-svc {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--space-2);
-	}
-	.product__quick-svc-label {
-		font-size: 0.82rem;
-		color: var(--color-muted);
-	}
-	.product__quick-svc ul {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-	.product__quick-svc a {
-		display: inline-block;
-		font-size: 0.82rem;
-		padding: 0.3rem 0.7rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-pill);
-		color: var(--color-primary-600);
-		text-decoration: none;
-		transition: border-color var(--dur-fast) var(--ease-out),
-			background var(--dur-fast) var(--ease-out);
-	}
-	.product__quick-svc a:hover {
-		border-color: var(--color-primary-500);
-		background: var(--color-primary-50);
-		text-decoration: none;
-	}
 	.product__price-retail {
 		display: block;
 		margin-top: 0.5rem;
@@ -982,7 +969,21 @@ if (sku.price != null) {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: baseline;
-		gap: var(--space-3);
+		gap: 0.4em;
+		line-height: 1.15;
+	}
+	.product__title-hub {
+		font-weight: 500;
+		color: var(--color-muted);
+	}
+	.product__title-hub::after {
+		content: '·';
+		margin-left: 0.4em;
+		color: var(--color-border);
+	}
+	.product__title-grade {
+		font-weight: 700;
+		color: var(--color-text);
 	}
 	.product__size {
 		font-family: var(--font-mono);
