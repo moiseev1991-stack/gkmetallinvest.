@@ -1,0 +1,473 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса фланца плоского — ГОСТ 33259-2015 / 12820-80';
+const description =
+	'Расчёт массы фланца плоского приварного по наружному диаметру, диаметру отверстия, ' +
+	'болтовым отверстиям и толщине. Формула диска с проёмом. Сталь и нержавейка.';
+
+const materials = [
+	{ value: 'st20',    label: 'Сталь 20 / 09Г2С',                rho: 7850, gost: 'ГОСТ 33259-2015', applic: 'трубопроводы общего назначения' },
+	{ value: 'aisi304', label: 'Нержавейка AISI 304 / 08Х18Н10',   rho: 7900, gost: 'ГОСТ 33259-2015', applic: 'пищевая и химическая промышленность' },
+	{ value: 'aisi316l', label: 'Нержавейка AISI 316L / 03Х17Н14М2', rho: 7900, gost: 'ГОСТ 33259-2015', applic: 'агрессивные среды, морская вода' },
+	{ value: 'aisi321', label: 'Нержавейка AISI 321 / 12Х18Н10Т',   rho: 7900, gost: 'ГОСТ 33259-2015', applic: 'высокотемпературные системы до +800 °C' },
+];
+
+const faq = [
+	{
+		q: 'По какой формуле считается вес фланца?',
+		a: 'Геометрически: m = [(π/4)·(D² − d²) − n·(π/4)·d_б²] · H · ρ / 10⁹. Здесь (π/4)·(D² − d²) — площадь кольцевого диска (наружный диаметр минус центральное отверстие), n·(π/4)·d_б² — суммарная площадь болтовых отверстий. Умножаем на толщину H и плотность ρ. Результат в килограммах. Формула не учитывает фаски, уплотнительный буртик и другие конструктивные элементы — расхождение с табличным ГОСТ-значением 3–5 %.',
+	},
+	{
+		q: 'Чем отличаются ГОСТ 33259-2015 и ГОСТ 12820-80?',
+		a: 'ГОСТ 33259-2015 — действующий стандарт, ввёл единую систему типов фланцев 01 (плоский приварной), 02 (со ступицей под приварку), 03 (с шейкой), 04 (со впадиной), 05 (с буртом), 11 (свободный). ГОСТ 12820-80 — старый стандарт на плоские приварные фланцы, до сих пор применяется на реконструкции и в чертежах советских проектов. Типоразмеры обоих стандартов близки, но не совпадают полностью — при заказе уточняйте по какому ГОСТ.',
+	},
+	{
+		q: 'Где взять размеры D, d, D_б, d_б, n, H для конкретного DN и PN?',
+		a: 'В приложениях к ГОСТ 33259-2015 или ГОСТ 12820-80 — таблицы по DN (10…1000 мм) и PN (0,6…25 МПа). Например, для DN 100 PN 10 ГОСТ 33259-2015 тип 01: D = 220, d = 112, D_б = 180, d_б = 18, n = 8, H = 18 мм. У нас в справочнике /gost/ — основные типоразмеры. Для индивидуального чертежа отправьте заявку через форму КП — менеджер пришлёт спецификацию и массу.',
+	},
+	{
+		q: 'Сколько весит фланец DN 100 PN 10 из нержавейки?',
+		a: 'Для нержавеющего фланца DN 100 PN 10 ГОСТ 33259-2015 тип 01: площадь диска (π/4)·(220² − 112²) = 28 158 мм². Площадь 8 болтовых отверстий 8 × (π/4)·18² = 2 036 мм². Объём (28 158 − 2 036) × 18 = 470 196 мм³. При ρ = 7900 кг/м³ — 3,71 кг. Табличное значение ГОСТ — около 3,66 кг (разница из-за фаски и буртика).',
+	},
+	{
+		q: 'Влияет ли тип фланца на массу?',
+		a: 'Да, и существенно. Тип 01 (плоский приварной) — самый лёгкий, простой диск. Тип 02 (со ступицей) — добавляет шейку под приварку трубы, +10–20 % массы. Тип 11 (свободный с буртом) — два кольца, +30–40 %. Калькулятор выше работает для типа 01. Для остальных типов используйте табличные значения из ГОСТ-приложений или формульный расчёт по чертежу.',
+	},
+	{
+		q: 'Какие марки нержавейки используют для фланцев?',
+		a: 'AISI 304 / 08Х18Н10 — общего назначения, пищевые и водные трубопроводы. AISI 316L / 03Х17Н14М2 — морская вода, хлориды, химия. AISI 321 / 12Х18Н10Т — высокие температуры до +800 °C, стабилизированная титаном (для пара, газа). AISI 904L — особо агрессивные среды (концентрированная серная кислота). Плотность всех аустенитных нержавеек — 7,9 г/см³, поэтому масса одного типоразмера фланца не зависит от выбора марки 304/316L/321.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd]}>
+	<div class="container fln">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса фланца' }]} />
+
+		<header class="fln__hero">
+			<span class="fln__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" />
+					<circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4" />
+					<circle cx="8" cy="3.5" r="0.9" fill="currentColor" />
+					<circle cx="8" cy="12.5" r="0.9" fill="currentColor" />
+					<circle cx="3.5" cy="8" r="0.9" fill="currentColor" />
+					<circle cx="12.5" cy="8" r="0.9" fill="currentColor" />
+				</svg>
+				ГОСТ 33259-2015
+			</span>
+			<h1 class="fln__h1">Калькулятор веса <span class="fln__h1-accent">плоского фланца</span></h1>
+			<p class="fln__lead">
+				Расчёт массы плоского приварного фланца (тип 01 по ГОСТ 33259-2015 или
+				аналог по ГОСТ 12820-80). Универсальный формульный режим: задайте размеры
+				из ГОСТ-приложения для нужного DN × PN и получите массу. Поддерживается
+				сталь и нержавейка.
+			</p>
+		</header>
+
+		<section class="fln__widget" data-fln-root>
+			<div class="fln__widget-inner">
+				<div class="fln__form">
+					<div class="fln__field">
+						<label class="fln__label" for="fln-mat">Материал</label>
+						<select class="fln__input" id="fln-mat" data-fln-material>
+							{materials.map((m) => (
+								<option value={m.value} data-rho={m.rho} selected={m.value === 'aisi304'}>
+									{m.label} — ρ {(m.rho / 1000).toLocaleString('ru-RU', { minimumFractionDigits: 2 })} г/см³
+								</option>
+							))}
+						</select>
+						<p class="fln__hint" data-fln-mat-hint>{materials[1].applic}</p>
+					</div>
+
+					<div class="fln__row-2">
+						<div class="fln__field">
+							<label class="fln__label" for="fln-D">Наружный диаметр D, мм</label>
+							<input class="fln__input" id="fln-D" type="number" inputmode="decimal" step="any" min="0" value="220" data-fln-D />
+						</div>
+						<div class="fln__field">
+							<label class="fln__label" for="fln-d">Внутренний d, мм</label>
+							<input class="fln__input" id="fln-d" type="number" inputmode="decimal" step="any" min="0" value="112" data-fln-d />
+						</div>
+					</div>
+
+					<div class="fln__row-2">
+						<div class="fln__field">
+							<label class="fln__label" for="fln-Db">Болтовая окружность Dб, мм</label>
+							<input class="fln__input" id="fln-Db" type="number" inputmode="decimal" step="any" min="0" value="180" data-fln-Db />
+							<p class="fln__hint">Только для схемы — на массу не влияет</p>
+						</div>
+						<div class="fln__field">
+							<label class="fln__label" for="fln-db">Отверстие dб, мм</label>
+							<input class="fln__input" id="fln-db" type="number" inputmode="decimal" step="any" min="0" value="18" data-fln-db />
+						</div>
+					</div>
+
+					<div class="fln__row-2">
+						<div class="fln__field">
+							<label class="fln__label" for="fln-n">Число отверстий n</label>
+							<input class="fln__input" id="fln-n" type="number" inputmode="numeric" step="1" min="0" value="8" data-fln-n />
+						</div>
+						<div class="fln__field">
+							<label class="fln__label" for="fln-H">Толщина H, мм</label>
+							<input class="fln__input" id="fln-H" type="number" inputmode="decimal" step="any" min="0" value="18" data-fln-H />
+						</div>
+					</div>
+
+					<div class="fln__field">
+						<label class="fln__label" for="fln-qty">Количество фланцев</label>
+						<input class="fln__input" id="fln-qty" type="number" inputmode="numeric" step="1" min="1" value="1" data-fln-qty />
+						<p class="fln__hint">Примеры из ГОСТ 33259-2015 тип 01 (D · d · Dб · dб · n · H): <br />
+							DN 50 PN 16 — 165 · 61 · 125 · 18 · 4 · 18 ·
+							DN 100 PN 10 — 220 · 112 · 180 · 18 · 8 · 18 ·
+							DN 200 PN 10 — 335 · 210 · 295 · 22 · 8 · 24
+						</p>
+					</div>
+				</div>
+
+				<aside class="fln__result">
+					<div class="fln__result-card">
+						<div class="fln__result-eyebrow">Геометрический расчёт</div>
+
+						<div class="fln__result-row">
+							<span>Вес 1 фланца</span>
+							<strong data-fln-one>—</strong>
+						</div>
+						<div class="fln__result-row">
+							<span>Площадь диска</span>
+							<strong data-fln-area>—</strong>
+						</div>
+
+						<div class="fln__result-total">
+							<span class="fln__result-total-label">Общий вес партии</span>
+							<div class="fln__result-total-value" data-fln-total>—</div>
+							<div class="fln__result-total-sub" data-fln-total-sub></div>
+						</div>
+
+						<dl class="fln__result-meta">
+							<div><dt>Объём металла</dt><dd data-fln-vol>—</dd></div>
+							<div><dt>Снято отверст.</dt><dd data-fln-holes>—</dd></div>
+						</dl>
+
+						<a class="fln__cta" href="/detali-truboprovoda/">
+							<span>Нержавеющие фланцы в каталоге</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="fln__result-foot">
+							Формула не учитывает фаски, уплотнительный буртик и шипы. Расхождение с ГОСТ-таблицей 3–5 %.
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="fln__block">
+			<h2 class="fln__h2">Геометрия фланца</h2>
+			<div class="fln__infographic">
+				<svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Геометрия плоского фланца: вид сверху с обозначениями D, d, Dб, dб и разрез с толщиной H">
+					<defs>
+						<pattern id="flnHatch" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="9" stroke="var(--color-primary)" stroke-width="0.7" opacity="0.28" />
+						</pattern>
+					</defs>
+
+					{/* Вид сверху — кольцевой диск с 8 болтовыми отверстиями. Центр (110, 140). */}
+					{/* Наружный круг — D */}
+					<circle cx="110" cy="140" r="85" fill="url(#flnHatch)" stroke="var(--color-primary)" stroke-width="2.4" />
+					{/* Центральное отверстие — d */}
+					<circle cx="110" cy="140" r="40" fill="#ffffff" stroke="var(--color-primary)" stroke-width="2" />
+					{/* Болтовая окружность — пунктир, Dб */}
+					<circle cx="110" cy="140" r="65" fill="none" stroke="var(--color-accent)" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.7" />
+					{/* 8 болтовых отверстий равномерно по окружности радиуса 65 */}
+					<g fill="#ffffff" stroke="var(--color-primary)" stroke-width="1.4">
+						<circle cx="110" cy="75" r="7" />
+						<circle cx="156" cy="94" r="7" />
+						<circle cx="175" cy="140" r="7" />
+						<circle cx="156" cy="186" r="7" />
+						<circle cx="110" cy="205" r="7" />
+						<circle cx="64" cy="186" r="7" />
+						<circle cx="45" cy="140" r="7" />
+						<circle cx="64" cy="94" r="7" />
+					</g>
+					{/* Осевые штрих-пунктиры */}
+					<line x1="20" y1="140" x2="200" y2="140" stroke="var(--color-subtle)" stroke-width="0.7" stroke-dasharray="8 2 1 2" />
+					<line x1="110" y1="50" x2="110" y2="230" stroke="var(--color-subtle)" stroke-width="0.7" stroke-dasharray="8 2 1 2" />
+
+					{/* Размер D — снизу */}
+					<g stroke="var(--color-accent)" stroke-width="1.3" fill="none" stroke-linecap="round">
+						<line x1="25" y1="245" x2="195" y2="245" />
+					</g>
+					<polygon points="25,245 35,241 35,249" fill="var(--color-accent)" />
+					<polygon points="195,245 185,241 185,249" fill="var(--color-accent)" />
+					<text x="110" y="261" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="var(--color-accent)">D</text>
+
+					{/* Подпись d — на центральном круге */}
+					<text x="110" y="144" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="var(--color-primary)">d</text>
+
+					{/* Подпись Dб — с выноской */}
+					<line x1="170" y1="90" x2="200" y2="60" stroke="var(--color-accent)" stroke-width="0.8" />
+					<text x="207" y="58" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="var(--color-accent)">Dб</text>
+
+					{/* Подпись dб — с выноской на одно отверстие */}
+					<line x1="120" y1="75" x2="135" y2="58" stroke="var(--color-accent)" stroke-width="0.8" />
+					<text x="138" y="56" font-family="Inter, sans-serif" font-size="11" font-style="italic" fill="var(--color-accent)">dб</text>
+
+					{/* Разрез сбоку — справа от вида сверху. Прямоугольная плита x=230..305, y=120..160 (H высота). */}
+					<rect x="230" y="120" width="75" height="40" fill="url(#flnHatch)" stroke="var(--color-primary)" stroke-width="2.4" />
+					{/* Центральный проём d на разрезе — два узких прямоугольника белого фона по средней линии */}
+					<rect x="260" y="120" width="15" height="40" fill="#ffffff" stroke="var(--color-primary)" stroke-width="1.5" />
+					{/* Подпись H */}
+					<g stroke="var(--color-accent)" stroke-width="1.3" fill="none" stroke-linecap="round">
+						<line x1="318" y1="120" x2="318" y2="160" />
+					</g>
+					<polygon points="318,120 314,130 322,130" fill="var(--color-accent)" />
+					<polygon points="318,160 314,150 322,150" fill="var(--color-accent)" />
+					<text x="305" y="145" text-anchor="end" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="var(--color-accent)">H</text>
+
+					{/* Метка «разрез» */}
+					<text x="267" y="180" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="var(--color-muted)" font-style="italic">разрез</text>
+
+					<text x="312" y="270" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">ГОСТ 33259-2015 · тип 01</text>
+				</svg>
+
+				<div class="fln__infographic-legend">
+					<h3>Обозначения</h3>
+					<ul>
+						<li><strong>D</strong> — наружный диаметр фланца</li>
+						<li><strong>d</strong> — внутренний диаметр (под трубу)</li>
+						<li><strong>Dб</strong> — диаметр болтовой окружности (на массу не влияет)</li>
+						<li><strong>dб</strong> — диаметр болтового отверстия</li>
+						<li><strong>n</strong> — количество болтовых отверстий</li>
+						<li><strong>H</strong> — толщина диска</li>
+					</ul>
+					<p class="fln__infographic-note">
+						Схема — вид сверху на фланец с 8 болтовыми отверстиями (типичный DN 100)
+						и поперечный разрез справа. Болтовая окружность — пунктир, проходит
+						через центры отверстий.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="fln__block">
+			<h2 class="fln__h2">Связанное</h2>
+			<ul class="fln__related">
+				<li>
+					<a href="/detali-truboprovoda/">
+						<strong>Детали трубопровода нержавеющие</strong>
+						<small>фланцы, отводы, переходы, тройники в наличии и под заявку</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-otvoda/">
+						<strong>Калькулятор веса отвода</strong>
+						<small>крутоизогнутые отводы по ГОСТ 17375-2001</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса</strong>
+						<small>9 видов проката — лист, труба, круг, проволока и др.</small>
+					</a>
+				</li>
+				<li>
+					<a href="/gost/">
+						<strong>Справочник ГОСТов</strong>
+						<small>сортаменты, плотности, маркировка AISI ↔ ГОСТ</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="fln__faq">
+			<h2 class="fln__h2">Частые вопросы</h2>
+			<div class="fln__faq-list">
+				{faq.map((f) => (
+					<details class="fln__faq-item">
+						<summary class="fln__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужны нержавеющие фланцы?"
+		text="В наличии плоские приварные фланцы по ГОСТ 33259-2015 и ГОСТ 12820-80 из нержавейки AISI 304, 316L, 321 — DN от 15 до 500 мм, PN от 0,6 до 25 МПа. Менеджер пересчитает массу партии и пришлёт КП в течение часа."
+	/>
+</BaseLayout>
+
+<script>
+	const root = document.querySelector('[data-fln-root]');
+	if (root) {
+		const matSel = root.querySelector('[data-fln-material]') as HTMLSelectElement;
+		const matHint = root.querySelector('[data-fln-mat-hint]') as HTMLElement;
+		const DInp = root.querySelector('[data-fln-D]') as HTMLInputElement;
+		const dInp = root.querySelector('[data-fln-d]') as HTMLInputElement;
+		const dbInp = root.querySelector('[data-fln-db]') as HTMLInputElement;
+		const nInp = root.querySelector('[data-fln-n]') as HTMLInputElement;
+		const HInp = root.querySelector('[data-fln-H]') as HTMLInputElement;
+		const qtyInp = root.querySelector('[data-fln-qty]') as HTMLInputElement;
+
+		const oneEl = root.querySelector('[data-fln-one]') as HTMLElement;
+		const areaEl = root.querySelector('[data-fln-area]') as HTMLElement;
+		const totalEl = root.querySelector('[data-fln-total]') as HTMLElement;
+		const totalSubEl = root.querySelector('[data-fln-total-sub]') as HTMLElement;
+		const volEl = root.querySelector('[data-fln-vol]') as HTMLElement;
+		const holesEl = root.querySelector('[data-fln-holes]') as HTMLElement;
+
+		const MAT_HINTS: Record<string, string> = {
+			st20: 'трубопроводы общего назначения',
+			aisi304: 'пищевая и химическая промышленность',
+			aisi316l: 'агрессивные среды, морская вода',
+			aisi321: 'высокотемпературные системы до +800 °C',
+		};
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+		const fmt0 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
+
+		function getRho(): number {
+			const opt = matSel.selectedOptions[0];
+			return parseFloat(opt?.dataset.rho || '7900') || 7900;
+		}
+
+		function recalc() {
+			const D = parseFloat(DInp.value) || 0;
+			const d = parseFloat(dInp.value) || 0;
+			const db = parseFloat(dbInp.value) || 0;
+			const n = parseInt(nInp.value, 10) || 0;
+			const H = parseFloat(HInp.value) || 0;
+			const qty = parseFloat(qtyInp.value) || 0;
+			const rho = getRho();
+
+			const diskArea = Math.PI / 4 * (D * D - d * d); // мм²
+			const holesArea = n * Math.PI / 4 * (db * db);   // мм²
+			const netArea = Math.max(0, diskArea - holesArea);
+			const volume = netArea * H; // мм³
+			const oneWeight = volume * rho / 1e9; // кг
+			const total = oneWeight * qty;
+
+			oneEl.textContent = oneWeight > 0 ? `${fmt.format(oneWeight)} кг` : '—';
+			areaEl.textContent = diskArea > 0 ? `${fmt0.format(diskArea)} мм²` : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl.textContent = `${fmt.format(total)} кг`;
+				} else {
+					totalEl.textContent = `${fmt.format(total)} кг`;
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			volEl.textContent = volume > 0 ? `${fmt0.format(volume / 1000)} см³` : '—';
+			holesEl.textContent = holesArea > 0 ? `${fmt0.format(holesArea)} мм²` : '—';
+		}
+
+		matSel.addEventListener('change', () => { matHint.textContent = MAT_HINTS[matSel.value] ?? ''; recalc(); });
+		[DInp, dInp, dbInp, nInp, HInp, qtyInp].forEach((el) => el.addEventListener('input', recalc));
+
+		recalc();
+	}
+</script>
+
+<style>
+	.fln { padding-block: var(--space-8); min-width: 0; }
+	.fln__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.fln__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.fln__h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15; margin: 0 0 var(--space-3); letter-spacing: -0.02em; }
+	.fln__h1-accent { background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+	.fln__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	.fln__widget { background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md); }
+	.fln__widget-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-6); }
+	@media (max-width: 900px) { .fln__widget { padding: var(--space-4); } .fln__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+	.fln__form { display: grid; gap: var(--space-4); }
+	.fln__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .fln__row-2 { grid-template-columns: 1fr; } }
+
+	.fln__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.fln__label { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-subtle); }
+	.fln__input { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); outline: none; width: 100%; appearance: none; -webkit-appearance: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	select.fln__input { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.9rem; padding-right: 2rem; }
+	.fln__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.fln__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.5; }
+
+	.fln__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .fln__result { position: static; } }
+	.fln__result-card { background: var(--grad-hero); color: var(--color-on-dark); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow); position: relative; overflow: hidden; }
+	.fln__result-eyebrow { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent-100); margin-bottom: var(--space-4); }
+	.fln__result-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 0.6rem 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+	.fln__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.fln__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+	.fln__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.fln__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.fln__result-total-value { font-family: var(--font-mono); font-size: clamp(2.2rem, 4.6vw, 3.2rem); font-weight: 700; line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+	.fln__result-total-sub { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-on-dark-muted); margin-top: 0.25rem; min-height: 1.2em; }
+	.fln__result-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-4) 0 var(--space-4); padding-top: var(--space-3); border-top: 1px solid rgba(255,255,255,0.12); }
+	.fln__result-meta dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-on-dark-muted); margin-bottom: 0.2rem; }
+	.fln__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+	.fln__cta { display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff; font-weight: 600; text-decoration: none; border-radius: var(--radius-md); font-size: 0.92rem; box-shadow: var(--shadow-warm-glow); transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	.fln__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.fln__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.fln__cta:hover svg { transform: translateX(2px); }
+	.fln__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.fln__block { margin-bottom: var(--space-10); }
+	.fln__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.fln__infographic { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--space-6); align-items: start; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+	@media (max-width: 720px) { .fln__infographic { grid-template-columns: 1fr; } }
+	.fln__infographic svg { width: 100%; height: auto; max-width: 320px; display: block; }
+	.fln__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.fln__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.fln__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.fln__infographic-legend li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-500); }
+	.fln__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.fln__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	.fln__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.fln__related a { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary); transition: all var(--dur-fast) var(--ease-out); }
+	.fln__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.fln__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.fln__faq { margin-bottom: var(--space-8); }
+	.fln__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.fln__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.fln__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.fln__faq-q { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none; }
+	.fln__faq-q::-webkit-details-marker { display: none; }
+	.fln__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.fln__faq-item[open] .fln__faq-q svg { transform: rotate(180deg); }
+	.fln__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>
