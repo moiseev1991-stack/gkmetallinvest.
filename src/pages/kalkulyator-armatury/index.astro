@@ -1,0 +1,822 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса арматуры — ГОСТ 5781-82, А500С, А400, А240';
+const description =
+	'Онлайн-расчёт массы арматуры А500С / А400 / А240 по диаметру, длине и количеству. ' +
+	'Таблица веса 1 метра арматуры Ø 6–36 мм по ГОСТ 5781-82. Обратный пересчёт от массы.';
+
+/* ГОСТ 5781-82 — теоретическая масса 1 м арматуры периодического профиля.
+   Значения одинаковы для классов А240, А400, А500С — класс прочности на массу не влияет. */
+const armaturaRows = [
+	{ d: 6, m1: 0.222, area: 28.3 },
+	{ d: 8, m1: 0.395, area: 50.3 },
+	{ d: 10, m1: 0.617, area: 78.5 },
+	{ d: 12, m1: 0.888, area: 113.1 },
+	{ d: 14, m1: 1.208, area: 153.9 },
+	{ d: 16, m1: 1.578, area: 201.1 },
+	{ d: 18, m1: 1.998, area: 254.5 },
+	{ d: 20, m1: 2.466, area: 314.2 },
+	{ d: 22, m1: 2.984, area: 380.1 },
+	{ d: 25, m1: 3.853, area: 490.9 },
+	{ d: 28, m1: 4.834, area: 615.8 },
+	{ d: 32, m1: 6.313, area: 804.2 },
+	{ d: 36, m1: 7.99, area: 1017.9 },
+];
+
+const klassy = [
+	{
+		value: 'A500C',
+		label: 'А500С',
+		gost: 'ГОСТ Р 52544-2006',
+		applic: 'основной строительный класс — фундаменты, плиты, колонны, монолитные перекрытия',
+	},
+	{
+		value: 'A400',
+		label: 'А400 (A-III)',
+		gost: 'ГОСТ 5781-82',
+		applic: 'традиционный класс, применяется в типовых проектах и при реконструкции',
+	},
+	{
+		value: 'A240',
+		label: 'А240 (A-I)',
+		gost: 'ГОСТ 5781-82',
+		applic: 'гладкий пруток, монтажные элементы, хомуты, вязка',
+	},
+];
+
+const faq = [
+	{
+		q: 'Сколько весит 1 метр арматуры Ø 12?',
+		a: 'Один метр арматуры диаметром 12 мм весит 0,888 кг по ГОСТ 5781-82 — независимо от класса (А240, А400, А500С). Класс влияет на прочность, но не на массу: масса считается по номинальному диаметру с учётом стандартного периодического профиля. В практике строители округляют до 0,89 кг/м.',
+	},
+	{
+		q: 'Какие диаметры арматуры выпускаются по ГОСТ 5781-82?',
+		a: 'Стандартный ряд номинальных диаметров: 6, 8, 10, 12, 14, 16, 18, 20, 22, 25, 28, 32, 36, 40, 45, 50, 55, 60, 70, 80 мм. На практике массово применяются Ø 6–32 мм. Диаметры 40+ — для тяжёлых железобетонных конструкций по индивидуальным заказам.',
+	},
+	{
+		q: 'В чём разница между А400 и А500С?',
+		a: 'А400 (старое обозначение А-III) и А500С — разные классы прочности. А500С имеет нормированный предел текучести 500 МПа против 400 МПа у А400 и нормированную свариваемость (буква «С»). По массе для одного диаметра арматура идентична. А500С — действующий стандарт для нового строительства по ГОСТ Р 52544-2006.',
+	},
+	{
+		q: 'Сколько метров арматуры в тонне?',
+		a: 'Зависит от диаметра. Ø 10 — 1620 м/т (1000 / 0,617). Ø 12 — 1126 м/т. Ø 14 — 828 м/т. Ø 16 — 634 м/т. Ø 20 — 405 м/т. Ø 25 — 260 м/т. В калькуляторе выше — обратный пересчёт: введите массу в тоннах или килограммах, получите количество прутков заданной длины.',
+	},
+	{
+		q: 'Бывает ли нержавеющая арматура?',
+		a: 'Да. Нержавеющая арматура выпускается из марок AISI 304L, 316L и дуплекс 2205. Применяется в агрессивных средах: морские конструкции, мосты в прибрежных зонах, химические производства, объекты с проектным сроком службы 50+ лет. Стандартизирована по EN 10080 и ASTM A955. Стоимость в 8–15 раз выше углеродистой А500С, поэтому используется точечно. У нас в каталоге нержавеющего проката — поставка под заявку.',
+	},
+	{
+		q: 'Учитываются ли поперечные рёбра в весе арматуры?',
+		a: 'Да. Значения m₁ в ГОСТ 5781-82 — теоретическая масса с учётом стандартного периодического профиля (продольных рёбер и поперечных выступов). Это не «гладкий цилиндр» π·d²/4·ρ — в расчёт включён реальный объём ребристого стержня. Допустимое отклонение по массе — ±5 % по ГОСТ.',
+	},
+	{
+		q: 'Длина прутка арматуры — какие стандартные?',
+		a: 'По ГОСТ 5781-82 арматуру поставляют мерной длиной 6, 11,7 и 12 м, а также немерной длиной от 6 до 12 м. На стройплощадке Ø 6–10 мм часто идёт в бухтах длиной 50–200 м. В калькуляторе длина прутка задаётся вручную — можно вводить любое значение, в том числе дробное.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: 'Как рассчитать вес арматуры',
+	description:
+		'Расчёт массы арматурного стержня по номинальному диаметру и длине согласно ГОСТ 5781-82.',
+	step: [
+		{ '@type': 'HowToStep', name: 'Выбрать диаметр', text: 'Номинальный диаметр от 6 до 36 мм по ГОСТ 5781-82.' },
+		{ '@type': 'HowToStep', name: 'Ввести длину прутка', text: 'Длина одного стержня — обычно 6, 11,7 или 12 м.' },
+		{ '@type': 'HowToStep', name: 'Ввести количество', text: 'Число прутков в партии, либо ввести нужную массу для обратного пересчёта.' },
+		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Калькулятор покажет вес одного прутка и общий вес партии в килограммах или тоннах.' },
+	],
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
+	<div class="container arm">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса арматуры' }]} />
+
+		<header class="arm__hero">
+			<span class="arm__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" />
+					<path d="M2 5h1.5M2 8h1.5M2 11h1.5M12.5 5H14M12.5 8H14M12.5 11H14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+				</svg>
+				ГОСТ 5781-82
+			</span>
+			<h1 class="arm__h1">Калькулятор веса <span class="arm__h1-accent">арматуры</span></h1>
+			<p class="arm__lead">
+				Расчёт массы арматурных стержней А500С, А400 и А240 по диаметру и длине.
+				Используются справочные значения теоретической массы 1 погонного метра
+				из ГОСТ 5781-82 — с учётом поперечного периодического профиля.
+				Допуск по массе ±5 %.
+			</p>
+		</header>
+
+		<section class="arm__widget" data-arm-root>
+			<div class="arm__widget-inner">
+				<div class="arm__form">
+					<div class="arm__field">
+						<label class="arm__label" for="arm-klass">Класс арматуры</label>
+						<select class="arm__input" id="arm-klass" data-arm-klass>
+							{klassy.map((k) => (
+								<option value={k.value}>{k.label} — {k.gost}</option>
+							))}
+						</select>
+						<p class="arm__hint" data-arm-klass-hint>{klassy[0].applic}</p>
+					</div>
+
+					<div class="arm__field">
+						<label class="arm__label" for="arm-d">Номинальный диаметр, мм</label>
+						<select class="arm__input" id="arm-d" data-arm-diameter>
+							{armaturaRows.map((r) => (
+								<option value={r.d} selected={r.d === 12}>
+									Ø {r.d} — {r.m1.toLocaleString('ru-RU', { minimumFractionDigits: 3 })} кг/м
+								</option>
+							))}
+						</select>
+					</div>
+
+					<div class="arm__row-2">
+						<div class="arm__field">
+							<label class="arm__label" for="arm-len">Длина прутка, м</label>
+							<input class="arm__input" id="arm-len" type="number" inputmode="decimal" step="any" min="0.01" value="6" data-arm-length />
+							<p class="arm__hint">Типовые: 6 · 11,7 · 12 м</p>
+						</div>
+
+						<div class="arm__field">
+							<label class="arm__label" for="arm-qty">Количество прутков</label>
+							<input class="arm__input" id="arm-qty" type="number" inputmode="decimal" step="any" min="1" value="1" data-arm-qty />
+							<p class="arm__hint">Или укажите массу ниже</p>
+						</div>
+					</div>
+
+					<div class="arm__field">
+						<label class="arm__label" for="arm-mass">Нужная масса (обратный расчёт)</label>
+						<div class="arm__mass-wrap">
+							<input class="arm__input arm__mass-input" id="arm-mass" type="number" inputmode="decimal" step="any" min="0" placeholder="—" data-arm-mass />
+							<select class="arm__mass-unit" data-arm-mass-unit aria-label="Единицы массы">
+								<option value="t" selected>т</option>
+								<option value="kg">кг</option>
+							</select>
+						</div>
+						<p class="arm__hint">Введите массу — пересчитаем количество прутков заданной длины</p>
+					</div>
+				</div>
+
+				<aside class="arm__result">
+					<div class="arm__result-card">
+						<div class="arm__result-eyebrow">Расчёт по ГОСТ 5781-82</div>
+
+						<div class="arm__result-row">
+							<span>Вес 1 метра</span>
+							<strong data-arm-m1>—</strong>
+						</div>
+						<div class="arm__result-row">
+							<span>Вес 1 прутка</span>
+							<strong data-arm-prut>—</strong>
+						</div>
+
+						<div class="arm__result-total">
+							<span class="arm__result-total-label">Общий вес партии</span>
+							<div class="arm__result-total-value" data-arm-total>—</div>
+							<div class="arm__result-total-sub" data-arm-total-sub></div>
+						</div>
+
+						<dl class="arm__result-meta">
+							<div><dt>Сечение</dt><dd data-arm-area>—</dd></div>
+							<div><dt>Общая длина</dt><dd data-arm-totlen>—</dd></div>
+						</dl>
+
+						<a class="arm__cta" href="/zapros-kp/?material=armatura-nerzh#lead-form" data-arm-cta>
+							<span>Запросить КП на нержавеющую арматуру</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="arm__result-foot">
+							Теоретическая масса по ГОСТ. Фактическая отличается на ±5 % (допуск проката).
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="arm__block">
+			<h2 class="arm__h2">Сечение арматурного стержня</h2>
+			<div class="arm__infographic">
+				<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Поперечное сечение арматурного стержня с указанием номинального диаметра D">
+					<defs>
+						<pattern id="armHatch" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="9" stroke="var(--color-primary)" stroke-width="0.7" opacity="0.28" />
+						</pattern>
+					</defs>
+
+					<line x1="30" y1="140" x2="250" y2="140" stroke="var(--color-subtle)" stroke-width="0.8" stroke-dasharray="10 3 2 3" />
+					<line x1="140" y1="30" x2="140" y2="250" stroke="var(--color-subtle)" stroke-width="0.8" stroke-dasharray="10 3 2 3" />
+
+					<circle cx="140" cy="140" r="80" fill="url(#armHatch)" stroke="var(--color-primary)" stroke-width="2.6" />
+
+					<ellipse cx="220" cy="140" rx="5" ry="14" fill="url(#armHatch)" stroke="var(--color-primary)" stroke-width="1.6" />
+					<ellipse cx="60" cy="140" rx="5" ry="14" fill="url(#armHatch)" stroke="var(--color-primary)" stroke-width="1.6" />
+
+					<g stroke="var(--color-accent)" stroke-width="1.6" fill="none" stroke-linecap="round">
+						<line x1="60" y1="226" x2="60" y2="246" stroke-dasharray="3 2" />
+						<line x1="220" y1="226" x2="220" y2="246" stroke-dasharray="3 2" />
+						<line x1="60" y1="240" x2="220" y2="240" />
+					</g>
+					<polygon points="60,240 72,234 72,246" fill="var(--color-accent)" />
+					<polygon points="220,240 208,234 208,246" fill="var(--color-accent)" />
+
+					<text x="140" y="263" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="var(--color-accent)">D</text>
+					<text x="140" y="22" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">периодический профиль · ГОСТ 5781-82</text>
+				</svg>
+
+				<div class="arm__infographic-legend">
+					<h3>Обозначения</h3>
+					<ul>
+						<li><strong>D</strong> — номинальный диаметр (по гладкой части стержня)</li>
+						<li>Боковые выступы — поперечные рёбра периодического профиля для сцепления с бетоном</li>
+						<li>Осевые штрих-пунктирные линии — для центра сечения</li>
+						<li>Штриховка 45° — стандартное обозначение разреза металла</li>
+					</ul>
+					<p class="arm__infographic-note">
+						Профиль регламентирован ГОСТ 5781-82 (классы А-I…А-VI) и ГОСТ Р 52544-2006 (А500С).
+						Геометрия рёбер влияет на сцепление с бетоном, но не на массу — она считается
+						по номинальному диаметру с допуском ±5 %.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="arm__block">
+			<h2 class="arm__h2">Таблица веса арматуры по ГОСТ 5781-82</h2>
+			<p class="arm__block-lead">
+				Теоретическая масса 1 метра арматуры с учётом периодического профиля.
+				Значения одинаковы для А240, А400 и А500С — класс прочности на массу не влияет.
+			</p>
+			<div class="arm__table-wrap">
+				<table class="arm__table">
+					<thead>
+						<tr>
+							<th>Диаметр</th>
+							<th>Масса 1 м, кг</th>
+							<th>Сечение, мм²</th>
+							<th>Длина в 1 т, м</th>
+						</tr>
+					</thead>
+					<tbody>
+						{armaturaRows.map((r) => (
+							<tr>
+								<td><strong>Ø {r.d}</strong></td>
+								<td>{r.m1.toLocaleString('ru-RU', { minimumFractionDigits: 3 })}</td>
+								<td>{r.area.toLocaleString('ru-RU', { maximumFractionDigits: 1 })}</td>
+								<td>{Math.round(1000 / r.m1).toLocaleString('ru-RU')}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="arm__block">
+			<h2 class="arm__h2">Классы арматуры</h2>
+			<div class="arm__klassy">
+				{klassy.map((k) => (
+					<div class="arm__klass">
+						<div class="arm__klass-head">
+							<strong>{k.label}</strong>
+							<span>{k.gost}</span>
+						</div>
+						<p>{k.applic}</p>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="arm__block">
+			<h2 class="arm__h2">Связанные инструменты и каталог</h2>
+			<ul class="arm__related">
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса проката</strong>
+						<small>лист, труба, круг, проволока, полоса, уголок и другие 9 видов</small>
+					</a>
+				</li>
+				<li>
+					<a href="/gost/">
+						<strong>Справочник ГОСТов</strong>
+						<small>сортаменты, плотности, маркировка AISI ↔ ГОСТ</small>
+					</a>
+				</li>
+				<li>
+					<a href="/krug/">
+						<strong>Круг нержавеющий</strong>
+						<small>аналог гладкой арматуры в нержавеющем исполнении</small>
+					</a>
+				</li>
+				<li>
+					<a href="/provoloka/">
+						<strong>Проволока нержавеющая</strong>
+						<small>для вязки арматурного каркаса в нержавеющих конструкциях</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="arm__faq">
+			<h2 class="arm__h2">Частые вопросы</h2>
+			<div class="arm__faq-list">
+				{faq.map((f) => (
+					<details class="arm__faq-item">
+						<summary class="arm__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужна нержавеющая арматура?"
+		text="Для агрессивных сред, морских конструкций, химпрома и объектов с длительным сроком службы поставляем нержавеющую арматуру AISI 304L / 316L и дуплекс 2205 под заявку. Менеджер пересчитает массу и пришлёт КП."
+	/>
+</BaseLayout>
+
+<script>
+	type ArmRow = { d: number; m1: number; area: number };
+
+	const ROWS: ArmRow[] = [
+		{ d: 6, m1: 0.222, area: 28.3 },
+		{ d: 8, m1: 0.395, area: 50.3 },
+		{ d: 10, m1: 0.617, area: 78.5 },
+		{ d: 12, m1: 0.888, area: 113.1 },
+		{ d: 14, m1: 1.208, area: 153.9 },
+		{ d: 16, m1: 1.578, area: 201.1 },
+		{ d: 18, m1: 1.998, area: 254.5 },
+		{ d: 20, m1: 2.466, area: 314.2 },
+		{ d: 22, m1: 2.984, area: 380.1 },
+		{ d: 25, m1: 3.853, area: 490.9 },
+		{ d: 28, m1: 4.834, area: 615.8 },
+		{ d: 32, m1: 6.313, area: 804.2 },
+		{ d: 36, m1: 7.99, area: 1017.9 },
+	];
+
+	const KLASS_HINTS: Record<string, string> = {
+		A500C: 'основной строительный класс — фундаменты, плиты, колонны, монолитные перекрытия',
+		A400: 'традиционный класс, применяется в типовых проектах и при реконструкции',
+		A240: 'гладкий пруток, монтажные элементы, хомуты, вязка',
+	};
+
+	const root = document.querySelector('[data-arm-root]');
+	if (root) {
+		const klassSel = root.querySelector('[data-arm-klass]') as HTMLSelectElement;
+		const klassHint = root.querySelector('[data-arm-klass-hint]') as HTMLElement;
+		const dSel = root.querySelector('[data-arm-diameter]') as HTMLSelectElement;
+		const lenInp = root.querySelector('[data-arm-length]') as HTMLInputElement;
+		const qtyInp = root.querySelector('[data-arm-qty]') as HTMLInputElement;
+		const massInp = root.querySelector('[data-arm-mass]') as HTMLInputElement;
+		const massUnit = root.querySelector('[data-arm-mass-unit]') as HTMLSelectElement;
+
+		const m1El = root.querySelector('[data-arm-m1]') as HTMLElement;
+		const prutEl = root.querySelector('[data-arm-prut]') as HTMLElement;
+		const totalEl = root.querySelector('[data-arm-total]') as HTMLElement;
+		const totalSubEl = root.querySelector('[data-arm-total-sub]') as HTMLElement;
+		const areaEl = root.querySelector('[data-arm-area]') as HTMLElement;
+		const totLenEl = root.querySelector('[data-arm-totlen]') as HTMLElement;
+		const ctaEl = root.querySelector('[data-arm-cta]') as HTMLAnchorElement;
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+
+		/* Какое поле редактировалось последним. mass → пересчитываем количество прутков от массы.
+		   В остальных случаях — масса от количества. */
+		let lastEdited: 'qty' | 'mass' = 'qty';
+
+		function getRow(): ArmRow {
+			const d = parseInt(dSel.value, 10);
+			return ROWS.find((r) => r.d === d) ?? ROWS[3];
+		}
+
+		function recalc() {
+			const row = getRow();
+			const len = parseFloat(lenInp.value) || 0;
+			let qty = parseFloat(qtyInp.value) || 0;
+
+			const m1 = row.m1;
+			const prutWeight = m1 * len;
+
+			if (lastEdited === 'mass' && prutWeight > 0) {
+				const massRaw = parseFloat(massInp.value) || 0;
+				const massKg = massUnit.value === 't' ? massRaw * 1000 : massRaw;
+				qty = massKg / prutWeight;
+				if (qty > 0) qtyInp.value = String(+qty.toFixed(2));
+				else qtyInp.value = '0';
+			} else if (prutWeight > 0 && qty > 0) {
+				const total = prutWeight * qty;
+				const inT = massUnit.value === 't';
+				massInp.value = String(+(inT ? total / 1000 : total).toFixed(3));
+			} else {
+				massInp.value = '';
+			}
+
+			const total = prutWeight * qty;
+
+			m1El.textContent = `${fmt.format(m1)} кг`;
+			prutEl.textContent = prutWeight > 0 ? `${fmt.format(prutWeight)} кг` : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl.textContent = `${fmt.format(total)} кг`;
+				} else {
+					totalEl.textContent = `${fmt.format(total)} кг`;
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			areaEl.textContent = `${row.area.toLocaleString('ru-RU', { maximumFractionDigits: 1 })} мм²`;
+			totLenEl.textContent = qty > 0 && len > 0 ? `${fmt.format(qty * len)} м` : '—';
+
+			if (ctaEl) {
+				const params = new URLSearchParams({
+					material: 'armatura-nerzh',
+					diameter: String(row.d),
+					qty: String(Math.max(0, Math.round(qty))),
+					weight_kg: String(Math.max(0, Math.round(total))),
+				});
+				ctaEl.href = `/zapros-kp/?${params.toString()}#lead-form`;
+			}
+		}
+
+		klassSel.addEventListener('change', () => {
+			klassHint.textContent = KLASS_HINTS[klassSel.value] ?? '';
+			recalc();
+		});
+		dSel.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
+		lenInp.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		qtyInp.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		massInp.addEventListener('input', () => { lastEdited = 'mass'; recalc(); });
+		massUnit.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
+
+		recalc();
+	}
+</script>
+
+<style>
+	.arm { padding-block: var(--space-8); min-width: 0; }
+
+	/* ---------- Hero ---------- */
+	.arm__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.arm__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.arm__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.5rem);
+		line-height: 1.15;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.02em;
+	}
+	.arm__h1-accent {
+		background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary));
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+	.arm__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	/* ---------- Widget ---------- */
+	.arm__widget {
+		background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-xl);
+		padding: var(--space-6);
+		margin-bottom: var(--space-10);
+		box-shadow: var(--shadow-md);
+	}
+	.arm__widget-inner {
+		display: grid;
+		grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+		gap: var(--space-6);
+	}
+	@media (max-width: 900px) {
+		.arm__widget { padding: var(--space-4); }
+		.arm__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+	}
+
+	.arm__form { display: grid; gap: var(--space-4); }
+	.arm__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .arm__row-2 { grid-template-columns: 1fr; } }
+
+	.arm__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.arm__label {
+		font-size: 0.74rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-subtle);
+	}
+	.arm__input {
+		font: inherit;
+		font-size: 0.95rem;
+		padding: 0.65rem 0.8rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		color: var(--color-text);
+		outline: none;
+		width: 100%;
+		appearance: none;
+		-webkit-appearance: none;
+		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	select.arm__input {
+		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+		background-repeat: no-repeat;
+		background-position: right 0.7rem center;
+		background-size: 0.9rem;
+		padding-right: 2rem;
+	}
+	.arm__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.arm__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.4; }
+
+	.arm__mass-wrap {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: stretch;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		overflow: hidden;
+	}
+	.arm__mass-wrap:focus-within { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); }
+	.arm__mass-input {
+		border: 0 !important;
+		background: transparent !important;
+		text-align: center;
+		font-weight: 600;
+		box-shadow: none !important;
+	}
+	.arm__mass-unit {
+		border: 0;
+		border-left: 1px solid var(--color-border);
+		background: var(--color-bg-elev);
+		padding: 0 0.5rem 0 0.85rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		cursor: pointer;
+		appearance: none;
+		-webkit-appearance: none;
+		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+		background-repeat: no-repeat;
+		background-position: right 0.45rem center;
+		background-size: 0.9rem;
+		padding-right: 1.6rem;
+	}
+
+	/* ---------- Result card ---------- */
+	.arm__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .arm__result { position: static; } }
+	.arm__result-card {
+		background: var(--grad-hero);
+		color: var(--color-on-dark);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-glow);
+		position: relative;
+		overflow: hidden;
+	}
+	.arm__result-eyebrow {
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-accent-100);
+		margin-bottom: var(--space-4);
+	}
+	.arm__result-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: var(--space-3);
+		padding: 0.6rem 0;
+		border-bottom: 1px dashed rgba(255,255,255,0.15);
+	}
+	.arm__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.arm__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+
+	.arm__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.arm__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.arm__result-total-value {
+		font-family: var(--font-mono);
+		font-size: clamp(2.2rem, 4.6vw, 3.2rem);
+		font-weight: 700;
+		line-height: 1.05;
+		color: var(--color-accent-100);
+		letter-spacing: -0.02em;
+		overflow-wrap: anywhere;
+	}
+	.arm__result-total-sub {
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		color: var(--color-on-dark-muted);
+		margin-top: 0.25rem;
+		min-height: 1.2em;
+	}
+	.arm__result-meta {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-3);
+		margin: var(--space-4) 0 var(--space-4);
+		padding-top: var(--space-3);
+		border-top: 1px solid rgba(255,255,255,0.12);
+	}
+	.arm__result-meta dt {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--color-on-dark-muted);
+		margin-bottom: 0.2rem;
+	}
+	.arm__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+
+	.arm__cta {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		padding: 0.85rem 1rem;
+		background: var(--grad-cta-warm);
+		color: #fff;
+		font-weight: 600;
+		text-decoration: none;
+		border-radius: var(--radius-md);
+		font-size: 0.92rem;
+		box-shadow: var(--shadow-warm-glow);
+		transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.arm__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.arm__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.arm__cta:hover svg { transform: translateX(2px); }
+
+	.arm__result-foot {
+		margin: var(--space-4) 0 0;
+		font-size: 0.75rem;
+		line-height: 1.5;
+		color: var(--color-on-dark-muted);
+		opacity: 0.85;
+	}
+
+	/* ---------- Sections ---------- */
+	.arm__block { margin-bottom: var(--space-10); }
+	.arm__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.arm__block-lead { color: var(--color-muted); max-width: 80ch; margin: 0 0 var(--space-4); line-height: 1.55; }
+
+	/* ---------- Инфографика ---------- */
+	.arm__infographic {
+		display: grid;
+		grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+		gap: var(--space-6);
+		align-items: start;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+	}
+	@media (max-width: 720px) { .arm__infographic { grid-template-columns: 1fr; } }
+	.arm__infographic svg { width: 100%; height: auto; max-width: 280px; display: block; }
+	.arm__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.arm__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.arm__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.arm__infographic-legend li::before {
+		content: '';
+		position: absolute;
+		left: 0; top: 0.55em;
+		width: 6px; height: 6px;
+		border-radius: 50%;
+		background: var(--color-primary-500);
+	}
+	.arm__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.arm__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	/* ---------- Таблица ---------- */
+	.arm__table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+	.arm__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 480px;
+	}
+	.arm__table th, .arm__table td {
+		text-align: left;
+		padding: 0.6rem 0.85rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.arm__table th {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-subtle);
+		background: var(--color-bg-elev);
+	}
+	.arm__table tbody tr:hover { background: var(--color-primary-50); }
+	.arm__table td:nth-child(n+2) { font-family: var(--font-mono); }
+
+	/* ---------- Классы ---------- */
+	.arm__klassy {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: var(--space-3);
+	}
+	.arm__klass {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+	.arm__klass-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: var(--space-2);
+		margin-bottom: 0.5rem;
+		flex-wrap: wrap;
+	}
+	.arm__klass-head strong { font-size: 1.05rem; color: var(--color-primary); }
+	.arm__klass-head span { font-size: 0.78rem; color: var(--color-muted); font-family: var(--font-mono); }
+	.arm__klass p { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--color-text); }
+
+	/* ---------- Связанное ---------- */
+	.arm__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.arm__related a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: 0.8rem 1rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-primary);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.arm__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.arm__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	/* ---------- FAQ ---------- */
+	.arm__faq { margin-bottom: var(--space-8); }
+	.arm__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.arm__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+	}
+	.arm__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.arm__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.arm__faq-q::-webkit-details-marker { display: none; }
+	.arm__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.arm__faq-item[open] .arm__faq-q svg { transform: rotate(180deg); }
+	.arm__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>
