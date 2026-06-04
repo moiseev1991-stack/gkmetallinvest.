@@ -145,6 +145,12 @@ function fmtNum(n: number, digits = 2): string {
 }
 
 let weightLine: { label: string; value: string } | null = null;
+/* Вес 1 пог. м (кг). Заполняется только для длинномера (круг/квадрат/шестигранник,
+   труба, проволока) — нужен и для отображения, и для пересчёта в калькуляторе
+   при выборе режима «пог. м». Для листа меряем кг/м² — это в калькуляторе
+   не используется, режима «пог. м» нет. */
+let kgPerMeter: number | null = null;
+
 if (sku.hub === 'list' && sku.size) {
 	const t = parseFloat(sku.size);
 	if (Number.isFinite(t) && t > 0) {
@@ -156,9 +162,22 @@ if (sku.hub === 'list' && sku.size) {
 if (sku.hub === 'krug' && sku.size) {
 	const d = parseFloat(sku.size);
 	if (Number.isFinite(d) && d > 0) {
-		// круг: m = π × (d/2)² × ρ × 1000 (для d в мм, m в кг/м)
-		const kgM = (Math.PI * (d / 2) ** 2 * RHO) / 1000;
-		weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgM, 2)} кг` };
+		// Площадь сечения зависит от подкатегории.
+		// d — диаметр для круга, сторона квадрата или размер «под ключ» шестигранника.
+		let areaMm2: number;
+		if (sku.sub === 'kvadrat') {
+			// квадрат: A = a²
+			areaMm2 = d * d;
+		} else if (sku.sub === 'shestigrannik') {
+			// шестигранник «под ключ» S: A = S² × √3 / 2 ≈ 0.866 × S²
+			areaMm2 = d * d * Math.sqrt(3) / 2;
+		} else {
+			// круг (включая никелесодержащий/жаропрочный sub): A = π × (d/2)²
+			areaMm2 = Math.PI * (d / 2) ** 2;
+		}
+		// масса 1 пог. м, кг = площадь(мм²) × ρ(г/см³) / 1000
+		kgPerMeter = (areaMm2 * RHO) / 1000;
+		weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgPerMeter, 2)} кг` };
 	}
 }
 if (sku.hub === 'truba' && sku.size) {
@@ -169,16 +188,16 @@ if (sku.hub === 'truba' && sku.size) {
 		const w = parseFloat(m[2]);
 		if (Number.isFinite(D) && Number.isFinite(w) && D > 0 && w > 0 && w < D / 2) {
 			// труба: m = π × (D − w) × w × ρ × 1000 (D, w в мм; m в кг/м)
-			const kgM = (Math.PI * (D - w) * w * RHO) / 1000;
-			weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgM, 2)} кг` };
+			kgPerMeter = (Math.PI * (D - w) * w * RHO) / 1000;
+			weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgPerMeter, 2)} кг` };
 		}
 	}
 }
 if (sku.hub === 'provoloka' && sku.size) {
 	const d = parseFloat(sku.size);
 	if (Number.isFinite(d) && d > 0) {
-		const kgM = (Math.PI * (d / 2) ** 2 * RHO) / 1000;
-		weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgM, 3)} кг` };
+		kgPerMeter = (Math.PI * (d / 2) ** 2 * RHO) / 1000;
+		weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgPerMeter, 3)} кг` };
 	}
 }
 
@@ -570,7 +589,15 @@ if (sku.price != null) {
 						)}
 
 						<div class="calc">
-							<label class="calc__label" for={`calc-${sku.slug}`}>Расчёт по объёму, {sku.unit}</label>
+							<div class="calc__head">
+								<label class="calc__label" for={`calc-${sku.slug}`} data-calc-label>Расчёт по объёму, {sku.unit}</label>
+								{kgPerMeter != null && kgPerMeter > 0 && (
+									<div class="calc__modes" role="group" aria-label="Единица расчёта">
+										<button type="button" class="calc__mode calc__mode--active" data-calc-mode="unit" aria-pressed="true">{sku.unit}</button>
+										<button type="button" class="calc__mode" data-calc-mode="meter" aria-pressed="false">пог. м</button>
+									</div>
+								)}
+							</div>
 							<div class="calc__row">
 								<input
 									id={`calc-${sku.slug}`}
@@ -584,8 +611,9 @@ if (sku.price != null) {
 									data-unit-price={sku.price}
 									data-retail-price={sku.priceUnit ?? sku.price}
 									data-unit={sku.unit}
+									data-kg-per-m={kgPerMeter != null ? kgPerMeter.toFixed(4) : ''}
 								/>
-								<span class="calc__unit">{sku.unit}</span>
+								<span class="calc__unit" data-calc-unit>{sku.unit}</span>
 							</div>
 							<div class="calc__result" data-calc-result>Введите объём — посчитаем сумму</div>
 						</div>
@@ -783,6 +811,9 @@ if (sku.price != null) {
 			if (!root) return;
 			const input = root.querySelector('[data-calc-input]');
 			const result = root.querySelector('[data-calc-result]');
+			const labelEl = root.querySelector('[data-calc-label]');
+			const unitEl = root.querySelector('[data-calc-unit]');
+			const modeButtons = Array.from(root.querySelectorAll('[data-calc-mode]'));
 			const cta = document.querySelector('[data-product-cta]');
 			const stickyCta = document.querySelector('[data-product-sticky-cta]');
 			if (!input || !result) return;
@@ -790,8 +821,32 @@ if (sku.price != null) {
 			const unitPrice = parseFloat(input.dataset.unitPrice || '0');
 			const retailPrice = parseFloat(input.dataset.retailPrice || String(unitPrice));
 			const unit = input.dataset.unit || 'т';
+			const kgPerM = parseFloat(input.dataset.kgPerM || '0');
 			const fmt = new Intl.NumberFormat('ru-RU');
+			const fmt3 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 });
 			const baseHref = cta?.dataset.baseHref || cta?.getAttribute('href') || '/zapros-kp/';
+
+			// 'unit' — пользователь вводит в единице товара (обычно т).
+			// 'meter' — пользователь вводит в пог. м, пересчёт идёт через kgPerM.
+			let mode = 'unit';
+
+			function setMode(next) {
+				mode = next;
+				modeButtons.forEach((b) => {
+					const active = b.dataset.calcMode === mode;
+					b.classList.toggle('calc__mode--active', active);
+					b.setAttribute('aria-pressed', String(active));
+				});
+				const labelUnit = mode === 'meter' ? 'пог. м' : unit;
+				if (labelEl) labelEl.textContent = `Расчёт по объёму, ${labelUnit}`;
+				if (unitEl) unitEl.textContent = labelUnit;
+				input.placeholder = mode === 'meter' ? '10' : '1';
+				recalc();
+			}
+
+			modeButtons.forEach((btn) => {
+				btn.addEventListener('click', () => setMode(btn.dataset.calcMode));
+			});
 
 			function recalc() {
 				const raw = (input.value || '').replace(',', '.').trim();
@@ -803,14 +858,34 @@ if (sku.price != null) {
 					if (stickyCta) stickyCta.setAttribute('href', baseHref);
 					return;
 				}
-				const price = qty < 1 ? retailPrice : unitPrice;
-				const total = Math.round(qty * price);
-				const tier = qty < 1 ? 'розница' : 'оптовая цена';
-				result.innerHTML = `<strong>${fmt.format(total)} ₽</strong> <span class="calc__hint">≈ ${fmt.format(price)} ₽/${unit} · ${tier}</span>`;
+
+				// Приводим введённое к нативной единице товара (тоннам).
+				// Если выбрано «пог. м» и есть kgPerM — пересчитываем.
+				let qtyInUnit = qty;
+				let extraHint = '';
+				if (mode === 'meter' && kgPerM > 0) {
+					qtyInUnit = (qty * kgPerM) / 1000;
+					extraHint = ` · ≈ ${fmt3.format(qtyInUnit)} ${unit}`;
+				} else if (mode === 'unit' && kgPerM > 0 && unit === 'т') {
+					// Подсказка обратного пересчёта: «1 т ≈ X пог. м»
+					const meters = (qty * 1000) / kgPerM;
+					extraHint = ` · ≈ ${fmt.format(Math.round(meters))} пог. м`;
+				}
+
+				const price = qtyInUnit < 1 ? retailPrice : unitPrice;
+				const total = Math.round(qtyInUnit * price);
+				const tier = qtyInUnit < 1 ? 'розница' : 'оптовая цена';
+				result.innerHTML = `<strong>${fmt.format(total)} ₽</strong> <span class="calc__hint">≈ ${fmt.format(price)} ₽/${unit} · ${tier}${extraHint}</span>`;
 				result.classList.add('calc__result--ok');
 
 				const sep = baseHref.includes('?') ? '&' : '?';
-				const newHref = baseHref.replace('#lead-form', '') + `${sep}qty=${encodeURIComponent(qty)}#lead-form`;
+				// В форму запроса КП передаём количество в нативной единице (т) —
+				// менеджер видит понятную ему величину. Если был режим «м»,
+				// дополнительно прикладываем m=<метры>, чтобы не потерять контекст.
+				const qtyParam = qtyInUnit.toFixed(3);
+				let newHref = baseHref.replace('#lead-form', '') + `${sep}qty=${encodeURIComponent(qtyParam)}`;
+				if (mode === 'meter') newHref += `&m=${encodeURIComponent(qty)}`;
+				newHref += '#lead-form';
 				if (cta) cta.setAttribute('href', newHref);
 				if (stickyCta) stickyCta.setAttribute('href', newHref);
 			}
@@ -1286,6 +1361,14 @@ if (sku.price != null) {
 		padding-top: var(--space-3);
 		border-top: 1px dashed var(--color-primary-100);
 	}
+	.calc__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin-bottom: 0.3rem;
+		flex-wrap: wrap;
+	}
 	.calc__label {
 		display: block;
 		font-size: 0.74rem;
@@ -1293,7 +1376,35 @@ if (sku.price != null) {
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		color: var(--color-subtle);
-		margin-bottom: 0.3rem;
+	}
+	.calc__modes {
+		display: inline-flex;
+		background: var(--color-bg-elev, #f5f5f7);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-pill);
+		padding: 2px;
+	}
+	.calc__mode {
+		appearance: none;
+		border: 0;
+		background: transparent;
+		font: inherit;
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: var(--color-subtle);
+		padding: 0.2rem 0.6rem;
+		border-radius: var(--radius-pill);
+		cursor: pointer;
+		transition: background var(--dur-fast) var(--ease-out),
+			color var(--dur-fast) var(--ease-out);
+	}
+	.calc__mode:hover {
+		color: var(--color-text);
+	}
+	.calc__mode--active {
+		background: #fff;
+		color: var(--color-primary-600);
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 	}
 	.calc__row {
 		display: flex;
