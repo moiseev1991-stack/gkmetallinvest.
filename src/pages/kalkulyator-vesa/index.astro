@@ -459,7 +459,8 @@ const hubs = [
 			{ key: 'length', label: 'Длина, мм', def: 1000 },
 		]},
 		ugolok: { unit: 'meter', fields: [
-			{ key: 'side', label: 'Полка, мм', def: 50 },
+			{ key: 'side_a', label: 'Полка A, мм', def: 50 },
+			{ key: 'side_b', label: 'Полка B, мм', def: 50 },
 			{ key: 'thickness', label: 'Толщина, мм', def: 5 },
 			{ key: 'length', label: 'Длина, мм', def: 6000 },
 		]},
@@ -582,11 +583,14 @@ const hubs = [
 					return 2 * (a + b - 2 * wall) * wall * L;
 				}
 				case 'ugolok': {
-					const a = getDim('side');
+					const a = getDim('side_a');
+					const b = getDim('side_b');
 					const t = getDim('thickness');
 					const L = getDim('length');
-					if (t >= a) return 0;
-					return (2 * a * t - t * t) * L;
+					if (t >= Math.min(a, b)) return 0;
+					/* Уголок с полками a и b: средняя линия (a + b − t) × толщина × длина.
+					   При a = b = равнополочный, при a ≠ b — неравнополочный. */
+					return (a + b - t) * t * L;
 				}
 			}
 			return 0;
