@@ -1362,12 +1362,8 @@ if (sku.price != null) {
 		border-top: 1px dashed var(--color-primary-100);
 	}
 	.calc__head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		margin-bottom: 0.3rem;
-		flex-wrap: wrap;
+		display: block;
+		margin-bottom: 0.5rem;
 	}
 	.calc__label {
 		display: block;
@@ -1376,35 +1372,41 @@ if (sku.price != null) {
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		color: var(--color-subtle);
+		margin-bottom: 0.4rem;
 	}
 	.calc__modes {
-		display: inline-flex;
-		background: var(--color-bg-elev, #f5f5f7);
+		display: flex;
+		width: 100%;
+		background: #fff;
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-pill);
-		padding: 2px;
+		border-radius: var(--radius-sm);
+		padding: 3px;
+		gap: 2px;
 	}
 	.calc__mode {
+		flex: 1;
 		appearance: none;
 		border: 0;
 		background: transparent;
 		font: inherit;
-		font-size: 0.72rem;
+		font-size: 0.88rem;
 		font-weight: 600;
-		color: var(--color-subtle);
-		padding: 0.2rem 0.6rem;
-		border-radius: var(--radius-pill);
+		color: var(--color-muted);
+		padding: 0.5rem 0.6rem;
+		border-radius: calc(var(--radius-sm) - 2px);
 		cursor: pointer;
 		transition: background var(--dur-fast) var(--ease-out),
-			color var(--dur-fast) var(--ease-out);
+			color var(--dur-fast) var(--ease-out),
+			box-shadow var(--dur-fast) var(--ease-out);
 	}
-	.calc__mode:hover {
+	.calc__mode:hover:not(.calc__mode--active) {
+		background: var(--color-bg-elev, #f5f5f7);
 		color: var(--color-text);
 	}
 	.calc__mode--active {
-		background: #fff;
-		color: var(--color-primary-600);
-		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+		background: var(--color-primary-500);
+		color: #fff;
+		box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
 	}
 	.calc__row {
 		display: flex;
