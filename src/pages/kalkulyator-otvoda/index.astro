@@ -1,0 +1,551 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса отвода — ГОСТ 17375-2001, нержавеющий и стальной';
+const description =
+	'Расчёт массы крутоизогнутого отвода трубопровода по диаметру, толщине, углу и исполнению. ' +
+	'Формула π·(D−t)·t·π·R·α/180°·ρ. Исп. 1 (R=1.5D) и Исп. 2 (R=1.0D). Сталь и нержавейка.';
+
+/* Стандартные DN по ГОСТ 17375-2001 для отводов крутоизогнутых. */
+const dnList = [32, 38, 45, 57, 76, 89, 108, 133, 159, 219, 273, 325, 377, 426, 530, 630];
+const wallList = [2, 2.5, 3, 3.5, 4, 5, 6, 8, 10, 12, 14, 16];
+
+const materials = [
+	{ value: 'st20',    label: 'Сталь 20 / 09Г2С',                rho: 7850, gost: 'ГОСТ 17375-2001', applic: 'трубопроводы общего назначения и пара' },
+	{ value: 'aisi304', label: 'Нержавейка AISI 304 / 08Х18Н10',   rho: 7900, gost: 'ГОСТ 17375-2001', applic: 'пищевые и химические трубопроводы' },
+	{ value: 'aisi316l', label: 'Нержавейка AISI 316L / 03Х17Н14М2', rho: 7900, gost: 'ГОСТ 17375-2001', applic: 'агрессивные среды, морская вода' },
+	{ value: 'aisi321', label: 'Нержавейка AISI 321 / 12Х18Н10Т',   rho: 7900, gost: 'ГОСТ 17375-2001', applic: 'высокотемпературные трубопроводы до +800 °C' },
+];
+
+const executions = [
+	{ value: 'isp2', label: 'Исполнение 2 (R = 1.0 D)', coef: 1.0, descr: 'короткий радиус, более компактный отвод' },
+	{ value: 'isp1', label: 'Исполнение 1 (R = 1.5 D)', coef: 1.5, descr: 'длинный радиус, меньше гидравлических потерь' },
+];
+
+const angles = [
+	{ value: 45,  label: '45°'  },
+	{ value: 60,  label: '60°'  },
+	{ value: 90,  label: '90°'  },
+	{ value: 180, label: '180°' },
+];
+
+const faq = [
+	{
+		q: 'Что означает «исполнение» отвода?',
+		a: 'Исполнение определяет радиус оси отвода R относительно диаметра трубы D. Исполнение 1 — R = 1,5 D (длинный радиус, меньше гидравлических потерь, длиннее отвод). Исполнение 2 — R = 1,0 D (короткий радиус, компактнее, дешевле в обработке). Оба регламентированы ГОСТ 17375-2001. Для большинства трубопроводов применяется Исп. 2, для магистральных и пара — Исп. 1.',
+	},
+	{
+		q: 'Как считается вес отвода?',
+		a: 'Геометрически отвод — сегмент тороидальной поверхности. Объём = площадь кольцевого сечения трубы (π × (D − t) × t) × длина дуги оси (π × R × α / 180°). Масса = объём × плотность. Калькулятор использует именно эту формулу. Реальные значения по ГОСТ-таблицам учитывают допуски и фаски — расхождение 1–3 %.',
+	},
+	{
+		q: 'Сколько весит отвод 90° DN 108 × 4 из нержавейки?',
+		a: 'Для нержавеющего отвода 90° DN 108 × t 4, Исп. 2 (R = 108 мм): площадь кольца π × (108 − 4) × 4 = 1306,9 мм². Длина дуги π × 108 × 90 / 180 = 169,6 мм. Объём 221 650 мм³. Масса при ρ = 7900 кг/м³ — 1,75 кг. По табличному ГОСТ — 1,77 кг.',
+	},
+	{
+		q: 'Чем штампованный отвод отличается от сварного?',
+		a: 'Штампованный отвод (бесшовный) производится горячим деформированием отрезка трубы — сплошная стенка, ровный профиль. Применяется на ответственных трубопроводах, под высоким давлением, в пищевой и химической промышленности. Сварной отвод собирается из сегментов листа или трубы со сварными швами. Дешевле, но менее надёжен под давлением и пульсацией. Для нержавеющих трубопроводов мы рекомендуем штампованные отводы.',
+	},
+	{
+		q: 'Какие размеры отводов выпускаются?',
+		a: 'По ГОСТ 17375-2001 — DN от 32 до 630 мм, стенка от 2 до 18 мм. Углы 45°, 60°, 90°, 180° — стандартные. Углы 30°, 22,5°, 11,25° — реже, на заказ. В нашем каталоге раздел /detali-truboprovoda/ — нержавеющие отводы DN 15–500 в наличии и под заявку.',
+	},
+	{
+		q: 'Из какой марки делают нержавеющий отвод?',
+		a: 'Стандартные марки для нержавеющих отводов — AISI 304 (08Х18Н10), AISI 316L (03Х17Н14М2), AISI 321 (12Х18Н10Т). Выбор по среде: 304 — общего назначения, 316L — хлориды и морская вода, 321 — высокотемпературные трубопроводы. Плотность всех трёх — 7,9 г/см³, поэтому масса отводов идентична для одного типоразмера.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd]}>
+	<div class="container otv">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса отвода' }]} />
+
+		<header class="otv__hero">
+			<span class="otv__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M2 14 V8 a6 6 0 0 1 6 -6 H14" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" />
+				</svg>
+				ГОСТ 17375-2001
+			</span>
+			<h1 class="otv__h1">Калькулятор веса <span class="otv__h1-accent">отвода</span></h1>
+			<p class="otv__lead">
+				Расчёт массы крутоизогнутого отвода трубопровода по наружному диаметру, толщине
+				стенки, исполнению (R = 1.0 D или R = 1.5 D) и углу гиба. Поддерживается сталь
+				и нержавеющие марки AISI 304, 316L, 321. Геометрическая формула — точность ±2 %
+				от табличного ГОСТ-значения.
+			</p>
+		</header>
+
+		<section class="otv__widget" data-otv-root>
+			<div class="otv__widget-inner">
+				<div class="otv__form">
+					<div class="otv__field">
+						<label class="otv__label" for="otv-mat">Материал</label>
+						<select class="otv__input" id="otv-mat" data-otv-material>
+							{materials.map((m) => (
+								<option value={m.value} data-rho={m.rho} selected={m.value === 'aisi304'}>
+									{m.label} — ρ {(m.rho / 1000).toLocaleString('ru-RU', { minimumFractionDigits: 2 })} г/см³
+								</option>
+							))}
+						</select>
+						<p class="otv__hint" data-otv-mat-hint>{materials[1].applic}</p>
+					</div>
+
+					<div class="otv__row-2">
+						<div class="otv__field">
+							<label class="otv__label" for="otv-dn">Наружный Ø (DN), мм</label>
+							<select class="otv__input" id="otv-dn" data-otv-dn>
+								{dnList.map((dn) => (
+									<option value={dn} selected={dn === 108}>{dn}</option>
+								))}
+							</select>
+						</div>
+
+						<div class="otv__field">
+							<label class="otv__label" for="otv-wall">Стенка t, мм</label>
+							<select class="otv__input" id="otv-wall" data-otv-wall>
+								{wallList.map((t) => (
+									<option value={t} selected={t === 4}>{t.toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</option>
+								))}
+							</select>
+						</div>
+					</div>
+
+					<div class="otv__field">
+						<label class="otv__label" for="otv-exec">Исполнение (радиус оси)</label>
+						<select class="otv__input" id="otv-exec" data-otv-exec>
+							{executions.map((e) => (
+								<option value={e.value} data-coef={e.coef} selected={e.value === 'isp2'}>{e.label}</option>
+							))}
+						</select>
+						<p class="otv__hint" data-otv-exec-hint>{executions[0].descr}</p>
+					</div>
+
+					<div class="otv__field">
+						<label class="otv__label">Угол отвода α</label>
+						<div class="otv__angles" role="radiogroup" aria-label="Угол отвода">
+							{angles.map((a) => (
+								<button type="button" class={`otv__angle${a.value === 90 ? ' otv__angle--active' : ''}`} data-otv-angle={a.value} role="radio" aria-checked={a.value === 90 ? 'true' : 'false'}>
+									{a.label}
+								</button>
+							))}
+						</div>
+					</div>
+
+					<div class="otv__row-2">
+						<div class="otv__field">
+							<label class="otv__label" for="otv-qty">Количество, шт.</label>
+							<input class="otv__input" id="otv-qty" type="number" inputmode="decimal" step="1" min="1" value="1" data-otv-qty />
+						</div>
+
+						<div class="otv__field">
+							<label class="otv__label" for="otv-mass">Нужная масса (обратный)</label>
+							<div class="otv__mass-wrap">
+								<input class="otv__input otv__mass-input" id="otv-mass" type="number" inputmode="decimal" step="any" min="0" placeholder="—" data-otv-mass />
+								<select class="otv__mass-unit" data-otv-mass-unit aria-label="Единицы массы">
+									<option value="kg" selected>кг</option>
+									<option value="t">т</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<aside class="otv__result">
+					<div class="otv__result-card">
+						<div class="otv__result-eyebrow">Геометрический расчёт</div>
+
+						<div class="otv__result-row">
+							<span>Вес 1 отвода</span>
+							<strong data-otv-one>—</strong>
+						</div>
+						<div class="otv__result-row">
+							<span>Длина дуги оси</span>
+							<strong data-otv-arc>—</strong>
+						</div>
+
+						<div class="otv__result-total">
+							<span class="otv__result-total-label">Общий вес партии</span>
+							<div class="otv__result-total-value" data-otv-total>—</div>
+							<div class="otv__result-total-sub" data-otv-total-sub></div>
+						</div>
+
+						<dl class="otv__result-meta">
+							<div><dt>Радиус оси R</dt><dd data-otv-radius>—</dd></div>
+							<div><dt>Площадь сечения</dt><dd data-otv-area>—</dd></div>
+						</dl>
+
+						<a class="otv__cta" href="/detali-truboprovoda/" data-otv-cta>
+							<span>Нержавеющие отводы в каталоге</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="otv__result-foot">
+							Геометрия по средней линии. Табличные значения ГОСТ 17375-2001 учитывают допуски и фаски — расхождение 1–3 %.
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="otv__block">
+			<h2 class="otv__h2">Геометрия отвода</h2>
+			<div class="otv__infographic">
+				<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Геометрия крутоизогнутого отвода 90° с обозначениями D, t, R, α">
+					<defs>
+						<pattern id="otvHatch" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="9" stroke="var(--color-primary)" stroke-width="0.7" opacity="0.28" />
+						</pattern>
+					</defs>
+
+					{/* Центр кривизны в (60, 220). Внешний радиус R+D/2=170, внутренний R-D/2=110.
+					    Отвод 90°: дуга идёт от (60, 50) [верх] до (230, 220) [правый край]. */}
+					{/* Заливка кольцевого сегмента: external arc + line + internal arc */}
+					<path d="
+						M 60 50
+						A 170 170 0 0 1 230 220
+						L 170 220
+						A 110 110 0 0 0 60 110
+						Z
+					" fill="url(#otvHatch)" stroke="var(--color-primary)" stroke-width="2.4" stroke-linejoin="round" />
+
+					{/* Закрытие торцов */}
+					<line x1="60" y1="50" x2="60" y2="110" stroke="var(--color-primary)" stroke-width="2.4" />
+					<line x1="170" y1="220" x2="230" y2="220" stroke="var(--color-primary)" stroke-width="2.4" />
+
+					{/* Штриховка торцов — короткие диагональные линии */}
+					<g stroke="var(--color-primary)" stroke-width="0.7" opacity="0.55">
+						<line x1="55" y1="55" x2="65" y2="65" />
+						<line x1="50" y1="65" x2="65" y2="80" />
+						<line x1="50" y1="80" x2="65" y2="95" />
+						<line x1="50" y1="95" x2="65" y2="110" />
+					</g>
+
+					{/* Радиус R — пунктирная линия от центра кривизны (60,220) до середины осевой дуги */}
+					<g stroke="var(--color-accent)" stroke-width="1.4" fill="none" stroke-linecap="round">
+						<line x1="60" y1="220" x2="60" y2="80" stroke-dasharray="4 3" />
+						<line x1="55" y1="220" x2="65" y2="220" />
+					</g>
+					<circle cx="60" cy="220" r="2.5" fill="var(--color-accent)" />
+					<text x="50" y="155" text-anchor="end" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="var(--color-accent)">R</text>
+
+					{/* Дуга осевой линии (середина между внутренним и внешним радиусом, R = 140 от центра) */}
+					<path d="M 60 80 A 140 140 0 0 1 200 220" stroke="var(--color-subtle)" stroke-width="0.8" stroke-dasharray="6 3 1 3" fill="none" />
+
+					{/* Размер D на правом торце (вертикально на х=200) */}
+					<g stroke="var(--color-accent)" stroke-width="1.4" fill="none" stroke-linecap="round">
+						<line x1="250" y1="220" x2="250" y2="170" />
+						<line x1="230" y1="220" x2="255" y2="220" stroke-dasharray="3 2" />
+						<line x1="170" y1="170" x2="255" y2="170" stroke-dasharray="3 2" />
+					</g>
+					<polygon points="250,220 246,210 254,210" fill="var(--color-accent)" />
+					<polygon points="250,170 246,180 254,180" fill="var(--color-accent)" />
+					<text x="265" y="200" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="var(--color-accent)">D</text>
+
+					{/* Размер t — толщина стенки в торце (внешний радиус 170, внутренний 110, разница 60, делим пополам для двух стенок) */}
+					<g stroke="var(--color-accent)" stroke-width="1" fill="none">
+						<line x1="240" y1="167" x2="240" y2="173" />
+					</g>
+					<text x="225" y="166" font-family="Inter, sans-serif" font-size="11" font-style="italic" fill="var(--color-accent)">t</text>
+					<line x1="234" y1="170" x2="241" y2="170" stroke="var(--color-accent)" stroke-width="0.7" />
+
+					{/* Угол α — дуга у центра кривизны */}
+					<path d="M 90 220 A 30 30 0 0 0 60 190" stroke="var(--color-accent)" stroke-width="1.2" fill="none" />
+					<text x="80" y="205" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="var(--color-accent)">α</text>
+
+					<text x="270" y="270" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">ГОСТ 17375-2001</text>
+				</svg>
+
+				<div class="otv__infographic-legend">
+					<h3>Обозначения</h3>
+					<ul>
+						<li><strong>D</strong> — наружный диаметр трубы</li>
+						<li><strong>t</strong> — толщина стенки</li>
+						<li><strong>R</strong> — радиус оси отвода (Исп. 1: R = 1.5 D; Исп. 2: R = 1.0 D)</li>
+						<li><strong>α</strong> — угол отвода (45°, 60°, 90°, 180°)</li>
+						<li>Штрих-пунктирная дуга — осевая линия (по ней считается длина)</li>
+					</ul>
+					<p class="otv__infographic-note">
+						Формула массы: m = π × (D − t) × t × π × R × α / 180° × ρ / 10⁹.
+						Площадь кольца трубы × длина дуги оси × плотность.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="otv__block">
+			<h2 class="otv__h2">Связанное</h2>
+			<ul class="otv__related">
+				<li>
+					<a href="/detali-truboprovoda/">
+						<strong>Детали трубопровода нержавеющие</strong>
+						<small>отводы, переходы, тройники, заглушки в наличии и под заявку</small>
+					</a>
+				</li>
+				<li>
+					<a href="/truba/">
+						<strong>Труба нержавеющая</strong>
+						<small>бесшовная, электросварная, профильная — основа для отводов</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса</strong>
+						<small>9 видов проката — лист, труба, круг, проволока и др.</small>
+					</a>
+				</li>
+				<li>
+					<a href="/gost/">
+						<strong>Справочник ГОСТов</strong>
+						<small>сортаменты, плотности, маркировка AISI ↔ ГОСТ</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="otv__faq">
+			<h2 class="otv__h2">Частые вопросы</h2>
+			<div class="otv__faq-list">
+				{faq.map((f) => (
+					<details class="otv__faq-item">
+						<summary class="otv__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужны нержавеющие отводы?"
+		text="В наличии нержавеющие отводы 45°, 90°, 180° из AISI 304, 316L, 321 — DN от 15 до 500 мм. Менеджер пересчитает массу партии, подберёт исполнение и пришлёт КП в течение часа."
+	/>
+</BaseLayout>
+
+<script>
+	const root = document.querySelector('[data-otv-root]');
+	if (root) {
+		const matSel = root.querySelector('[data-otv-material]') as HTMLSelectElement;
+		const matHint = root.querySelector('[data-otv-mat-hint]') as HTMLElement;
+		const dnSel = root.querySelector('[data-otv-dn]') as HTMLSelectElement;
+		const wallSel = root.querySelector('[data-otv-wall]') as HTMLSelectElement;
+		const execSel = root.querySelector('[data-otv-exec]') as HTMLSelectElement;
+		const execHint = root.querySelector('[data-otv-exec-hint]') as HTMLElement;
+		const qtyInp = root.querySelector('[data-otv-qty]') as HTMLInputElement;
+		const massInp = root.querySelector('[data-otv-mass]') as HTMLInputElement;
+		const massUnit = root.querySelector('[data-otv-mass-unit]') as HTMLSelectElement;
+
+		const oneEl = root.querySelector('[data-otv-one]') as HTMLElement;
+		const arcEl = root.querySelector('[data-otv-arc]') as HTMLElement;
+		const totalEl = root.querySelector('[data-otv-total]') as HTMLElement;
+		const totalSubEl = root.querySelector('[data-otv-total-sub]') as HTMLElement;
+		const radiusEl = root.querySelector('[data-otv-radius]') as HTMLElement;
+		const areaEl = root.querySelector('[data-otv-area]') as HTMLElement;
+
+		const MAT_HINTS: Record<string, string> = {
+			st20: 'трубопроводы общего назначения и пара',
+			aisi304: 'пищевые и химические трубопроводы',
+			aisi316l: 'агрессивные среды, морская вода',
+			aisi321: 'высокотемпературные трубопроводы до +800 °C',
+		};
+		const EXEC_HINTS: Record<string, string> = {
+			isp1: 'длинный радиус, меньше гидравлических потерь',
+			isp2: 'короткий радиус, более компактный отвод',
+		};
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+		const fmt0 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
+
+		let currentAngle = 90;
+		let lastEdited: 'qty' | 'mass' = 'qty';
+
+		function getRho(): number {
+			const opt = matSel.selectedOptions[0];
+			return parseFloat(opt?.dataset.rho || '7900') || 7900;
+		}
+		function getExecCoef(): number {
+			const opt = execSel.selectedOptions[0];
+			return parseFloat(opt?.dataset.coef || '1.0') || 1.0;
+		}
+
+		function recalc() {
+			const D = parseFloat(dnSel.value) || 0;
+			const t = parseFloat(wallSel.value) || 0;
+			const alpha = currentAngle;
+			const coef = getExecCoef();
+			const R = D * coef;
+			const rho = getRho();
+			let qty = parseFloat(qtyInp.value) || 0;
+
+			const ringArea = Math.PI * (D - t) * t; // мм²
+			const arcLen = Math.PI * R * alpha / 180; // мм
+			const volume = ringArea * arcLen; // мм³
+			const oneWeight = volume * rho / 1e9; // кг
+
+			if (lastEdited === 'mass' && oneWeight > 0) {
+				const massRaw = parseFloat(massInp.value) || 0;
+				const massKg = massUnit.value === 't' ? massRaw * 1000 : massRaw;
+				qty = massKg / oneWeight;
+				if (qty > 0) qtyInp.value = String(Math.max(1, Math.round(qty)));
+				else qtyInp.value = '1';
+			} else if (oneWeight > 0 && qty > 0) {
+				const total = oneWeight * qty;
+				const inT = massUnit.value === 't';
+				massInp.value = String(+(inT ? total / 1000 : total).toFixed(3));
+			} else {
+				massInp.value = '';
+			}
+
+			const total = oneWeight * qty;
+
+			oneEl.textContent = oneWeight > 0 ? `${fmt.format(oneWeight)} кг` : '—';
+			arcEl.textContent = arcLen > 0 ? `${fmt0.format(arcLen)} мм` : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl.textContent = `${fmt.format(total)} кг`;
+				} else {
+					totalEl.textContent = `${fmt.format(total)} кг`;
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			radiusEl.textContent = R > 0 ? `${fmt0.format(R)} мм (${coef.toLocaleString('ru-RU')} D)` : '—';
+			areaEl.textContent = ringArea > 0 ? `${fmt0.format(ringArea)} мм²` : '—';
+		}
+
+		matSel.addEventListener('change', () => { matHint.textContent = MAT_HINTS[matSel.value] ?? ''; recalc(); });
+		dnSel.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
+		wallSel.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
+		execSel.addEventListener('change', () => { execHint.textContent = EXEC_HINTS[execSel.value] ?? ''; recalc(); });
+		qtyInp.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		massInp.addEventListener('input', () => { lastEdited = 'mass'; recalc(); });
+		massUnit.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
+
+		root.querySelectorAll('[data-otv-angle]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const v = parseInt((btn as HTMLElement).dataset.otvAngle || '90', 10);
+				currentAngle = v;
+				root!.querySelectorAll('[data-otv-angle]').forEach((b) => {
+					const active = parseInt((b as HTMLElement).dataset.otvAngle || '0', 10) === v;
+					b.classList.toggle('otv__angle--active', active);
+					b.setAttribute('aria-checked', active ? 'true' : 'false');
+				});
+				lastEdited = 'qty';
+				recalc();
+			});
+		});
+
+		recalc();
+	}
+</script>
+
+<style>
+	.otv { padding-block: var(--space-8); min-width: 0; }
+	.otv__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.otv__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.otv__h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15; margin: 0 0 var(--space-3); letter-spacing: -0.02em; }
+	.otv__h1-accent { background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+	.otv__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	.otv__widget { background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md); }
+	.otv__widget-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-6); }
+	@media (max-width: 900px) { .otv__widget { padding: var(--space-4); } .otv__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+	.otv__form { display: grid; gap: var(--space-4); }
+	.otv__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .otv__row-2 { grid-template-columns: 1fr; } }
+
+	.otv__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.otv__label { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-subtle); }
+	.otv__input { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); outline: none; width: 100%; appearance: none; -webkit-appearance: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	select.otv__input { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.9rem; padding-right: 2rem; }
+	.otv__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.otv__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.4; }
+
+	.otv__angles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; }
+	.otv__angle { appearance: none; padding: 0.7rem 0.4rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; font: inherit; font-weight: 600; color: var(--color-muted); transition: all var(--dur-fast) var(--ease-out); }
+	.otv__angle:hover { border-color: var(--color-primary-400); color: var(--color-primary-500); }
+	.otv__angle--active { border-color: var(--color-primary-500); background: var(--color-primary-50); color: var(--color-primary); box-shadow: 0 0 0 3px rgba(28, 75, 128, 0.10); }
+
+	.otv__mass-wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); overflow: hidden; }
+	.otv__mass-wrap:focus-within { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); }
+	.otv__mass-input { border: 0 !important; background: transparent !important; text-align: center; font-weight: 600; box-shadow: none !important; }
+	.otv__mass-unit { border: 0; border-left: 1px solid var(--color-border); background: var(--color-bg-elev); padding: 0 0.5rem 0 0.85rem; font-size: 0.85rem; color: var(--color-muted); cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.45rem center; background-size: 0.9rem; padding-right: 1.6rem; }
+
+	.otv__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .otv__result { position: static; } }
+	.otv__result-card { background: var(--grad-hero); color: var(--color-on-dark); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow); position: relative; overflow: hidden; }
+	.otv__result-eyebrow { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent-100); margin-bottom: var(--space-4); }
+	.otv__result-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 0.6rem 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+	.otv__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.otv__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+	.otv__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.otv__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.otv__result-total-value { font-family: var(--font-mono); font-size: clamp(2.2rem, 4.6vw, 3.2rem); font-weight: 700; line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+	.otv__result-total-sub { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-on-dark-muted); margin-top: 0.25rem; min-height: 1.2em; }
+	.otv__result-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-4) 0 var(--space-4); padding-top: var(--space-3); border-top: 1px solid rgba(255,255,255,0.12); }
+	.otv__result-meta dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-on-dark-muted); margin-bottom: 0.2rem; }
+	.otv__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+	.otv__cta { display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff; font-weight: 600; text-decoration: none; border-radius: var(--radius-md); font-size: 0.92rem; box-shadow: var(--shadow-warm-glow); transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	.otv__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.otv__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.otv__cta:hover svg { transform: translateX(2px); }
+	.otv__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.otv__block { margin-bottom: var(--space-10); }
+	.otv__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.otv__infographic { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: var(--space-6); align-items: start; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+	@media (max-width: 720px) { .otv__infographic { grid-template-columns: 1fr; } }
+	.otv__infographic svg { width: 100%; height: auto; max-width: 280px; display: block; }
+	.otv__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.otv__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.otv__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.otv__infographic-legend li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-500); }
+	.otv__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.otv__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	.otv__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.otv__related a { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary); transition: all var(--dur-fast) var(--ease-out); }
+	.otv__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.otv__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.otv__faq { margin-bottom: var(--space-8); }
+	.otv__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.otv__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.otv__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.otv__faq-q { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none; }
+	.otv__faq-q::-webkit-details-marker { display: none; }
+	.otv__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.otv__faq-item[open] .otv__faq-q svg { transform: rotate(180deg); }
+	.otv__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>
