@@ -1,0 +1,667 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса балки двутавровой — ГОСТ 8239-89, №10–60';
+const description =
+	'Расчёт массы двутавровой балки по номеру профиля и длине. Таблица веса 1 м двутавра ' +
+	'№10–60 по ГОСТ 8239-89. Размеры h, b, tw, tf, обратный пересчёт от массы.';
+
+/* ГОСТ 8239-89 — балки двутавровые горячекатаные обычные.
+   Номер равен высоте профиля в сантиметрах. Размеры в мм, m1 в кг/м (плотность 7,85). */
+const balkaRows = [
+	{ num: '10', m1: 9.46,  h: 100, b: 55,  tw: 4.5,  tf: 7.2  },
+	{ num: '12', m1: 11.50, h: 120, b: 64,  tw: 4.8,  tf: 7.3  },
+	{ num: '14', m1: 13.70, h: 140, b: 73,  tw: 4.9,  tf: 7.5  },
+	{ num: '16', m1: 15.90, h: 160, b: 81,  tw: 5.0,  tf: 7.8  },
+	{ num: '18', m1: 18.40, h: 180, b: 90,  tw: 5.1,  tf: 8.1  },
+	{ num: '20', m1: 21.00, h: 200, b: 100, tw: 5.2,  tf: 8.4  },
+	{ num: '22', m1: 24.00, h: 220, b: 110, tw: 5.4,  tf: 8.7  },
+	{ num: '24', m1: 27.30, h: 240, b: 115, tw: 5.6,  tf: 9.5  },
+	{ num: '27', m1: 31.50, h: 270, b: 125, tw: 6.0,  tf: 9.8  },
+	{ num: '30', m1: 36.50, h: 300, b: 135, tw: 6.5,  tf: 10.2 },
+	{ num: '33', m1: 42.20, h: 330, b: 140, tw: 7.0,  tf: 11.2 },
+	{ num: '36', m1: 48.60, h: 360, b: 145, tw: 7.5,  tf: 12.3 },
+	{ num: '40', m1: 57.00, h: 400, b: 155, tw: 8.3,  tf: 13.0 },
+	{ num: '45', m1: 66.50, h: 450, b: 160, tw: 9.0,  tf: 14.2 },
+	{ num: '50', m1: 78.50, h: 500, b: 170, tw: 10.0, tf: 15.2 },
+	{ num: '55', m1: 92.60, h: 550, b: 180, tw: 11.0, tf: 16.5 },
+	{ num: '60', m1: 108.0, h: 600, b: 190, tw: 12.0, tf: 17.8 },
+];
+
+const series = [
+	{ value: 'gost8239',  label: 'Двутавр обычный', gost: 'ГОСТ 8239-89',  applic: 'универсальный несущий профиль для перекрытий, прогонов, балок' },
+	{ value: 'gost26020', label: 'Двутавр Б / Ш / К', gost: 'ГОСТ 26020-83', applic: 'нормальные (Б), широкополочные (Ш), колонные (К) — для тяжёлых металлоконструкций' },
+];
+
+const faq = [
+	{
+		q: 'Сколько весит 1 метр двутавра №20?',
+		a: 'Один метр двутавра №20 по ГОСТ 8239-89 весит 21,00 кг. Высота профиля h = 200 мм, ширина полки b = 100 мм, толщина стенки tw = 5,2 мм, средняя толщина полки tf = 8,4 мм. Для стержня длиной 12 м масса составит 252 кг.',
+	},
+	{
+		q: 'Чем отличается обычный двутавр от широкополочного (Б, Ш, К)?',
+		a: 'Обычный двутавр по ГОСТ 8239-89 — горячекатаный профиль с уклоном внутренних граней полок 6–12 %. Применяется в типовых строительных и машиностроительных конструкциях. Двутавр серий Б (нормальный), Ш (широкополочный) и К (колонный) по ГОСТ 26020-83 — с параллельными гранями полок, удобнее для болтовых соединений и сварки, обладает большим моментом сопротивления. Серия К предназначена для центрально-сжатых колонн, Ш — для балок с большим прогибом, Б — универсальный современный профиль.',
+	},
+	{
+		q: 'Какой двутавр самый ходовой?',
+		a: 'В строительстве массово применяются №20, №24, №30 и №36 — для перекрытий, прогонов кровли и связей. Для лёгких конструкций (площадки, лестницы, балки настила) — №14, №16, №18. Для тяжёлых нагрузок (промздания, мостовые фермы) — №40, №45 и крупнее, либо профили серии Ш ГОСТ 26020-83.',
+	},
+	{
+		q: 'Бывает ли нержавеющий двутавр?',
+		a: 'Нержавеющий горячекатаный двутавр — редкая позиция, выпускается в основном под индивидуальный заказ из марок AISI 304, 316L. Чаще нержавеющие двутавровые балки изготавливают сваркой из листа или гнутыми из полосы. Альтернативные несущие профили в нержавейке — швеллер, уголок, прямоугольная труба больших размеров — у нас в каталоге раздел «Уголок и швеллер» и трубный прокат.',
+	},
+	{
+		q: 'Сколько метров двутавра №20 в одной тонне?',
+		a: 'При массе 21 кг/м: 1000 / 21 ≈ 47,6 м. Это около 4 хлыстов длиной 12 м или 7 хлыстов длиной 6 м (с остатком). Для других номеров: №10 — 106 м/т, №14 — 73 м/т, №30 — 27 м/т, №40 — 17,5 м/т, №50 — 12,7 м/т. В калькуляторе выше — обратный пересчёт «нужная масса → количество хлыстов».',
+	},
+	{
+		q: 'Какие длины поставки двутавра?',
+		a: 'По ГОСТ 8239-89 двутавр поставляется мерной длиной 6, 11, 11,7 и 12 м, а также немерной длиной от 4 до 13 м. Для тяжёлых профилей №36+ типична длина 12 м. По специальному заказу прокатывают длины до 24 м (балки моста, промздания).',
+	},
+	{
+		q: 'Как рассчитать вес двутавра серии Б/Ш/К?',
+		a: 'Для двутавра серий Б (нормальный), Ш (широкополочный), К (колонный) по ГОСТ 26020-83 используются собственные таблицы линейного веса. Например: 10Б1 — 8,10 кг/м, 20Б1 — 17,9 кг/м, 30Б1 — 28,0 кг/м, 40Б1 — 39,8 кг/м. Для расчёта по индивидуальному типоразмеру — отправьте запрос в форму КП, менеджер пришлёт точное значение из справочника или по чертежу.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: 'Как рассчитать вес двутавровой балки',
+	description: 'Расчёт массы двутавра по номеру профиля и длине согласно ГОСТ 8239-89.',
+	step: [
+		{ '@type': 'HowToStep', name: 'Выбрать номер балки', text: 'От №10 до №60 по ГОСТ 8239-89. Номер равен высоте профиля в сантиметрах.' },
+		{ '@type': 'HowToStep', name: 'Указать длину хлыста', text: 'Стандарт — 6, 11,7 или 12 м. Можно вводить любое значение.' },
+		{ '@type': 'HowToStep', name: 'Ввести количество', text: 'Число хлыстов или нужная масса для обратного пересчёта.' },
+		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Вес 1 м, вес хлыста и общий вес партии в килограммах или тоннах.' },
+	],
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
+	<div class="container bal">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса балки' }]} />
+
+		<header class="bal__hero">
+			<span class="bal__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M2 3h12M2 13h12M8 3v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+				</svg>
+				ГОСТ 8239-89
+			</span>
+			<h1 class="bal__h1">Калькулятор веса <span class="bal__h1-accent">двутавровой балки</span></h1>
+			<p class="bal__lead">
+				Расчёт массы балок №10–№60 по ГОСТ 8239-89 — обычный горячекатаный двутавр с уклоном
+				граней полок. Подходит для оценки массы партии под транспортировку, такелаж и смету
+				металлоконструкций. Двутавр серий Б, Ш, К по ГОСТ 26020-83 — расчёт под запрос.
+			</p>
+		</header>
+
+		<section class="bal__widget" data-bal-root>
+			<div class="bal__widget-inner">
+				<div class="bal__form">
+					<div class="bal__field">
+						<label class="bal__label" for="bal-num">Номер балки</label>
+						<select class="bal__input" id="bal-num" data-bal-num>
+							{balkaRows.map((r) => (
+								<option value={r.num} selected={r.num === '20'}>
+									№{r.num} — h {r.h} × b {r.b} — {r.m1.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} кг/м
+								</option>
+							))}
+						</select>
+						<p class="bal__hint">Номер равен высоте профиля в сантиметрах</p>
+					</div>
+
+					<div class="bal__row-2">
+						<div class="bal__field">
+							<label class="bal__label" for="bal-len">Длина хлыста, м</label>
+							<input class="bal__input" id="bal-len" type="number" inputmode="decimal" step="any" min="0.01" value="12" data-bal-length />
+							<p class="bal__hint">Типовые: 6 · 11,7 · 12 м</p>
+						</div>
+
+						<div class="bal__field">
+							<label class="bal__label" for="bal-qty">Количество хлыстов</label>
+							<input class="bal__input" id="bal-qty" type="number" inputmode="decimal" step="any" min="1" value="1" data-bal-qty />
+							<p class="bal__hint">Или укажите массу ниже</p>
+						</div>
+					</div>
+
+					<div class="bal__field">
+						<label class="bal__label" for="bal-mass">Нужная масса (обратный расчёт)</label>
+						<div class="bal__mass-wrap">
+							<input class="bal__input bal__mass-input" id="bal-mass" type="number" inputmode="decimal" step="any" min="0" placeholder="—" data-bal-mass />
+							<select class="bal__mass-unit" data-bal-mass-unit aria-label="Единицы массы">
+								<option value="t" selected>т</option>
+								<option value="kg">кг</option>
+							</select>
+						</div>
+						<p class="bal__hint">Введите массу — пересчитаем количество хлыстов заданной длины</p>
+					</div>
+				</div>
+
+				<aside class="bal__result">
+					<div class="bal__result-card">
+						<div class="bal__result-eyebrow">Расчёт по ГОСТ 8239-89</div>
+
+						<div class="bal__result-row">
+							<span>Вес 1 метра</span>
+							<strong data-bal-m1>—</strong>
+						</div>
+						<div class="bal__result-row">
+							<span>Вес 1 хлыста</span>
+							<strong data-bal-hlyst>—</strong>
+						</div>
+
+						<div class="bal__result-total">
+							<span class="bal__result-total-label">Общий вес партии</span>
+							<div class="bal__result-total-value" data-bal-total>—</div>
+							<div class="bal__result-total-sub" data-bal-total-sub></div>
+						</div>
+
+						<dl class="bal__result-meta">
+							<div><dt>Профиль</dt><dd data-bal-profile>—</dd></div>
+							<div><dt>Общая длина</dt><dd data-bal-totlen>—</dd></div>
+						</dl>
+
+						<a class="bal__cta" href="/zapros-kp/?material=balka" data-bal-cta>
+							<span>Запросить КП на балку или её аналог</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="bal__result-foot">
+							Теоретическая масса по ГОСТ. Фактический вес отличается на ±2,5 % (допуск проката).
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="bal__block">
+			<h2 class="bal__h2">Сечение двутавра</h2>
+			<div class="bal__infographic">
+				<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Поперечное сечение двутавровой балки: высота h, ширина полки b, толщина стенки tw, толщина полки tf">
+					<defs>
+						<pattern id="balHatch" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="9" stroke="var(--color-primary)" stroke-width="0.7" opacity="0.28" />
+						</pattern>
+					</defs>
+
+					{/* I-образное сечение двутавра.
+					    Верхняя полка y=60..78, нижняя y=202..220, стенка x=130..150. */}
+					<path d="M 70 60 L 210 60 L 210 78 L 150 78 L 150 202 L 210 202 L 210 220 L 70 220 L 70 202 L 130 202 L 130 78 L 70 78 Z"
+						fill="url(#balHatch)" stroke="var(--color-primary)" stroke-width="2.4" stroke-linejoin="round" />
+
+					{/* Размер h — слева */}
+					<g stroke="var(--color-accent)" stroke-width="1.4" fill="none" stroke-linecap="round">
+						<line x1="45" y1="60" x2="45" y2="220" />
+						<line x1="40" y1="60" x2="70" y2="60" stroke-dasharray="3 2" />
+						<line x1="40" y1="220" x2="70" y2="220" stroke-dasharray="3 2" />
+					</g>
+					<polygon points="45,60 41,72 49,72" fill="var(--color-accent)" />
+					<polygon points="45,220 41,208 49,208" fill="var(--color-accent)" />
+					<text x="30" y="146" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="var(--color-accent)" transform="rotate(-90 30 146)">h</text>
+
+					{/* Размер b — сверху */}
+					<g stroke="var(--color-accent)" stroke-width="1.4" fill="none" stroke-linecap="round">
+						<line x1="70" y1="40" x2="210" y2="40" />
+						<line x1="70" y1="35" x2="70" y2="60" stroke-dasharray="3 2" />
+						<line x1="210" y1="35" x2="210" y2="60" stroke-dasharray="3 2" />
+					</g>
+					<polygon points="70,40 82,36 82,44" fill="var(--color-accent)" />
+					<polygon points="210,40 198,36 198,44" fill="var(--color-accent)" />
+					<text x="140" y="32" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="var(--color-accent)">b</text>
+
+					{/* Размер tw — толщина стенки */}
+					<line x1="130" y1="140" x2="150" y2="140" stroke="var(--color-accent)" stroke-width="1.2" />
+					<text x="170" y="135" font-family="Inter, sans-serif" font-size="11" font-style="italic" fill="var(--color-accent)">tw</text>
+					<line x1="165" y1="140" x2="151" y2="140" stroke="var(--color-accent)" stroke-width="0.8" />
+
+					{/* Размер tf — толщина полки */}
+					<g stroke="var(--color-accent)" stroke-width="1.2" fill="none">
+						<line x1="232" y1="60" x2="232" y2="78" />
+					</g>
+					<text x="238" y="73" font-family="Inter, sans-serif" font-size="11" font-style="italic" fill="var(--color-accent)">tf</text>
+					<line x1="236" y1="69" x2="232" y2="69" stroke="var(--color-accent)" stroke-width="0.8" />
+
+					<text x="260" y="270" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">ГОСТ 8239-89</text>
+				</svg>
+
+				<div class="bal__infographic-legend">
+					<h3>Обозначения</h3>
+					<ul>
+						<li><strong>h</strong> — высота профиля (равна номеру балки в см)</li>
+						<li><strong>b</strong> — ширина полки</li>
+						<li><strong>tw</strong> — толщина стенки</li>
+						<li><strong>tf</strong> — средняя толщина полки</li>
+						<li>Штриховка 45° — стандартное обозначение разреза металла</li>
+					</ul>
+					<p class="bal__infographic-note">
+						У обычного двутавра ГОСТ 8239-89 — уклон внутренних граней полок 6–12 %.
+						У двутавров серии Б ГОСТ 26020-83 грани полок параллельны (как в показанной схеме).
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="bal__block">
+			<h2 class="bal__h2">Таблица веса двутавра по ГОСТ 8239-89</h2>
+			<p class="bal__block-lead">
+				Размеры и теоретическая масса 1 м двутавровой балки горячекатаной (плотность 7,85 г/см³).
+				Длина в тонне — справочно для оценки количества хлыстов при заказе по массе.
+			</p>
+			<div class="bal__table-wrap">
+				<table class="bal__table">
+					<thead>
+						<tr>
+							<th>Номер</th>
+							<th>h, мм</th>
+							<th>b, мм</th>
+							<th>tw, мм</th>
+							<th>tf, мм</th>
+							<th>Масса 1 м, кг</th>
+							<th>В 1 т, м</th>
+						</tr>
+					</thead>
+					<tbody>
+						{balkaRows.map((r) => (
+							<tr>
+								<td><strong>№{r.num}</strong></td>
+								<td>{r.h}</td>
+								<td>{r.b}</td>
+								<td>{r.tw.toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</td>
+								<td>{r.tf.toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</td>
+								<td>{r.m1.toLocaleString('ru-RU', { minimumFractionDigits: 2 })}</td>
+								<td>{Math.round(1000 / r.m1).toLocaleString('ru-RU')}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="bal__block">
+			<h2 class="bal__h2">Серии двутавровой балки</h2>
+			<div class="bal__series">
+				{series.map((s) => (
+					<div class="bal__series-card">
+						<div class="bal__series-head">
+							<strong>{s.label}</strong>
+							<span>{s.gost}</span>
+						</div>
+						<p>{s.applic}</p>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="bal__block">
+			<h2 class="bal__h2">Связанные инструменты</h2>
+			<ul class="bal__related">
+				<li>
+					<a href="/kalkulyator-shvellera/">
+						<strong>Калькулятор веса швеллера</strong>
+						<small>ГОСТ 8240-97, №5–40, сталь и нержавейка</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-armatury/">
+						<strong>Калькулятор веса арматуры</strong>
+						<small>ГОСТ 5781-82, Ø 6–36 мм, А240/А400/А500С</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса</strong>
+						<small>9 видов проката — лист, труба, круг, проволока и др.</small>
+					</a>
+				</li>
+				<li>
+					<a href="/ugolok-shveller/">
+						<strong>Нержавеющий уголок и швеллер</strong>
+						<small>как альтернативные несущие профили в нержавеющем исполнении</small>
+					</a>
+				</li>
+				<li>
+					<a href="/gost/">
+						<strong>Справочник ГОСТов</strong>
+						<small>сортаменты, плотности, маркировка AISI ↔ ГОСТ</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="bal__faq">
+			<h2 class="bal__h2">Частые вопросы</h2>
+			<div class="bal__faq-list">
+				{faq.map((f) => (
+					<details class="bal__faq-item">
+						<summary class="bal__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужна нержавеющая несущая конструкция?"
+		text="Нержавеющий горячекатаный двутавр — позиция под индивидуальный заказ. Для большинства задач выгоднее использовать нержавеющий уголок, швеллер или прямоугольную трубу — поставка в наличии и под заявку, КП в течение часа."
+	/>
+</BaseLayout>
+
+<script>
+	type BalRow = { num: string; m1: number; h: number; b: number; tw: number; tf: number };
+
+	const ROWS: BalRow[] = [
+		{ num: '10', m1: 9.46,  h: 100, b: 55,  tw: 4.5,  tf: 7.2  },
+		{ num: '12', m1: 11.50, h: 120, b: 64,  tw: 4.8,  tf: 7.3  },
+		{ num: '14', m1: 13.70, h: 140, b: 73,  tw: 4.9,  tf: 7.5  },
+		{ num: '16', m1: 15.90, h: 160, b: 81,  tw: 5.0,  tf: 7.8  },
+		{ num: '18', m1: 18.40, h: 180, b: 90,  tw: 5.1,  tf: 8.1  },
+		{ num: '20', m1: 21.00, h: 200, b: 100, tw: 5.2,  tf: 8.4  },
+		{ num: '22', m1: 24.00, h: 220, b: 110, tw: 5.4,  tf: 8.7  },
+		{ num: '24', m1: 27.30, h: 240, b: 115, tw: 5.6,  tf: 9.5  },
+		{ num: '27', m1: 31.50, h: 270, b: 125, tw: 6.0,  tf: 9.8  },
+		{ num: '30', m1: 36.50, h: 300, b: 135, tw: 6.5,  tf: 10.2 },
+		{ num: '33', m1: 42.20, h: 330, b: 140, tw: 7.0,  tf: 11.2 },
+		{ num: '36', m1: 48.60, h: 360, b: 145, tw: 7.5,  tf: 12.3 },
+		{ num: '40', m1: 57.00, h: 400, b: 155, tw: 8.3,  tf: 13.0 },
+		{ num: '45', m1: 66.50, h: 450, b: 160, tw: 9.0,  tf: 14.2 },
+		{ num: '50', m1: 78.50, h: 500, b: 170, tw: 10.0, tf: 15.2 },
+		{ num: '55', m1: 92.60, h: 550, b: 180, tw: 11.0, tf: 16.5 },
+		{ num: '60', m1: 108.0, h: 600, b: 190, tw: 12.0, tf: 17.8 },
+	];
+
+	const root = document.querySelector('[data-bal-root]');
+	if (root) {
+		const numSel = root.querySelector('[data-bal-num]') as HTMLSelectElement;
+		const lenInp = root.querySelector('[data-bal-length]') as HTMLInputElement;
+		const qtyInp = root.querySelector('[data-bal-qty]') as HTMLInputElement;
+		const massInp = root.querySelector('[data-bal-mass]') as HTMLInputElement;
+		const massUnit = root.querySelector('[data-bal-mass-unit]') as HTMLSelectElement;
+
+		const m1El = root.querySelector('[data-bal-m1]') as HTMLElement;
+		const hlystEl = root.querySelector('[data-bal-hlyst]') as HTMLElement;
+		const totalEl = root.querySelector('[data-bal-total]') as HTMLElement;
+		const totalSubEl = root.querySelector('[data-bal-total-sub]') as HTMLElement;
+		const profileEl = root.querySelector('[data-bal-profile]') as HTMLElement;
+		const totLenEl = root.querySelector('[data-bal-totlen]') as HTMLElement;
+		const ctaEl = root.querySelector('[data-bal-cta]') as HTMLAnchorElement;
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+
+		let lastEdited: 'qty' | 'mass' = 'qty';
+
+		function getRow(): BalRow {
+			return ROWS.find((r) => r.num === numSel.value) ?? ROWS[5];
+		}
+
+		function recalc() {
+			const row = getRow();
+			const len = parseFloat(lenInp.value) || 0;
+			let qty = parseFloat(qtyInp.value) || 0;
+
+			const m1 = row.m1;
+			const hlystWeight = m1 * len;
+
+			if (lastEdited === 'mass' && hlystWeight > 0) {
+				const massRaw = parseFloat(massInp.value) || 0;
+				const massKg = massUnit.value === 't' ? massRaw * 1000 : massRaw;
+				qty = massKg / hlystWeight;
+				if (qty > 0) qtyInp.value = String(+qty.toFixed(2));
+				else qtyInp.value = '0';
+			} else if (hlystWeight > 0 && qty > 0) {
+				const total = hlystWeight * qty;
+				const inT = massUnit.value === 't';
+				massInp.value = String(+(inT ? total / 1000 : total).toFixed(3));
+			} else {
+				massInp.value = '';
+			}
+
+			const total = hlystWeight * qty;
+
+			m1El.textContent = `${fmt.format(m1)} кг`;
+			hlystEl.textContent = hlystWeight > 0 ? `${fmt.format(hlystWeight)} кг` : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl.textContent = `${fmt.format(total)} кг`;
+				} else {
+					totalEl.textContent = `${fmt.format(total)} кг`;
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			profileEl.textContent = `№${row.num} · h ${row.h} мм`;
+			totLenEl.textContent = qty > 0 && len > 0 ? `${fmt.format(qty * len)} м` : '—';
+
+			if (ctaEl) {
+				const params = new URLSearchParams({
+					material: 'balka',
+					profile: `${row.num}`,
+					qty: String(Math.max(0, Math.round(qty))),
+					weight_kg: String(Math.max(0, Math.round(total))),
+				});
+				ctaEl.href = `/zapros-kp/?${params.toString()}#lead-form`;
+			}
+		}
+
+		numSel.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
+		lenInp.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		qtyInp.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		massInp.addEventListener('input', () => { lastEdited = 'mass'; recalc(); });
+		massUnit.addEventListener('change', () => { lastEdited = 'qty'; recalc(); });
+
+		recalc();
+	}
+</script>
+
+<style>
+	.bal { padding-block: var(--space-8); min-width: 0; }
+	.bal__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.bal__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.bal__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15;
+		margin: 0 0 var(--space-3); letter-spacing: -0.02em;
+	}
+	.bal__h1-accent {
+		background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary));
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
+	}
+	.bal__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	.bal__widget {
+		background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%);
+		border: 1px solid var(--color-border); border-radius: var(--radius-xl);
+		padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md);
+	}
+	.bal__widget-inner {
+		display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-6);
+	}
+	@media (max-width: 900px) {
+		.bal__widget { padding: var(--space-4); }
+		.bal__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+	}
+	.bal__form { display: grid; gap: var(--space-4); }
+	.bal__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .bal__row-2 { grid-template-columns: 1fr; } }
+
+	.bal__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.bal__label {
+		font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+		color: var(--color-subtle);
+	}
+	.bal__input {
+		font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem;
+		border: 1px solid var(--color-border); border-radius: var(--radius-md);
+		background: var(--color-surface); color: var(--color-text);
+		outline: none; width: 100%; appearance: none; -webkit-appearance: none;
+		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	select.bal__input {
+		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+		background-repeat: no-repeat; background-position: right 0.7rem center;
+		background-size: 0.9rem; padding-right: 2rem;
+	}
+	.bal__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.bal__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.4; }
+
+	.bal__mass-wrap {
+		display: grid; grid-template-columns: minmax(0, 1fr) auto;
+		align-items: stretch; border: 1px solid var(--color-border);
+		border-radius: var(--radius-md); background: var(--color-surface); overflow: hidden;
+	}
+	.bal__mass-wrap:focus-within { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); }
+	.bal__mass-input { border: 0 !important; background: transparent !important; text-align: center; font-weight: 600; box-shadow: none !important; }
+	.bal__mass-unit {
+		border: 0; border-left: 1px solid var(--color-border);
+		background: var(--color-bg-elev); padding: 0 0.5rem 0 0.85rem;
+		font-size: 0.85rem; color: var(--color-muted); cursor: pointer;
+		appearance: none; -webkit-appearance: none;
+		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+		background-repeat: no-repeat; background-position: right 0.45rem center;
+		background-size: 0.9rem; padding-right: 1.6rem;
+	}
+
+	.bal__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .bal__result { position: static; } }
+	.bal__result-card {
+		background: var(--grad-hero); color: var(--color-on-dark);
+		border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow);
+		position: relative; overflow: hidden;
+	}
+	.bal__result-eyebrow {
+		font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+		color: var(--color-accent-100); margin-bottom: var(--space-4);
+	}
+	.bal__result-row {
+		display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3);
+		padding: 0.6rem 0; border-bottom: 1px dashed rgba(255,255,255,0.15);
+	}
+	.bal__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.bal__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+
+	.bal__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.bal__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.bal__result-total-value {
+		font-family: var(--font-mono); font-size: clamp(2.2rem, 4.6vw, 3.2rem); font-weight: 700;
+		line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere;
+	}
+	.bal__result-total-sub { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-on-dark-muted); margin-top: 0.25rem; min-height: 1.2em; }
+	.bal__result-meta {
+		display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3);
+		margin: var(--space-4) 0 var(--space-4); padding-top: var(--space-3);
+		border-top: 1px solid rgba(255,255,255,0.12);
+	}
+	.bal__result-meta dt {
+		font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em;
+		color: var(--color-on-dark-muted); margin-bottom: 0.2rem;
+	}
+	.bal__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+
+	.bal__cta {
+		display: flex; align-items: center; justify-content: center; gap: 0.45rem;
+		padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff;
+		font-weight: 600; text-decoration: none; border-radius: var(--radius-md);
+		font-size: 0.92rem; box-shadow: var(--shadow-warm-glow);
+		transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.bal__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.bal__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.bal__cta:hover svg { transform: translateX(2px); }
+
+	.bal__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.bal__block { margin-bottom: var(--space-10); }
+	.bal__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.bal__block-lead { color: var(--color-muted); max-width: 80ch; margin: 0 0 var(--space-4); line-height: 1.55; }
+
+	.bal__infographic {
+		display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: var(--space-6);
+		align-items: start; background: var(--color-surface); border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg); padding: var(--space-5);
+	}
+	@media (max-width: 720px) { .bal__infographic { grid-template-columns: 1fr; } }
+	.bal__infographic svg { width: 100%; height: auto; max-width: 280px; display: block; }
+	.bal__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.bal__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.bal__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.bal__infographic-legend li::before {
+		content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px;
+		border-radius: 50%; background: var(--color-primary-500);
+	}
+	.bal__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.bal__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	.bal__table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+	.bal__table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 640px; }
+	.bal__table th, .bal__table td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--color-border); }
+	.bal__table th {
+		font-size: 0.76rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+		color: var(--color-subtle); background: var(--color-bg-elev);
+	}
+	.bal__table tbody tr:hover { background: var(--color-primary-50); }
+	.bal__table td:nth-child(n+2) { font-family: var(--font-mono); }
+
+	.bal__series { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-3); }
+	.bal__series-card {
+		background: var(--color-surface); border: 1px solid var(--color-border);
+		border-radius: var(--radius-md); padding: var(--space-4);
+	}
+	.bal__series-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); margin-bottom: 0.5rem; flex-wrap: wrap; }
+	.bal__series-head strong { font-size: 1rem; color: var(--color-primary); }
+	.bal__series-head span { font-size: 0.78rem; color: var(--color-muted); font-family: var(--font-mono); }
+	.bal__series-card p { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--color-text); }
+
+	.bal__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.bal__related a {
+		display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem;
+		background: var(--color-surface); border: 1px solid var(--color-border);
+		border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.bal__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.bal__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.bal__faq { margin-bottom: var(--space-8); }
+	.bal__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.bal__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.bal__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.bal__faq-q {
+		display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+		font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none;
+	}
+	.bal__faq-q::-webkit-details-marker { display: none; }
+	.bal__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.bal__faq-item[open] .bal__faq-q svg { transform: rotate(180deg); }
+	.bal__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>
