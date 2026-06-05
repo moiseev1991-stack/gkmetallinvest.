@@ -75,5 +75,10 @@ export const navServices = [
 	{ label: 'Перфорация листов', href: '/uslugi/perforaciya-listov/' },
 	{ label: 'Полировка и шлифование', href: '/uslugi/polirovka/' },
 	{ label: 'Калькулятор веса', href: '/kalkulyator-vesa/' },
+	{ label: 'Калькулятор арматуры', href: '/kalkulyator-armatury/' },
+	{ label: 'Калькулятор швеллера', href: '/kalkulyator-shvellera/' },
+	{ label: 'Калькулятор балки', href: '/kalkulyator-balki/' },
+	{ label: 'Калькулятор отвода', href: '/kalkulyator-otvoda/' },
+	{ label: 'Калькулятор фланца', href: '/kalkulyator-flantsa/' },
 	{ label: 'Справочник ГОСТов', href: '/gost/' },
 ];
