@@ -2,9 +2,18 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CtaSection from '../../components/CtaSection.astro';
+import { gosts, gostCategories } from '../../data/gosts';
 
-const title = 'ГОСТы на нержавеющий металлопрокат — справочник: 9941, 5582, 7350';
-const description = 'Справочник ГОСТов на нержавейку: 9941 (трубы), 5582 и 7350 (лист), 5949 (сорт), 5632 (марки). Состав, размеры, аналоги AISI. Склад в Нижнем Новгороде.';
+const title = 'ГОСТы на металлопрокат — справочник 112 стандартов в 6 категориях';
+const description = 'Полный справочник ГОСТов на металлопрокат: 112 документов — листовой, сортовой, трубный, качественный, арматура, цветмет. Прямые ссылки на PDF. Детальный разбор ключевых нержавеющих ГОСТов.';
+
+// Сгруппированный по категориям справочник для нижнего блока.
+const grouped = gostCategories.map((c) => ({
+	...c,
+	items: gosts.filter((g) => g.cat === c.value),
+}));
+
+const totalGosts = gosts.length;
 
 /* Структурированные данные для рендеринга 8 H2-блоков. У каждого — короткое
    описание (для list-блока сверху страницы как «оглавление») и развёрнутый
@@ -158,24 +167,39 @@ const faqJsonLd = {
 				</svg>
 				Справочник
 			</span>
-			<h1 class="gost__h1">ГОСТы для нержавеющего металлопроката</h1>
+			<h1 class="gost__h1">Справочник ГОСТов на металлопрокат</h1>
 			<p class="gost__lead">
-				На странице собраны ключевые стандарты, по которым поставляется нержавеющая сталь:
-				ГОСТ 9941 и 9940 на бесшовные трубы, ГОСТ 5582 и 7350 на лист, ГОСТ 5949 на сортовой
-				прокат, ГОСТ 5632 на химический состав марок. По каждому стандарту указано, что он
-				регулирует, какие марки в него попадают (08Х18Н10, 12Х18Н10Т, 03Х17Н14М2 и другие)
-				и в каком хабе нашего каталога его искать.
+				Полный перечень из <strong>{totalGosts} действующих ГОСТов</strong> в шести категориях:
+				качественный прокат, листовой, сортовой, трубный, трубопроводная арматура и цветные
+				металлы. По каждому документу — прямая ссылка на PDF на meganorm.ru.
+				Сверху — детальный разбор ключевых стандартов на нержавеющий прокат
+				(9941, 5582, 7350, 5949, 5632) с указанием марок и каталожного раздела;
+				внизу — полный справочник с фильтром по категории и поиском по номеру ГОСТа.
 			</p>
 		</header>
 
 		<nav class="gost__toc" aria-label="Содержание">
-			<div class="gost__toc-title">На странице</div>
+			<div class="gost__toc-title">Детальный разбор — нержавейка</div>
 			<ul>
 				{sections.map((s) => (
 					<li>
 						<a href={`#${s.id}`}>
 							<strong>{s.anchor}</strong>
 							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<nav class="gost__cats" aria-label="Категории справочника">
+			<div class="gost__toc-title">Полный справочник — {totalGosts} ГОСТов в 6 категориях</div>
+			<ul>
+				{grouped.map((g) => (
+					<li>
+						<a href={`#cat-${g.value}`}>
+							<strong>{g.label}</strong>
+							<span>{g.items.length} ГОСТов</span>
 						</a>
 					</li>
 				))}
@@ -196,6 +220,107 @@ const faqJsonLd = {
 				</section>
 			))}
 		</div>
+
+		<section class="gost__directory" id="directory" data-gost-directory>
+			<div class="gost__directory-head">
+				<h2 class="gost__directory-h2">Полный справочник ГОСТов</h2>
+				<p class="gost__directory-lead">
+					{totalGosts} действующих ГОСТов по металлопрокату в шести категориях.
+					Каждая запись — номер, название и прямая ссылка на PDF документа.
+					Где применимо — ссылка на соответствующий раздел нашего каталога.
+				</p>
+
+				<div class="gost__filter">
+					<div class="gost__filter-search">
+						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+							<circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+							<path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+						</svg>
+						<input
+							type="search"
+							placeholder="Поиск по номеру или названию (например: 9941, лист, фланцы)"
+							data-gost-search
+							aria-label="Поиск по номеру или названию ГОСТа"
+						/>
+					</div>
+					<div class="gost__filter-tabs" role="tablist">
+						<button class="gost__filter-tab is-active" data-gost-tab="all" type="button">Все · {totalGosts}</button>
+						{gostCategories.map((c) => {
+							const cnt = gosts.filter((g) => g.cat === c.value).length;
+							return (
+								<button class="gost__filter-tab" data-gost-tab={c.value} type="button">
+									{c.label} · {cnt}
+								</button>
+							);
+						})}
+					</div>
+				</div>
+			</div>
+
+			<div class="gost__cat-list">
+				{grouped.map((g) => (
+					<div class="gost__cat" id={`cat-${g.value}`} data-gost-cat={g.value}>
+						<header class="gost__cat-head">
+							<h3 class="gost__cat-title">{g.label}</h3>
+							<span class="gost__cat-count">{g.items.length} ГОСТов</span>
+						</header>
+						<p class="gost__cat-descr">{g.descr}</p>
+
+						<ul class="gost__items">
+							{g.items.map((item) => (
+								<li
+									class="gost__item"
+									data-gost-item
+									data-num={item.num.toLowerCase()}
+									data-title={item.title.toLowerCase()}
+									data-cat={item.cat}
+									data-priority={item.priority || 'standard'}
+								>
+									<div class="gost__item-head">
+										<span class="gost__item-num">ГОСТ {item.num}</span>
+										{item.priority === 'core' && (
+											<span class="gost__item-badge">наша тематика</span>
+										)}
+									</div>
+									<div class="gost__item-title">{item.title}</div>
+									<div class="gost__item-links">
+										<a
+											class="gost__item-pdf"
+											href={item.pdf}
+											target="_blank"
+											rel="noopener nofollow"
+										>
+											<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+												<path d="M4 2h6l3 3v9H4V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+												<path d="M10 2v3h3" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+												<text x="8" y="12" text-anchor="middle" font-family="Inter, sans-serif" font-size="4" font-weight="700" fill="currentColor">PDF</text>
+											</svg>
+											<span>Открыть PDF</span>
+										</a>
+										{item.hub && (
+											<a class="gost__item-hub" href={item.hub}>
+												<span>В каталог</span>
+												<svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+													<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+												</svg>
+											</a>
+										)}
+									</div>
+								</li>
+							))}
+						</ul>
+					</div>
+				))}
+			</div>
+
+			<p class="gost__empty" data-gost-empty hidden>
+				Ничего не найдено. Попробуйте другой запрос или сбросьте фильтр.
+			</p>
+
+			<p class="gost__legal">
+				PDF-файлы стандартов размещены на стороннем ресурсе <a href="https://meganorm.ru/" target="_blank" rel="noopener nofollow">meganorm.ru</a> — мы агрегируем ссылки для удобства. Тексты ГОСТов охраняются авторским правом ФГБУ «Стандартинформ»; для официального применения используйте платные сервисы «Кодекс», «Техэксперт» либо приобретайте копии у Стандартинформа.
+			</p>
+		</section>
 
 		<section class="gost__faq">
 			<h2>Частые вопросы про ГОСТы</h2>
@@ -220,6 +345,64 @@ const faqJsonLd = {
 		text="Менеджер пришлёт точные позиции с сертификатами под ваш ГОСТ и марку — в течение 30 минут."
 	/>
 </BaseLayout>
+
+<script>
+	const root = document.querySelector('[data-gost-directory]');
+	if (root) {
+		const searchInp = root.querySelector('[data-gost-search]') as HTMLInputElement | null;
+		const tabs = Array.from(root.querySelectorAll('[data-gost-tab]')) as HTMLButtonElement[];
+		const items = Array.from(root.querySelectorAll('[data-gost-item]')) as HTMLElement[];
+		const cats = Array.from(root.querySelectorAll('[data-gost-cat]')) as HTMLElement[];
+		const emptyEl = root.querySelector('[data-gost-empty]') as HTMLElement | null;
+
+		let activeTab: string = 'all';
+		let query: string = '';
+
+		function normalize(s: string): string {
+			return s.toLowerCase().trim();
+		}
+
+		function applyFilter() {
+			const q = normalize(query);
+			let visibleTotal = 0;
+
+			for (const item of items) {
+				const matchCat = activeTab === 'all' || item.dataset.cat === activeTab;
+				const matchSearch =
+					!q ||
+					(item.dataset.num || '').includes(q) ||
+					(item.dataset.title || '').includes(q);
+				const visible = matchCat && matchSearch;
+				item.hidden = !visible;
+				if (visible) visibleTotal++;
+			}
+
+			// Спрячем категории без видимых элементов.
+			for (const cat of cats) {
+				const hasVisible = Array.from(cat.querySelectorAll<HTMLElement>('[data-gost-item]'))
+					.some((i) => !i.hidden);
+				cat.hidden = !hasVisible;
+			}
+
+			if (emptyEl) emptyEl.hidden = visibleTotal > 0;
+		}
+
+		for (const tab of tabs) {
+			tab.addEventListener('click', () => {
+				activeTab = tab.dataset.gostTab || 'all';
+				for (const t of tabs) t.classList.toggle('is-active', t === tab);
+				applyFilter();
+			});
+		}
+
+		if (searchInp) {
+			searchInp.addEventListener('input', () => {
+				query = searchInp.value;
+				applyFilter();
+			});
+		}
+	}
+</script>
 
 <style>
 	.gost { padding-block: var(--space-8); min-width: 0; }
@@ -391,4 +574,239 @@ const faqJsonLd = {
 	}
 	.gost__faq-item[open] .gost__faq-q svg { transform: rotate(180deg); }
 	.gost__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+
+	/* ===== Категории (TOC под полный справочник) ===== */
+	.gost__cats {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+		max-width: 100%;
+	}
+	.gost__cats ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: var(--space-2);
+	}
+	.gost__cats a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: #ffffff;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost__cats a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.gost__cats a strong {
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		font-weight: 600;
+	}
+	.gost__cats a span {
+		font-size: 0.78rem;
+		color: var(--color-muted);
+	}
+
+	/* ===== Справочник 112 ГОСТов ===== */
+	.gost__directory { margin: var(--space-10) 0; scroll-margin-top: calc(var(--header-h, 64px) + 1rem); }
+	.gost__directory-head { margin-bottom: var(--space-5); }
+	.gost__directory-h2 { font-size: 1.5rem; margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+	.gost__directory-lead { color: var(--color-muted); max-width: 75ch; line-height: 1.6; margin: 0 0 var(--space-5); }
+
+	.gost__filter {
+		display: grid;
+		gap: var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		margin-bottom: var(--space-6);
+		position: sticky;
+		top: calc(var(--header-h, 64px) + 4px);
+		z-index: 2;
+		backdrop-filter: blur(6px);
+	}
+	.gost__filter-search {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+	.gost__filter-search svg {
+		position: absolute;
+		left: 0.85rem;
+		color: var(--color-muted);
+		pointer-events: none;
+	}
+	.gost__filter-search input {
+		font: inherit;
+		font-size: 0.95rem;
+		padding: 0.65rem 0.8rem 0.65rem 2.4rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: #ffffff;
+		color: var(--color-text);
+		outline: none;
+		width: 100%;
+		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.gost__filter-search input:focus {
+		border-color: var(--color-primary-500);
+		box-shadow: 0 0 0 3px var(--color-primary-100);
+	}
+
+	.gost__filter-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.gost__filter-tab {
+		font: inherit;
+		font-size: 0.82rem;
+		font-weight: 500;
+		padding: 0.45rem 0.85rem;
+		border: 1px solid var(--color-border);
+		background: #ffffff;
+		border-radius: var(--radius-pill);
+		cursor: pointer;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost__filter-tab:hover { border-color: var(--color-primary-500); color: var(--color-primary); }
+	.gost__filter-tab.is-active { background: var(--color-primary-500); color: #fff; border-color: var(--color-primary-500); font-weight: 600; }
+
+	.gost__cat-list { display: grid; gap: var(--space-6); }
+	.gost__cat { scroll-margin-top: calc(var(--header-h, 64px) + 5rem); }
+	.gost__cat-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding-bottom: var(--space-2);
+		border-bottom: 2px solid var(--color-primary-100);
+		margin-bottom: var(--space-3);
+	}
+	.gost__cat-title { font-size: 1.25rem; margin: 0; letter-spacing: -0.01em; }
+	.gost__cat-count {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--color-muted);
+		background: var(--color-surface);
+		padding: 0.15rem 0.55rem;
+		border-radius: var(--radius-pill);
+		white-space: nowrap;
+	}
+	.gost__cat-descr { color: var(--color-muted); max-width: 75ch; line-height: 1.6; margin: 0 0 var(--space-4); font-size: 0.93rem; }
+
+	.gost__items {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		gap: 0.7rem;
+	}
+	.gost__item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.gost__item:hover {
+		border-color: var(--color-primary-500);
+		box-shadow: var(--shadow-sm);
+	}
+	.gost__item[data-priority='core'] {
+		background: var(--color-primary-50);
+		border-color: var(--color-primary-100);
+	}
+	.gost__item-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+	.gost__item-num {
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		font-weight: 700;
+		color: var(--color-primary);
+	}
+	.gost__item-badge {
+		font-size: 0.68rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-accent);
+		background: rgba(196, 101, 27, 0.1);
+		padding: 0.1rem 0.5rem;
+		border-radius: var(--radius-pill);
+	}
+	.gost__item-title {
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+	.gost__item-links {
+		display: flex;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+		margin-top: auto;
+		padding-top: 0.3rem;
+	}
+	.gost__item-pdf, .gost__item-hub {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.35rem 0.7rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		text-decoration: none;
+		border-radius: var(--radius-pill);
+		border: 1px solid transparent;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost__item-pdf {
+		background: var(--color-primary-500);
+		color: #ffffff;
+	}
+	.gost__item-pdf:hover { background: var(--color-primary); color: #ffffff; text-decoration: none; }
+	.gost__item-hub {
+		background: transparent;
+		color: var(--color-primary-600);
+		border-color: var(--color-border);
+	}
+	.gost__item-hub:hover { border-color: var(--color-primary-500); background: #ffffff; text-decoration: none; }
+	.gost__item-hub svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.gost__item-hub:hover svg { transform: translateX(2px); }
+
+	.gost__empty {
+		text-align: center;
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-muted);
+		font-size: 0.95rem;
+	}
+
+	.gost__legal {
+		margin-top: var(--space-5);
+		padding: var(--space-3) var(--space-4);
+		font-size: 0.78rem;
+		line-height: 1.55;
+		color: var(--color-muted);
+		background: var(--color-surface);
+		border-left: 3px solid var(--color-border);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		max-width: 80ch;
+	}
+	.gost__legal a { color: var(--color-primary-600); }
 </style>
