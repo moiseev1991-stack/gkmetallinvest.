@@ -36,7 +36,8 @@ const consentVersion = '2026-06-13';
 			<p>
 				Я, далее — «Субъект», свободно, своей волей и в своём интересе, в соответствии
 				с требованиями Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных»
-				(в редакции от 24.06.2025), даю согласие <strong>{contacts.company}</strong> (ИНН {contacts.inn},
+				(в редакции от 24.06.2025), даю согласие <strong>{contacts.company}</strong>
+				(ИНН {contacts.inn}, ОГРН {contacts.ogrn}, КПП {contacts.kpp},
 				адрес: {contacts.address}, далее — «Оператор») на обработку моих персональных
 				данных на следующих условиях:
 			</p>
@@ -138,6 +139,8 @@ const consentVersion = '2026-06-13';
 				<dl>
 					<dt>Наименование</dt><dd>{contacts.company}</dd>
 					<dt>ИНН</dt><dd>{contacts.inn}</dd>
+					<dt>ОГРН</dt><dd>{contacts.ogrn}</dd>
+					<dt>КПП</dt><dd>{contacts.kpp}</dd>
 					<dt>Адрес</dt><dd>{contacts.address}</dd>
 					<dt>Телефон</dt><dd><a href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a></dd>
 					<dt>E-mail</dt><dd><a href={`mailto:${contacts.email}`}>{contacts.email}</a></dd>

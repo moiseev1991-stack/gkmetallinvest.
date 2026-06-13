@@ -8,6 +8,10 @@
     }
   ],
   "redirects": [
+    { "source": "/policy", "destination": "/politika-konfidencialnosti/", "permanent": true },
+    { "source": "/policy/", "destination": "/politika-konfidencialnosti/", "permanent": true },
+    { "source": "/publicoffer", "destination": "/publichnaya-oferta/", "permanent": true },
+    { "source": "/publicoffer/", "destination": "/publichnaya-oferta/", "permanent": true },
     { "source": "/all", "destination": "/postavka-nerzhaveyushchego-metalloprokata/", "permanent": true },
     { "source": "/list", "destination": "/list/", "permanent": true },
     { "source": "/catalog/truba", "destination": "/truba/", "permanent": true },
