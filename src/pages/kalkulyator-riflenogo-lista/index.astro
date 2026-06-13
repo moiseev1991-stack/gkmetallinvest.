@@ -1,0 +1,528 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса рифлёного листа — ГОСТ 8568-77, ромб и чечевица';
+const description =
+	'Онлайн-расчёт веса рифлёного листа: ромбическое и чечевичное рифление, ' +
+	'толщины 2,5–12 мм по ГОСТ 8568-77. Таблица масс 1 м², пересчёт на Ст3, 09Г2С, AISI 304/316L.';
+
+/* Таблица масс 1 м² рифлёного листа по ГОСТ 8568-77 для Ст3 (ρ = 7850 кг/м³).
+   В калькуляторе массы пересчитываются на выбранный материал коэффициентом
+   ρ / 7850. Источник: ГОСТ 8568-77, приложение 1. */
+const riflRows = [
+	{ s: 2.5, romb: 21.0, chech: 20.5, smooth: 19.6 },
+	{ s: 3.0, romb: 25.1, chech: 24.2, smooth: 23.55 },
+	{ s: 4.0, romb: 33.5, chech: 32.2, smooth: 31.4 },
+	{ s: 5.0, romb: 41.8, chech: 40.5, smooth: 39.25 },
+	{ s: 6.0, romb: 50.0, chech: 48.5, smooth: 47.1 },
+	{ s: 8.0, romb: 66.6, chech: 64.9, smooth: 62.8 },
+	{ s: 10.0, romb: 83.0, chech: 80.9, smooth: 78.5 },
+	{ s: 12.0, romb: 99.5, chech: 97.2, smooth: 94.2 },
+];
+
+const materials = [
+	{ value: 'st3', label: 'Сталь Ст3', rho: 7850, applic: 'основное применение — полы, пандусы, лестницы' },
+	{ value: '09g2s', label: '09Г2С (низколегированная)', rho: 7850, applic: 'мостостроение, северное исполнение' },
+	{ value: 'aisi304', label: 'Нержавейка AISI 304', rho: 7930, applic: 'пищевые производства, агрессивные среды' },
+	{ value: 'aisi316l', label: 'Нержавейка AISI 316L', rho: 8000, applic: 'морская вода, химия, хлориды' },
+];
+
+const faq = [
+	{
+		q: 'Чем отличается ромбический рифлёный лист от чечевичного?',
+		a: 'Ромб имеет двойной рисунок — две пересекающиеся диагональные группы рифлей, образующие ромбы 25–30 × 60–70 мм. Чечевица — параллельные продольные рифли с шагом 20, 25 или 30 мм. Ромб даёт лучшее противоскольжение во всех направлениях, чечевица проще в прокатке и дешевле, но «скользит» вдоль рифли. Оба варианта регламентируются ГОСТ 8568-77.',
+	},
+	{
+		q: 'Какие толщины бывают у рифлёного листа?',
+		a: 'Стандартный сортамент по ГОСТ 8568-77: 2,5; 3; 4; 5; 6; 8; 10 мм. Самые ходовые на стройке — 4 и 5 мм (полы, пандусы, эстакады), для лёгких конструкций — 3 мм, для тяжёлых нагрузок и кузовов спецтехники — 6 и 8 мм. Толщина 12 мм встречается в специальных применениях.',
+	},
+	{
+		q: 'На сколько рифлёный лист тяжелее гладкого?',
+		a: 'Надбавка к массе 1 м² от рифления — примерно 5,5–7 % в зависимости от толщины. Для ромба больше (около 6,5 %), для чечевицы меньше (около 3 %). Например, гладкий лист 4 мм весит 31,4 кг/м², ромб 4 мм — 33,5 кг/м² (+6,7 %), чечевица — 32,2 кг/м² (+2,5 %). В таблице калькулятора приведены точные значения по ГОСТ.',
+	},
+	{
+		q: 'Какие стандартные форматы рифлёного листа?',
+		a: 'Чаще всего поставляется в форматах 1500 × 6000 мм и 1250 × 2500 мм. На заказ катают листы шириной 1000, 1500, 1800, 2000 мм и длиной до 8000 мм. Калькулятор принимает любые размеры в указанных пределах.',
+	},
+	{
+		q: 'Из какой стали делают рифлёный лист?',
+		a: 'Основной материал — углеродистая сталь обыкновенного качества Ст3 (ГОСТ 380). Реже — низколегированная 09Г2С для конструкций в холодном климате. Нержавеющий рифлёный лист (AISI 304, 316L) выпускается под заказ — применяется в пищёвке, фарме, на промплощадках с агрессивной средой. Плотность аустенитной нержавейки 7,9 г/см³ против 7,85 у Ст3, поэтому масса 1 м² нержавеющего листа примерно на 1 % больше.',
+	},
+	{
+		q: 'Какой ГОСТ регламентирует рифлёный лист?',
+		a: 'ГОСТ 8568-77 «Листы стальные с ромбическим и чечевичным рифлением. Технические условия». Стандарт определяет тип рифления, высоту рифа (от 0,1 до 0,3 толщины базы, но не менее 0,5 мм), шаг рифа, допуски по массе ±5 %. Стандарт действует в редакции с изменениями, для нержавеющего исполнения применяются также ТУ заводов-изготовителей.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: 'Как рассчитать вес рифлёного листа',
+	description: 'Расчёт массы рифлёного листа по толщине, размерам и типу рифления согласно ГОСТ 8568-77.',
+	step: [
+		{ '@type': 'HowToStep', name: 'Выбрать тип рифления', text: 'Ромбическое или чечевичное — определяет надбавку к массе.' },
+		{ '@type': 'HowToStep', name: 'Указать толщину', text: 'Базовая толщина листа от 2,5 до 12 мм по ГОСТ 8568-77.' },
+		{ '@type': 'HowToStep', name: 'Задать размеры листа', text: 'Длина и ширина в миллиметрах. Стандартные форматы — 1500×6000 и 1250×2500 мм.' },
+		{ '@type': 'HowToStep', name: 'Выбрать материал', text: 'Ст3, 09Г2С или нержавейка AISI 304/316L — плотность подставится автоматически.' },
+		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Калькулятор покажет массу 1 листа и партии в килограммах или тоннах.' },
+	],
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
+	<div class="container rif">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса рифлёного листа' }]} />
+
+		<header class="rif__hero">
+			<span class="rif__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M1 8l3-3 3 3 3-3 3 3M1 12l3-3 3 3 3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+				ГОСТ 8568-77
+			</span>
+			<h1 class="rif__h1">Калькулятор веса <span class="rif__h1-accent">рифлёного листа</span></h1>
+			<p class="rif__lead">
+				Расчёт массы рифлёного листа с ромбическим или чечевичным рифлением по ГОСТ 8568-77.
+				Толщины 2,5–12 мм, материалы — Ст3, 09Г2С, нержавейка AISI 304 и 316L.
+				Используется табличная масса 1 м² из стандарта с пересчётом на выбранную плотность.
+				Допуск по массе ±5 %.
+			</p>
+		</header>
+
+		<section class="rif__widget" data-rif-root>
+			<div class="rif__widget-inner">
+				<div class="rif__form">
+					<div class="rif__field">
+						<label class="rif__label">Тип рифления</label>
+						<div class="rif__radio-group">
+							<label class="rif__radio">
+								<input type="radio" name="rif-type" value="romb" checked data-rif-type />
+								<span>Ромб</span>
+							</label>
+							<label class="rif__radio">
+								<input type="radio" name="rif-type" value="chech" data-rif-type />
+								<span>Чечевица</span>
+							</label>
+						</div>
+					</div>
+
+					<div class="rif__field">
+						<label class="rif__label" for="rif-mat">Материал</label>
+						<select class="rif__input" id="rif-mat" data-rif-material>
+							{materials.map((m) => (
+								<option value={m.value} data-rho={m.rho}>
+									{m.label} — ρ {(m.rho / 1000).toLocaleString('ru-RU', { minimumFractionDigits: 2 })} г/см³
+								</option>
+							))}
+						</select>
+						<p class="rif__hint" data-rif-mat-hint>{materials[0].applic}</p>
+					</div>
+
+					<div class="rif__field">
+						<label class="rif__label" for="rif-s">Толщина базы s, мм</label>
+						<select class="rif__input" id="rif-s" data-rif-thickness>
+							{riflRows.map((r) => (
+								<option value={r.s} selected={r.s === 4.0}>
+									{r.s.toLocaleString('ru-RU', { minimumFractionDigits: 1 })} мм
+								</option>
+							))}
+						</select>
+					</div>
+
+					<div class="rif__row-2">
+						<div class="rif__field">
+							<label class="rif__label" for="rif-L">Длина L, мм</label>
+							<input class="rif__input" id="rif-L" type="number" inputmode="decimal" step="any" min="1" value="6000" data-rif-L />
+							<p class="rif__hint">типовые 2000 / 2500 / 6000</p>
+						</div>
+						<div class="rif__field">
+							<label class="rif__label" for="rif-B">Ширина B, мм</label>
+							<input class="rif__input" id="rif-B" type="number" inputmode="decimal" step="any" min="1" value="1500" data-rif-B />
+							<p class="rif__hint">типовые 1000 / 1250 / 1500</p>
+						</div>
+					</div>
+
+					<div class="rif__field">
+						<label class="rif__label" for="rif-qty">Количество листов</label>
+						<input class="rif__input" id="rif-qty" type="number" inputmode="numeric" step="1" min="1" value="1" data-rif-qty />
+					</div>
+				</div>
+
+				<aside class="rif__result">
+					<div class="rif__result-card">
+						<div class="rif__result-eyebrow">Расчёт по ГОСТ 8568-77</div>
+
+						<div class="rif__result-row">
+							<span>Вес 1 м²</span>
+							<strong data-rif-m1>—</strong>
+						</div>
+						<div class="rif__result-row">
+							<span>Вес 1 листа</span>
+							<strong data-rif-one>—</strong>
+						</div>
+
+						<div class="rif__result-total">
+							<span class="rif__result-total-label">Общий вес партии</span>
+							<div class="rif__result-total-value" data-rif-total>—</div>
+							<div class="rif__result-total-sub" data-rif-total-sub></div>
+						</div>
+
+						<dl class="rif__result-meta">
+							<div><dt>Площадь 1 листа</dt><dd data-rif-area>—</dd></div>
+							<div><dt>Площадь партии</dt><dd data-rif-totarea>—</dd></div>
+						</dl>
+
+						<a class="rif__cta" href="/zapros-kp/?material=riflenyy-list#lead-form">
+							<span>Запросить КП на рифлёный лист</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="rif__result-foot">
+							Табличная масса по ГОСТ. Фактическая может отличаться на ±5 % (допуск проката).
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="rif__block">
+			<h2 class="rif__h2">Геометрия рифления</h2>
+			<div class="rif__infographic">
+				<svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Схема рифлёного листа: вид сверху с ромбическим рисунком и поперечное сечение с базовой толщиной и высотой рифа">
+					<defs>
+						<pattern id="rifHatch" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="9" stroke="var(--color-primary)" stroke-width="0.7" opacity="0.25" />
+						</pattern>
+					</defs>
+
+					<rect x="20" y="20" width="180" height="120" fill="url(#rifHatch)" stroke="var(--color-primary)" stroke-width="2" />
+					<g stroke="var(--color-primary)" stroke-width="1.2" opacity="0.7">
+						<line x1="35" y1="35" x2="80" y2="80" />
+						<line x1="80" y1="80" x2="125" y2="35" />
+						<line x1="125" y1="35" x2="170" y2="80" />
+
+						<line x1="35" y1="80" x2="80" y2="125" />
+						<line x1="80" y1="125" x2="125" y2="80" />
+						<line x1="125" y1="80" x2="170" y2="125" />
+
+						<line x1="80" y1="35" x2="35" y2="80" />
+						<line x1="125" y1="80" x2="80" y2="125" />
+
+						<line x1="170" y1="35" x2="125" y2="80" />
+						<line x1="170" y1="80" x2="125" y2="125" />
+					</g>
+
+					<text x="110" y="155" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">вид сверху · ромб</text>
+
+					<g transform="translate(20, 180)">
+						<rect x="0" y="20" width="180" height="20" fill="url(#rifHatch)" stroke="var(--color-primary)" stroke-width="1.8" />
+						<g fill="var(--color-primary)" opacity="0.85">
+							<polygon points="20,20 30,8 40,20" />
+							<polygon points="60,20 70,8 80,20" />
+							<polygon points="100,20 110,8 120,20" />
+							<polygon points="140,20 150,8 160,20" />
+						</g>
+						<g stroke="var(--color-accent)" stroke-width="1.2" fill="none" stroke-linecap="round">
+							<line x1="185" y1="20" x2="185" y2="40" />
+						</g>
+						<polygon points="185,20 181,28 189,28" fill="var(--color-accent)" />
+						<polygon points="185,40 181,32 189,32" fill="var(--color-accent)" />
+						<text x="195" y="34" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="var(--color-accent)">s</text>
+
+						<g stroke="var(--color-accent)" stroke-width="1.2" fill="none" stroke-linecap="round">
+							<line x1="60" y1="0" x2="60" y2="20" stroke-dasharray="3 2" />
+						</g>
+						<text x="50" y="10" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-accent)">h ≈ 0,2 s</text>
+					</g>
+
+					<text x="110" y="232" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="var(--color-muted)" font-style="italic">поперечное сечение</text>
+
+					<text x="312" y="232" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">ГОСТ 8568-77</text>
+				</svg>
+
+				<div class="rif__infographic-legend">
+					<h3>Обозначения</h3>
+					<ul>
+						<li><strong>s</strong> — базовая толщина листа (без рифа)</li>
+						<li><strong>h</strong> — высота рифа: 0,1–0,3 × s, минимум 0,5 мм. Стандартно ≈ 0,2 s</li>
+						<li><strong>Ромб</strong> — две пересекающиеся диагонали 25–30 × 60–70 мм</li>
+						<li><strong>Чечевица</strong> — параллельные продольные рифли, шаг 20 / 25 / 30 мм</li>
+					</ul>
+					<p class="rif__infographic-note">
+						Масса в калькуляторе берётся из таблицы ГОСТ 8568-77 (для Ст3, ρ = 7850 кг/м³)
+						и пересчитывается на плотность выбранного материала. Это точнее, чем считать
+						надбавку через гладкий лист.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="rif__block">
+			<h2 class="rif__h2">Таблица массы 1 м² по ГОСТ 8568-77</h2>
+			<p class="rif__block-lead">
+				Для стали Ст3 (плотность 7850 кг/м³). Для других материалов масса пересчитывается
+				коэффициентом ρ / 7850.
+			</p>
+			<div class="rif__table-wrap">
+				<table class="rif__table">
+					<thead>
+						<tr>
+							<th>Толщина s, мм</th>
+							<th>Ромб, кг/м²</th>
+							<th>Чечевица, кг/м²</th>
+							<th>Гладкий лист, кг/м²</th>
+							<th>Надбавка ромба, %</th>
+						</tr>
+					</thead>
+					<tbody>
+						{riflRows.map((r) => (
+							<tr>
+								<td><strong>{r.s.toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</strong></td>
+								<td>{r.romb.toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</td>
+								<td>{r.chech.toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</td>
+								<td>{r.smooth.toLocaleString('ru-RU', { minimumFractionDigits: 2 })}</td>
+								<td>{((r.romb / r.smooth - 1) * 100).toFixed(1)}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="rif__block">
+			<h2 class="rif__h2">Связанное</h2>
+			<ul class="rif__related">
+				<li>
+					<a href="/list/">
+						<strong>Лист нержавеющий — каталог</strong>
+						<small>в наличии 0,4–120 мм, AISI 304/321/430</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса</strong>
+						<small>9 видов проката: лист, труба, круг, проволока и др.</small>
+					</a>
+				</li>
+				<li>
+					<a href="/gost/">
+						<strong>Справочник ГОСТов</strong>
+						<small>сортаменты, плотности, AISI ↔ ГОСТ</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="rif__faq">
+			<h2 class="rif__h2">Частые вопросы</h2>
+			<div class="rif__faq-list">
+				{faq.map((f) => (
+					<details class="rif__faq-item">
+						<summary class="rif__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужен рифлёный лист?"
+		text="Рифлёный лист по ГОСТ 8568-77 из Ст3 и 09Г2С — со склада. Нержавеющий рифлёный лист AISI 304 — под заявку, срок 2–4 недели. Резка в размер, доставка по РФ."
+	/>
+</BaseLayout>
+
+<script is:inline define:vars={{ riflRows }}>
+	(function () {
+		const root = document.querySelector('[data-rif-root]');
+		if (!root) return;
+
+		const typeInputs = root.querySelectorAll('[data-rif-type]');
+		const matSel = root.querySelector('[data-rif-material]');
+		const matHint = root.querySelector('[data-rif-mat-hint]');
+		const sSel = root.querySelector('[data-rif-thickness]');
+		const LInp = root.querySelector('[data-rif-L]');
+		const BInp = root.querySelector('[data-rif-B]');
+		const qtyInp = root.querySelector('[data-rif-qty]');
+
+		const m1El = root.querySelector('[data-rif-m1]');
+		const oneEl = root.querySelector('[data-rif-one]');
+		const totalEl = root.querySelector('[data-rif-total]');
+		const totalSubEl = root.querySelector('[data-rif-total-sub]');
+		const areaEl = root.querySelector('[data-rif-area]');
+		const totAreaEl = root.querySelector('[data-rif-totarea]');
+
+		const MAT_HINTS = {
+			st3: 'основное применение — полы, пандусы, лестницы',
+			'09g2s': 'мостостроение, северное исполнение',
+			aisi304: 'пищевые производства, агрессивные среды',
+			aisi316l: 'морская вода, химия, хлориды',
+		};
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+		const fmt1 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
+		const fmt0 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
+
+		function getType() {
+			const checked = root.querySelector('[data-rif-type]:checked');
+			return checked ? checked.value : 'romb';
+		}
+
+		function getRho() {
+			const opt = matSel.selectedOptions[0];
+			return parseFloat(opt && opt.dataset.rho) || 7850;
+		}
+
+		function recalc() {
+			const type = getType();
+			const s = parseFloat(sSel.value) || 0;
+			const L = parseFloat(LInp.value) || 0;
+			const B = parseFloat(BInp.value) || 0;
+			const qty = parseFloat(qtyInp.value) || 0;
+			const rho = getRho();
+
+			const row = riflRows.find((r) => Math.abs(r.s - s) < 1e-6);
+			const m1_st3 = row ? (type === 'romb' ? row.romb : row.chech) : 0;
+			const m1 = m1_st3 * (rho / 7850);
+			const area = (L * B) / 1e6; // м²
+			const oneWeight = m1 * area;
+			const total = oneWeight * qty;
+			const totalArea = area * qty;
+
+			m1El.textContent = m1 > 0 ? fmt.format(m1) + ' кг/м²' : '—';
+			oneEl.textContent = oneWeight > 0 ? fmt.format(oneWeight) + ' кг' : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = fmt.format(total / 1000) + ' т';
+					totalSubEl.textContent = fmt.format(total) + ' кг';
+				} else {
+					totalEl.textContent = fmt.format(total) + ' кг';
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			areaEl.textContent = area > 0 ? fmt1.format(area) + ' м²' : '—';
+			totAreaEl.textContent = totalArea > 0 ? fmt1.format(totalArea) + ' м²' : '—';
+		}
+
+		typeInputs.forEach((el) => el.addEventListener('change', recalc));
+		matSel.addEventListener('change', () => {
+			matHint.textContent = MAT_HINTS[matSel.value] || '';
+			recalc();
+		});
+		[sSel, LInp, BInp, qtyInp].forEach((el) => el.addEventListener('input', recalc));
+
+		recalc();
+	})();
+</script>
+
+<style>
+	.rif { padding-block: var(--space-8); min-width: 0; }
+	.rif__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.rif__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.rif__h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15; margin: 0 0 var(--space-3); letter-spacing: -0.02em; }
+	.rif__h1-accent { background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+	.rif__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	.rif__widget { background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md); }
+	.rif__widget-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-6); }
+	@media (max-width: 900px) { .rif__widget { padding: var(--space-4); } .rif__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+	.rif__form { display: grid; gap: var(--space-4); }
+	.rif__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .rif__row-2 { grid-template-columns: 1fr; } }
+
+	.rif__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.rif__label { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-subtle); }
+	.rif__input { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); outline: none; width: 100%; appearance: none; -webkit-appearance: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	select.rif__input { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.9rem; padding-right: 2rem; }
+	.rif__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.rif__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.5; }
+
+	.rif__radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+	.rif__radio { position: relative; display: flex; align-items: center; justify-content: center; padding: 0.6rem 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); font-size: 0.92rem; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }
+	.rif__radio input { position: absolute; opacity: 0; pointer-events: none; }
+	.rif__radio:has(input:checked) { background: var(--color-primary-50); border-color: var(--color-primary-500); color: var(--color-primary); font-weight: 600; }
+
+	.rif__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .rif__result { position: static; } }
+	.rif__result-card { background: var(--grad-hero); color: var(--color-on-dark); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow); position: relative; overflow: hidden; }
+	.rif__result-eyebrow { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent-100); margin-bottom: var(--space-4); }
+	.rif__result-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 0.6rem 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+	.rif__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.rif__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+	.rif__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.rif__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.rif__result-total-value { font-family: var(--font-mono); font-size: clamp(2.2rem, 4.6vw, 3.2rem); font-weight: 700; line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+	.rif__result-total-sub { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-on-dark-muted); margin-top: 0.25rem; min-height: 1.2em; }
+	.rif__result-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; padding-top: var(--space-3); border-top: 1px solid rgba(255,255,255,0.12); }
+	.rif__result-meta dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-on-dark-muted); margin-bottom: 0.2rem; }
+	.rif__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+	.rif__cta { display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff; font-weight: 600; text-decoration: none; border-radius: var(--radius-md); font-size: 0.92rem; box-shadow: var(--shadow-warm-glow); transition: transform var(--dur-fast) var(--ease-out); }
+	.rif__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.rif__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.rif__cta:hover svg { transform: translateX(2px); }
+	.rif__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.rif__block { margin-bottom: var(--space-10); }
+	.rif__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.rif__block-lead { color: var(--color-muted); max-width: 70ch; margin: 0 0 var(--space-4); }
+	.rif__infographic { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--space-6); align-items: start; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+	@media (max-width: 720px) { .rif__infographic { grid-template-columns: 1fr; } }
+	.rif__infographic svg { width: 100%; height: auto; max-width: 320px; display: block; }
+	.rif__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.rif__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.rif__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.rif__infographic-legend li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-500); }
+	.rif__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.rif__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	.rif__table-wrap { overflow-x: auto; }
+	.rif__table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 520px; }
+	.rif__table th, .rif__table td { text-align: left; padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+	.rif__table th { background: var(--color-surface); font-weight: 600; color: var(--color-subtle); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+	.rif__table tbody tr:hover { background: var(--color-primary-50); }
+
+	.rif__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.rif__related a { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary); transition: all var(--dur-fast) var(--ease-out); }
+	.rif__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.rif__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.rif__faq { margin-bottom: var(--space-8); }
+	.rif__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.rif__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.rif__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.rif__faq-q { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none; }
+	.rif__faq-q::-webkit-details-marker { display: none; }
+	.rif__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.rif__faq-item[open] .rif__faq-q svg { transform: rotate(180deg); }
+	.rif__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>

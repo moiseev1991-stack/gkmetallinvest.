@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { contacts } from '../../data/site';
+
+const title = 'Использование файлов cookie — ГК Металлинвест';
+const description = 'Какие cookie использует сайт gkmetallinvest.ru, для чего, как долго хранятся и как отказаться. Политика cookies в соответствии с ФЗ-152.';
+
+/* Категории cookie. Сейчас на сайте — только технические; аналитические готовы
+   к подключению через cookie-banner (раздел «Согласие» обновится автоматически
+   при добавлении Метрики). */
+const cookieRows = [
+	{
+		cat: 'Технические (необходимые)',
+		name: 'gkm-consent',
+		purpose: 'Сохраняет выбор пользователя в cookie-баннере (принял / только необходимые).',
+		ttl: '12 месяцев',
+		owner: 'gkmetallinvest.ru (1st-party)',
+		basis: 'Без согласия — необходимо для работы баннера (п. 5 ч. 1 ст. 6 ФЗ-152).',
+	},
+	{
+		cat: 'Технические (необходимые)',
+		name: 'cf-session, session-id',
+		purpose: 'Поддержание сессии пользователя на сайте, защита от CSRF-атак.',
+		ttl: 'Сессионные (удаляются при закрытии браузера)',
+		owner: 'gkmetallinvest.ru (1st-party)',
+		basis: 'Без согласия — необходимы для работы сайта.',
+	},
+	{
+		cat: 'Аналитические',
+		name: '_ym_uid, _ym_d, _ym_isad, _ym_visorc',
+		purpose: 'Подсчёт уникальных посетителей, анализ источников трафика, поведения на сайте, времени сессии. Сервис Яндекс.Метрика.',
+		ttl: 'до 12 месяцев',
+		owner: 'metrika.yandex.ru (3rd-party, серверы в РФ)',
+		basis: 'Информированное согласие через cookie-баннер. Если подключение Метрики ещё не выполнено — эти cookie не устанавливаются.',
+	},
+];
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="container cookies">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Использование файлов cookie' },
+		]} />
+
+		<header class="cookies__hero">
+			<h1>Использование файлов cookie</h1>
+			<p class="cookies__meta">
+				На этой странице раскрыто, какие файлы cookie использует сайт gkmetallinvest.ru,
+				для каких целей и как долго они хранятся. Подробная политика обработки данных —
+				на странице <a href="/politika-konfidencialnosti/">Политика конфиденциальности</a>.
+			</p>
+		</header>
+
+		<section class="cookies__block">
+			<h2>Что такое файлы cookie</h2>
+			<p>
+				<strong>Cookie</strong> — это небольшие фрагменты данных, которые сайт сохраняет
+				в браузере посетителя. При следующих заходах браузер отправляет их обратно,
+				чтобы сайт мог «узнать» пользователя — сохранить его настройки, корзину
+				или сессию.
+			</p>
+			<p>
+				По разъяснениям Роскомнадзора, cookie, содержащие IP-адрес или уникальный
+				идентификатор устройства, относятся к персональным данным. Поэтому
+				аналитические и рекламные cookie мы устанавливаем только с явного согласия
+				пользователя, полученного через cookie-баннер.
+			</p>
+		</section>
+
+		<section class="cookies__block">
+			<h2>Категории cookie</h2>
+
+			<h3>Технические (strictly necessary)</h3>
+			<p>
+				Обеспечивают базовую работу сайта: запоминают, что вы уже сделали выбор в
+				cookie-баннере, поддерживают сессию, защищают форму заявки от CSRF-атак.
+				Устанавливаются без отдельного согласия — без них сайт работать не сможет.
+				Отключить их можно только через настройки браузера; в этом случае часть функций
+				перестанет работать.
+			</p>
+
+			<h3>Аналитические</h3>
+			<p>
+				Используются при подключении сервиса <strong>Яндекс.Метрика</strong> (серверы
+				в Российской Федерации) для анализа посещаемости, источников трафика, поведения
+				пользователей и улучшения сайта. <strong>Устанавливаются только после согласия</strong>,
+				данного через cookie-баннер. Сторонние аналитические сервисы с серверами за
+				рубежом (Google Analytics и аналоги) на сайте не используются.
+			</p>
+
+			<h3>Рекламные / маркетинговые</h3>
+			<p>
+				На сайте gkmetallinvest.ru <strong>не используются</strong> рекламные и
+				маркетинговые cookie. Ретаргетинг и поведенческие рекламные платформы
+				не подключены.
+			</p>
+		</section>
+
+		<section class="cookies__block">
+			<h2>Перечень используемых cookie</h2>
+			<div class="cookies__table-wrap">
+				<table class="cookies__table">
+					<thead>
+						<tr>
+							<th>Категория</th>
+							<th>Имя</th>
+							<th>Назначение</th>
+							<th>Срок</th>
+							<th>Владелец</th>
+							<th>Основание</th>
+						</tr>
+					</thead>
+					<tbody>
+						{cookieRows.map((c) => (
+							<tr>
+								<td>{c.cat}</td>
+								<td><code>{c.name}</code></td>
+								<td>{c.purpose}</td>
+								<td>{c.ttl}</td>
+								<td>{c.owner}</td>
+								<td>{c.basis}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+			<p class="cookies__note">
+				Список актуален на дату последней редакции страницы. При подключении новых
+				сервисов перечень будет обновлён.
+			</p>
+		</section>
+
+		<section class="cookies__block">
+			<h2>Как отключить cookie</h2>
+			<ol>
+				<li><strong>Через cookie-баннер</strong> на сайте — нажмите «Только необходимые»
+					при первом входе. Если вы уже сделали выбор и хотите его изменить, очистите
+					cookie сайта в браузере — баннер появится снова.</li>
+				<li><strong>В настройках браузера</strong> — каждый современный браузер
+					позволяет блокировать или удалять cookie. Инструкции:
+					<a href="https://yandex.ru/support/browser/personal-data-protection/cookies.html" target="_blank" rel="noopener">Яндекс.Браузер</a>,
+					<a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome</a>,
+					<a href="https://support.mozilla.org/ru/kb/udalenie-fajlov-cookie-iz-firefox" target="_blank" rel="noopener">Firefox</a>,
+					<a href="https://support.microsoft.com/ru-ru/help/4027947" target="_blank" rel="noopener">Edge</a>.</li>
+				<li><strong>Через расширения браузера</strong> — Privacy Badger, uBlock Origin
+					и аналоги блокируют сторонние трекеры.</li>
+			</ol>
+			<p class="cookies__warn">
+				Отключение технических cookie может привести к тому, что формы заявок и
+				сохранение настроек работать не будут.
+			</p>
+		</section>
+
+		<section class="cookies__block">
+			<h2>Связанные документы</h2>
+			<ul class="cookies__links">
+				<li><a href="/politika-konfidencialnosti/">Политика обработки персональных данных</a>
+					— полный документ по ФЗ-152 (раздел 12 — про cookie).</li>
+				<li><a href="/soglasie/">Согласие на обработку персональных данных</a> —
+					отдельный документ согласия для форм заявок.</li>
+			</ul>
+		</section>
+
+		<section class="cookies__block cookies__contacts">
+			<h2>Контакты по вопросам обработки данных</h2>
+			<p>
+				E-mail: <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+				(тема письма «Запрос по ПДн»)<br />
+				Телефон: <a href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+			</p>
+		</section>
+	</div>
+</BaseLayout>
+
+<style>
+	.cookies { padding-block: var(--space-8); max-width: 920px; }
+	.cookies__hero { margin-bottom: var(--space-7); }
+	.cookies h1 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+	.cookies__meta { color: var(--color-muted); font-size: 0.92rem; max-width: 75ch; line-height: 1.6; margin: 0; }
+	.cookies__meta a { color: var(--color-primary-600); }
+
+	.cookies__block { margin-bottom: var(--space-8); }
+	.cookies__block h2 { font-size: 1.35rem; margin: 0 0 var(--space-4); letter-spacing: -0.005em; }
+	.cookies__block h3 { font-size: 1.05rem; margin: var(--space-5) 0 var(--space-2); }
+	.cookies__block p { color: var(--color-text); max-width: 75ch; line-height: 1.65; margin: 0 0 var(--space-3); }
+	.cookies__block ul, .cookies__block ol { margin: 0 0 var(--space-3); padding-left: 1.4rem; color: var(--color-text); }
+	.cookies__block li { line-height: 1.65; margin-bottom: 0.3rem; max-width: 73ch; }
+	.cookies__block a { color: var(--color-primary-600); }
+
+	.cookies__table-wrap { overflow-x: auto; margin: 0 calc(-1 * var(--space-2)); padding: 0 var(--space-2); }
+	.cookies__table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 720px; }
+	.cookies__table th, .cookies__table td { text-align: left; padding: 0.6rem 0.7rem; vertical-align: top; border-bottom: 1px solid var(--color-border); }
+	.cookies__table th { background: var(--color-surface); font-weight: 600; color: var(--color-subtle); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+	.cookies__table td code { font-family: var(--font-mono); font-size: 0.82rem; background: var(--color-surface); padding: 0.1rem 0.35rem; border-radius: 4px; word-break: break-all; }
+
+	.cookies__note { font-size: 0.85rem; color: var(--color-muted); font-style: italic; margin-top: var(--space-3); }
+	.cookies__warn { font-size: 0.88rem; color: var(--color-warn, #b46b15); padding: 0.6rem 0.9rem; background: rgba(180, 107, 21, 0.07); border-left: 3px solid var(--color-warn, #b46b15); border-radius: var(--radius-md); max-width: 70ch; }
+
+	.cookies__links { padding-left: 1.4rem; }
+	.cookies__contacts p { font-size: 0.95rem; line-height: 1.7; }
+</style>

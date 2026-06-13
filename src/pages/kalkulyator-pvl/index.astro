@@ -1,0 +1,483 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса ПВЛ — просечно-вытяжной лист ГОСТ 8706-78';
+const description =
+	'Онлайн-расчёт веса просечно-вытяжного листа: маркировки ПВЛ-406, 506, 508, 510, 606, 608, 610 по ГОСТ 8706-78. ' +
+	'Пересчёт на Ст3, 09Г2С, AISI 304.';
+
+/* Сортамент ПВЛ по ГОСТ 8706-78 для Ст3. Маркировка: первая цифра — толщина
+   исходного листа, две следующие — подача. Шаг ячейки привязан к толщине. */
+const pvlRows = [
+	{ marka: 'ПВЛ-406', s: 4, podacha: 6, shag: 90, m1: 15.7 },
+	{ marka: 'ПВЛ-506', s: 5, podacha: 6, shag: 110, m1: 16.4 },
+	{ marka: 'ПВЛ-508', s: 5, podacha: 8, shag: 110, m1: 20.9 },
+	{ marka: 'ПВЛ-510', s: 5, podacha: 10, shag: 110, m1: 24.7 },
+	{ marka: 'ПВЛ-606', s: 6, podacha: 6, shag: 125, m1: 17.3 },
+	{ marka: 'ПВЛ-608', s: 6, podacha: 8, shag: 125, m1: 21.9 },
+	{ marka: 'ПВЛ-610', s: 6, podacha: 10, shag: 125, m1: 26.0 },
+];
+
+const materials = [
+	{ value: 'st3', label: 'Сталь Ст3', rho: 7850, applic: 'основное применение — ограждения, полы, фильтры' },
+	{ value: '09g2s', label: '09Г2С (низколегированная)', rho: 7850, applic: 'мостостроение, северное исполнение' },
+	{ value: 'aisi304', label: 'Нержавейка AISI 304', rho: 7930, applic: 'пищевые и агрессивные среды, фильтрация' },
+];
+
+const faq = [
+	{
+		q: 'Что означают цифры в маркировке ПВЛ-406 и ПВЛ-608?',
+		a: 'Маркировка ПВЛ состоит из трёх цифр. Первая цифра — толщина исходного листа в миллиметрах (4, 5 или 6). Вторая–третья цифры — подача листа на просечку в миллиметрах (06, 08, 10). Пример: ПВЛ-406 — лист 4 мм с подачей 6 мм, шаг ячейки около 90 мм. ПВЛ-608 — лист 6 мм с подачей 8 мм, шаг ячейки 125 мм. Подача определяет размер ячейки и массу 1 м².',
+	},
+	{
+		q: 'По какому ГОСТ выпускают просечно-вытяжной лист?',
+		a: 'Основной стандарт — ГОСТ 8706-78 «Листы стальные просечно-вытяжные. Технические условия». На отдельных предприятиях применяется также ТУ 36.26.11-5-89 и собственные ТУ заводов. Стандарт определяет маркировку, размер ячейки, массу 1 м², допуски и материал заготовки. Допуск по массе ±5 %.',
+	},
+	{
+		q: 'Сколько весит 1 м² ПВЛ-406?',
+		a: 'Для ПВЛ-406 (лист 4 мм, подача 6 мм) масса 1 м² по ГОСТ 8706-78 — 15,7 кг для стали Ст3. Лист 1000 × 2000 мм будет весить 31,4 кг. Для ПВЛ-608 (лист 6 мм, подача 8 мм) — 21,9 кг/м², лист 1250 × 2500 — 68,4 кг. Полная таблица — выше на странице.',
+	},
+	{
+		q: 'Чем ПВЛ отличается от сварной сетки?',
+		a: 'ПВЛ — цельнометаллическое полотно: лист одновременно просекается ножами и растягивается. Получаются ромбические ячейки в шахматном порядке. Сварная сетка — отдельные прутки в двух направлениях, соединённые точечной сваркой. ПВЛ прочнее и долговечнее (нет узлов, где возможна коррозия), но дороже. Сварная сетка — для армирования бетона и лёгких ограждений, ПВЛ — для нагружаемых полов и решёток.',
+	},
+	{
+		q: 'Из какой стали делают ПВЛ?',
+		a: 'Основной материал — углеродистая Ст3 (ГОСТ 380). Для конструкций в холодном климате — 09Г2С. Нержавеющий ПВЛ из AISI 304 (08Х18Н10) — под заявку, применяется в пищевой промышленности, на пивных заводах, в системах фильтрации, где важна коррозионная стойкость. Масса нержавеющего ПВЛ на ~1 % больше из-за повышенной плотности (7,93 вместо 7,85 г/см³).',
+	},
+	{
+		q: 'Какие стандартные форматы листа ПВЛ?',
+		a: 'Чаще всего — 1000 × 2000 мм и 1250 × 2500 мм после растяжения. Заготовка до растяжения уже почти вдвое: например, лист 0,5 × 2 м после просечки превращается в полотно 1 × 2 м. Калькулятор работает с конечными размерами уже растянутого полотна — именно так указывают площадь в прайсах и КП.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: 'Как рассчитать вес ПВЛ',
+	step: [
+		{ '@type': 'HowToStep', name: 'Выбрать маркировку', text: 'ПВЛ-406, 506, 508, 510, 606, 608 или 610 по ГОСТ 8706-78.' },
+		{ '@type': 'HowToStep', name: 'Указать размеры листа', text: 'Длина и ширина в миллиметрах. Стандартные форматы — 1000×2000 и 1250×2500.' },
+		{ '@type': 'HowToStep', name: 'Выбрать материал', text: 'Ст3, 09Г2С или AISI 304 — плотность подставится автоматически.' },
+		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Масса 1 листа и партии в килограммах или тоннах.' },
+	],
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
+	<div class="container pvl">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса ПВЛ' }]} />
+
+		<header class="pvl__hero">
+			<span class="pvl__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M2 4l4 4-4 4M8 4l4 4-4 4M14 4v8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+				ГОСТ 8706-78
+			</span>
+			<h1 class="pvl__h1">Калькулятор веса <span class="pvl__h1-accent">ПВЛ</span></h1>
+			<p class="pvl__lead">
+				Расчёт массы просечно-вытяжного листа (ПВЛ) по маркировке ГОСТ 8706-78.
+				Учитываются 7 типоразмеров — от ПВЛ-406 до ПВЛ-610. Материалы — Ст3, 09Г2С
+				и нержавеющая AISI 304. Используется табличная масса 1 м² из стандарта
+				с пересчётом на плотность выбранного материала.
+			</p>
+		</header>
+
+		<section class="pvl__widget" data-pvl-root>
+			<div class="pvl__widget-inner">
+				<div class="pvl__form">
+					<div class="pvl__field">
+						<label class="pvl__label" for="pvl-marka">Маркировка ПВЛ</label>
+						<select class="pvl__input" id="pvl-marka" data-pvl-marka>
+							{pvlRows.map((r) => (
+								<option value={r.marka} data-m1={r.m1} data-s={r.s} data-podacha={r.podacha} data-shag={r.shag} selected={r.marka === 'ПВЛ-406'}>
+									{r.marka} — s {r.s} мм, подача {r.podacha} мм
+								</option>
+							))}
+						</select>
+						<p class="pvl__hint" data-pvl-shag-hint>шаг ячейки {pvlRows[0].shag} мм, масса {pvlRows[0].m1} кг/м² (Ст3)</p>
+					</div>
+
+					<div class="pvl__field">
+						<label class="pvl__label" for="pvl-mat">Материал</label>
+						<select class="pvl__input" id="pvl-mat" data-pvl-material>
+							{materials.map((m) => (
+								<option value={m.value} data-rho={m.rho}>
+									{m.label} — ρ {(m.rho / 1000).toLocaleString('ru-RU', { minimumFractionDigits: 2 })} г/см³
+								</option>
+							))}
+						</select>
+						<p class="pvl__hint" data-pvl-mat-hint>{materials[0].applic}</p>
+					</div>
+
+					<div class="pvl__row-2">
+						<div class="pvl__field">
+							<label class="pvl__label" for="pvl-L">Длина L, мм</label>
+							<input class="pvl__input" id="pvl-L" type="number" inputmode="decimal" step="any" min="1" value="2000" data-pvl-L />
+							<p class="pvl__hint">типовые 2000 / 2500</p>
+						</div>
+						<div class="pvl__field">
+							<label class="pvl__label" for="pvl-B">Ширина B, мм</label>
+							<input class="pvl__input" id="pvl-B" type="number" inputmode="decimal" step="any" min="1" value="1000" data-pvl-B />
+							<p class="pvl__hint">типовые 1000 / 1250</p>
+						</div>
+					</div>
+
+					<div class="pvl__field">
+						<label class="pvl__label" for="pvl-qty">Количество листов</label>
+						<input class="pvl__input" id="pvl-qty" type="number" inputmode="numeric" step="1" min="1" value="1" data-pvl-qty />
+					</div>
+				</div>
+
+				<aside class="pvl__result">
+					<div class="pvl__result-card">
+						<div class="pvl__result-eyebrow">Расчёт по ГОСТ 8706-78</div>
+
+						<div class="pvl__result-row">
+							<span>Вес 1 м²</span>
+							<strong data-pvl-m1>—</strong>
+						</div>
+						<div class="pvl__result-row">
+							<span>Вес 1 листа</span>
+							<strong data-pvl-one>—</strong>
+						</div>
+
+						<div class="pvl__result-total">
+							<span class="pvl__result-total-label">Общий вес партии</span>
+							<div class="pvl__result-total-value" data-pvl-total>—</div>
+							<div class="pvl__result-total-sub" data-pvl-total-sub></div>
+						</div>
+
+						<dl class="pvl__result-meta">
+							<div><dt>Площадь 1 листа</dt><dd data-pvl-area>—</dd></div>
+							<div><dt>Площадь партии</dt><dd data-pvl-totarea>—</dd></div>
+						</dl>
+
+						<a class="pvl__cta" href="/zapros-kp/?material=pvl#lead-form">
+							<span>Запросить КП на ПВЛ</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="pvl__result-foot">
+							Табличная масса по ГОСТ. Фактическая может отличаться на ±5 %.
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="pvl__block">
+			<h2 class="pvl__h2">Геометрия и маркировка</h2>
+			<div class="pvl__infographic">
+				<svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Геометрия ПВЛ: шахматный рисунок ромбических ячеек с подписями шага и подачи">
+					<defs>
+						<pattern id="pvlHatch" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="9" stroke="var(--color-primary)" stroke-width="0.7" opacity="0.25" />
+						</pattern>
+					</defs>
+
+					<rect x="20" y="20" width="220" height="160" fill="#fff" stroke="var(--color-primary)" stroke-width="1.6" />
+
+					<g stroke="var(--color-primary)" stroke-width="1.8" fill="url(#pvlHatch)">
+						<polygon points="50,40 75,55 50,70 25,55" transform="translate(15,0)" />
+						<polygon points="115,40 140,55 115,70 90,55" transform="translate(15,0)" />
+						<polygon points="180,40 205,55 180,70 155,55" transform="translate(15,0)" />
+
+						<polygon points="80,75 105,90 80,105 55,90" transform="translate(15,0)" />
+						<polygon points="145,75 170,90 145,105 120,90" transform="translate(15,0)" />
+
+						<polygon points="50,110 75,125 50,140 25,125" transform="translate(15,0)" />
+						<polygon points="115,110 140,125 115,140 90,125" transform="translate(15,0)" />
+						<polygon points="180,110 205,125 180,125 155,125" transform="translate(15,0)" />
+
+						<polygon points="80,145 105,160 80,170 55,160" transform="translate(15,0)" />
+						<polygon points="145,145 170,160 145,170 120,160" transform="translate(15,0)" />
+					</g>
+
+					<g stroke="var(--color-accent)" stroke-width="1.2" fill="none" stroke-linecap="round">
+						<line x1="40" y1="195" x2="220" y2="195" />
+					</g>
+					<polygon points="40,195 50,191 50,199" fill="var(--color-accent)" />
+					<polygon points="220,195 210,191 210,199" fill="var(--color-accent)" />
+					<text x="130" y="212" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="var(--color-accent)">шаг ячейки</text>
+
+					<g stroke="var(--color-accent)" stroke-width="1.2" fill="none" stroke-linecap="round">
+						<line x1="260" y1="40" x2="260" y2="110" />
+					</g>
+					<polygon points="260,40 256,50 264,50" fill="var(--color-accent)" />
+					<polygon points="260,110 256,100 264,100" fill="var(--color-accent)" />
+					<text x="268" y="78" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="var(--color-accent)">подача</text>
+
+					<text x="312" y="14" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">ГОСТ 8706-78 · ячейки в шахматном порядке</text>
+				</svg>
+
+				<div class="pvl__infographic-legend">
+					<h3>Маркировка</h3>
+					<ul>
+						<li><strong>4/5/6</strong> — толщина исходного листа (мм)</li>
+						<li><strong>06/08/10</strong> — подача листа на просечку (мм)</li>
+						<li><strong>Шаг ячейки</strong> — 90 (для s=4), 110 (для s=5), 125 (для s=6) мм</li>
+						<li><strong>Растяжение</strong> — лист становится примерно в 2 раза шире после просечки</li>
+					</ul>
+					<p class="pvl__infographic-note">
+						Заготовка 0,5 × 2 м после просечки превращается в полотно 1 × 2 м.
+						Калькулятор принимает размеры готового полотна (как в прайсах), а не заготовки.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="pvl__block">
+			<h2 class="pvl__h2">Сортамент ПВЛ по ГОСТ 8706-78</h2>
+			<p class="pvl__block-lead">
+				Для стали Ст3 (плотность 7850 кг/м³). Для других материалов масса пересчитывается
+				коэффициентом ρ / 7850.
+			</p>
+			<div class="pvl__table-wrap">
+				<table class="pvl__table">
+					<thead>
+						<tr>
+							<th>Маркировка</th>
+							<th>Толщина s, мм</th>
+							<th>Подача, мм</th>
+							<th>Шаг ячейки, мм</th>
+							<th>Масса 1 м², кг</th>
+							<th>Лист 1000×2000, кг</th>
+						</tr>
+					</thead>
+					<tbody>
+						{pvlRows.map((r) => (
+							<tr>
+								<td><strong>{r.marka}</strong></td>
+								<td>{r.s}</td>
+								<td>{r.podacha}</td>
+								<td>{r.shag}</td>
+								<td>{r.m1.toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</td>
+								<td>{(r.m1 * 2).toLocaleString('ru-RU', { minimumFractionDigits: 1 })}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="pvl__block">
+			<h2 class="pvl__h2">Связанное</h2>
+			<ul class="pvl__related">
+				<li>
+					<a href="/list/">
+						<strong>Лист нержавеющий</strong>
+						<small>исходный материал для нержавеющего ПВЛ</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-riflenogo-lista/">
+						<strong>Калькулятор рифлёного листа</strong>
+						<small>ГОСТ 8568-77 — ромб и чечевица</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса</strong>
+						<small>9 видов проката</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="pvl__faq">
+			<h2 class="pvl__h2">Частые вопросы</h2>
+			<div class="pvl__faq-list">
+				{faq.map((f) => (
+					<details class="pvl__faq-item">
+						<summary class="pvl__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужен ПВЛ?"
+		text="Просечно-вытяжной лист ПВЛ-406, 506, 508, 510, 606, 608, 610 по ГОСТ 8706-78 — со склада. Нержавеющий ПВЛ — под заявку. Доставка по РФ."
+	/>
+</BaseLayout>
+
+<script>
+	const root = document.querySelector('[data-pvl-root]');
+	if (root) {
+		const markaSel = root.querySelector('[data-pvl-marka]') as HTMLSelectElement;
+		const shagHint = root.querySelector('[data-pvl-shag-hint]') as HTMLElement;
+		const matSel = root.querySelector('[data-pvl-material]') as HTMLSelectElement;
+		const matHint = root.querySelector('[data-pvl-mat-hint]') as HTMLElement;
+		const LInp = root.querySelector('[data-pvl-L]') as HTMLInputElement;
+		const BInp = root.querySelector('[data-pvl-B]') as HTMLInputElement;
+		const qtyInp = root.querySelector('[data-pvl-qty]') as HTMLInputElement;
+
+		const m1El = root.querySelector('[data-pvl-m1]') as HTMLElement;
+		const oneEl = root.querySelector('[data-pvl-one]') as HTMLElement;
+		const totalEl = root.querySelector('[data-pvl-total]') as HTMLElement;
+		const totalSubEl = root.querySelector('[data-pvl-total-sub]') as HTMLElement;
+		const areaEl = root.querySelector('[data-pvl-area]') as HTMLElement;
+		const totAreaEl = root.querySelector('[data-pvl-totarea]') as HTMLElement;
+
+		const MAT_HINTS: Record<string, string> = {
+			st3: 'основное применение — ограждения, полы, фильтры',
+			'09g2s': 'мостостроение, северное исполнение',
+			aisi304: 'пищевые и агрессивные среды, фильтрация',
+		};
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+		const fmt1 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
+
+		function recalc() {
+			const opt = markaSel.selectedOptions[0];
+			const m1_st3 = parseFloat(opt?.dataset.m1 || '0') || 0;
+			const shag = opt?.dataset.shag || '';
+			const matOpt = matSel.selectedOptions[0];
+			const rho = parseFloat(matOpt?.dataset.rho || '7850') || 7850;
+			const L = parseFloat(LInp.value) || 0;
+			const B = parseFloat(BInp.value) || 0;
+			const qty = parseFloat(qtyInp.value) || 0;
+
+			const m1 = m1_st3 * (rho / 7850);
+			const area = (L * B) / 1e6;
+			const oneWeight = m1 * area;
+			const total = oneWeight * qty;
+
+			shagHint.textContent = `шаг ячейки ${shag} мм, масса ${opt?.dataset.m1} кг/м² (Ст3)`;
+
+			m1El.textContent = m1 > 0 ? `${fmt.format(m1)} кг/м²` : '—';
+			oneEl.textContent = oneWeight > 0 ? `${fmt.format(oneWeight)} кг` : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl.textContent = `${fmt.format(total)} кг`;
+				} else {
+					totalEl.textContent = `${fmt.format(total)} кг`;
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			areaEl.textContent = area > 0 ? `${fmt1.format(area)} м²` : '—';
+			totAreaEl.textContent = (area * qty) > 0 ? `${fmt1.format(area * qty)} м²` : '—';
+		}
+
+		markaSel.addEventListener('change', recalc);
+		matSel.addEventListener('change', () => {
+			matHint.textContent = MAT_HINTS[matSel.value] || '';
+			recalc();
+		});
+		[LInp, BInp, qtyInp].forEach((el) => el.addEventListener('input', recalc));
+
+		recalc();
+	}
+</script>
+
+<style>
+	.pvl { padding-block: var(--space-8); min-width: 0; }
+	.pvl__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.pvl__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.pvl__h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15; margin: 0 0 var(--space-3); letter-spacing: -0.02em; }
+	.pvl__h1-accent { background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+	.pvl__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	.pvl__widget { background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md); }
+	.pvl__widget-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-6); }
+	@media (max-width: 900px) { .pvl__widget { padding: var(--space-4); } .pvl__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+	.pvl__form { display: grid; gap: var(--space-4); }
+	.pvl__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .pvl__row-2 { grid-template-columns: 1fr; } }
+
+	.pvl__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.pvl__label { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-subtle); }
+	.pvl__input { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); outline: none; width: 100%; appearance: none; -webkit-appearance: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	select.pvl__input { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.9rem; padding-right: 2rem; }
+	.pvl__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.pvl__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.5; }
+
+	.pvl__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .pvl__result { position: static; } }
+	.pvl__result-card { background: var(--grad-hero); color: var(--color-on-dark); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow); position: relative; overflow: hidden; }
+	.pvl__result-eyebrow { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent-100); margin-bottom: var(--space-4); }
+	.pvl__result-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 0.6rem 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+	.pvl__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.pvl__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+	.pvl__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.pvl__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.pvl__result-total-value { font-family: var(--font-mono); font-size: clamp(2.2rem, 4.6vw, 3.2rem); font-weight: 700; line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+	.pvl__result-total-sub { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-on-dark-muted); margin-top: 0.25rem; min-height: 1.2em; }
+	.pvl__result-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; padding-top: var(--space-3); border-top: 1px solid rgba(255,255,255,0.12); }
+	.pvl__result-meta dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-on-dark-muted); margin-bottom: 0.2rem; }
+	.pvl__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+	.pvl__cta { display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff; font-weight: 600; text-decoration: none; border-radius: var(--radius-md); font-size: 0.92rem; box-shadow: var(--shadow-warm-glow); transition: transform var(--dur-fast) var(--ease-out); }
+	.pvl__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.pvl__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.pvl__cta:hover svg { transform: translateX(2px); }
+	.pvl__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.pvl__block { margin-bottom: var(--space-10); }
+	.pvl__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.pvl__block-lead { color: var(--color-muted); max-width: 70ch; margin: 0 0 var(--space-4); }
+	.pvl__infographic { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--space-6); align-items: start; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+	@media (max-width: 720px) { .pvl__infographic { grid-template-columns: 1fr; } }
+	.pvl__infographic svg { width: 100%; height: auto; max-width: 320px; display: block; }
+	.pvl__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.pvl__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.pvl__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.pvl__infographic-legend li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-500); }
+	.pvl__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.pvl__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	.pvl__table-wrap { overflow-x: auto; }
+	.pvl__table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 580px; }
+	.pvl__table th, .pvl__table td { text-align: left; padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+	.pvl__table th { background: var(--color-surface); font-weight: 600; color: var(--color-subtle); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+	.pvl__table tbody tr:hover { background: var(--color-primary-50); }
+
+	.pvl__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.pvl__related a { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary); transition: all var(--dur-fast) var(--ease-out); }
+	.pvl__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.pvl__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.pvl__faq { margin-bottom: var(--space-8); }
+	.pvl__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.pvl__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.pvl__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.pvl__faq-q { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none; }
+	.pvl__faq-q::-webkit-details-marker { display: none; }
+	.pvl__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.pvl__faq-item[open] .pvl__faq-q svg { transform: rotate(180deg); }
+	.pvl__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>

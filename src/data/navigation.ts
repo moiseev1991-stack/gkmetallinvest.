@@ -80,5 +80,10 @@ export const navServices = [
 	{ label: 'Калькулятор балки', href: '/kalkulyator-balki/' },
 	{ label: 'Калькулятор отвода', href: '/kalkulyator-otvoda/' },
 	{ label: 'Калькулятор фланца', href: '/kalkulyator-flantsa/' },
+	{ label: 'Калькулятор рифлёного листа', href: '/kalkulyator-riflenogo-lista/' },
+	{ label: 'Калькулятор ПВЛ', href: '/kalkulyator-pvl/' },
+	{ label: 'Калькулятор плоскоовальной трубы', href: '/kalkulyator-ovalnoy-truby/' },
+	{ label: 'Калькулятор сетки', href: '/kalkulyator-setki/' },
+	{ label: 'Калькулятор рулона', href: '/kalkulyator-rulona/' },
 	{ label: 'Справочник ГОСТов', href: '/gost/' },
 ];

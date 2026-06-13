@@ -30,11 +30,15 @@ const { id = 'lead-form' } = Astro.props;
 						placeholder="Вид товара, марка стали, размеры, количество, дополнительные требования"
 						required
 					/>
-					<p class="lead__privacy">
-						Нажимая «Отправить», вы соглашаетесь с
-						<a href="/politika-konfidencialnosti/">политикой конфиденциальности</a>
-						и обработкой персональных данных.
-					</p>
+					<label class="lead__consent">
+						<input type="checkbox" name="consent_pd" required />
+						<span>
+							Я даю <a href="/soglasie/" target="_blank" rel="noopener">согласие на обработку
+							персональных данных</a> (имя, телефон, e-mail) в целях обработки заявки
+							в соответствии с <a href="/politika-konfidencialnosti/" target="_blank" rel="noopener">Политикой
+							конфиденциальности</a>.
+						</span>
+					</label>
 					<Button type="submit">Отправить заявку</Button>
 				</form>
 			</div>
@@ -99,12 +103,27 @@ const { id = 'lead-form' } = Astro.props;
 		margin: 0 0 var(--space-6);
 		font-size: 0.95rem;
 	}
-	.lead__privacy {
-		font-size: 0.75rem;
-		color: var(--color-muted);
+	.lead__consent {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
 		margin: 0 0 var(--space-4);
-		max-width: none;
+		font-size: 0.78rem;
+		line-height: 1.5;
+		color: var(--color-muted);
+		cursor: pointer;
 	}
+	.lead__consent input[type='checkbox'] {
+		flex-shrink: 0;
+		width: 16px;
+		height: 16px;
+		margin-top: 2px;
+		accent-color: var(--color-primary-500, #2c63a8);
+		cursor: pointer;
+	}
+	.lead__consent span { max-width: 56ch; }
+	.lead__consent a { color: var(--color-primary-600); }
+	.lead__consent a:hover { text-decoration: underline; }
 	.lead__map {
 		position: relative;
 		min-height: 360px;

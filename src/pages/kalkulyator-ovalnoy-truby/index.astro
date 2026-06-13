@@ -1,0 +1,469 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса плоскоовальной трубы — нержавейка AISI 304, 316L';
+const description =
+	'Расчёт массы плоскоовальной (овальной) трубы по сечению W × H × t. ' +
+	'Инженерная формула A = 2t·(W−H) + π·t·(H−t). Нержавейка AISI 304, 316L, 430 и Ст3.';
+
+const materials = [
+	{ value: 'aisi304', label: 'Нержавейка AISI 304 / 08Х18Н10', rho: 7930, applic: 'базовое исполнение — перила, мебель, декор' },
+	{ value: 'aisi316l', label: 'Нержавейка AISI 316L', rho: 8000, applic: 'морская вода, химия, бассейны' },
+	{ value: 'aisi430', label: 'Нержавейка AISI 430', rho: 7700, applic: 'ферритная, для интерьерного декора' },
+	{ value: 'st3', label: 'Сталь Ст3', rho: 7850, applic: 'кронштейны, лёгкие конструкции' },
+];
+
+const faq = [
+	{
+		q: 'Чем плоскоовальная труба отличается от овальной?',
+		a: 'У плоскоовальной трубы центральные стенки строго прямые, а торцы — полуокружности (форма «стадиона»). Овальная труба — эллипс по всему контуру. Плоскоовальная прочнее на изгиб в плоскости сечения и проще в производстве (по сути это профильная труба с двумя торцевыми скруглениями). В сортаменте отечественных производителей чаще встречается именно плоскоовальная.',
+	},
+	{
+		q: 'Какие типовые размеры плоскоовальной трубы из нержавейки?',
+		a: 'Типовой сортамент: 20×10, 30×15, 40×20, 50×25, 60×30, 80×40, 100×50 мм (ширина × высота), толщина стенки 1,0–2,0 мм. Самый ходовой размер для перил и поручней — 30×15×1,5 мм. Для декоративных стоек используют 40×20 и 50×25.',
+	},
+	{
+		q: 'По какому ГОСТ выпускают плоскоовальную трубу?',
+		a: 'Единого ГОСТ нет — типовой стандарт ТУ 14-105-737-2004 или собственные технические условия заводов-изготовителей. Производство аналогично электросварной профильной трубе по ГОСТ 11068-81: ленту скручивают и сваривают продольным швом TIG, затем формуют до плоскоовального сечения. Шов обычно располагается посередине прямой стенки.',
+	},
+	{
+		q: 'Сколько весит 1 метр плоскоовальной трубы 30×15×1,5?',
+		a: 'Для трубы 30×15×1,5 мм из нержавейки AISI 304 — около 0,86 кг/м. Расчёт: A = 2·1,5·(30−15) + π·1,5·(15−1,5) = 45 + 63,6 = 108,6 мм². Масса 1 м = A·ρ·10⁻⁶ = 108,6·7930·10⁻⁶ ≈ 0,86 кг. Для Ст3 — 0,85 кг/м. Для AISI 316L — 0,87 кг/м. У разных поставщиков из-за допуска по стенке возможно расхождение ±3 %.',
+	},
+	{
+		q: 'Какая формула расчёта массы плоскоовальной трубы?',
+		a: 'Площадь сечения металла A = 2t·(W − H) + π·t·(H − t), где W — ширина (большая ось), H — высота (малая ось), t — толщина стенки. Все в мм. Масса 1 м = A·ρ·10⁻⁶ (кг/м), где ρ в кг/м³. Формула получена как «внешний контур минус внутренний», работает строго при H ≤ W. Граничный случай W = H даёт A = π·t·(H − t) — это формула круглой трубы, что и подтверждает корректность.',
+	},
+	{
+		q: 'Для каких задач применяется плоскоовальная нержавеющая труба?',
+		a: 'Перила и ограждения лестниц, балконов, террас (горизонтальные ригели овального сечения держатся лучше круглого). Мебельные каркасы — вешалки, столы, барные стойки, стеллажи в стиле loft. Декоративные элементы в интерьерах — поручни в общественных зданиях, торговое оборудование, корзины, рамки. Особое преимущество в сравнении с круглой — большая площадь опоры на ладонь поручня.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: 'Как рассчитать вес плоскоовальной трубы',
+	step: [
+		{ '@type': 'HowToStep', name: 'Ввести W и H', text: 'Ширина (большая ось) и высота (малая ось) сечения, мм. Должно выполняться H ≤ W.' },
+		{ '@type': 'HowToStep', name: 'Указать толщину t', text: 'Стенка трубы, типовые 1,0; 1,2; 1,5; 2,0 мм.' },
+		{ '@type': 'HowToStep', name: 'Выбрать материал', text: 'AISI 304, 316L, 430 или Ст3 — плотность подставится автоматически.' },
+		{ '@type': 'HowToStep', name: 'Ввести длину', text: 'Длина трубы в метрах и количество отрезков.' },
+		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Калькулятор покажет массу 1 м и партии в килограммах.' },
+	],
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
+	<div class="container ovl">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса плоскоовальной трубы' }]} />
+
+		<header class="ovl__hero">
+			<span class="ovl__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<rect x="2" y="5" width="12" height="6" rx="3" stroke="currentColor" stroke-width="1.4" />
+				</svg>
+				ТУ 14-105-737-2004
+			</span>
+			<h1 class="ovl__h1">Калькулятор веса <span class="ovl__h1-accent">плоскоовальной трубы</span></h1>
+			<p class="ovl__lead">
+				Геометрический расчёт массы плоскоовальной нержавеющей трубы по формуле
+				A = 2t·(W−H) + π·t·(H−t). Сечение типа «стадион» — две полуокружности
+				по торцам и прямые стенки в середине. Поддерживается нержавейка AISI 304,
+				316L, 430 и Ст3.
+			</p>
+		</header>
+
+		<section class="ovl__widget" data-ovl-root>
+			<div class="ovl__widget-inner">
+				<div class="ovl__form">
+					<div class="ovl__field">
+						<label class="ovl__label" for="ovl-mat">Материал</label>
+						<select class="ovl__input" id="ovl-mat" data-ovl-material>
+							{materials.map((m) => (
+								<option value={m.value} data-rho={m.rho} selected={m.value === 'aisi304'}>
+									{m.label} — ρ {(m.rho / 1000).toLocaleString('ru-RU', { minimumFractionDigits: 2 })} г/см³
+								</option>
+							))}
+						</select>
+						<p class="ovl__hint" data-ovl-mat-hint>{materials[0].applic}</p>
+					</div>
+
+					<div class="ovl__row-2">
+						<div class="ovl__field">
+							<label class="ovl__label" for="ovl-W">Ширина W, мм</label>
+							<input class="ovl__input" id="ovl-W" type="number" inputmode="decimal" step="any" min="0" value="30" data-ovl-W />
+							<p class="ovl__hint">большая ось сечения</p>
+						</div>
+						<div class="ovl__field">
+							<label class="ovl__label" for="ovl-H">Высота H, мм</label>
+							<input class="ovl__input" id="ovl-H" type="number" inputmode="decimal" step="any" min="0" value="15" data-ovl-H />
+							<p class="ovl__hint">малая ось, H ≤ W</p>
+						</div>
+					</div>
+
+					<div class="ovl__row-2">
+						<div class="ovl__field">
+							<label class="ovl__label" for="ovl-t">Толщина t, мм</label>
+							<input class="ovl__input" id="ovl-t" type="number" inputmode="decimal" step="any" min="0" value="1.5" data-ovl-t />
+							<p class="ovl__hint">типовые 1,0 / 1,2 / 1,5 / 2,0</p>
+						</div>
+						<div class="ovl__field">
+							<label class="ovl__label" for="ovl-len">Длина L, м</label>
+							<input class="ovl__input" id="ovl-len" type="number" inputmode="decimal" step="any" min="0" value="6" data-ovl-L />
+							<p class="ovl__hint">типовая длина 3 или 6 м</p>
+						</div>
+					</div>
+
+					<div class="ovl__field">
+						<label class="ovl__label" for="ovl-qty">Количество отрезков</label>
+						<input class="ovl__input" id="ovl-qty" type="number" inputmode="numeric" step="1" min="1" value="1" data-ovl-qty />
+						<p class="ovl__hint">
+							Типовые размеры (W × H × t): 30 × 15 × 1,5 · 40 × 20 × 1,5 · 60 × 30 × 2,0 · 100 × 50 × 2,0
+						</p>
+					</div>
+				</div>
+
+				<aside class="ovl__result">
+					<div class="ovl__result-card">
+						<div class="ovl__result-eyebrow">Геометрический расчёт</div>
+
+						<div class="ovl__result-row">
+							<span>Сечение металла</span>
+							<strong data-ovl-area>—</strong>
+						</div>
+						<div class="ovl__result-row">
+							<span>Вес 1 метра</span>
+							<strong data-ovl-m1>—</strong>
+						</div>
+
+						<div class="ovl__result-total">
+							<span class="ovl__result-total-label">Общий вес партии</span>
+							<div class="ovl__result-total-value" data-ovl-total>—</div>
+							<div class="ovl__result-total-sub" data-ovl-total-sub></div>
+						</div>
+
+						<dl class="ovl__result-meta">
+							<div><dt>Вес 1 отрезка</dt><dd data-ovl-one>—</dd></div>
+							<div><dt>Общая длина</dt><dd data-ovl-totlen>—</dd></div>
+						</dl>
+
+						<a class="ovl__cta" href="/zapros-kp/?material=ploskoovalnaya-truba#lead-form">
+							<span>Запросить КП на плоскоовальную трубу</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="ovl__result-foot">
+							Расчёт по формуле A = 2t·(W−H) + π·t·(H−t). Допуск ±3–5 % за счёт толщины шва и стенки.
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="ovl__block">
+			<h2 class="ovl__h2">Геометрия сечения</h2>
+			<div class="ovl__infographic">
+				<svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Сечение плоскоовальной трубы: внешний и внутренний контуры с подписями W, H, t">
+					<defs>
+						<pattern id="ovlHatch" x="0" y="0" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="9" stroke="var(--color-primary)" stroke-width="0.7" opacity="0.3" />
+						</pattern>
+					</defs>
+
+					<rect x="40" y="60" width="200" height="80" rx="40" ry="40" fill="url(#ovlHatch)" stroke="var(--color-primary)" stroke-width="2.4" />
+					<rect x="55" y="75" width="170" height="50" rx="25" ry="25" fill="#ffffff" stroke="var(--color-primary)" stroke-width="1.8" />
+
+					<line x1="80" y1="100" x2="200" y2="100" stroke="var(--color-subtle)" stroke-width="0.7" stroke-dasharray="6 2 1 2" />
+					<line x1="140" y1="50" x2="140" y2="150" stroke="var(--color-subtle)" stroke-width="0.7" stroke-dasharray="6 2 1 2" />
+
+					<g stroke="var(--color-accent)" stroke-width="1.2" fill="none" stroke-linecap="round">
+						<line x1="40" y1="170" x2="240" y2="170" />
+					</g>
+					<polygon points="40,170 50,166 50,174" fill="var(--color-accent)" />
+					<polygon points="240,170 230,166 230,174" fill="var(--color-accent)" />
+					<text x="140" y="186" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="var(--color-accent)">W</text>
+
+					<g stroke="var(--color-accent)" stroke-width="1.2" fill="none" stroke-linecap="round">
+						<line x1="20" y1="60" x2="20" y2="140" />
+					</g>
+					<polygon points="20,60 16,70 24,70" fill="var(--color-accent)" />
+					<polygon points="20,140 16,130 24,130" fill="var(--color-accent)" />
+					<text x="10" y="105" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="var(--color-accent)">H</text>
+
+					<line x1="240" y1="60" x2="270" y2="40" stroke="var(--color-accent)" stroke-width="0.8" />
+					<text x="278" y="40" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="var(--color-accent)">t</text>
+
+					<text x="312" y="14" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">сечение «стадион»</text>
+				</svg>
+
+				<div class="ovl__infographic-legend">
+					<h3>Обозначения</h3>
+					<ul>
+						<li><strong>W</strong> — ширина (большая ось) сечения</li>
+						<li><strong>H</strong> — высота (малая ось), должно быть H ≤ W</li>
+						<li><strong>t</strong> — толщина стенки</li>
+						<li>Сечение = прямоугольник (W − H) × H + круг диаметра H по торцам</li>
+					</ul>
+					<p class="ovl__infographic-note">
+						<strong>Формула:</strong> A = 2t·(W − H) + π·t·(H − t) мм².<br />
+						<strong>При W = H</strong> — сечение круглой трубы: A = π·t·(D − t).
+						Граничный случай подтверждает корректность формулы.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="ovl__block">
+			<h2 class="ovl__h2">Типовой сортамент плоскоовальной нержавеющей трубы</h2>
+			<p class="ovl__block-lead">
+				Массы рассчитаны для нержавейки AISI 304 (ρ = 7930 кг/м³). Для других материалов
+				масса пересчитывается коэффициентом ρ / 7930.
+			</p>
+			<div class="ovl__table-wrap">
+				<table class="ovl__table">
+					<thead>
+						<tr>
+							<th>W × H × t, мм</th>
+							<th>Сечение, мм²</th>
+							<th>Вес 1 м, кг (AISI 304)</th>
+							<th>Применение</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr><td><strong>20 × 10 × 1,0</strong></td><td>40,3</td><td>0,32</td><td>декор, рамки, мелкая мебель</td></tr>
+						<tr><td><strong>30 × 15 × 1,0</strong></td><td>73,4</td><td>0,58</td><td>облегчённые перила, поручни</td></tr>
+						<tr><td><strong>30 × 15 × 1,5</strong></td><td>108,6</td><td>0,86</td><td>стандартные перила</td></tr>
+						<tr><td><strong>40 × 20 × 1,5</strong></td><td>147,3</td><td>1,17</td><td>декоративные стойки, мебель</td></tr>
+						<tr><td><strong>40 × 20 × 2,0</strong></td><td>193,4</td><td>1,53</td><td>усиленные конструкции</td></tr>
+						<tr><td><strong>50 × 25 × 1,5</strong></td><td>186,0</td><td>1,47</td><td>барные стойки, столы</td></tr>
+						<tr><td><strong>60 × 30 × 2,0</strong></td><td>295,7</td><td>2,35</td><td>несущие колонны, ригели</td></tr>
+						<tr><td><strong>80 × 40 × 2,0</strong></td><td>398,7</td><td>3,16</td><td>каркасы лестниц, тяжёлые перила</td></tr>
+						<tr><td><strong>100 × 50 × 2,0</strong></td><td>502,6</td><td>3,99</td><td>несущие конструкции, мосты</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="ovl__block">
+			<h2 class="ovl__h2">Связанное</h2>
+			<ul class="ovl__related">
+				<li>
+					<a href="/truba/">
+						<strong>Труба нержавеющая — каталог</strong>
+						<small>бесшовная, ЭСВ и профильная по ГОСТ 9941, 11068</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса</strong>
+						<small>круглая и профильная труба в одном калькуляторе</small>
+					</a>
+				</li>
+				<li>
+					<a href="/detali-truboprovoda/">
+						<strong>Детали трубопровода и ограждения</strong>
+						<small>стойки, держатели, фланцы для перил</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="ovl__faq">
+			<h2 class="ovl__h2">Частые вопросы</h2>
+			<div class="ovl__faq-list">
+				{faq.map((f) => (
+					<details class="ovl__faq-item">
+						<summary class="ovl__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужна плоскоовальная труба?"
+		text="Нержавеющая плоскоовальная труба AISI 304 и 316L для перил, поручней и интерьерных конструкций. Сечения 20×10, 30×15, 40×20, 60×30, 80×40 — со склада или под заявку. Полировка зеркало BA, доставка по РФ."
+	/>
+</BaseLayout>
+
+<script>
+	const root = document.querySelector('[data-ovl-root]');
+	if (root) {
+		const matSel = root.querySelector('[data-ovl-material]') as HTMLSelectElement;
+		const matHint = root.querySelector('[data-ovl-mat-hint]') as HTMLElement;
+		const WInp = root.querySelector('[data-ovl-W]') as HTMLInputElement;
+		const HInp = root.querySelector('[data-ovl-H]') as HTMLInputElement;
+		const tInp = root.querySelector('[data-ovl-t]') as HTMLInputElement;
+		const LInp = root.querySelector('[data-ovl-L]') as HTMLInputElement;
+		const qtyInp = root.querySelector('[data-ovl-qty]') as HTMLInputElement;
+
+		const areaEl = root.querySelector('[data-ovl-area]') as HTMLElement;
+		const m1El = root.querySelector('[data-ovl-m1]') as HTMLElement;
+		const totalEl = root.querySelector('[data-ovl-total]') as HTMLElement;
+		const totalSubEl = root.querySelector('[data-ovl-total-sub]') as HTMLElement;
+		const oneEl = root.querySelector('[data-ovl-one]') as HTMLElement;
+		const totLenEl = root.querySelector('[data-ovl-totlen]') as HTMLElement;
+
+		const MAT_HINTS: Record<string, string> = {
+			aisi304: 'базовое исполнение — перила, мебель, декор',
+			aisi316l: 'морская вода, химия, бассейны',
+			aisi430: 'ферритная, для интерьерного декора',
+			st3: 'кронштейны, лёгкие конструкции',
+		};
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+		const fmt1 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
+
+		function recalc() {
+			const W = parseFloat(WInp.value) || 0;
+			const H = parseFloat(HInp.value) || 0;
+			const t = parseFloat(tInp.value) || 0;
+			const L = parseFloat(LInp.value) || 0;
+			const qty = parseFloat(qtyInp.value) || 0;
+			const matOpt = matSel.selectedOptions[0];
+			const rho = parseFloat(matOpt?.dataset.rho || '7930') || 7930;
+
+			// Корректное сечение возможно только при H ≤ W и t < H/2.
+			let area = 0;
+			if (W >= H && H > 2 * t && t > 0) {
+				area = 2 * t * (W - H) + Math.PI * t * (H - t);
+			}
+
+			const m1 = area * rho / 1e6; // кг/м
+			const oneWeight = m1 * L;
+			const total = oneWeight * qty;
+			const totLen = L * qty;
+
+			areaEl.textContent = area > 0 ? `${fmt1.format(area)} мм²` : '—';
+			m1El.textContent = m1 > 0 ? `${fmt.format(m1)} кг/м` : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl.textContent = `${fmt.format(total)} кг`;
+				} else {
+					totalEl.textContent = `${fmt.format(total)} кг`;
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			oneEl.textContent = oneWeight > 0 ? `${fmt.format(oneWeight)} кг` : '—';
+			totLenEl.textContent = totLen > 0 ? `${fmt.format(totLen)} м` : '—';
+		}
+
+		matSel.addEventListener('change', () => {
+			matHint.textContent = MAT_HINTS[matSel.value] || '';
+			recalc();
+		});
+		[WInp, HInp, tInp, LInp, qtyInp].forEach((el) => el.addEventListener('input', recalc));
+
+		recalc();
+	}
+</script>
+
+<style>
+	.ovl { padding-block: var(--space-8); min-width: 0; }
+	.ovl__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.ovl__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.ovl__h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15; margin: 0 0 var(--space-3); letter-spacing: -0.02em; }
+	.ovl__h1-accent { background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+	.ovl__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	.ovl__widget { background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md); }
+	.ovl__widget-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-6); }
+	@media (max-width: 900px) { .ovl__widget { padding: var(--space-4); } .ovl__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+	.ovl__form { display: grid; gap: var(--space-4); }
+	.ovl__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .ovl__row-2 { grid-template-columns: 1fr; } }
+
+	.ovl__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.ovl__label { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-subtle); }
+	.ovl__input { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); outline: none; width: 100%; appearance: none; -webkit-appearance: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	select.ovl__input { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.9rem; padding-right: 2rem; }
+	.ovl__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.ovl__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.5; }
+
+	.ovl__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .ovl__result { position: static; } }
+	.ovl__result-card { background: var(--grad-hero); color: var(--color-on-dark); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow); position: relative; overflow: hidden; }
+	.ovl__result-eyebrow { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent-100); margin-bottom: var(--space-4); }
+	.ovl__result-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 0.6rem 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+	.ovl__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.ovl__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+	.ovl__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.ovl__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.ovl__result-total-value { font-family: var(--font-mono); font-size: clamp(2.2rem, 4.6vw, 3.2rem); font-weight: 700; line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+	.ovl__result-total-sub { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-on-dark-muted); margin-top: 0.25rem; min-height: 1.2em; }
+	.ovl__result-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; padding-top: var(--space-3); border-top: 1px solid rgba(255,255,255,0.12); }
+	.ovl__result-meta dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-on-dark-muted); margin-bottom: 0.2rem; }
+	.ovl__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+	.ovl__cta { display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff; font-weight: 600; text-decoration: none; border-radius: var(--radius-md); font-size: 0.92rem; box-shadow: var(--shadow-warm-glow); transition: transform var(--dur-fast) var(--ease-out); }
+	.ovl__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.ovl__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.ovl__cta:hover svg { transform: translateX(2px); }
+	.ovl__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.ovl__block { margin-bottom: var(--space-10); }
+	.ovl__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.ovl__block-lead { color: var(--color-muted); max-width: 70ch; margin: 0 0 var(--space-4); }
+	.ovl__infographic { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--space-6); align-items: start; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+	@media (max-width: 720px) { .ovl__infographic { grid-template-columns: 1fr; } }
+	.ovl__infographic svg { width: 100%; height: auto; max-width: 320px; display: block; }
+	.ovl__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.ovl__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.ovl__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.ovl__infographic-legend li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-500); }
+	.ovl__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.ovl__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	.ovl__table-wrap { overflow-x: auto; }
+	.ovl__table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 520px; }
+	.ovl__table th, .ovl__table td { text-align: left; padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+	.ovl__table th { background: var(--color-surface); font-weight: 600; color: var(--color-subtle); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+	.ovl__table tbody tr:hover { background: var(--color-primary-50); }
+
+	.ovl__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.ovl__related a { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary); transition: all var(--dur-fast) var(--ease-out); }
+	.ovl__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.ovl__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.ovl__faq { margin-bottom: var(--space-8); }
+	.ovl__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.ovl__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.ovl__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.ovl__faq-q { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none; }
+	.ovl__faq-q::-webkit-details-marker { display: none; }
+	.ovl__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.ovl__faq-item[open] .ovl__faq-q svg { transform: rotate(180deg); }
+	.ovl__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>

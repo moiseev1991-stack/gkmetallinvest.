@@ -1,0 +1,185 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { contacts, siteName, siteUrl } from '../../data/site';
+
+const title = 'Согласие на обработку персональных данных — ' + siteName;
+const description = 'Текст согласия на обработку персональных данных по ст. 9 ФЗ-152. Цели, перечень действий, срок, порядок отзыва. Редакция от 01.09.2025.';
+
+const consentVersion = '2026-06-13';
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="container consent">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Согласие на обработку ПДн' },
+		]} />
+
+		<header class="consent__hero">
+			<h1>Согласие на обработку персональных данных</h1>
+			<p class="consent__meta">
+				Образец отдельного документа в редакции ч. 1 ст. 9 ФЗ-152 от 24.06.2025 № 156-ФЗ
+				(действует с 01.09.2025). Редакция: {consentVersion}.
+			</p>
+		</header>
+
+		<div class="consent__note">
+			<strong>Зачем нужен отдельный документ.</strong> С 1 сентября 2025 года согласие
+			на обработку персональных данных должно оформляться <em>отдельно</em> от иных
+			документов — пользовательского соглашения, договора, оферты. На сайте gkmetallinvest.ru
+			именно этот документ открывается по ссылке из чек-бокса под каждой формой заявки.
+		</div>
+
+		<section class="consent__block">
+			<h2>Текст согласия</h2>
+			<p>
+				Я, далее — «Субъект», свободно, своей волей и в своём интересе, в соответствии
+				с требованиями Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных»
+				(в редакции от 24.06.2025), даю согласие <strong>{contacts.company}</strong> (ИНН {contacts.inn},
+				адрес: {contacts.address}, далее — «Оператор») на обработку моих персональных
+				данных на следующих условиях:
+			</p>
+
+			<h3>1. Состав персональных данных</h3>
+			<ul>
+				<li>Фамилия, имя, отчество;</li>
+				<li>Номер контактного телефона;</li>
+				<li>Адрес электронной почты;</li>
+				<li>Наименование организации, от имени которой направлен запрос
+					(при добровольном указании);</li>
+				<li>Содержание сообщения и описание заказа, добровольно введённые в форму;</li>
+				<li>IP-адрес, информация о браузере и устройстве, файлы cookie — в объёме,
+					определённом в разделе 12 <a href="/politika-konfidencialnosti/">Политики
+					обработки персональных данных</a>.</li>
+			</ul>
+
+			<h3>2. Цели обработки</h3>
+			<ul>
+				<li>обработка заявки или запроса, направленного через форму на сайте
+					gkmetallinvest.ru;</li>
+				<li>подготовка и направление коммерческого предложения по запрашиваемому
+					металлопрокату или услугам;</li>
+				<li>обратная связь с Субъектом, в том числе для уточнения деталей заявки
+					(телефонный звонок, электронное письмо, сообщение в мессенджере);</li>
+				<li>заключение и исполнение договора поставки металлопроката или оказания
+					услуг — в случае согласования сделки.</li>
+			</ul>
+
+			<h3>3. Перечень действий с персональными данными</h3>
+			<p>
+				Сбор, запись, систематизация, накопление, хранение, уточнение (обновление,
+				изменение), извлечение, использование, передача (предоставление, доступ)
+				третьим лицам только в случаях, предусмотренных Политикой и законом,
+				блокирование, удаление, уничтожение — как с использованием средств
+				автоматизации, так и без них.
+			</p>
+
+			<h3>4. Срок действия согласия</h3>
+			<p>
+				Согласие действует с момента его предоставления и до достижения целей обработки,
+				но не более:
+			</p>
+			<ul>
+				<li><strong>3 лет</strong> — если в результате заявки не были заключены
+					договорные отношения;</li>
+				<li>срока действия договора и <strong>5 лет</strong> после прекращения
+					обязательств по договору (для соблюдения требований налогового и
+					бухгалтерского законодательства).</li>
+			</ul>
+
+			<h3>5. Порядок отзыва согласия</h3>
+			<p>
+				Согласие может быть отозвано в любое время путём направления Оператору
+				письменного уведомления:
+			</p>
+			<ul>
+				<li>по электронной почте <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+					с темой «Отзыв согласия на обработку ПДн» (с указанием ФИО и контактных
+					данных, по которым была заявка);</li>
+				<li>почтой по адресу: {contacts.address}.</li>
+			</ul>
+			<p>
+				Оператор прекращает обработку в течение <strong>30 рабочих дней</strong>
+				с момента получения отзыва, за исключением случаев, когда обработка
+				продолжается на ином законном основании (например, исполнение договора
+				или требования бухгалтерского учёта по НК РФ).
+			</p>
+
+			<h3>6. Согласие на использование cookie (опционально)</h3>
+			<p>
+				Если Субъект дополнительно нажал «Принять» в cookie-баннере на сайте,
+				он соглашается на использование аналитических файлов cookie на условиях,
+				описанных в разделе 12 <a href="/politika-konfidencialnosti/">Политики</a>
+				и на странице <a href="/cookies/">Использование файлов cookie</a>.
+				Согласие на cookie не является обязательным для подачи заявки.
+			</p>
+
+			<h3>7. Согласие на трансграничную передачу</h3>
+			<p>
+				Оператор <strong>не осуществляет</strong> трансграничную передачу персональных
+				данных Субъекта. Передача за пределы Российской Федерации возможна только
+				при отдельном письменном согласии Субъекта и после подачи уведомления
+				в Роскомнадзор (ч. 3 ст. 12 ФЗ-152).
+			</p>
+
+			<h3>8. Подтверждение</h3>
+			<p>
+				Субъект подтверждает, что ознакомлен с <a href="/politika-konfidencialnosti/">Политикой
+				обработки персональных данных</a>, согласен с её положениями, действует осознанно
+				и без принуждения. Согласие считается предоставленным с момента отметки
+				соответствующего чек-бокса под формой заявки и нажатия кнопки отправки.
+			</p>
+		</section>
+
+		<section class="consent__block">
+			<h2>Реквизиты оператора</h2>
+			<div class="consent__operator">
+				<dl>
+					<dt>Наименование</dt><dd>{contacts.company}</dd>
+					<dt>ИНН</dt><dd>{contacts.inn}</dd>
+					<dt>Адрес</dt><dd>{contacts.address}</dd>
+					<dt>Телефон</dt><dd><a href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a></dd>
+					<dt>E-mail</dt><dd><a href={`mailto:${contacts.email}`}>{contacts.email}</a></dd>
+					<dt>Сайт</dt><dd><a href={siteUrl}>{siteUrl}</a></dd>
+				</dl>
+			</div>
+		</section>
+	</div>
+</BaseLayout>
+
+<style>
+	.consent { padding-block: var(--space-8); max-width: 880px; }
+	.consent__hero { margin-bottom: var(--space-6); }
+	.consent h1 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+	.consent__meta { color: var(--color-muted); font-size: 0.92rem; max-width: 75ch; line-height: 1.6; margin: 0; }
+
+	.consent__note {
+		background: var(--color-primary-50, #eef4fb);
+		border-left: 4px solid var(--color-primary-500, #2c63a8);
+		padding: var(--space-4) var(--space-5);
+		border-radius: var(--radius-md);
+		font-size: 0.92rem;
+		line-height: 1.6;
+		max-width: 75ch;
+		margin-bottom: var(--space-8);
+		color: var(--color-text);
+	}
+	.consent__note strong { color: var(--color-primary); }
+
+	.consent__block { margin-bottom: var(--space-8); }
+	.consent__block h2 { font-size: 1.35rem; margin: 0 0 var(--space-4); letter-spacing: -0.005em; }
+	.consent__block h3 { font-size: 1rem; margin: var(--space-5) 0 var(--space-2); font-weight: 600; }
+	.consent__block p { color: var(--color-text); max-width: 75ch; line-height: 1.65; margin: 0 0 var(--space-3); }
+	.consent__block ul { margin: 0 0 var(--space-3); padding-left: 1.4rem; color: var(--color-text); }
+	.consent__block li { line-height: 1.65; margin-bottom: 0.3rem; max-width: 73ch; }
+
+	.consent__operator dl { display: grid; grid-template-columns: minmax(140px, max-content) 1fr; gap: 0.4rem var(--space-4); margin: 0; max-width: 75ch; }
+	.consent__operator dt { font-weight: 600; color: var(--color-subtle); font-size: 0.85rem; padding-top: 0.15rem; }
+	.consent__operator dd { margin: 0; color: var(--color-text); line-height: 1.5; }
+	@media (max-width: 540px) { .consent__operator dl { grid-template-columns: 1fr; gap: 0 0; }
+		.consent__operator dt { margin-top: var(--space-3); }
+	}
+
+	.consent a { color: var(--color-primary-600); }
+</style>

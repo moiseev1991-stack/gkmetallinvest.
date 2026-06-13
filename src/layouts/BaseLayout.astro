@@ -3,6 +3,7 @@ import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import MobileStickyBar from '../components/MobileStickyBar.astro';
+import CookieBanner from '../components/CookieBanner.astro';
 import { siteName, siteUrl, siteNoindex, siteOgImage } from '../data/site';
 
 interface Props {
@@ -106,6 +107,7 @@ const jsonLdItems = jsonLd
 		</main>
 		<SiteFooter />
 		<MobileStickyBar />
+		<CookieBanner />
 		<style>
 			.skip-link {
 				position: absolute;

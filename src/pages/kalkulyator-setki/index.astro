@@ -1,0 +1,528 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const title = 'Калькулятор веса сетки — тканая ГОСТ 3826-82 и сварная';
+const description =
+	'Расчёт веса проволочной тканой и сварной сетки по диаметру проволоки и размеру ячейки. ' +
+	'ГОСТ 3826-82 и ГОСТ 23279-2012. Сталь Ст3 и нержавейка AISI 304 / 316L.';
+
+const materials = [
+	{ value: 'st3', label: 'Сталь Ст3 / низкоуглеродистая', rho: 7850, applic: 'базовое исполнение по ГОСТ 3826/23279' },
+	{ value: 'aisi304', label: 'Нержавейка AISI 304', rho: 7930, applic: 'фильтры, пищевые производства' },
+	{ value: 'aisi316l', label: 'Нержавейка AISI 316L', rho: 8000, applic: 'хлориды, морская среда' },
+];
+
+const faq = [
+	{
+		q: 'Чем тканая сетка отличается от сварной?',
+		a: 'Тканая сетка собирается переплетением проволоки (как ткань) — гибкая, относительно дешёвая, применяется для фильтрации, просеивания, лёгких ограждений. Регламентируется ГОСТ 3826-82. Сварная сетка — это прутки в двух перпендикулярных направлениях, соединённые точечной сваркой в каждом узле — жёсткая, не «гуляет», используется для армирования бетона, тяжёлых ограждений, клеток. Регламентируется ГОСТ 23279-2012 (арматурные сетки) и ГОСТ 2715-75 (классификация).',
+	},
+	{
+		q: 'По какой формуле считается вес сетки?',
+		a: 'Базовая формула: m₁ = (π·d²·ρ) / (2·(a + d)) × 10⁻³ × k_тип, где d — диаметр проволоки в мм, a — размер ячейки в свету в мм, ρ — плотность в кг/м³. Коэффициент k_тип учитывает переплетение: для тканой ≈ 1,10 (проволока «волнится»), для сварной ≈ 1,00 (прутки прямые). Для нержавейки дополнительно ×1,01 (ГОСТ 3826-82). Результат — масса 1 м² в кг.',
+	},
+	{
+		q: 'Какой ГОСТ на проволочную сетку?',
+		a: 'Тканая с квадратными ячейками — ГОСТ 3826-82. Сварная для армирования железобетона — ГОСТ 23279-2012, также ГОСТ Р 57997-2017. Общая классификация сеток — ГОСТ 2715-75. Сетка-рабица плетёная — ГОСТ 5336-80. Для просеивания (мукосейка) — отдельные сортаменты ГОСТ 3187-76. Сетка с шестигранной ячейкой — ГОСТ 13603-89.',
+	},
+	{
+		q: 'Сколько весит 1 м² сварной сетки 50 × 50 × 3 мм?',
+		a: 'Для сварной сетки с ячейкой 50 × 50 мм и проволокой Ø 3 мм из Ст3: m₁ = π·9·7850 / (2·53) × 10⁻³ × 1,0 ≈ 2,1 кг/м². Для рулона 1,5 × 10 м — около 31 кг. В тех же параметрах из нержавейки AISI 304 — 2,11 кг/м² (поправка +1 %). Точная масса зависит от допуска проволоки и метода производства; стандартное расхождение с расчётом — до 5–7 %.',
+	},
+	{
+		q: 'Что такое «живое сечение» сетки?',
+		a: 'Это отношение площади ячеек (просвета) к общей площади сетки, выражается в процентах. Чем выше — тем лучше сетка пропускает свет, воздух, жидкость. Для тканой сетки ГОСТ 3826-82 живое сечение указывается в таблицах от 45 до 85 % в зависимости от ячейки и диаметра проволоки. Например, ячейка 1,0 × 1,0 мм с d=0,25 мм даёт 64 % просвета; та же ячейка с d=0,4 мм — только 51 %.',
+	},
+	{
+		q: 'Можно ли по этому калькулятору считать сетку-рабицу?',
+		a: 'Не совсем. Сетка-рабица плетётся не переплетением, а скручиванием проволок в спиральные «жгуты» по диагонали. Точный расчёт массы рабицы делается через длину проволоки в одной спирали + количество спиралей. Наш калькулятор даст оценку «сверху» (для прямых прутков) с погрешностью 10–15 %. Для точного расчёта рабицы используйте таблицы поставщиков по ГОСТ 5336-80.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: 'Как рассчитать вес проволочной сетки',
+	step: [
+		{ '@type': 'HowToStep', name: 'Выбрать тип', text: 'Тканая (с переплетением) или сварная (с точечной сваркой в узлах).' },
+		{ '@type': 'HowToStep', name: 'Ввести размер ячейки', text: 'Сторона квадрата в свету, мм.' },
+		{ '@type': 'HowToStep', name: 'Ввести диаметр проволоки', text: 'Номинальный диаметр проволоки, мм.' },
+		{ '@type': 'HowToStep', name: 'Указать размеры рулона/карты', text: 'Ширина и длина в метрах.' },
+		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Масса 1 м² и общий вес.' },
+	],
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd, howToJsonLd]}>
+	<div class="container set">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Калькулятор веса сетки' }]} />
+
+		<header class="set__hero">
+			<span class="set__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M2 4h12M2 8h12M2 12h12M4 2v12M8 2v12M12 2v12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+				</svg>
+				ГОСТ 3826-82 / 23279-2012
+			</span>
+			<h1 class="set__h1">Калькулятор веса <span class="set__h1-accent">проволочной сетки</span></h1>
+			<p class="set__lead">
+				Расчёт веса тканой и сварной сетки по диаметру проволоки и размеру ячейки.
+				Формула m₁ = π·d²·ρ / (2·(a+d)) × 10⁻³ × k_тип. Для тканой k = 1,10
+				(учитывает переплетение), для сварной k = 1,00.
+				Поддерживается Ст3 и нержавейка AISI 304 / 316L.
+			</p>
+		</header>
+
+		<section class="set__widget" data-set-root>
+			<div class="set__widget-inner">
+				<div class="set__form">
+					<div class="set__field">
+						<label class="set__label">Тип сетки</label>
+						<div class="set__radio-group">
+							<label class="set__radio">
+								<input type="radio" name="set-type" value="weld" checked data-set-type />
+								<span>Сварная</span>
+							</label>
+							<label class="set__radio">
+								<input type="radio" name="set-type" value="weave" data-set-type />
+								<span>Тканая</span>
+							</label>
+						</div>
+						<p class="set__hint" data-set-type-hint>Сварная — точечная сварка в узлах, ГОСТ 23279-2012</p>
+					</div>
+
+					<div class="set__field">
+						<label class="set__label" for="set-mat">Материал</label>
+						<select class="set__input" id="set-mat" data-set-material>
+							{materials.map((m) => (
+								<option value={m.value} data-rho={m.rho}>
+									{m.label} — ρ {(m.rho / 1000).toLocaleString('ru-RU', { minimumFractionDigits: 2 })} г/см³
+								</option>
+							))}
+						</select>
+						<p class="set__hint" data-set-mat-hint>{materials[0].applic}</p>
+					</div>
+
+					<div class="set__row-2">
+						<div class="set__field">
+							<label class="set__label" for="set-a">Размер ячейки a, мм</label>
+							<input class="set__input" id="set-a" type="number" inputmode="decimal" step="any" min="0.1" value="50" data-set-a />
+							<p class="set__hint">сторона квадрата в свету</p>
+						</div>
+						<div class="set__field">
+							<label class="set__label" for="set-d">Диаметр проволоки d, мм</label>
+							<input class="set__input" id="set-d" type="number" inputmode="decimal" step="any" min="0.05" value="3" data-set-d />
+							<p class="set__hint">типовые 0,5–6 мм</p>
+						</div>
+					</div>
+
+					<div class="set__row-2">
+						<div class="set__field">
+							<label class="set__label" for="set-B">Ширина B, м</label>
+							<input class="set__input" id="set-B" type="number" inputmode="decimal" step="any" min="0.01" value="1.5" data-set-B />
+							<p class="set__hint">типовые 1,0 / 1,5 / 2,0 м</p>
+						</div>
+						<div class="set__field">
+							<label class="set__label" for="set-L">Длина L, м</label>
+							<input class="set__input" id="set-L" type="number" inputmode="decimal" step="any" min="0.01" value="10" data-set-L />
+							<p class="set__hint">рулон или карта</p>
+						</div>
+					</div>
+
+					<div class="set__field">
+						<label class="set__label" for="set-qty">Количество рулонов / карт</label>
+						<input class="set__input" id="set-qty" type="number" inputmode="numeric" step="1" min="1" value="1" data-set-qty />
+					</div>
+				</div>
+
+				<aside class="set__result">
+					<div class="set__result-card">
+						<div class="set__result-eyebrow">Формульный расчёт</div>
+
+						<div class="set__result-row">
+							<span>Вес 1 м²</span>
+							<strong data-set-m1>—</strong>
+						</div>
+						<div class="set__result-row">
+							<span>Вес 1 рулона</span>
+							<strong data-set-one>—</strong>
+						</div>
+
+						<div class="set__result-total">
+							<span class="set__result-total-label">Общий вес партии</span>
+							<div class="set__result-total-value" data-set-total>—</div>
+							<div class="set__result-total-sub" data-set-total-sub></div>
+						</div>
+
+						<dl class="set__result-meta">
+							<div><dt>Площадь 1 рулона</dt><dd data-set-area>—</dd></div>
+							<div><dt>Живое сечение</dt><dd data-set-living>—</dd></div>
+						</dl>
+
+						<a class="set__cta" href="/zapros-kp/?material=setka#lead-form">
+							<span>Запросить КП на сетку</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+
+						<p class="set__result-foot">
+							Расчёт по формуле. Допуск ±5–10 % за счёт реального коэффициента переплетения и допуска проволоки.
+						</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="set__block">
+			<h2 class="set__h2">Геометрия сетки</h2>
+			<div class="set__infographic">
+				<svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Схема сетки: квадратные ячейки и обозначения a (сторона) и d (диаметр)">
+					<defs>
+						<pattern id="setHatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+							<line x1="0" y1="0" x2="0" y2="8" stroke="var(--color-primary)" stroke-width="0.6" opacity="0.2" />
+						</pattern>
+					</defs>
+
+					<rect x="30" y="20" width="180" height="160" fill="#fff" stroke="var(--color-primary)" stroke-width="1.2" opacity="0.7" />
+
+					<g stroke="var(--color-primary)" stroke-width="3" opacity="0.85" stroke-linecap="round">
+						<line x1="30" y1="50" x2="210" y2="50" />
+						<line x1="30" y1="80" x2="210" y2="80" />
+						<line x1="30" y1="110" x2="210" y2="110" />
+						<line x1="30" y1="140" x2="210" y2="140" />
+						<line x1="30" y1="170" x2="210" y2="170" />
+
+						<line x1="60" y1="20" x2="60" y2="180" />
+						<line x1="90" y1="20" x2="90" y2="180" />
+						<line x1="120" y1="20" x2="120" y2="180" />
+						<line x1="150" y1="20" x2="150" y2="180" />
+						<line x1="180" y1="20" x2="180" y2="180" />
+					</g>
+
+					<g fill="var(--color-accent)" opacity="0.9">
+						<circle cx="60" cy="50" r="3" />
+						<circle cx="90" cy="50" r="3" />
+						<circle cx="120" cy="50" r="3" />
+						<circle cx="150" cy="50" r="3" />
+						<circle cx="180" cy="50" r="3" />
+						<circle cx="60" cy="80" r="3" />
+						<circle cx="90" cy="80" r="3" />
+						<circle cx="120" cy="80" r="3" />
+						<circle cx="150" cy="80" r="3" />
+						<circle cx="180" cy="80" r="3" />
+						<circle cx="60" cy="110" r="3" />
+						<circle cx="90" cy="110" r="3" />
+						<circle cx="120" cy="110" r="3" />
+						<circle cx="150" cy="110" r="3" />
+						<circle cx="180" cy="110" r="3" />
+					</g>
+
+					<g stroke="var(--color-accent)" stroke-width="1.2" fill="none" stroke-linecap="round">
+						<line x1="60" y1="200" x2="90" y2="200" />
+					</g>
+					<polygon points="60,200 65,196 65,204" fill="var(--color-accent)" />
+					<polygon points="90,200 85,196 85,204" fill="var(--color-accent)" />
+					<text x="75" y="215" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="var(--color-accent)">a</text>
+
+					<line x1="180" y1="50" x2="240" y2="35" stroke="var(--color-accent)" stroke-width="0.8" />
+					<text x="248" y="38" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="var(--color-accent)">d</text>
+
+					<text x="312" y="14" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="var(--color-muted)" font-style="italic">сварная — точки сварки в узлах</text>
+				</svg>
+
+				<div class="set__infographic-legend">
+					<h3>Обозначения</h3>
+					<ul>
+						<li><strong>a</strong> — размер ячейки в свету (расстояние между проволоками)</li>
+						<li><strong>d</strong> — диаметр проволоки</li>
+						<li><strong>k_тк = 1,10</strong> — поправка на удлинение для тканой</li>
+						<li><strong>k_св = 1,00</strong> — для сварной (прутки прямые)</li>
+					</ul>
+					<p class="set__infographic-note">
+						<strong>Формула:</strong><br />
+						m₁ = π·d²·ρ / (2·(a+d)) × 10⁻³ × k_тип<br />
+						кг/м², d и a в мм, ρ в кг/м³.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="set__block">
+			<h2 class="set__h2">Типовые типоразмеры сеток</h2>
+			<p class="set__block-lead">
+				Выборка из сортамента ГОСТ 3826-82 (тканая) и ГОСТ 23279-2012 (сварная).
+				Масса 1 м² указана для стали Ст3.
+			</p>
+			<div class="set__table-wrap">
+				<table class="set__table">
+					<thead>
+						<tr>
+							<th>Тип</th>
+							<th>Ячейка a, мм</th>
+							<th>Диаметр d, мм</th>
+							<th>Живое сечение, %</th>
+							<th>Масса 1 м², кг</th>
+							<th>Применение</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr><td>Тканая</td><td>1,0</td><td>0,25</td><td>64</td><td>0,64</td><td>фильтры, грохоты</td></tr>
+						<tr><td>Тканая</td><td>1,0</td><td>0,40</td><td>51</td><td>1,48</td><td>тяжёлые фильтры</td></tr>
+						<tr><td>Тканая</td><td>2,0</td><td>0,50</td><td>64</td><td>1,29</td><td>просеивание</td></tr>
+						<tr><td>Тканая</td><td>5,0</td><td>1,20</td><td>65</td><td>3,00</td><td>теплоизоляция</td></tr>
+						<tr><td>Тканая</td><td>10,0</td><td>1,00</td><td>83</td><td>1,15</td><td>вольеры, ограждения</td></tr>
+						<tr><td>Сварная</td><td>25</td><td>1,4</td><td>89</td><td>0,40</td><td>армирование штукатурки</td></tr>
+						<tr><td>Сварная</td><td>50</td><td>3,0</td><td>89</td><td>2,10</td><td>стяжки, кладочные сетки</td></tr>
+						<tr><td>Сварная</td><td>100</td><td>4,0</td><td>92</td><td>1,90</td><td>армирование фундаментов</td></tr>
+						<tr><td>Сварная</td><td>150</td><td>5,0</td><td>94</td><td>2,00</td><td>тяжёлые ЖБИ</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="set__block">
+			<h2 class="set__h2">Связанное</h2>
+			<ul class="set__related">
+				<li>
+					<a href="/provoloka/">
+						<strong>Проволока нержавеющая</strong>
+						<small>Ø 0,1–6 мм, AISI 304/321/316L</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-pvl/">
+						<strong>Калькулятор ПВЛ</strong>
+						<small>ГОСТ 8706-78 — просечно-вытяжной лист</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-vesa/">
+						<strong>Универсальный калькулятор веса</strong>
+						<small>9 видов проката</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="set__faq">
+			<h2 class="set__h2">Частые вопросы</h2>
+			<div class="set__faq-list">
+				{faq.map((f) => (
+					<details class="set__faq-item">
+						<summary class="set__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужна проволочная сетка?"
+		text="Сварные и тканые сетки из Ст3 и нержавейки AISI 304 — со склада и под заявку. Ячейки от 1 × 1 до 200 × 200 мм, диаметр проволоки 0,5–6 мм. Возможна резка карт в размер и навивка рулонов."
+	/>
+</BaseLayout>
+
+<script>
+	const root = document.querySelector('[data-set-root]');
+	if (root) {
+		const typeInputs = root.querySelectorAll('[data-set-type]');
+		const typeHint = root.querySelector('[data-set-type-hint]') as HTMLElement;
+		const matSel = root.querySelector('[data-set-material]') as HTMLSelectElement;
+		const matHint = root.querySelector('[data-set-mat-hint]') as HTMLElement;
+		const aInp = root.querySelector('[data-set-a]') as HTMLInputElement;
+		const dInp = root.querySelector('[data-set-d]') as HTMLInputElement;
+		const BInp = root.querySelector('[data-set-B]') as HTMLInputElement;
+		const LInp = root.querySelector('[data-set-L]') as HTMLInputElement;
+		const qtyInp = root.querySelector('[data-set-qty]') as HTMLInputElement;
+
+		const m1El = root.querySelector('[data-set-m1]') as HTMLElement;
+		const oneEl = root.querySelector('[data-set-one]') as HTMLElement;
+		const totalEl = root.querySelector('[data-set-total]') as HTMLElement;
+		const totalSubEl = root.querySelector('[data-set-total-sub]') as HTMLElement;
+		const areaEl = root.querySelector('[data-set-area]') as HTMLElement;
+		const livingEl = root.querySelector('[data-set-living]') as HTMLElement;
+
+		const TYPE_HINTS: Record<string, string> = {
+			weld: 'Сварная — точечная сварка в узлах, ГОСТ 23279-2012',
+			weave: 'Тканая — переплетение проволоки, ГОСТ 3826-82',
+		};
+		const MAT_HINTS: Record<string, string> = {
+			st3: 'базовое исполнение по ГОСТ 3826/23279',
+			aisi304: 'фильтры, пищевые производства',
+			aisi316l: 'хлориды, морская среда',
+		};
+
+		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+		const fmt1 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
+		const fmt2 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
+
+		function getType(): 'weld' | 'weave' {
+			const checked = root.querySelector('[data-set-type]:checked') as HTMLInputElement | null;
+			return (checked?.value as 'weld' | 'weave') || 'weld';
+		}
+
+		function recalc() {
+			const type = getType();
+			const a = parseFloat(aInp.value) || 0;
+			const d = parseFloat(dInp.value) || 0;
+			const B = parseFloat(BInp.value) || 0;
+			const L = parseFloat(LInp.value) || 0;
+			const qty = parseFloat(qtyInp.value) || 0;
+			const matOpt = matSel.selectedOptions[0];
+			const rho = parseFloat(matOpt?.dataset.rho || '7850') || 7850;
+
+			const kType = type === 'weave' ? 1.10 : 1.00;
+			const kMat = matSel.value === 'st3' ? 1.0 : 1.01;
+
+			let m1 = 0;
+			if (a > 0 && d > 0) {
+				m1 = (Math.PI * d * d * rho) / (2 * (a + d)) * 1e-3 * kType * kMat;
+			}
+
+			const area = B * L;
+			const oneWeight = m1 * area;
+			const total = oneWeight * qty;
+
+			// Живое сечение для квадратной сетки: (a / (a + d))²
+			const living = a > 0 && d > 0 ? (a / (a + d)) * (a / (a + d)) * 100 : 0;
+
+			m1El.textContent = m1 > 0 ? `${fmt.format(m1)} кг/м²` : '—';
+			oneEl.textContent = oneWeight > 0 ? `${fmt.format(oneWeight)} кг` : '—';
+
+			if (total > 0) {
+				if (total >= 1000) {
+					totalEl.textContent = `${fmt.format(total / 1000)} т`;
+					totalSubEl.textContent = `${fmt.format(total)} кг`;
+				} else {
+					totalEl.textContent = `${fmt.format(total)} кг`;
+					totalSubEl.textContent = '';
+				}
+			} else {
+				totalEl.textContent = '—';
+				totalSubEl.textContent = '';
+			}
+
+			areaEl.textContent = area > 0 ? `${fmt1.format(area)} м²` : '—';
+			livingEl.textContent = living > 0 ? `${fmt1.format(living)} %` : '—';
+		}
+
+		typeInputs.forEach((el) => el.addEventListener('change', () => {
+			typeHint.textContent = TYPE_HINTS[getType()] || '';
+			recalc();
+		}));
+		matSel.addEventListener('change', () => {
+			matHint.textContent = MAT_HINTS[matSel.value] || '';
+			recalc();
+		});
+		[aInp, dInp, BInp, LInp, qtyInp].forEach((el) => el.addEventListener('input', recalc));
+
+		recalc();
+	}
+</script>
+
+<style>
+	.set { padding-block: var(--space-8); min-width: 0; }
+	.set__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.set__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.set__h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15; margin: 0 0 var(--space-3); letter-spacing: -0.02em; }
+	.set__h1-accent { background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+	.set__lead { font-size: 1.05rem; line-height: 1.6; max-width: 70ch; color: var(--color-text); margin: 0; }
+
+	.set__widget { background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md); }
+	.set__widget-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-6); }
+	@media (max-width: 900px) { .set__widget { padding: var(--space-4); } .set__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+	.set__form { display: grid; gap: var(--space-4); }
+	.set__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .set__row-2 { grid-template-columns: 1fr; } }
+
+	.set__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.set__label { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-subtle); }
+	.set__input { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); outline: none; width: 100%; appearance: none; -webkit-appearance: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+	select.set__input { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.9rem; padding-right: 2rem; }
+	.set__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background: #fff; }
+	.set__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.5; }
+
+	.set__radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+	.set__radio { position: relative; display: flex; align-items: center; justify-content: center; padding: 0.6rem 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); font-size: 0.92rem; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }
+	.set__radio input { position: absolute; opacity: 0; pointer-events: none; }
+	.set__radio:has(input:checked) { background: var(--color-primary-50); border-color: var(--color-primary-500); color: var(--color-primary); font-weight: 600; }
+
+	.set__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .set__result { position: static; } }
+	.set__result-card { background: var(--grad-hero); color: var(--color-on-dark); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow); position: relative; overflow: hidden; }
+	.set__result-eyebrow { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent-100); margin-bottom: var(--space-4); }
+	.set__result-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 0.6rem 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+	.set__result-row span { font-size: 0.85rem; color: var(--color-on-dark-muted); }
+	.set__result-row strong { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 600; }
+	.set__result-total { padding: var(--space-4) 0 var(--space-3); }
+	.set__result-total-label { display: block; font-size: 0.85rem; color: var(--color-on-dark-muted); margin-bottom: 0.35rem; }
+	.set__result-total-value { font-family: var(--font-mono); font-size: clamp(2.2rem, 4.6vw, 3.2rem); font-weight: 700; line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+	.set__result-total-sub { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-on-dark-muted); margin-top: 0.25rem; min-height: 1.2em; }
+	.set__result-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; padding-top: var(--space-3); border-top: 1px solid rgba(255,255,255,0.12); }
+	.set__result-meta dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-on-dark-muted); margin-bottom: 0.2rem; }
+	.set__result-meta dd { font-family: var(--font-mono); font-size: 0.82rem; color: #fff; margin: 0; }
+	.set__cta { display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff; font-weight: 600; text-decoration: none; border-radius: var(--radius-md); font-size: 0.92rem; box-shadow: var(--shadow-warm-glow); transition: transform var(--dur-fast) var(--ease-out); }
+	.set__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.set__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.set__cta:hover svg { transform: translateX(2px); }
+	.set__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.set__block { margin-bottom: var(--space-10); }
+	.set__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.set__block-lead { color: var(--color-muted); max-width: 70ch; margin: 0 0 var(--space-4); }
+	.set__infographic { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--space-6); align-items: start; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+	@media (max-width: 720px) { .set__infographic { grid-template-columns: 1fr; } }
+	.set__infographic svg { width: 100%; height: auto; max-width: 320px; display: block; }
+	.set__infographic-legend h3 { font-size: 1rem; margin: 0 0 var(--space-3); }
+	.set__infographic-legend ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.set__infographic-legend li { padding-left: 1.2rem; position: relative; font-size: 0.92rem; line-height: 1.5; color: var(--color-text); }
+	.set__infographic-legend li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-500); }
+	.set__infographic-legend strong { font-family: var(--font-mono); color: var(--color-accent); }
+	.set__infographic-note { font-size: 0.85rem; color: var(--color-muted); margin: 0; line-height: 1.55; max-width: 60ch; }
+
+	.set__table-wrap { overflow-x: auto; }
+	.set__table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 620px; }
+	.set__table th, .set__table td { text-align: left; padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+	.set__table th { background: var(--color-surface); font-weight: 600; color: var(--color-subtle); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+	.set__table tbody tr:hover { background: var(--color-primary-50); }
+
+	.set__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.set__related a { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary); transition: all var(--dur-fast) var(--ease-out); }
+	.set__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.set__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.set__faq { margin-bottom: var(--space-8); }
+	.set__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.set__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.set__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.set__faq-q { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none; }
+	.set__faq-q::-webkit-details-marker { display: none; }
+	.set__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.set__faq-item[open] .set__faq-q svg { transform: rotate(180deg); }
+	.set__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
+</style>
