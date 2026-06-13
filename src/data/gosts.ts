@@ -30,6 +30,34 @@ export interface GostItem {
 	priority?: 'core' | 'standard';
 }
 
+/**
+ * Превращает номер ГОСТа в URL-slug.
+ * «9941-81» → «9941-81»
+ * «Р 52544-2006» → «r-52544-2006»
+ * «5267.1-90» → «5267-1-90»
+ */
+export function gostSlug(num: string): string {
+	return num
+		.replace(/[Рр]\s*/g, 'r-')
+		.replace(/\./g, '-')
+		.replace(/\s+/g, '')
+		.toLowerCase()
+		.replace(/[^a-z0-9-]/g, '')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
+/** Извлекает год введения из номера ГОСТа: «9941-81» → 1981, «5582-75» → 1975, «8240-97» → 1997, «5632-2014» → 2014. */
+export function gostYear(num: string): number | null {
+	const m = num.match(/-(\d{2}|\d{4})$/);
+	if (!m) return null;
+	const yy = m[1];
+	if (yy.length === 4) return parseInt(yy, 10);
+	const y = parseInt(yy, 10);
+	// Двузначный год: < 25 → 20хх, иначе 19хх (по практике сортамента).
+	return y < 25 ? 2000 + y : 1900 + y;
+}
+
 export const gostCategories: { value: GostCategory; label: string; descr: string }[] = [
 	{
 		value: 'kachestvennyy',

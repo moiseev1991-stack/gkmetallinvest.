@@ -1,0 +1,477 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import { gosts, gostCategories, gostSlug, gostYear } from '../../data/gosts';
+import { siteUrl, siteName } from '../../data/site';
+
+export async function getStaticPaths() {
+	return gosts.map((g) => ({
+		params: { slug: gostSlug(g.num) },
+		props: { gost: g },
+	}));
+}
+
+const { gost } = Astro.props;
+
+const cat = gostCategories.find((c) => c.value === gost.cat)!;
+const year = gostYear(gost.num);
+
+// Связанные ГОСТы — той же категории, до 6 шт, в т.ч. core-приоритет первыми.
+const related = gosts
+	.filter((g) => g.cat === gost.cat && g.num !== gost.num)
+	.sort((a, b) => {
+		const ap = a.priority === 'core' ? 0 : 1;
+		const bp = b.priority === 'core' ? 0 : 1;
+		return ap - bp;
+	})
+	.slice(0, 6);
+
+// Хабовая привязка — отображаемое название раздела каталога.
+const HUB_LABELS: Record<string, string> = {
+	'/list/': 'Лист нержавеющий',
+	'/truba/': 'Труба нержавеющая',
+	'/krug/': 'Круг / Квадрат / Шестигранник',
+	'/polosa/': 'Полоса нержавеющая',
+	'/provoloka/': 'Проволока нержавеющая',
+	'/rulon/': 'Рулон нержавеющий',
+	'/ugolok-shveller/': 'Уголок / Швеллер',
+	'/detali-truboprovoda/': 'Детали трубопровода',
+	'/kalkulyator-armatury/': 'Калькулятор веса арматуры',
+	'/kalkulyator-balki/': 'Калькулятор веса балки',
+	'/kalkulyator-shvellera/': 'Калькулятор веса швеллера',
+	'/kalkulyator-flantsa/': 'Калькулятор веса фланца',
+	'/kalkulyator-otvoda/': 'Калькулятор веса отвода',
+	'/kalkulyator-riflenogo-lista/': 'Калькулятор рифлёного листа',
+	'/kalkulyator-ovalnoy-truby/': 'Калькулятор плоскоовальной трубы',
+};
+
+const hubLabel = gost.hub ? HUB_LABELS[gost.hub] : null;
+
+// SEO-метаданные
+const title = `ГОСТ ${gost.num} — ${gost.title.replace(/\s*\(.+?\)\s*$/, '').trim()}`;
+const titleShort = title.length > 68 ? `ГОСТ ${gost.num} — ${cat.label}` : title;
+const description = `ГОСТ ${gost.num}: ${gost.title} Скачать PDF стандарта, категория «${cat.label}», год введения${year ? ` ${year}` : ''}. Справочник ГОСТов на gkmetallinvest.ru.`;
+const descrTrim = description.length > 160 ? description.slice(0, 157) + '…' : description;
+
+const url = `${siteUrl.replace(/\/$/, '')}/gost/${gostSlug(gost.num)}/`;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'TechArticle',
+	headline: `ГОСТ ${gost.num}`,
+	name: gost.title,
+	about: gost.title,
+	url,
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+	},
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+};
+
+const breadcrumbsJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: 'Главная', item: `${siteUrl}/` },
+		{ '@type': 'ListItem', position: 2, name: 'ГОСТы', item: `${siteUrl}/gost/` },
+		{ '@type': 'ListItem', position: 3, name: `ГОСТ ${gost.num}`, item: url },
+	],
+};
+---
+
+<BaseLayout title={titleShort} description={descrTrim} jsonLd={[jsonLd, breadcrumbsJsonLd]}>
+	<div class="container gost-page">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'ГОСТы', href: '/gost/' },
+			{ label: `ГОСТ ${gost.num}` },
+		]} />
+
+		<div class="gost-page__layout">
+			<aside class="gost-page__side">
+				<nav class="gost-page__nav" aria-label="Категории ГОСТов">
+					<div class="gost-page__nav-title">Категории</div>
+					<ul>
+						{gostCategories.map((c) => (
+							<li>
+								<a
+									href={`/gost/#cat-${c.value}`}
+									class={c.value === gost.cat ? 'is-active' : ''}
+								>
+									{c.label}
+								</a>
+							</li>
+						))}
+					</ul>
+					<a class="gost-page__nav-back" href="/gost/">
+						<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+							<path d="M9 4l-4 4 4 4M5 8h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+						<span>Все 112 ГОСТов</span>
+					</a>
+				</nav>
+			</aside>
+
+			<main class="gost-page__main">
+				<header class="gost-page__head">
+					<div class="gost-page__cat">
+						<a href={`/gost/#cat-${cat.value}`}>{cat.label}</a>
+					</div>
+					<h1 class="gost-page__h1">
+						<span class="gost-page__num">ГОСТ {gost.num}</span>
+					</h1>
+					<p class="gost-page__title">{gost.title}</p>
+
+					<dl class="gost-page__meta">
+						{year && (
+							<>
+								<dt>Год введения</dt>
+								<dd>{year}</dd>
+							</>
+						)}
+						<dt>Категория</dt>
+						<dd>{cat.label}</dd>
+						<dt>Статус</dt>
+						<dd>действующий</dd>
+					</dl>
+
+					<div class="gost-page__actions">
+						<a class="gost-page__pdf" href={gost.pdf} target="_blank" rel="noopener nofollow">
+							<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+								<path d="M5 2h6l3 3v11H5V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+								<path d="M11 2v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+								<text x="9.5" y="13.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="4.5" font-weight="700" fill="currentColor">PDF</text>
+							</svg>
+							<span>Открыть PDF стандарта</span>
+						</a>
+						{gost.hub && hubLabel && (
+							<a class="gost-page__hub" href={gost.hub}>
+								<span>В каталог · {hubLabel}</span>
+								<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+									<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</a>
+						)}
+					</div>
+				</header>
+
+				<section class="gost-page__block">
+					<h2>О документе</h2>
+					<p>
+						<strong>ГОСТ {gost.num}</strong> — официальный документ из категории
+						«{cat.label.toLowerCase()}». {cat.descr}
+					</p>
+					<p>
+						Полное наименование стандарта: <em>{gost.title}</em>.
+						{year && <> Документ введён в {year} году.</>}
+						{gost.priority === 'core' && (
+							<> Это один из ключевых стандартов нашей нержавеющей тематики —
+							по нему поставляется значительная часть позиций каталога. </>
+						)}
+					</p>
+
+					<div class="gost-page__pdf-cta">
+						<div>
+							<strong>Скачать или открыть стандарт</strong>
+							<p>PDF на стороннем ресурсе meganorm.ru — открывается в новой вкладке.</p>
+						</div>
+						<a href={gost.pdf} target="_blank" rel="noopener nofollow">Открыть PDF →</a>
+					</div>
+				</section>
+
+				{gost.hub && (
+					<section class="gost-page__block">
+						<h2>Прокат по этому ГОСТу — в нашем каталоге</h2>
+						<p>
+							В разделе <a href={gost.hub}><strong>{hubLabel}</strong></a> собран
+							ассортимент, поставляемый по ГОСТ {gost.num} и сопутствующим стандартам.
+							Цены — с актуализацией каждый день, отгрузка со склада в Нижнем Новгороде,
+							доставка по РФ автотранспортом и ТК. Сертификат завода-изготовителя
+							со ссылкой на ГОСТ прилагается к каждой партии.
+						</p>
+						<a class="gost-page__hub-big" href={gost.hub}>
+							<span>
+								<strong>{hubLabel}</strong>
+								<small>каталог с ценой и наличием</small>
+							</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+					</section>
+				)}
+
+				<section class="gost-page__block">
+					<h2>Связанные ГОСТы той же категории</h2>
+					<ul class="gost-page__related">
+						{related.map((g) => (
+							<li>
+								<a href={`/gost/${gostSlug(g.num)}/`}>
+									<span class="gost-page__related-num">ГОСТ {g.num}</span>
+									<span class="gost-page__related-title">{g.title}</span>
+								</a>
+							</li>
+						))}
+					</ul>
+					<a class="gost-page__cat-link" href={`/gost/#cat-${cat.value}`}>
+						Смотреть все ГОСТы в категории «{cat.label}» →
+					</a>
+				</section>
+
+				<section class="gost-page__legal">
+					<p>
+						Текст стандарта охраняется авторским правом ФГБУ «Стандартинформ».
+						PDF размещён на стороннем ресурсе <a href="https://meganorm.ru/" target="_blank" rel="noopener nofollow">meganorm.ru</a>;
+						мы агрегируем ссылки для удобства читателя. Для официального применения
+						используйте платные сервисы «Кодекс», «Техэксперт» или приобретайте копии
+						у Стандартинформа.
+					</p>
+				</section>
+			</main>
+		</div>
+	</div>
+
+	<CtaSection
+		title={`Нужен прокат по ГОСТ ${gost.num}?`}
+		text="Менеджер пришлёт позиции с сертификатом завода и ссылкой на стандарт — в течение 30 минут после заявки."
+	/>
+</BaseLayout>
+
+<style>
+	.gost-page { padding-block: var(--space-8); min-width: 0; }
+	.gost-page__layout {
+		display: grid;
+		grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+		gap: var(--space-6);
+		align-items: start;
+	}
+	@media (max-width: 880px) {
+		.gost-page__layout { grid-template-columns: 1fr; gap: var(--space-4); }
+	}
+
+	/* Боковая навигация */
+	.gost-page__side { position: sticky; top: calc(var(--header-h, 64px) + 1rem); }
+	@media (max-width: 880px) { .gost-page__side { position: static; } }
+
+	.gost-page__nav {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+	}
+	.gost-page__nav-title {
+		font-size: 0.74rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--color-subtle);
+		margin-bottom: var(--space-3);
+	}
+	.gost-page__nav ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.2rem; }
+	.gost-page__nav a {
+		display: block;
+		padding: 0.5rem 0.7rem;
+		text-decoration: none;
+		color: var(--color-text);
+		font-size: 0.92rem;
+		border-radius: var(--radius-sm);
+		transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+		line-height: 1.35;
+	}
+	.gost-page__nav a:hover { background: var(--color-primary-50); color: var(--color-primary); text-decoration: none; }
+	.gost-page__nav a.is-active {
+		background: var(--color-primary-500);
+		color: #fff;
+		font-weight: 600;
+	}
+	.gost-page__nav-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.45rem 0.7rem;
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		text-decoration: none;
+		margin-top: var(--space-2);
+		border-top: 1px dashed var(--color-border);
+		padding-top: var(--space-3);
+	}
+	.gost-page__nav-back:hover { color: var(--color-primary); text-decoration: none; }
+
+	/* Главная колонка */
+	.gost-page__head { margin-bottom: var(--space-6); }
+	.gost-page__cat {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--color-subtle);
+		margin-bottom: var(--space-3);
+	}
+	.gost-page__cat a { color: var(--color-primary-600); text-decoration: none; }
+	.gost-page__cat a:hover { text-decoration: underline; }
+
+	.gost-page__h1 {
+		margin: 0 0 var(--space-2);
+		letter-spacing: -0.02em;
+	}
+	.gost-page__num {
+		font-family: var(--font-mono);
+		font-size: clamp(1.8rem, 4vw, 2.6rem);
+		font-weight: 700;
+		color: var(--color-primary);
+	}
+	.gost-page__title {
+		font-size: clamp(1rem, 2vw, 1.15rem);
+		line-height: 1.45;
+		color: var(--color-text);
+		max-width: 75ch;
+		margin: 0 0 var(--space-4);
+	}
+
+	.gost-page__meta {
+		display: grid;
+		grid-template-columns: max-content minmax(0, 1fr);
+		gap: 0.3rem var(--space-4);
+		margin: 0 0 var(--space-5);
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border-radius: var(--radius-md);
+		font-size: 0.9rem;
+	}
+	.gost-page__meta dt { color: var(--color-muted); font-weight: 500; }
+	.gost-page__meta dd { margin: 0; color: var(--color-text); font-weight: 600; }
+
+	.gost-page__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+	.gost-page__pdf, .gost-page__hub {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.7rem 1rem;
+		font-size: 0.93rem;
+		font-weight: 600;
+		text-decoration: none;
+		border-radius: var(--radius-md);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost-page__pdf {
+		background: var(--color-primary-500);
+		color: #ffffff;
+	}
+	.gost-page__pdf:hover { background: var(--color-primary); color: #ffffff; text-decoration: none; transform: translateY(-1px); }
+	.gost-page__hub {
+		background: transparent;
+		color: var(--color-primary-600);
+		border: 1px solid var(--color-border);
+	}
+	.gost-page__hub:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+
+	/* Блоки контента */
+	.gost-page__block { margin-bottom: var(--space-7); }
+	.gost-page__block h2 { font-size: 1.25rem; margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+	.gost-page__block p { color: var(--color-text); line-height: 1.65; max-width: 75ch; margin: 0 0 var(--space-3); }
+	.gost-page__block a { color: var(--color-primary-600); }
+
+	.gost-page__pdf-cta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		padding: var(--space-4);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+		margin-top: var(--space-4);
+	}
+	.gost-page__pdf-cta strong { display: block; font-size: 1rem; color: var(--color-text); margin-bottom: 0.2rem; }
+	.gost-page__pdf-cta p { margin: 0; font-size: 0.83rem; color: var(--color-muted); }
+	.gost-page__pdf-cta a {
+		flex-shrink: 0;
+		padding: 0.55rem 1rem;
+		background: var(--color-primary-500);
+		color: #ffffff;
+		text-decoration: none;
+		font-weight: 600;
+		font-size: 0.92rem;
+		border-radius: var(--radius-md);
+		white-space: nowrap;
+	}
+	.gost-page__pdf-cta a:hover { background: var(--color-primary); color: #ffffff; text-decoration: none; }
+	@media (max-width: 560px) {
+		.gost-page__pdf-cta { flex-direction: column; align-items: flex-start; }
+	}
+
+	.gost-page__hub-big {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost-page__hub-big:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.gost-page__hub-big strong { display: block; font-size: 1rem; color: var(--color-primary); }
+	.gost-page__hub-big small { display: block; font-size: 0.85rem; color: var(--color-muted); margin-top: 0.15rem; }
+
+	.gost-page__related { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: 0.5rem; }
+	.gost-page__related a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.95rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.gost-page__related a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+	}
+	.gost-page__related-num {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-primary);
+	}
+	.gost-page__related-title {
+		font-size: 0.87rem;
+		color: var(--color-text);
+		line-height: 1.4;
+	}
+
+	.gost-page__cat-link {
+		display: inline-block;
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		text-decoration: none;
+	}
+	.gost-page__cat-link:hover { text-decoration: underline; }
+
+	.gost-page__legal {
+		margin-top: var(--space-6);
+		padding: var(--space-3) var(--space-4);
+		font-size: 0.78rem;
+		line-height: 1.55;
+		color: var(--color-muted);
+		background: var(--color-surface);
+		border-left: 3px solid var(--color-border);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+	}
+	.gost-page__legal a { color: var(--color-primary-600); }
+</style>

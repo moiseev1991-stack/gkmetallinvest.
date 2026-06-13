@@ -2,342 +2,163 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CtaSection from '../../components/CtaSection.astro';
-import { gosts, gostCategories } from '../../data/gosts';
+import { gosts, gostCategories, gostSlug } from '../../data/gosts';
 
 const title = 'ГОСТы на металлопрокат — справочник 112 стандартов в 6 категориях';
-const description = 'Полный справочник ГОСТов на металлопрокат: 112 документов — листовой, сортовой, трубный, качественный, арматура, цветмет. Прямые ссылки на PDF. Детальный разбор ключевых нержавеющих ГОСТов.';
+const description = 'Полный справочник ГОСТов на металлопрокат: 112 действующих стандартов в шести категориях. Прямые ссылки на PDF, отдельная страница на каждый ГОСТ.';
 
-// Сгруппированный по категориям справочник для нижнего блока.
 const grouped = gostCategories.map((c) => ({
 	...c,
-	items: gosts.filter((g) => g.cat === c.value),
+	items: gosts
+		.filter((g) => g.cat === c.value)
+		.sort((a, b) => a.num.localeCompare(b.num, 'ru', { numeric: true })),
 }));
 
 const totalGosts = gosts.length;
 
-/* Структурированные данные для рендеринга 8 H2-блоков. У каждого — короткое
-   описание (для list-блока сверху страницы как «оглавление») и развёрнутый
-   текст. Это удобнее, чем повторять разметку для каждого ГОСТа. */
-const sections = [
-	{
-		id: 'gost-5582-19903',
-		anchor: 'ГОСТ 5582-75, 19903-2015',
-		title: 'ГОСТ 5582-75 и ГОСТ 19903-2015 — тонколистовая нержавейка',
-		summary: 'Холоднокатаный лист до 4 мм и горячекатаный сортамент.',
-		hubHref: '/list/',
-		hubLabel: 'хабе листа',
-		text: [
-			'ГОСТ 5582-75 регулирует тонколистовой холоднокатаный прокат толщиной до 4 мм из коррозионно-стойких и жаростойких сталей. ГОСТ 19903-2015 задаёт сортамент горячекатаного листа: толщины, ширину, длину, предельные отклонения.',
-			'По этим стандартам поставляется большинство ходовых марок аустенитного и ферритного класса: AISI 304 (08Х18Н10), AISI 321 (12Х18Н10Т), AISI 316L (03Х17Н14М2), AISI 430 (08Х17). Типовые толщины холоднокатаного листа — 0,4; 0,5; 0,8; 1; 1,5; 2; 3; 4 мм, форматы 1000×2000 и 1250×2500 мм, поверхности 2B, BA, 4N. На нашем сайте этот сортамент собран в хабе листа.',
-		],
-	},
-	{
-		id: 'gost-7350',
-		anchor: 'ГОСТ 7350-77',
-		title: 'ГОСТ 7350-77 — толстолистовая нержавейка',
-		summary: 'Лист от 4 до 50 мм, корпусные конструкции и ёмкости.',
-		hubHref: '/list/',
-		hubLabel: 'хаб листа',
-		text: [
-			'ГОСТ 7350-77 распространяется на толстолистовой горячекатаный и холоднокатаный прокат из коррозионно-стойких, жаростойких и жаропрочных сталей толщиной от 4 до 50 мм. Стандарт определяет химический состав, механические свойства, требования к поверхности и термообработке.',
-			'Типовые марки по ГОСТ 7350 — 08Х18Н10 (AISI 304), 12Х18Н10Т (AISI 321), 03Х17Н14М2 (AISI 316L), 20Х23Н18 (AISI 310S), а также ферритные 08Х17 и 12Х17. Размерный ряд толстого листа — 4; 5; 6; 8; 10; 12; 14; 16; 20; 25; 30; 40; 50 мм; форматы 1500×6000 и 2000×6000 мм. Этот прокат идёт на корпусные конструкции, ёмкости, теплообменники, фланцевые заготовки.',
-		],
-	},
-	{
-		id: 'gost-9941-9940',
-		anchor: 'ГОСТ 9941-81, 9940-81',
-		title: 'ГОСТ 9941-81 и ГОСТ 9940-81 — бесшовные трубы',
-		summary: 'Холодно- и горячедеформированные трубы Ø 5–325 мм.',
-		hubHref: '/truba/',
-		hubLabel: 'хабе трубы',
-		text: [
-			'ГОСТ 9941-81 — стандарт на бесшовные холоднодеформированные трубы из коррозионно-стойких сталей: тянутые и катаные на холодных станах. Регулирует диаметры 5–250 мм, толщины стенки 0,2–22 мм, точность размеров (П, В, Н), длины (немерные, мерные, кратные).',
-			'ГОСТ 9940-81 — на бесшовные горячедеформированные трубы диаметром 57–325 мм со стенкой 3,5–32 мм. По обоим стандартам поставляются 12Х18Н10Т (AISI 321), 08Х18Н10 (AISI 304), 10Х17Н13М2Т, 03Х17Н14М2 (AISI 316L) и жаропрочная 20Х23Н18 (AISI 310S). Бесшовка по ГОСТ 9941 — рабочая лошадка тепловых сетей, котельной обвязки, химического и нефтегазового оборудования.',
-		],
-	},
-	{
-		id: 'gost-11068',
-		anchor: 'ГОСТ 11068-81',
-		title: 'ГОСТ 11068-81 — электросварные трубы',
-		summary: 'Прямошовные ЭСВ-трубы Ø 8–102 мм, дешевле бесшовки на 20–40 %.',
-		hubHref: '/truba/',
-		hubLabel: 'общем хабе труб',
-		text: [
-			'ГОСТ 11068-81 регулирует электросварные прямошовные трубы из коррозионно-стойкой стали диаметром 8–102 мм со стенкой 0,5–4 мм. Их формируют из ленты или штрипса и сваривают продольным швом аргонодуговой сваркой (TIG) или плазменно-дуговым методом. Дешевле бесшовки на 20–40 % при сопоставимой коррозионной стойкости в большинстве сред.',
-			'По ГОСТ 11068 идут марки AISI 304 (08Х18Н10), AISI 321 (12Х18Н10Т), AISI 316L (03Х17Н14М2), AISI 430 (08Х17). Применение — пищевые трубопроводы, перила и ограждения, декоративные конструкции, дымоходы, мебельные каркасы. Профильные трубы (квадрат, прямоугольник) для пищевых и архитектурных задач делают по тому же ГОСТ 11068 либо по ТУ заводов-изготовителей.',
-		],
-	},
-	{
-		id: 'gost-5949',
-		anchor: 'ГОСТ 5949-2018',
-		title: 'ГОСТ 5949-2018 — сортовой прокат (круг, квадрат, шестигранник)',
-		summary: 'Круг 5–270 мм, квадрат, шестигранник, полоса.',
-		hubHref: '/krug/',
-		hubLabel: 'хабе круга',
-		text: [
-			'ГОСТ 5949-2018 — основной стандарт на сортовой и калиброванный прокат из нержавеющих и жаропрочных сталей: круг, квадрат, шестигранник, полоса. Регулирует диаметр круга 5–270 мм, стороны квадрата 8–200 мм, размер «под ключ» шестигранника 8–100 мм.',
-			'Задаёт классы точности, состояние поставки (горячекатаный, кованый, калиброванный), требования к макроструктуре и обезуглероженному слою. Под этот стандарт поставляются 12Х18Н10Т (AISI 321), 08Х18Н10 (AISI 304), 03Х17Н14М2 (AISI 316L), мартенситные 20Х13, 30Х13, 40Х13, ферритная 12Х13, жаропрочная 20Х23Н18, супераустенитная 06ХН28МДТ. Круг и шестигранник идут под токарную обработку валов, осей, метизов, фланцевых заготовок.',
-		],
-	},
-	{
-		id: 'gost-18143',
-		anchor: 'ГОСТ 18143-72',
-		title: 'ГОСТ 18143-72 — проволока нержавеющая',
-		summary: 'Тянутая проволока Ø 0,2–6 мм, мягкое и твёрдое состояние.',
-		hubHref: '/provoloka/',
-		hubLabel: 'хабе проволоки',
-		text: [
-			'ГОСТ 18143-72 регулирует тянутую проволоку из коррозионно-стойких и жаростойких сталей. Диаметры — от 0,2 до 6 мм, состояние поставки — мягкое (М), полутвёрдое, твёрдое. Стандарт определяет химический состав, временное сопротивление разрыву, относительное удлинение, требования к поверхности и упаковке (бухты, катушки).',
-			'По ГОСТ 18143 идёт сварочная проволока 12Х18Н10Т, 08Х18Н10, 03Х17Н14М2 (AISI 304, 321, 316L) — для аргонодуговой сварки и автоматической сварки под флюсом. Отдельно по ГОСТ 2246 поставляется сварочная проволока специальных марок (Св-04Х19Н11М3, Св-06Х19Н9Т). Вязальная и пружинная проволока — те же марки, но в твёрдом состоянии.',
-		],
-	},
-	{
-		id: 'gost-4986',
-		anchor: 'ГОСТ 4986-79',
-		title: 'ГОСТ 4986-79 — лента нержавеющая холоднокатаная',
-		summary: 'Толщина 0,05–4 мм, ширина 4–600 мм, штрипс под трубу.',
-		hubHref: '/lenta/',
-		hubLabel: 'хабе ленты',
-		text: [
-			'ГОСТ 4986-79 регулирует холоднокатаную ленту из коррозионно-стойких и жаростойких сталей. Толщины — 0,05–4 мм, ширина — 4–600 мм. Стандарт задаёт точность по толщине (нормальная, повышенная, высокая), классы поверхности (матовая, светлая, полированная), состояние (нагартованное, отожжённое).',
-			'По ГОСТ 4986 поставляются AISI 304 (08Х18Н10), AISI 321 (12Х18Н10Т), AISI 316L (03Х17Н14М2), AISI 430 (08Х17), 20Х13, 30Х13, 40Х13. Узкая лента (штрипс) шириной до 600 мм — заготовка для электросварных труб, пружин, упругих элементов, ножевой стали, заклёпок, бритвенных лезвий. Тонкая лента 0,05–0,2 мм называется фольгой и идёт на прокладки, экраны, гофры теплообменников.',
-		],
-	},
-	{
-		id: 'gost-5632',
-		anchor: 'ГОСТ 5632-2014',
-		title: 'ГОСТ 5632-2014 — базовый стандарт состава нержавеющих сталей',
-		summary: '200+ марок, химический состав и обозначения по российской системе.',
-		hubHref: '/postavka-nerzhaveyushchego-metalloprokata/',
-		hubLabel: 'сводном каталоге',
-		text: [
-			'ГОСТ 5632-2014 — фундамент всей системы российских стандартов на нержавейку. Не регулирует сортамент или размеры — только химический состав сталей и сплавов: 200 с лишним марок коррозионно-стойких, жаростойких и жаропрочных сталей с допустимыми границами содержания C, Cr, Ni, Mo, Ti, Mn, Si, S, P.',
-			'Именно по этому ГОСТу прописаны российские обозначения 08Х18Н10, 12Х18Н10Т, 03Х17Н14М2, 08Х17, 20Х13, 30Х13, 40Х13, 12Х13, 20Х23Н18, 06ХН28МДТ. В сертификатах завода-изготовителя ссылка на ГОСТ 5632 идёт обязательно — это подтверждает, что химия плавки попадает в допуски. Зарубежные аналоги — AISI/ASTM A959 и EN 10088-1.',
-		],
-	},
-];
-
-const faq = [
-	{
-		q: 'По какому ГОСТу заказать нержавеющую трубу?',
-		a: 'Для бесшовной — ГОСТ 9941-81 (холоднодеформированная) или ГОСТ 9940-81 (горячедеформированная). Для электросварной — ГОСТ 11068-81. Профильную (квадрат, прямоугольник) делают по ГОСТ 11068 либо по ТУ конкретного завода.',
-	},
-	{
-		q: 'Чем отличается ГОСТ 5582 от ГОСТ 7350?',
-		a: 'ГОСТ 5582-75 — тонкий холоднокатаный лист до 4 мм. ГОСТ 7350-77 — толстый горячекатаный и холоднокатаный лист от 4 до 50 мм. Разные станы прокатки, разные требования к поверхности и допускам.',
-	},
-	{
-		q: 'По какому ГОСТу AISI 304, 316L и 321?',
-		a: 'Состав AISI 304 (08Х18Н10), AISI 316L (03Х17Н14М2) и AISI 321 (12Х18Н10Т) прописан в ГОСТ 5632-2014. Прокат идёт по сортаментным ГОСТам: 5582 и 7350 на лист, 9941 и 9940 на бесшовные трубы, 5949 на круг и сорт, 18143 на проволоку, 4986 на ленту.',
-	},
-	{
-		q: 'Можно ли в одну партию собрать прокат из 20Х13, 30Х13 и 40Х13?',
-		a: 'Да. Все три мартенситные хромистые марки прописаны в ГОСТ 5632-2014 и поставляются по ГОСТ 5949-2018 (круг, квадрат, шестигранник) и ГОСТ 4986-79 (лента). Отличие — содержание углерода: 0,16–0,25 % у 20Х13, 0,26–0,35 % у 30Х13, 0,36–0,45 % у 40Х13. Чем выше C, тем выше твёрдость после закалки.',
-	},
-	{
-		q: 'Какой ГОСТ закрывает жаропрочные марки 20Х23Н18 и 06ХН28МДТ?',
-		a: 'Состав — ГОСТ 5632-2014. Сортовой прокат и круг — ГОСТ 5949-2018. Толстый лист 20Х23Н18 (AISI 310S) идёт по ГОСТ 7350-77, бесшовные трубы — по ГОСТ 9941 и 9940. Сплав 06ХН28МДТ (AISI 904L) — супераустенит для сернокислотных сред, чаще поставляется кругом и листом под заказ.',
-	},
-	{
-		q: 'Что должно быть указано в сертификате завода?',
-		a: 'Номер плавки, марка по ГОСТ 5632, ссылка на сортаментный ГОСТ (5582 / 7350 / 9941 / 5949 / 18143 / 4986), химический анализ, механические свойства, режим термообработки. Без сертификата с этими данными прокат не принимается на ответственные объекты.',
-	},
-];
-
-const faqJsonLd = {
-	'@context': 'https://schema.org',
-	'@type': 'FAQPage',
-	mainEntity: faq.map((f) => ({
-		'@type': 'Question',
-		name: f.q,
-		acceptedAnswer: { '@type': 'Answer', text: f.a },
-	})),
-};
+// Якорь первой категории — на него скроллит «активный» индикатор по умолчанию.
+const firstCat = gostCategories[0].value;
 ---
 
-<BaseLayout title={title} description={description} jsonLd={faqJsonLd}>
-	<div class="container gost">
+<BaseLayout title={title} description={description}>
+	<div class="container gost-idx">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'ГОСТы — справочник' }]} />
 
-		<header class="gost__hero">
-			<span class="gost__eyebrow">
+		<header class="gost-idx__hero">
+			<span class="gost-idx__eyebrow">
 				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 					<rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4" />
 					<path d="M5 6h6M5 9h6M5 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
 				</svg>
 				Справочник
 			</span>
-			<h1 class="gost__h1">Справочник ГОСТов на металлопрокат</h1>
-			<p class="gost__lead">
-				Полный перечень из <strong>{totalGosts} действующих ГОСТов</strong> в шести категориях:
+			<h1 class="gost-idx__h1">ГОСТы на металлопрокат</h1>
+			<p class="gost-idx__lead">
+				Полный перечень <strong>{totalGosts} действующих ГОСТов</strong> в шести категориях:
 				качественный прокат, листовой, сортовой, трубный, трубопроводная арматура и цветные
-				металлы. По каждому документу — прямая ссылка на PDF на meganorm.ru.
-				Сверху — детальный разбор ключевых стандартов на нержавеющий прокат
-				(9941, 5582, 7350, 5949, 5632) с указанием марок и каталожного раздела;
-				внизу — полный справочник с фильтром по категории и поиском по номеру ГОСТа.
+				металлы. По каждому стандарту — отдельная страница со ссылкой на PDF
+				и привязкой к разделу нашего каталога.
 			</p>
 		</header>
 
-		<nav class="gost__toc" aria-label="Содержание">
-			<div class="gost__toc-title">Детальный разбор — нержавейка</div>
-			<ul>
-				{sections.map((s) => (
-					<li>
-						<a href={`#${s.id}`}>
-							<strong>{s.anchor}</strong>
-							<span>{s.summary}</span>
-						</a>
-					</li>
-				))}
-			</ul>
-		</nav>
+		<div class="gost-idx__layout">
+			<aside class="gost-idx__side">
+				<div class="gost-idx__search">
+					<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+						<circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+						<path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+					</svg>
+					<input
+						type="search"
+						placeholder="Поиск по ГОСТам"
+						data-gost-search
+						aria-label="Поиск по номеру или названию ГОСТа"
+					/>
+				</div>
 
-		<nav class="gost__cats" aria-label="Категории справочника">
-			<div class="gost__toc-title">Полный справочник — {totalGosts} ГОСТов в 6 категориях</div>
-			<ul>
-				{grouped.map((g) => (
-					<li>
-						<a href={`#cat-${g.value}`}>
-							<strong>{g.label}</strong>
-							<span>{g.items.length} ГОСТов</span>
-						</a>
-					</li>
-				))}
-			</ul>
-		</nav>
+				<nav class="gost-idx__nav" aria-label="Категории">
+					<ul>
+						{grouped.map((g, i) => (
+							<li>
+								<a
+									href={`#cat-${g.value}`}
+									data-cat-link={g.value}
+									class={i === 0 ? 'is-active' : ''}
+								>
+									<span class="gost-idx__nav-label">{g.label}</span>
+									<span class="gost-idx__nav-count">{g.items.length}</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				</nav>
 
-		<div class="gost__sections">
-			{sections.map((s) => (
-				<section class="gost__section" id={s.id}>
-					<h2>{s.title}</h2>
-					{s.text.map((p) => <p>{p}</p>)}
-					<a class="gost__hub-link" href={s.hubHref}>
-						<span>Смотреть прокат по этому ГОСТу в {s.hubLabel}</span>
-						<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-							<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-						</svg>
-					</a>
-				</section>
-			))}
-		</div>
+				<div class="gost-idx__nerzh">
+					<div class="gost-idx__nerzh-title">Нержавейка — детальный разбор</div>
+					<ul>
+						<li><a href="#nerzh-list">Лист — 5582, 7350, 19903</a></li>
+						<li><a href="#nerzh-truba">Труба — 9941, 9940, 11068</a></li>
+						<li><a href="#nerzh-sort">Сорт — 5949</a></li>
+						<li><a href="#nerzh-marki">Марки — 5632</a></li>
+					</ul>
+				</div>
+			</aside>
 
-		<section class="gost__directory" id="directory" data-gost-directory>
-			<div class="gost__directory-head">
-				<h2 class="gost__directory-h2">Полный справочник ГОСТов</h2>
-				<p class="gost__directory-lead">
-					{totalGosts} действующих ГОСТов по металлопрокату в шести категориях.
-					Каждая запись — номер, название и прямая ссылка на PDF документа.
-					Где применимо — ссылка на соответствующий раздел нашего каталога.
+			<main class="gost-idx__main" data-gost-main>
+				<p class="gost-idx__empty" data-gost-empty hidden>
+					По вашему запросу ничего не найдено. Очистите поиск или попробуйте другой ключ.
 				</p>
 
-				<div class="gost__filter">
-					<div class="gost__filter-search">
-						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-							<circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
-							<path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-						</svg>
-						<input
-							type="search"
-							placeholder="Поиск по номеру или названию (например: 9941, лист, фланцы)"
-							data-gost-search
-							aria-label="Поиск по номеру или названию ГОСТа"
-						/>
-					</div>
-					<div class="gost__filter-tabs" role="tablist">
-						<button class="gost__filter-tab is-active" data-gost-tab="all" type="button">Все · {totalGosts}</button>
-						{gostCategories.map((c) => {
-							const cnt = gosts.filter((g) => g.cat === c.value).length;
-							return (
-								<button class="gost__filter-tab" data-gost-tab={c.value} type="button">
-									{c.label} · {cnt}
-								</button>
-							);
-						})}
-					</div>
-				</div>
-			</div>
-
-			<div class="gost__cat-list">
 				{grouped.map((g) => (
-					<div class="gost__cat" id={`cat-${g.value}`} data-gost-cat={g.value}>
-						<header class="gost__cat-head">
-							<h3 class="gost__cat-title">{g.label}</h3>
-							<span class="gost__cat-count">{g.items.length} ГОСТов</span>
+					<section class="gost-idx__cat" id={`cat-${g.value}`} data-cat={g.value}>
+						<header class="gost-idx__cat-head">
+							<h2 class="gost-idx__cat-title">{g.label}</h2>
+							<span class="gost-idx__cat-count">{g.items.length} ГОСТов</span>
 						</header>
-						<p class="gost__cat-descr">{g.descr}</p>
+						<p class="gost-idx__cat-descr">{g.descr}</p>
 
-						<ul class="gost__items">
-							{g.items.map((item) => (
+						<ol class="gost-idx__list">
+							{g.items.map((item, idx) => (
 								<li
-									class="gost__item"
-									data-gost-item
+									class="gost-idx__row"
+									data-gost-row
 									data-num={item.num.toLowerCase()}
 									data-title={item.title.toLowerCase()}
-									data-cat={item.cat}
-									data-priority={item.priority || 'standard'}
 								>
-									<div class="gost__item-head">
-										<span class="gost__item-num">ГОСТ {item.num}</span>
-										{item.priority === 'core' && (
-											<span class="gost__item-badge">наша тематика</span>
-										)}
-									</div>
-									<div class="gost__item-title">{item.title}</div>
-									<div class="gost__item-links">
-										<a
-											class="gost__item-pdf"
-											href={item.pdf}
-											target="_blank"
-											rel="noopener nofollow"
-										>
-											<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-												<path d="M4 2h6l3 3v9H4V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
-												<path d="M10 2v3h3" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
-												<text x="8" y="12" text-anchor="middle" font-family="Inter, sans-serif" font-size="4" font-weight="700" fill="currentColor">PDF</text>
-											</svg>
-											<span>Открыть PDF</span>
-										</a>
-										{item.hub && (
-											<a class="gost__item-hub" href={item.hub}>
-												<span>В каталог</span>
-												<svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-													<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-												</svg>
-											</a>
-										)}
-									</div>
+									<span class="gost-idx__row-idx">{idx + 1}.</span>
+									<a class="gost-idx__row-link" href={`/gost/${gostSlug(item.num)}/`}>
+										<span class="gost-idx__row-num">ГОСТ {item.num}</span>
+										<span class="gost-idx__row-title">{item.title}</span>
+									</a>
+									{item.priority === 'core' && (
+										<span class="gost-idx__row-badge" title="ГОСТ нашей нержавеющей тематики">●</span>
+									)}
 								</li>
 							))}
-						</ul>
+						</ol>
+					</section>
+				))}
+
+				<section class="gost-idx__nerzh-section" id="nerzh-detail">
+					<header class="gost-idx__cat-head">
+						<h2 class="gost-idx__cat-title">Детальный разбор — нержавеющий металлопрокат</h2>
+						<span class="gost-idx__cat-count">5 ГОСТов</span>
+					</header>
+					<p class="gost-idx__cat-descr">
+						По этим стандартам поставляется основная часть нашего ассортимента. Под каждым ГОСТом —
+						какие марки попадают, типовые размеры и в каком разделе каталога искать прокат.
+					</p>
+
+					<div class="gost-idx__nerzh-grid">
+						<a class="gost-idx__nerzh-card" href={`/gost/${gostSlug('5582-75')}/`} id="nerzh-list">
+							<strong>ГОСТ 5582-75 / 7350-77 / 19903-2015</strong>
+							<small>Нержавеющий лист: тонкий до 4 мм, толстый 4–50 мм, сортамент. AISI 304, 316L, 321, 430.</small>
+						</a>
+						<a class="gost-idx__nerzh-card" href={`/gost/${gostSlug('9941-81')}/`} id="nerzh-truba">
+							<strong>ГОСТ 9941-81 / 9940-81 / 11068-81</strong>
+							<small>Трубы нержавеющие: бесшовные холодно- и горячедеформированные, электросварные. Ø 5–325 мм.</small>
+						</a>
+						<a class="gost-idx__nerzh-card" href={`/gost/${gostSlug('8509-93')}/`} id="nerzh-sort">
+							<strong>ГОСТ 8509-93 / 8510-86</strong>
+							<small>Уголки горячекатаные равнополочные и неравнополочные — сортамент, размерные ряды.</small>
+						</a>
+						<a class="gost-idx__nerzh-card" href={`/gost/${gostSlug('5632-72')}/`} id="nerzh-marki">
+							<strong>ГОСТ 5632-72</strong>
+							<small>Базовый стандарт состава нержавеющих сталей: 200+ марок коррозионно-стойких и жаропрочных.</small>
+						</a>
 					</div>
-				))}
-			</div>
+				</section>
 
-			<p class="gost__empty" data-gost-empty hidden>
-				Ничего не найдено. Попробуйте другой запрос или сбросьте фильтр.
-			</p>
-
-			<p class="gost__legal">
-				PDF-файлы стандартов размещены на стороннем ресурсе <a href="https://meganorm.ru/" target="_blank" rel="noopener nofollow">meganorm.ru</a> — мы агрегируем ссылки для удобства. Тексты ГОСТов охраняются авторским правом ФГБУ «Стандартинформ»; для официального применения используйте платные сервисы «Кодекс», «Техэксперт» либо приобретайте копии у Стандартинформа.
-			</p>
-		</section>
-
-		<section class="gost__faq">
-			<h2>Частые вопросы про ГОСТы</h2>
-			<div class="gost__faq-list">
-				{faq.map((f) => (
-					<details class="gost__faq-item">
-						<summary class="gost__faq-q">
-							<span>{f.q}</span>
-							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-							</svg>
-						</summary>
-						<p>{f.a}</p>
-					</details>
-				))}
-			</div>
-		</section>
+				<section class="gost-idx__legal">
+					<p>
+						PDF-файлы стандартов размещены на стороннем ресурсе <a href="https://meganorm.ru/" target="_blank" rel="noopener nofollow">meganorm.ru</a>;
+						мы агрегируем ссылки для удобства. Тексты ГОСТов охраняются авторским правом
+						ФГБУ «Стандартинформ» — для официального применения используйте платные сервисы
+						«Кодекс», «Техэксперт» или приобретайте копии у Стандартинформа.
+					</p>
+				</section>
+			</main>
+		</div>
 	</div>
 
 	<CtaSection
@@ -347,69 +168,57 @@ const faqJsonLd = {
 </BaseLayout>
 
 <script>
-	const root = document.querySelector('[data-gost-directory]');
-	if (root) {
-		const searchInp = root.querySelector('[data-gost-search]') as HTMLInputElement | null;
-		const tabs = Array.from(root.querySelectorAll('[data-gost-tab]')) as HTMLButtonElement[];
-		const items = Array.from(root.querySelectorAll('[data-gost-item]')) as HTMLElement[];
-		const cats = Array.from(root.querySelectorAll('[data-gost-cat]')) as HTMLElement[];
-		const emptyEl = root.querySelector('[data-gost-empty]') as HTMLElement | null;
+	const search = document.querySelector('[data-gost-search]') as HTMLInputElement | null;
+	const empty = document.querySelector('[data-gost-empty]') as HTMLElement | null;
+	const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-gost-row]'));
+	const cats = Array.from(document.querySelectorAll<HTMLElement>('[data-cat]'));
+	const links = Array.from(document.querySelectorAll<HTMLElement>('[data-cat-link]'));
 
-		let activeTab: string = 'all';
-		let query: string = '';
-
-		function normalize(s: string): string {
-			return s.toLowerCase().trim();
+	function applySearch() {
+		const q = (search?.value || '').toLowerCase().trim();
+		let visible = 0;
+		for (const row of rows) {
+			const match =
+				!q ||
+				(row.dataset.num || '').includes(q) ||
+				(row.dataset.title || '').includes(q);
+			row.hidden = !match;
+			if (match) visible++;
 		}
-
-		function applyFilter() {
-			const q = normalize(query);
-			let visibleTotal = 0;
-
-			for (const item of items) {
-				const matchCat = activeTab === 'all' || item.dataset.cat === activeTab;
-				const matchSearch =
-					!q ||
-					(item.dataset.num || '').includes(q) ||
-					(item.dataset.title || '').includes(q);
-				const visible = matchCat && matchSearch;
-				item.hidden = !visible;
-				if (visible) visibleTotal++;
-			}
-
-			// Спрячем категории без видимых элементов.
-			for (const cat of cats) {
-				const hasVisible = Array.from(cat.querySelectorAll<HTMLElement>('[data-gost-item]'))
-					.some((i) => !i.hidden);
-				cat.hidden = !hasVisible;
-			}
-
-			if (emptyEl) emptyEl.hidden = visibleTotal > 0;
+		for (const cat of cats) {
+			const hasVisible = Array.from(cat.querySelectorAll<HTMLElement>('[data-gost-row]'))
+				.some((r) => !r.hidden);
+			cat.hidden = !hasVisible;
 		}
+		if (empty) empty.hidden = visible > 0;
+	}
 
-		for (const tab of tabs) {
-			tab.addEventListener('click', () => {
-				activeTab = tab.dataset.gostTab || 'all';
-				for (const t of tabs) t.classList.toggle('is-active', t === tab);
-				applyFilter();
-			});
-		}
+	search?.addEventListener('input', applySearch);
 
-		if (searchInp) {
-			searchInp.addEventListener('input', () => {
-				query = searchInp.value;
-				applyFilter();
-			});
-		}
+	// Подсветка активной категории при скролле через IntersectionObserver.
+	if ('IntersectionObserver' in window) {
+		const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '64', 10);
+		const obs = new IntersectionObserver(
+			(entries) => {
+				for (const e of entries) {
+					if (e.isIntersecting) {
+						const cat = (e.target as HTMLElement).dataset.cat;
+						for (const link of links) {
+							link.classList.toggle('is-active', link.dataset.catLink === cat);
+						}
+					}
+				}
+			},
+			{ rootMargin: `-${headerH + 40}px 0px -60% 0px`, threshold: 0 }
+		);
+		for (const cat of cats) obs.observe(cat);
 	}
 </script>
 
 <style>
-	.gost { padding-block: var(--space-8); min-width: 0; }
-
-	/* Hero */
-	.gost__hero { margin-bottom: var(--space-7); max-width: 80ch; }
-	.gost__eyebrow {
+	.gost-idx { padding-block: var(--space-8); min-width: 0; }
+	.gost-idx__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.gost-idx__eyebrow {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
@@ -423,237 +232,49 @@ const faqJsonLd = {
 		border-radius: var(--radius-pill);
 		margin-bottom: var(--space-3);
 	}
-	.gost__h1 {
-		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+	.gost-idx__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.5rem);
 		line-height: 1.15;
 		letter-spacing: -0.02em;
 		margin: 0 0 var(--space-3);
 	}
-	.gost__lead {
-		font-size: 1.05rem;
-		line-height: 1.6;
-		max-width: 75ch;
-		color: var(--color-text);
-		margin: 0;
-	}
+	.gost-idx__lead { font-size: 1.05rem; line-height: 1.6; max-width: 75ch; color: var(--color-text); margin: 0; }
 
-	/* TOC — список ГОСТов сверху */
-	.gost__toc {
-		background: var(--color-bg-elev);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		padding: var(--space-4) var(--space-5);
-		margin-bottom: var(--space-8);
-	}
-	.gost__toc-title {
-		font-size: 0.78rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-muted);
-		margin-bottom: var(--space-3);
-	}
-	.gost__toc ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
+	/* Двухколоночный макет */
+	.gost-idx__layout {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-		gap: var(--space-2);
+		grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+		gap: var(--space-6);
+		align-items: start;
 	}
-	.gost__toc a {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-		padding: 0.7rem 0.9rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		text-decoration: none;
-		color: var(--color-text);
-		transition: all var(--dur-fast) var(--ease-out);
-	}
-	.gost__toc a:hover {
-		border-color: var(--color-primary-500);
-		background: var(--color-primary-50);
-		text-decoration: none;
-		transform: translateY(-1px);
-	}
-	.gost__toc a strong {
-		font-family: var(--font-mono);
-		font-size: 0.88rem;
-		color: var(--color-primary-600);
-		font-weight: 700;
-	}
-	.gost__toc a span {
-		font-size: 0.85rem;
-		color: var(--color-muted);
-		line-height: 1.35;
+	@media (max-width: 880px) {
+		.gost-idx__layout { grid-template-columns: 1fr; gap: var(--space-4); }
 	}
 
-	/* Разделы */
-	.gost__sections {
-		display: grid;
-		gap: var(--space-7);
-		max-width: 80ch;
-		margin-bottom: var(--space-10);
-	}
-	.gost__section {
-		scroll-margin-top: calc(var(--header-h) + 1rem);
-	}
-	.gost__section h2 {
-		font-size: 1.3rem;
-		line-height: 1.3;
-		margin: 0 0 var(--space-3);
-		letter-spacing: -0.01em;
-	}
-	.gost__section p {
-		font-size: 1rem;
-		line-height: 1.65;
-		color: var(--color-text);
-		margin: 0 0 var(--space-3);
-	}
-	.gost__section p:last-of-type { margin-bottom: var(--space-4); }
-
-	.gost__hub-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.55rem 0.95rem;
-		background: var(--color-primary-50);
-		border: 1px solid var(--color-primary-100);
-		border-radius: var(--radius-pill);
-		color: var(--color-primary-600);
-		font-weight: 500;
-		font-size: 0.92rem;
-		text-decoration: none;
-		transition: all var(--dur-fast) var(--ease-out);
-	}
-	.gost__hub-link:hover {
-		background: var(--color-primary-100);
-		border-color: var(--color-primary-500);
-		text-decoration: none;
-	}
-	.gost__hub-link svg { transition: transform var(--dur-fast) var(--ease-out); }
-	.gost__hub-link:hover svg { transform: translateX(2px); }
-
-	/* FAQ */
-	.gost__faq { margin-bottom: var(--space-8); max-width: 80ch; }
-	.gost__faq h2 {
-		font-size: 1.3rem;
-		margin-bottom: var(--space-4);
-		letter-spacing: -0.01em;
-	}
-	.gost__faq-list { display: grid; gap: 0.6rem; }
-	.gost__faq-item {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		padding: var(--space-3) var(--space-4);
-		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
-	}
-	.gost__faq-item[open] {
-		border-color: var(--color-primary-100);
-		background: var(--color-primary-50);
-	}
-	.gost__faq-q {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-3);
-		font-weight: 600;
-		color: var(--color-text);
-		cursor: pointer;
-		list-style: none;
-	}
-	.gost__faq-q::-webkit-details-marker { display: none; }
-	.gost__faq-q svg {
-		flex-shrink: 0;
-		color: var(--color-muted);
-		transition: transform var(--dur-fast) var(--ease-out);
-	}
-	.gost__faq-item[open] .gost__faq-q svg { transform: rotate(180deg); }
-	.gost__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 70ch; line-height: 1.6; }
-
-	/* ===== Категории (TOC под полный справочник) ===== */
-	.gost__cats {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		padding: var(--space-4) var(--space-5);
-		margin-bottom: var(--space-8);
-		max-width: 100%;
-	}
-	.gost__cats ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-		gap: var(--space-2);
-	}
-	.gost__cats a {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-		padding: 0.7rem 0.9rem;
-		background: #ffffff;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		text-decoration: none;
-		color: var(--color-text);
-		transition: all var(--dur-fast) var(--ease-out);
-	}
-	.gost__cats a:hover {
-		border-color: var(--color-primary-500);
-		background: var(--color-primary-50);
-		text-decoration: none;
-		transform: translateY(-1px);
-	}
-	.gost__cats a strong {
-		font-size: 0.9rem;
-		color: var(--color-primary-600);
-		font-weight: 600;
-	}
-	.gost__cats a span {
-		font-size: 0.78rem;
-		color: var(--color-muted);
-	}
-
-	/* ===== Справочник 112 ГОСТов ===== */
-	.gost__directory { margin: var(--space-10) 0; scroll-margin-top: calc(var(--header-h, 64px) + 1rem); }
-	.gost__directory-head { margin-bottom: var(--space-5); }
-	.gost__directory-h2 { font-size: 1.5rem; margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
-	.gost__directory-lead { color: var(--color-muted); max-width: 75ch; line-height: 1.6; margin: 0 0 var(--space-5); }
-
-	.gost__filter {
-		display: grid;
-		gap: var(--space-3);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		padding: var(--space-4);
-		margin-bottom: var(--space-6);
+	/* Боковая колонка */
+	.gost-idx__side {
 		position: sticky;
-		top: calc(var(--header-h, 64px) + 4px);
-		z-index: 2;
-		backdrop-filter: blur(6px);
+		top: calc(var(--header-h, 64px) + 1rem);
+		display: grid;
+		gap: var(--space-3);
 	}
-	.gost__filter-search {
+	@media (max-width: 880px) { .gost-idx__side { position: static; } }
+
+	.gost-idx__search {
 		position: relative;
 		display: flex;
 		align-items: center;
 	}
-	.gost__filter-search svg {
+	.gost-idx__search svg {
 		position: absolute;
 		left: 0.85rem;
 		color: var(--color-muted);
 		pointer-events: none;
 	}
-	.gost__filter-search input {
+	.gost-idx__search input {
 		font: inherit;
-		font-size: 0.95rem;
-		padding: 0.65rem 0.8rem 0.65rem 2.4rem;
+		font-size: 0.92rem;
+		padding: 0.6rem 0.8rem 0.6rem 2.4rem;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		background: #ffffff;
@@ -662,40 +283,96 @@ const faqJsonLd = {
 		width: 100%;
 		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 	}
-	.gost__filter-search input:focus {
+	.gost-idx__search input:focus {
 		border-color: var(--color-primary-500);
 		box-shadow: 0 0 0 3px var(--color-primary-100);
 	}
 
-	.gost__filter-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-	.gost__filter-tab {
-		font: inherit;
-		font-size: 0.82rem;
-		font-weight: 500;
-		padding: 0.45rem 0.85rem;
+	.gost-idx__nav {
+		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		background: #ffffff;
-		border-radius: var(--radius-pill);
-		cursor: pointer;
-		color: var(--color-text);
-		transition: all var(--dur-fast) var(--ease-out);
+		border-radius: var(--radius-lg);
+		padding: 0.4rem;
 	}
-	.gost__filter-tab:hover { border-color: var(--color-primary-500); color: var(--color-primary); }
-	.gost__filter-tab.is-active { background: var(--color-primary-500); color: #fff; border-color: var(--color-primary-500); font-weight: 600; }
+	.gost-idx__nav ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.1rem; }
+	.gost-idx__nav a {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		padding: 0.55rem 0.7rem;
+		border-radius: var(--radius-sm);
+		text-decoration: none;
+		color: var(--color-text);
+		font-size: 0.92rem;
+		transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+	}
+	.gost-idx__nav a:hover {
+		background: var(--color-primary-50);
+		color: var(--color-primary);
+		text-decoration: none;
+	}
+	.gost-idx__nav a.is-active {
+		background: var(--color-primary-500);
+		color: #ffffff;
+		font-weight: 600;
+	}
+	.gost-idx__nav-label { flex: 1; min-width: 0; }
+	.gost-idx__nav-count {
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		opacity: 0.7;
+	}
+	.gost-idx__nav a.is-active .gost-idx__nav-count { opacity: 1; color: rgba(255, 255, 255, 0.9); }
 
-	.gost__cat-list { display: grid; gap: var(--space-6); }
-	.gost__cat { scroll-margin-top: calc(var(--header-h, 64px) + 5rem); }
-	.gost__cat-head {
+	.gost-idx__nerzh {
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+	}
+	.gost-idx__nerzh-title {
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--color-primary);
+		margin-bottom: 0.5rem;
+	}
+	.gost-idx__nerzh ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.3rem; }
+	.gost-idx__nerzh a {
+		font-size: 0.85rem;
+		color: var(--color-primary-600);
+		text-decoration: none;
+		line-height: 1.4;
+	}
+	.gost-idx__nerzh a:hover { text-decoration: underline; }
+
+	/* Главная колонка */
+	.gost-idx__main { min-width: 0; }
+	.gost-idx__empty {
+		text-align: center;
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-muted);
+		font-size: 0.95rem;
+		margin-bottom: var(--space-4);
+	}
+
+	.gost-idx__cat, .gost-idx__nerzh-section { scroll-margin-top: calc(var(--header-h, 64px) + 1rem); margin-bottom: var(--space-8); }
+	.gost-idx__cat-head {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
 		gap: var(--space-3);
 		padding-bottom: var(--space-2);
 		border-bottom: 2px solid var(--color-primary-100);
-		margin-bottom: var(--space-3);
+		margin-bottom: var(--space-2);
 	}
-	.gost__cat-title { font-size: 1.25rem; margin: 0; letter-spacing: -0.01em; }
-	.gost__cat-count {
+	.gost-idx__cat-title { font-size: 1.25rem; margin: 0; letter-spacing: -0.01em; }
+	.gost-idx__cat-count {
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
 		color: var(--color-muted);
@@ -704,101 +381,89 @@ const faqJsonLd = {
 		border-radius: var(--radius-pill);
 		white-space: nowrap;
 	}
-	.gost__cat-descr { color: var(--color-muted); max-width: 75ch; line-height: 1.6; margin: 0 0 var(--space-4); font-size: 0.93rem; }
+	.gost-idx__cat-descr { color: var(--color-muted); max-width: 75ch; line-height: 1.6; margin: 0 0 var(--space-3); font-size: 0.9rem; }
 
-	.gost__items {
+	/* Список ГОСТов — пронумерованный, ссылка-полоса на каждой строке */
+	.gost-idx__list {
 		list-style: none;
+		counter-reset: gost-counter;
 		padding: 0;
 		margin: 0;
+	}
+	.gost-idx__row {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-		gap: 0.7rem;
+		grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+		gap: 0.4rem;
+		align-items: baseline;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--color-border);
 	}
-	.gost__item {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		padding: var(--space-3) var(--space-4);
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
-	}
-	.gost__item:hover {
-		border-color: var(--color-primary-500);
-		box-shadow: var(--shadow-sm);
-	}
-	.gost__item[data-priority='core'] {
-		background: var(--color-primary-50);
-		border-color: var(--color-primary-100);
-	}
-	.gost__item-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-	.gost__item-num {
+	.gost-idx__row:hover { background: var(--color-bg, transparent); }
+	.gost-idx__row-idx {
 		font-family: var(--font-mono);
-		font-size: 0.92rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		text-align: right;
+		padding-right: 0.3rem;
+	}
+	.gost-idx__row-link {
+		display: block;
+		text-decoration: none;
+		color: var(--color-primary-600);
+		font-size: 0.95rem;
+		line-height: 1.45;
+	}
+	.gost-idx__row-link:hover { text-decoration: underline; text-underline-offset: 2px; color: var(--color-primary); }
+	.gost-idx__row-num {
+		font-family: var(--font-mono);
 		font-weight: 700;
 		color: var(--color-primary);
+		margin-right: 0.3rem;
 	}
-	.gost__item-badge {
-		font-size: 0.68rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+	.gost-idx__row-title { color: var(--color-text); }
+	.gost-idx__row-link:hover .gost-idx__row-title { color: var(--color-primary); }
+	.gost-idx__row-badge {
+		font-size: 0.75rem;
 		color: var(--color-accent);
-		background: rgba(196, 101, 27, 0.1);
-		padding: 0.1rem 0.5rem;
-		border-radius: var(--radius-pill);
+		line-height: 1;
+		align-self: center;
 	}
-	.gost__item-title {
-		font-size: 0.88rem;
-		line-height: 1.45;
-		color: var(--color-text);
+
+	/* Нержавейка — детальный разбор */
+	.gost-idx__nerzh-section {
+		background: linear-gradient(180deg, var(--color-primary-50) 0%, transparent 100%);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-4) var(--space-2);
+		margin-top: var(--space-8);
 	}
-	.gost__item-links {
+	.gost-idx__nerzh-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 0.6rem;
+		margin-top: var(--space-3);
+	}
+	.gost-idx__nerzh-card {
 		display: flex;
-		gap: 0.4rem;
-		flex-wrap: wrap;
-		margin-top: auto;
-		padding-top: 0.3rem;
-	}
-	.gost__item-pdf, .gost__item-hub {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		padding: 0.35rem 0.7rem;
-		font-size: 0.8rem;
-		font-weight: 500;
+		flex-direction: column;
+		gap: 0.25rem;
+		padding: var(--space-3) var(--space-4);
+		background: #ffffff;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
 		text-decoration: none;
-		border-radius: var(--radius-pill);
-		border: 1px solid transparent;
 		transition: all var(--dur-fast) var(--ease-out);
 	}
-	.gost__item-pdf {
-		background: var(--color-primary-500);
-		color: #ffffff;
+	.gost-idx__nerzh-card:hover {
+		border-color: var(--color-primary-500);
+		text-decoration: none;
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-sm);
 	}
-	.gost__item-pdf:hover { background: var(--color-primary); color: #ffffff; text-decoration: none; }
-	.gost__item-hub {
-		background: transparent;
-		color: var(--color-primary-600);
-		border-color: var(--color-border);
-	}
-	.gost__item-hub:hover { border-color: var(--color-primary-500); background: #ffffff; text-decoration: none; }
-	.gost__item-hub svg { transition: transform var(--dur-fast) var(--ease-out); }
-	.gost__item-hub:hover svg { transform: translateX(2px); }
+	.gost-idx__nerzh-card strong { font-family: var(--font-mono); font-size: 0.92rem; color: var(--color-primary); }
+	.gost-idx__nerzh-card small { font-size: 0.85rem; color: var(--color-muted); line-height: 1.45; }
 
-	.gost__empty {
-		text-align: center;
-		padding: var(--space-6);
-		background: var(--color-surface);
-		border: 1px dashed var(--color-border);
-		border-radius: var(--radius-md);
-		color: var(--color-muted);
-		font-size: 0.95rem;
-	}
-
-	.gost__legal {
-		margin-top: var(--space-5);
+	.gost-idx__legal {
+		margin-top: var(--space-6);
 		padding: var(--space-3) var(--space-4);
 		font-size: 0.78rem;
 		line-height: 1.55;
@@ -808,5 +473,5 @@ const faqJsonLd = {
 		border-radius: 0 var(--radius-md) var(--radius-md) 0;
 		max-width: 80ch;
 	}
-	.gost__legal a { color: var(--color-primary-600); }
+	.gost-idx__legal a { color: var(--color-primary-600); }
 </style>
