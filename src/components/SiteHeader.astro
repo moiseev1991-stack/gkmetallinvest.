@@ -72,6 +72,14 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 
 		<div class="head__nav-backdrop" data-nav-backdrop aria-hidden="true"></div>
 		<div class="head__nav-wrap" id="nav-drawer">
+			<div class="head__drawer-top" aria-hidden="true">
+				<span class="head__drawer-title">{siteName}</span>
+				<button type="button" class="head__drawer-close" id="nav-close" aria-label="Закрыть меню">
+					<svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+						<path d="M5 5l12 12M17 5L5 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+					</svg>
+				</button>
+			</div>
 			<nav class="head__nav" aria-label="Основное">
 				<div class="mega">
 					<button type="button" class={`mega__trigger${inCatalog ? ' mega__trigger--active' : ''}`} aria-expanded="false" id="mega-btn" aria-current={inCatalog ? 'page' : undefined}>
@@ -153,6 +161,7 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	const drawer = document.getElementById('nav-drawer');
 	const megaBtn = document.getElementById('mega-btn');
 	const megaPanel = document.getElementById('mega-panel');
+	const closeBtn = document.getElementById('nav-close');
 
 	const backdrop = document.querySelector('[data-nav-backdrop]');
 	const closeDrawer = () => {
@@ -169,6 +178,7 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		document.body.style.overflow = open ? 'hidden' : '';
 	});
 	backdrop?.addEventListener('click', closeDrawer);
+	closeBtn?.addEventListener('click', closeDrawer);
 
 	megaBtn?.addEventListener('click', () => {
 		if (!megaPanel || !megaBtn) return;
@@ -372,6 +382,8 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	.head__nav-backdrop {
 		display: none;
 	}
+	/* Шапка drawer (мобильный заголовок + крестик) — на десктопе скрыта. */
+	.head__drawer-top { display: none; }
 
 	@media (max-width: 1023px) {
 		.head__burger {
@@ -381,16 +393,13 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		.head__nav-backdrop {
 			display: block;
 			position: fixed;
-			top: var(--header-h);
-			left: 0;
-			right: 0;
-			bottom: 0;
+			inset: 0;
 			background: rgba(15, 26, 43, 0.55);
 			backdrop-filter: blur(2px);
 			opacity: 0;
 			pointer-events: none;
 			transition: opacity var(--dur-base) var(--ease-out);
-			z-index: 38;
+			z-index: 48;
 		}
 		.head__nav-backdrop--open {
 			opacity: 1;
@@ -398,13 +407,13 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		}
 		.head__nav-wrap {
 			position: fixed !important;
-			top: var(--header-h);
+			top: 0;
 			right: 0;
 			bottom: 0;
 			left: auto;
 			width: min(86vw, 360px);
 			background: var(--color-surface);
-			padding: var(--space-5);
+			padding: 0 var(--space-5) var(--space-5);
 			display: flex !important;
 			flex-direction: column;
 			gap: var(--space-4);
@@ -412,13 +421,46 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			-webkit-overflow-scrolling: touch;
 			transform: translateX(100%);
 			transition: transform var(--dur-base) var(--ease-out);
-			z-index: 39;
+			z-index: 50;
 			box-shadow: -12px 0 28px rgba(15, 26, 43, 0.18);
 			border-left: 1px solid var(--color-border);
 		}
 		.head__nav-wrap--open {
 			transform: translateX(0);
 		}
+		.head__drawer-top {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-3);
+			padding: var(--space-3) 0 var(--space-3);
+			margin: 0 0 var(--space-2);
+			border-bottom: 1px solid var(--color-border);
+			position: sticky;
+			top: 0;
+			background: var(--color-surface);
+			z-index: 1;
+		}
+		.head__drawer-title {
+			font-weight: 700;
+			font-size: 0.98rem;
+			letter-spacing: -0.01em;
+			color: var(--color-text);
+		}
+		.head__drawer-close {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 38px;
+			height: 38px;
+			border: 0;
+			background: transparent;
+			color: var(--color-text);
+			cursor: pointer;
+			border-radius: var(--radius-md);
+			margin-right: calc(var(--space-2) * -1);
+		}
+		.head__drawer-close:hover { background: var(--color-bg-elev); }
 		/* Внутри drawer — пункты в столбик, чтобы было читаемо */
 		.head__nav-wrap .head__nav {
 			flex-direction: column;
