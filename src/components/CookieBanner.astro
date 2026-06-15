@@ -1,9 +1,8 @@
 ---
 /* Cookie-баннер. Появляется при первом визите; решение пользователя сохраняется
-   в localStorage на 12 месяцев. На сайте сейчас нет аналитики (Метрики/GA),
-   так что баннер чисто информирующий — но кнопка «Только необходимые» сохранена
-   как контракт для подключения Метрики через `window.gkmConsentGranted`
-   в будущем (см. cookies.astro). */
+   в localStorage на 12 месяцев. На сайте подключена Яндекс.Метрика — её скрипт
+   должен инициализироваться только после согласия через `window.gkmConsentGranted`
+   и события `gkm:consent` (см. cookies.astro). */
 ---
 
 <div class="cookie-banner" data-cookie-banner hidden aria-live="polite" role="region" aria-label="Уведомление о cookies">
@@ -11,10 +10,10 @@
 		<div class="cookie-banner__copy">
 			<strong>Мы используем cookie</strong>
 			<p>
-				Сайт сохраняет в браузере только технические cookie, необходимые
-				для его работы. Аналитические cookie устанавливаются только с вашего
-				согласия. Подробнее — в <a href="/cookies/">политике cookie</a>
-				и <a href="/politika-konfidencialnosti/">политике конфиденциальности</a>.
+				Технические cookie необходимы для работы сайта. Аналитические cookie
+				(Яндекс.Метрика) устанавливаются только с вашего согласия. Подробнее —
+				в <a href="/cookies/">политике cookie</a> и
+				<a href="/politika-konfidencialnosti/">политике конфиденциальности</a>.
 			</p>
 		</div>
 		<div class="cookie-banner__actions">

@@ -39,6 +39,16 @@ const { id = 'lead-form' } = Astro.props;
 							конфиденциальности</a>.
 						</span>
 					</label>
+					<label class="lead__consent lead__consent--optional">
+						<input type="checkbox" name="consent_marketing" value="yes" />
+						<span>
+							Согласен на получение информационных и рекламных сообщений
+							о новинках, акциях и спецпредложениях ГК «Металлинвест» по e-mail,
+							SMS и в мессенджерах (ч. 1 ст. 18 Федерального закона № 38-ФЗ
+							«О рекламе»). Отказаться можно в любой момент по ссылке
+							в письме или письмом на zakaz@gkmetallinvest.ru.
+						</span>
+					</label>
 					<Button type="submit">Отправить заявку</Button>
 				</form>
 			</div>
@@ -124,6 +134,8 @@ const { id = 'lead-form' } = Astro.props;
 	.lead__consent span { max-width: 56ch; }
 	.lead__consent a { color: var(--color-primary-600); }
 	.lead__consent a:hover { text-decoration: underline; }
+	.lead__consent--optional { margin-top: calc(var(--space-2) * -1); }
+	.lead__consent--optional span { color: var(--color-subtle, #6c7686); }
 	.lead__map {
 		position: relative;
 		min-height: 360px;
