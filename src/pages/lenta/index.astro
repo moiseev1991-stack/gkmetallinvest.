@@ -5,12 +5,58 @@ import HubRequest from '../../components/HubRequest.astro';
 
 <CatalogHubTemplate
 	title="Лента нержавеющая"
-	description="Нержавеющая лента по маркам, толщинам и ширинам. Раздел в наполнении — наличие и цены по запросу."
+	description="Лента нержавеющая стандартной ширины 200, 400, 600 мм. Толщина 0,3–4 мм, марки AISI 304, 321, 430, 12Х18Н10Т. Продольная резка рулона под заявку. Раздел в наполнении — цены и наличие по запросу."
 	h1="Лента нержавеющая"
-	intro=""
+	intro="Лента нержавеющая — узкий прокат шириной 200, 400 и 600 мм, толщиной 0,3–4 мм, марки AISI 304, 321, 430, 12Х18Н10Т. Получаем продольной резкой рулона. Раздел в наполнении — точные цены и наличие уточняйте у менеджера."
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Лента' }]}
 	hubKey="lenta"
 	noindex
 >
+	<section class="lenta-sizes">
+		<h2>Размерный ряд</h2>
+		<ul class="lenta-sizes__list">
+			<li><strong>Стандартная ширина:</strong> 200, 400, 600 мм</li>
+			<li><strong>Толщина:</strong> 0,3 — 4 мм</li>
+			<li><strong>Марки:</strong> AISI 304, AISI 321, AISI 430, 12Х18Н10Т</li>
+			<li><strong>Поверхности:</strong> 2B (матовая), BA (зеркальная)</li>
+			<li><strong>Способ изготовления:</strong> продольная резка рулона по ГОСТ 4986</li>
+		</ul>
+		<p class="lenta-sizes__note">
+			Нестандартные ширины — под заявку, шаг ширины 5 мм, минимальная партия — от одного хлыста.
+			Подробнее о технологии — на странице <a href="/lenta/proizvodstvo/">производство ленты и штрипса</a>.
+		</p>
+	</section>
+
 	<HubRequest what="Нержавеющая лента" />
 </CatalogHubTemplate>
+
+<style>
+	.lenta-sizes {
+		margin: var(--space-6) 0 var(--space-8);
+		padding: var(--space-5) var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+	}
+	.lenta-sizes h2 {
+		font-size: 1.15rem;
+		margin: 0 0 var(--space-3);
+	}
+	.lenta-sizes__list {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 var(--space-3);
+		display: grid;
+		gap: 0.4rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+	}
+	.lenta-sizes__list strong { color: var(--color-text); }
+	.lenta-sizes__note {
+		font-size: 0.92rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+		margin: 0;
+	}
+	.lenta-sizes__note a { color: var(--color-primary-600); }
+</style>
