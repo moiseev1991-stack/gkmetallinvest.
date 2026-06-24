@@ -44877,7 +44877,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "otvod",
-        "grade": "304",
+        "grade": "AISI 304",
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -47308,7 +47308,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "flanec",
-        "grade": "304",
+        "grade": "AISI 304",
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48634,7 +48634,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "zadvizhka",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48651,7 +48651,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "zadvizhka",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48668,7 +48668,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "zadvizhka",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48685,7 +48685,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "zadvizhka",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48702,7 +48702,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "zadvizhka",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48719,7 +48719,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "zadvizhka",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48736,7 +48736,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "zadvizhka",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48753,7 +48753,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48770,7 +48770,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48787,7 +48787,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48804,7 +48804,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48821,7 +48821,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48838,7 +48838,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48855,7 +48855,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48872,7 +48872,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48889,7 +48889,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48906,7 +48906,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48923,7 +48923,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48940,7 +48940,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48957,7 +48957,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48974,7 +48974,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -48991,7 +48991,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "16",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -49008,7 +49008,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -49025,7 +49025,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,
@@ -49042,7 +49042,7 @@
       {
         "hub": "detali-truboprovoda",
         "sub": "klapan",
-        "grade": "40",
+        "grade": null,
         "roll": null,
         "alloy": null,
         "surface": null,

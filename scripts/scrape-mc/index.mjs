@@ -260,6 +260,15 @@ function rowToSku(row, cat) {
 		if (row.grade && /^\d/.test(String(row.grade))) size = `${size} × ${row.grade}`;
 		dlina = null;
 	}
+	// Задвижки/клапаны на mc.ru держат в колонке «Марка» номинал давления (Ру16, Ру40),
+	// а не марку стали. Чистим, чтобы PN не утекал в фильтр «Марка» каталога.
+	if (grade && /^\d+([.,]\d+)?$/.test(String(grade).trim())) {
+		const realGrade = extractAisiGrade(row.name);
+		grade = realGrade || null;
+	}
+	// «304» без префикса AISI прилетает иногда из той же таблицы — нормализуем,
+	// иначе в выпадашке появится дубль «304» рядом с «AISI 304».
+	if (grade === '304') grade = 'AISI 304';
 
 	// slug parts: grade + roll + size, normalize
 	const sizeForSlug = isTuba
