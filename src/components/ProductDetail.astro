@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import pricelist from '../data/pricelist.json';
+import { getHubSkus } from '../data/pricelist-helpers';
 import { siteName, siteUrl, contacts } from '../data/site';
 import { cities } from '../data/cities';
 
@@ -22,6 +23,9 @@ interface SKU {
 	dlina?: string | null;
 	fact?: string | null;
 	ostatok?: number | null;
+	/* Только для полосы: добавляются normalizePolosaSku в pricelist-helpers. */
+	width?: number;
+	thickness?: number;
 }
 
 interface Props {
@@ -255,7 +259,9 @@ const gradeMeta = (() => {
 })();
 
 const description = `${hubLabel}${sku.grade ? ` ${sku.grade}` : ''}${roll ? `, ${roll}` : ''}${surface ? `, ${surface}` : ''}${
-	sku.size ? `, ${measureLabel} ${sku.size} мм` : ''
+	sku.size
+		? `, ${sku.hub === 'polosa' || sku.hub === 'truba' ? sku.size : `${measureLabel} ${sku.size}`} мм`
+		: ''
 }. Цена ${sku.price ? `от ${new Intl.NumberFormat('ru-RU').format(sku.price)} ₽/${sku.unit}` : 'по запросу'}.`;
 
 const fmt = (p: number | null) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
@@ -271,7 +277,14 @@ if (surface) detailRows.push({ label: 'Поверхность', value: surface }
 if (sku.alloy && sku.alloy.toLowerCase() !== subLabel.toLowerCase()) {
 	detailRows.push({ label: 'Тип сплава', value: sku.alloy });
 }
-if (sku.size) detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + measureLabel.slice(1), value: `${sku.size} мм` });
+if (sku.hub === 'polosa' && sku.width != null && sku.thickness != null) {
+	/* У полосы две существенные размерности — показываем раздельно, чтобы
+	   не было лжи «Толщина 20 мм» там, где 20 — это ширина. */
+	detailRows.push({ label: 'Ширина', value: `${sku.width} мм` });
+	detailRows.push({ label: 'Толщина', value: `${sku.thickness} мм` });
+} else if (sku.size) {
+	detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + measureLabel.slice(1), value: `${sku.size} мм` });
+}
 if (sku.dlina) detailRows.push({ label: 'Длина', value: `${sku.dlina} мм` });
 detailRows.push({ label: 'Единица измерения', value: sku.unit });
 if (weightLine) detailRows.push(weightLine);
@@ -313,7 +326,10 @@ const imgPath = `/img/catalog/${sku.hub}/${sku.sub}.webp`;
 const imgAlt = `${hubLabel} ${sku.grade || ''} ${sku.size ? sku.size + ' мм' : ''}`.trim();
 
 // 6 близких позиций по той же марке/переделу — для блока «Похожие позиции»
-const allSkus = (pricelist.hubs as any)[sku.hub] as SKU[];
+// Идём через getHubSkus, чтобы данные были согласованы с PriceTable и
+// хабовыми страницами (нормализация ESV-труб, переименование рулона,
+// фильтр рулон-стайл листа, парс полосы на ширину/толщину).
+const allSkus = getHubSkus(sku.hub) as SKU[];
 const related = allSkus
 	.filter((s) => s.slug !== sku.slug && s.grade === sku.grade && (s.roll ?? '') === (sku.roll ?? ''))
 	.slice(0, 6);
@@ -331,13 +347,21 @@ for (const s of allSkus) {
 	if ((s.surface ?? '') !== (sku.surface ?? '')) continue;
 	if ((s.roll ?? '') !== (sku.roll ?? '')) continue;
 	if (/-\d+$/.test(s.slug)) continue; // дубль партии
-	const n = sizeNum(s.size);
+	/* Для полосы группируем по толщине — это смысловой параметр выбора.
+	   Иначе раздел показывал бы «другие ширины», а пользователь ждёт толщин. */
+	const n = sku.hub === 'polosa' && s.thickness != null ? s.thickness : sizeNum(s.size);
 	if (!Number.isFinite(n)) continue;
 	if (!_sizeMap.has(n)) _sizeMap.set(n, s);
 }
 const otherSizes = [..._sizeMap.entries()]
 	.sort(([a], [b]) => a - b)
 	.map(([, s]) => s);
+/* В чипах «других толщин» для полосы показываем именно толщину, а не полную
+   геометрию (там у каждой ширины своя строка SKU, нам нужны уникальные толщины). */
+function otherSizeChipLabel(s: SKU): string {
+	if (sku.hub === 'polosa' && s.thickness != null) return `${s.thickness} мм`;
+	return `${s.size} мм`;
+}
 
 /* CTA — передаём slug и (опц.) объём, чтобы форма заявки могла предзаполниться
    и трекать конверсии по конкретной позиции. */
@@ -587,7 +611,11 @@ if (sku.price != null) {
 				{/* Лид-абзац: марка + формат, краткое описание из gradeMeta. Заполняет
 				    середину hero — без него title-wrap был визуально пуст. */}
 				<p class="product__lead">
-					{hubLabel} {sku.grade}{surface ? ` · ${surface}` : ''}{sku.size ? `, ${sku.hub === 'truba' ? sku.size : `${measureLabel} ${sku.size}`} мм` : ''}.
+					{hubLabel} {sku.grade}{surface ? ` · ${surface}` : ''}{
+						sku.size
+							? `, ${sku.hub === 'truba' || sku.hub === 'polosa' ? sku.size : `${measureLabel} ${sku.size}`} мм`
+							: ''
+					}.
 					{gradeMeta ? ` ${gradeMeta.applications}` : ` Поставка со склада в Нижнем Новгороде, доставка по России. Сертификат завода-изготовителя на каждую партию.`}
 				</p>
 
@@ -767,9 +795,9 @@ if (sku.price != null) {
 					{otherSizes.map((s) => (
 						<li>
 							{s.slug === sku.slug ? (
-								<span class="other-sizes__chip other-sizes__chip--active">{s.size} мм</span>
+								<span class="other-sizes__chip other-sizes__chip--active">{otherSizeChipLabel(s)}</span>
 							) : (
-								<a class="other-sizes__chip" href={`${hubHref}${s.slug}/`}>{s.size} мм</a>
+								<a class="other-sizes__chip" href={`${hubHref}${s.slug}/`}>{otherSizeChipLabel(s)}</a>
 							)}
 						</li>
 					))}

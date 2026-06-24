@@ -73,6 +73,26 @@ function esvKgPerMeter(s: any): number | null {
 	return null;
 }
 
+/* Полоса хранится в прайсе как size=«20» (одно число), хотя в названии
+   полная геометрия «20×3» (ширина × толщина). Из-за этого ProductDetail
+   подписывал 20 как «толщина», блок «Другие толщины» по факту перебирал
+   ширины, а в табличном прайсе колонка «Размер» давала 20 (это ширина,
+   а не размер). Правка клиента 24.06.2026.
+
+   Парсим обе цифры из названия и: size делаем строкой «ширина×толщина»
+   (видно сразу обе), кладём отдельные числовые width/thickness для
+   корректной фильтрации и группировок. Slug не трогаем — URL-стабильность. */
+function normalizePolosaSku(s: any): any {
+	if (!s || s.hub !== 'polosa') return s;
+	const name = String(s.name ?? '').replace(/[хХX×]/g, 'x');
+	const m = name.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)/);
+	if (!m) return s;
+	const width = parseFloat(m[1].replace(',', '.'));
+	const thickness = parseFloat(m[2].replace(',', '.'));
+	if (!Number.isFinite(width) || !Number.isFinite(thickness)) return s;
+	return { ...s, width, thickness, size: `${width}×${thickness}` };
+}
+
 function normalizeTrubaSku(s: any): any {
 	if (!s || s.hub !== 'truba') return s;
 	const sub = String(s.sub ?? '');
@@ -105,6 +125,9 @@ export function getHubSkus(hub: string): any[] {
 	}
 	if (hub === 'truba') {
 		return raw.map(normalizeTrubaSku);
+	}
+	if (hub === 'polosa') {
+		return raw.map(normalizePolosaSku);
 	}
 	return raw;
 }

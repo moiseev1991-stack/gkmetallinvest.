@@ -1,11 +1,11 @@
 ---
 import ProductDetail from '../../components/ProductDetail.astro';
 import MarkLanding from '../../components/MarkLanding.astro';
-import pricelist from '../../data/pricelist.json';
+import { getHubSkus } from '../../data/pricelist-helpers';
 import { marks } from '../../data/marks.ts';
 
 export async function getStaticPaths() {
-	const skus = (pricelist.hubs as any).polosa as any[];
+	const skus = getHubSkus('polosa');
 	const productPaths = skus.map((sku) => ({
 		params: { slug: sku.slug },
 		props: { kind: 'product', sku },
