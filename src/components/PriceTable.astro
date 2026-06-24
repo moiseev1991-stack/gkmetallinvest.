@@ -29,6 +29,25 @@ const allSkus = initialGrade && initialGrade.length > 0
 		})
 	: allSkusRaw;
 
+/* Информативные подписи поверхностей: BA и 4N (холоднокатаные) по умолчанию
+   шлются с защитной плёнкой (PI), 2B — матовая без плёнки, No1 — горячекатаный.
+   Тот же принцип используется фильтром «С плёнкой» ниже. */
+const SURFACE_LABELS: Record<string, string> = {
+	'2B': '2B (матовая)',
+	'BA': 'BA (зеркало, с плёнкой)',
+	'4N': '4N (шлифовка, с плёнкой)',
+	'No1': 'No1 (горячекатаный)',
+};
+
+/* «Плёнка» определяется эвристикой: явный маркер +PI в названии (точный сигнал
+   от поставщика) ИЛИ surface ∈ {BA, 4N} — отраслевой дефолт для холоднокатаного
+   зеркала/шлифовки. См. обсуждение с клиентом 2026-06-24. */
+function hasFilmSku(s: any): boolean {
+	if (/\+PI\b/i.test(String(s?.name ?? ''))) return true;
+	const surf = String(s?.surface ?? '');
+	return surf === 'BA' || surf === '4N';
+}
+
 const SUB_LABELS: Record<string, string> = {
 	nikelesod: 'Никелесодержащий',
 	beznikelya: 'Без никеля',
@@ -89,6 +108,7 @@ const showSubChips = subCounts.length >= 3;
 const surfaces = uniq(allSkus.map((s) => s.surface)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
+const anyFilm = allSkus.some(hasFilmSku);
 const rolls = uniq(allSkus.map((s) => s.roll)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
@@ -226,7 +246,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 						<select id={`${hub}-surface`} data-pt-surface aria-label="Поверхность">
 							<option value="">все</option>
 							{surfaces.map((s) => (
-								<option value={s}>{s}</option>
+								<option value={s}>{SURFACE_LABELS[s as string] ?? s}</option>
 							))}
 						</select>
 					</label>
@@ -297,6 +317,15 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 						<input type="checkbox" data-pt-instock />
 						<span class="pt__toggle-track" aria-hidden="true"><span class="pt__toggle-dot"></span></span>
 						<span class="pt__toggle-text">Только в наличии</span>
+					</label>
+				)
+			}
+			{
+				anyFilm && (
+					<label class="pt__field pt__field--toggle">
+						<input type="checkbox" data-pt-film />
+						<span class="pt__toggle-track" aria-hidden="true"><span class="pt__toggle-dot"></span></span>
+						<span class="pt__toggle-text">С защитной плёнкой</span>
 					</label>
 				)
 			}
@@ -391,7 +420,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	<p class="pt__empty" data-pt-empty hidden>Ничего не найдено по фильтрам — попробуйте сбросить.</p>
 </section>
 
-<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices }}>
+<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices }}>
 	const root = document.querySelector(`.pt[data-hub="${hub}"]`);
 	if (root) {
 		const fmt = (p) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
@@ -419,7 +448,15 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			sizeMin: root.querySelector('[data-pt-size-min]'),
 			sizeMax: root.querySelector('[data-pt-size-max]'),
 			inStock: root.querySelector('[data-pt-instock]'),
+			film: root.querySelector('[data-pt-film]'),
 		};
+
+		/* Зеркало hasFilmSku из frontmatter: явный +PI или surface BA/4N. */
+		function hasFilm(s) {
+			if (/\+PI\b/i.test(String(s?.name ?? ''))) return true;
+			const surf = String(s?.surface ?? '');
+			return surf === 'BA' || surf === '4N';
+		}
 
 		const storageKey = `pt-view`;
 		const storedView = (() => { try { return localStorage.getItem(storageKey); } catch { return null; } })();
@@ -453,6 +490,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.roll && (s.roll || '') !== f.roll) return false;
 			if (f.fact && (s.fact || '') !== f.fact) return false;
 			if (f.inStock && !s.ostatok) return false;
+			if (f.film && !hasFilm(s)) return false;
 			if (f.sizeMin != null || f.sizeMax != null) {
 				const n = sizeNum(s.size);
 				if (Number.isNaN(n)) return false;
@@ -586,10 +624,11 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.q) chips.push({ key: 'q', label: `«${f.q}»` });
 			if (f.sub) chips.push({ key: 'sub', label: `Тип: ${SUB_LABELS[f.sub] || f.sub}` });
 			if (f.grade) chips.push({ key: 'grade', label: `Марка: ${f.grade}` });
-			if (f.surface) chips.push({ key: 'surface', label: `Поверхность: ${f.surface}` });
+			if (f.surface) chips.push({ key: 'surface', label: `Поверхность: ${SURFACE_LABELS[f.surface] ?? f.surface}` });
 			if (f.roll) chips.push({ key: 'roll', label: `Прокат: ${f.roll}` });
 			if (f.fact) chips.push({ key: 'fact', label: `Склад: ${f.fact}` });
 			if (f.inStock) chips.push({ key: 'inStock', label: 'В наличии' });
+			if (f.film) chips.push({ key: 'film', label: 'С плёнкой' });
 			if (f.sizeMin != null || f.sizeMax != null) {
 				const lo = f.sizeMin != null ? String(f.sizeMin).replace('.', ',') : '…';
 				const hi = f.sizeMax != null ? String(f.sizeMax).replace('.', ',') : '…';
@@ -611,6 +650,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 						if (inputs.sizeMax) inputs.sizeMax.value = '';
 					}
 					else if (key === 'inStock' && inputs.inStock) inputs.inStock.checked = false;
+					else if (key === 'film' && inputs.film) inputs.film.checked = false;
 					else if (inputs[key]) inputs[key].value = '';
 					state.page = 1;
 					render();
@@ -622,6 +662,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (inputs.q) inputs.q.value = '';
 			['sub','grade','surface','roll','fact','sizeMin','sizeMax'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
 			if (inputs.inStock) inputs.inStock.checked = false;
+			if (inputs.film) inputs.film.checked = false;
 			state.sortKey = null; state.sortDir = 'asc'; state.page = 1;
 			render();
 		}
@@ -643,6 +684,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				sizeMin: parseRange(inputs.sizeMin),
 				sizeMax: parseRange(inputs.sizeMax),
 				inStock: !!inputs.inStock?.checked,
+				film: !!inputs.film?.checked,
 			};
 			const filtered = sortRows(allSkus.filter((s) => rowMatches(s, f)));
 
