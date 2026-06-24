@@ -153,6 +153,27 @@ const cutCounts: Array<{ key: string; label: string; count: number }> = (() => {
 		.map(([k, count]) => ({ key: k, label: cutLabel(k), count }))
 		.sort((a, b) => b.count - a.count);
 })();
+
+/* Ру (давление) — извлекаем из названия для запорной арматуры. Показываем
+   фильтр только при ≥2 различных значениях. Запрос клиента 24.06.2026 — по
+   образцу santech.ru: «запорка» разрезается по material × type × pressure.
+   У нас material = grade, type = sub, pressure = вот этот фильтр. */
+function extractPressureSku(s: any): string | null {
+	const m = String(s?.name ?? '').match(/Ру\s?(\d+)/i);
+	return m ? m[1] : null;
+}
+const pressureCounts: Array<{ key: string; count: number }> = (() => {
+	const map = new Map<string, number>();
+	for (const s of allSkus) {
+		const p = extractPressureSku(s);
+		if (!p) continue;
+		map.set(p, (map.get(p) ?? 0) + 1);
+	}
+	return [...map.entries()]
+		.map(([k, count]) => ({ key: k, count }))
+		.sort((a, b) => Number(a.key) - Number(b.key));
+})();
+
 const rolls = uniq(allSkus.map((s) => s.roll)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
@@ -291,6 +312,19 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 							<option value="">все</option>
 							{surfaces.map((s) => (
 								<option value={s}>{SURFACE_LABELS[s as string] ?? s}</option>
+							))}
+						</select>
+					</label>
+				)
+			}
+			{
+				pressureCounts.length > 1 && (
+					<label class="pt__field pt__field--select" data-pt-label="Давление">
+						<span class="pt__label">Ру, атм</span>
+						<select id={`${hub}-pressure`} data-pt-pressure aria-label="Давление, Ру">
+							<option value="">все</option>
+							{pressureCounts.map((p) => (
+								<option value={p.key}>Ру {p.key}</option>
 							))}
 						</select>
 					</label>
@@ -500,6 +534,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			sub: root.querySelector('[data-pt-sub]'),
 			grade: root.querySelector('[data-pt-grade]'),
 			surface: root.querySelector('[data-pt-surface]'),
+			pressure: root.querySelector('[data-pt-pressure]'),
 			roll: root.querySelector('[data-pt-roll]'),
 			cut: root.querySelector('[data-pt-cut]'),
 			fact: root.querySelector('[data-pt-fact]'),
@@ -527,6 +562,12 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
 		}
 
+		/* Зеркало extractPressureSku из frontmatter — «Ру16» / «Ру 40» из названия. */
+		function extractPressure(s) {
+			const m = String(s?.name ?? '').match(/Ру\s?(\d+)/i);
+			return m ? m[1] : null;
+		}
+
 		/* === Каскадные фильтры =====================================================
 		   Для каждого селекта (sub/grade/surface/roll/cut/fact) считаем доступные
 		   значения, применяя ВСЕ остальные активные фильтры, кроме самого этого
@@ -538,7 +579,10 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			const counts = new Map();
 			for (const s of allSkus) {
 				if (!rowMatches(s, constraints)) continue;
-				const v = field === 'cut' ? extractCut(s) : s[field];
+				let v;
+				if (field === 'cut') v = extractCut(s);
+				else if (field === 'pressure') v = extractPressure(s);
+				else v = s[field];
 				if (v == null || v === '') continue;
 				counts.set(v, (counts.get(v) ?? 0) + 1);
 			}
@@ -573,6 +617,12 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				const counts = valuesFor('surface', f);
 				const entries = [...counts.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'ru'));
 				f.surface = refreshSelect(inputs.surface, f.surface, entries, (v) => SURFACE_LABELS[v] ?? v);
+			}
+			if (inputs.pressure) {
+				const counts = valuesFor('pressure', f);
+				/* Ру: сортируем числом по возрастанию (16, 25, 40), а не лексикографически. */
+				const entries = [...counts.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
+				f.pressure = refreshSelect(inputs.pressure, f.pressure, entries, (v) => `Ру ${v}`);
 			}
 			if (inputs.roll) {
 				const counts = valuesFor('roll', f);
@@ -636,6 +686,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.sub && (s.sub || '') !== f.sub) return false;
 			if (f.grade && s.grade !== f.grade) return false;
 			if (f.surface && (s.surface || '') !== f.surface) return false;
+			if (f.pressure && extractPressure(s) !== f.pressure) return false;
 			if (f.roll && (s.roll || '') !== f.roll) return false;
 			if (f.cut && extractCut(s) !== f.cut) return false;
 			if (f.fact && (s.fact || '') !== f.fact) return false;
@@ -775,6 +826,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.sub) chips.push({ key: 'sub', label: `Тип: ${SUB_LABELS[f.sub] || f.sub}` });
 			if (f.grade) chips.push({ key: 'grade', label: `Марка: ${f.grade}` });
 			if (f.surface) chips.push({ key: 'surface', label: `Поверхность: ${SURFACE_LABELS[f.surface] ?? f.surface}` });
+			if (f.pressure) chips.push({ key: 'pressure', label: `Ру ${f.pressure}` });
 			if (f.roll) chips.push({ key: 'roll', label: `Прокат: ${f.roll}` });
 			if (f.cut) chips.push({ key: 'cut', label: `Крой: ${cutLabel(f.cut)}` });
 			if (f.fact) chips.push({ key: 'fact', label: `Склад: ${f.fact}` });
@@ -811,7 +863,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 
 		function resetAll() {
 			if (inputs.q) inputs.q.value = '';
-			['sub','grade','surface','roll','cut','fact','sizeMin','sizeMax'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
+			['sub','grade','surface','pressure','roll','cut','fact','sizeMin','sizeMax'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
 			if (inputs.inStock) inputs.inStock.checked = false;
 			if (inputs.film) inputs.film.checked = false;
 			state.sortKey = null; state.sortDir = 'asc'; state.page = 1;
@@ -830,6 +882,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				sub: inputs.sub?.value || '',
 				grade: inputs.grade?.value || '',
 				surface: inputs.surface?.value || '',
+				pressure: inputs.pressure?.value || '',
 				roll: inputs.roll?.value || '',
 				cut: inputs.cut?.value || '',
 				fact: inputs.fact?.value || '',
