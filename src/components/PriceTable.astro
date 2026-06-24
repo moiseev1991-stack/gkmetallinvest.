@@ -1,5 +1,6 @@
 ---
 import pricelist from '../data/pricelist.json';
+import { getHubSkus } from '../data/pricelist-helpers';
 
 interface Props {
 	hub:
@@ -21,7 +22,7 @@ interface Props {
 
 const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade } = Astro.props;
 
-const allSkusRaw: any[] = (pricelist.hubs as any)[hub] ?? [];
+const allSkusRaw: any[] = getHubSkus(hub);
 const allSkus = initialGrade && initialGrade.length > 0
 	? allSkusRaw.filter((s) => {
 			const g = String(s.grade || '').toLowerCase();
