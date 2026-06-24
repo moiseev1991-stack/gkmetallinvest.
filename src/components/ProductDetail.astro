@@ -323,7 +323,7 @@ const services = SERVICES_BY_HUB[sku.hub] || [];
 
 // Category image (one per sub) — pre-uniqueized from mc.ru.
 const imgPath = `/img/catalog/${sku.hub}/${sku.sub}.webp`;
-const imgAlt = `${hubLabel} ${sku.grade || ''} ${sku.size ? sku.size + ' мм' : ''}`.trim();
+const imgAlt = [hubLabel, sku.grade, sku.size ? `${sku.size} мм` : ''].filter(Boolean).join(' ');
 
 // 6 близких позиций по той же марке/переделу — для блока «Похожие позиции»
 // Идём через getHubSkus, чтобы данные были согласованы с PriceTable и
@@ -374,14 +374,15 @@ const ctaHref = `/zapros-kp/?sku=${encodeURIComponent(sku.slug)}#lead-form`;
 const isPiece = sku.unit === 'шт';
 const faqItems = (() => {
 	const items: { q: string; a: string }[] = [];
+	const gradeSuffix = sku.grade ? ` ${sku.grade}` : '';
 	if (isPiece) {
 		items.push({
-			q: `Какой минимальный объём заказа ${hubLabel.toLowerCase()} ${sku.grade}?`,
+			q: `Какой минимальный объём заказа ${hubLabel.toLowerCase()}${gradeSuffix}?`,
 			a: `Отгружаем поштучно — от 1 шт. Минимальной партии нет: в одну отправку можно собрать несколько типов и марок (отводы, фланцы, тройники, заглушки) со склада в Нижнем Новгороде.`,
 		});
 	} else {
 		items.push({
-			q: `Какой минимальный объём заказа ${hubLabel.toLowerCase()} ${sku.grade}?`,
+			q: `Какой минимальный объём заказа ${hubLabel.toLowerCase()}${gradeSuffix}?`,
 			a: `Отгружаем от розничной нормы — 0,1 ${sku.unit} (с розничной ценой) и от 1 ${sku.unit} по оптовой цене. Возможна резка под ваш размер и комплектация одной отправкой нескольких марок.`,
 		});
 	}
@@ -426,10 +427,39 @@ const faqJsonLd = {
 	})),
 };
 
+/* Артикул в конце имени — «...12820-80 Россия арт.1243937» — выносим
+   отдельной строкой мелким шрифтом, чтобы заголовок читался как название.
+   То же делает PriceTable.splitArticle на странице каталога. */
+function splitArticle(raw: string | null | undefined): { name: string; article: string | null } {
+	const m = String(raw ?? '').match(/^(.*?)\s+арт\.?\s*([A-Za-zА-Яа-я0-9._/-]+)\s*$/);
+	if (m) return { name: m[1].trim(), article: m[2] };
+	return { name: String(raw ?? ''), article: null };
+}
+const { name: skuDisplayName, article: skuArticle } = splitArticle(sku.name);
+
+/* Штучный товар (фитинги в /detali-truboprovoda/) — у каждой позиции
+   развёрнутое описание в sku.name («Фланец нержавеющий плоский 1x10x40
+   12820-80 Россия»), которое уже видно в прайс-листе. Используем его как
+   главный заголовок вместо абстрактного «Детали трубопровода · 12Х18Н10Т ·
+   1 мм» (а у части задвижек grade=null, и получалось «null · 50 мм»).
+   Для тонного проката (лист/круг/труба) sku.name шаблонное — оставляем
+   старую сборку H1 из hub + grade + size. */
+const usePieceTitle = sku.unit === 'шт' && !!skuDisplayName;
+
+/* Хлебная крошка: на хабе без grade (часть задвижек) — берём подкатегорию
+   («Задвижка»), а не «null · 50 мм». На остальных — как было. */
+const breadcrumbTail = (() => {
+	if (usePieceTitle) {
+		const sizePart = sku.size ? ` · ${sku.size} мм` : '';
+		return `${subLabel || sku.grade || hubLabel}${sizePart}`;
+	}
+	const head = sku.grade || subLabel || hubLabel;
+	return `${head}${sku.size ? ` · ${sku.size} мм` : ''}`;
+})();
 const breadcrumbs = [
 	{ label: 'Главная', href: '/' },
 	{ label: hubLabel, href: hubHref },
-	{ label: `${sku.grade}${sku.size ? ` · ${sku.size} мм` : ''}` },
+	{ label: breadcrumbTail },
 ];
 
 /* Duplicate slugs (-2/-3/-N) — это тот же товар с другой партии/остатком.
@@ -496,10 +526,17 @@ const shortGradeLabel = shortGrade(sku.grade);
 // Title с размером и маркой первыми. Цель — полный <title> ≤ 70 знаков
 // (BaseLayout приклеит « — ГК Металлинвест» = 19 знаков, значит наш part ≤ 51).
 const titleSeo = (() => {
-	const head = [hubLabel, mainSize, shortGradeLabel].filter(Boolean).join(' ');
+	/* Для штучного товара (фитинги) head собираем по subLabel + размер +
+	   марка, чтобы не было «Детали трубопровода 100 мм» — это слишком общая
+	   фраза, не описывающая что именно перед пользователем (задвижка vs
+	   фланец vs отвод). Также «за тонну» для шт неуместен — заменяем на
+	   «поштучно». */
+	const head = sku.unit === 'шт'
+		? [subLabel || hubLabel, mainSize, shortGradeLabel].filter(Boolean).join(' ')
+		: [hubLabel, mainSize, shortGradeLabel].filter(Boolean).join(' ');
 	const BUDGET = 51; // 70 − длина « — ГК Металлинвест»
 	const longSuffix = ' — купить в Нижнем Новгороде';
-	const midSuffix = ' — купить за тонну с НДС';
+	const midSuffix = sku.unit === 'шт' ? ' — купить поштучно' : ' — купить за тонну с НДС';
 	const shortSuffix = ' — купить';
 	if ((head + longSuffix).length <= BUDGET) return head + longSuffix;
 	if ((head + midSuffix).length <= BUDGET) return head + midSuffix;
@@ -602,11 +639,18 @@ if (sku.price != null) {
 				{subLabel && subLabel.toLowerCase() !== hubLabel.toLowerCase() && (
 						<span class="product__eyebrow">{subLabel}</span>
 					)}
-				<h1 class="product__title">
-					<span class="product__title-hub">{hubLabel}</span>
-					<span class="product__title-grade">{sku.grade}</span>
-					{sku.size && <span class="product__size">{sku.size} мм</span>}
-				</h1>
+				{usePieceTitle ? (
+					<>
+						<h1 class="product__title product__title--name">{skuDisplayName}</h1>
+						{skuArticle && <span class="product__article">арт. {skuArticle}</span>}
+					</>
+				) : (
+					<h1 class="product__title">
+						<span class="product__title-hub">{hubLabel}</span>
+						{sku.grade && <span class="product__title-grade">{sku.grade}</span>}
+						{sku.size && <span class="product__size">{sku.size} мм</span>}
+					</h1>
+				)}
 
 				{(roll || surface || sku.alloy) && (
 					<p class="product__tags">
@@ -626,9 +670,11 @@ if (sku.price != null) {
 				)}
 
 				{/* Лид-абзац: марка + формат, краткое описание из gradeMeta. Заполняет
-				    середину hero — без него title-wrap был визуально пуст. */}
+				    середину hero — без него title-wrap был визуально пуст. У штучного
+				    товара лид строим от subLabel + grade, чтобы избежать «null» в
+				    хедере (часть задвижек идёт без grade в прайсе). */}
 				<p class="product__lead">
-					{hubLabel} {sku.grade}{surface ? ` · ${surface}` : ''}{
+					{usePieceTitle ? (subLabel || hubLabel) : hubLabel}{sku.grade ? ` ${sku.grade}` : ''}{surface ? ` · ${surface}` : ''}{
 						sku.size
 							? `, ${sku.hub === 'truba' || sku.hub === 'polosa' ? sku.size : `${measureLabel} ${sku.size}`} мм`
 							: ''
@@ -807,7 +853,7 @@ if (sku.price != null) {
 
 		{otherSizes.length > 1 && (
 			<section class="other-sizes">
-				<h2>Другие {measureLabel === 'диаметр' ? 'диаметры' : measureLabel === 'Ø × стенка' ? 'размеры' : 'толщины'} для {sku.grade}{surface && ` · ${surface}`}</h2>
+				<h2>Другие {measureLabel === 'диаметр' ? 'диаметры' : measureLabel === 'Ø × стенка' ? 'размеры' : 'толщины'} для {sku.grade || (subLabel || hubLabel).toLowerCase()}{surface && ` · ${surface}`}</h2>
 				<ul class="other-sizes__list">
 					{otherSizes.map((s) => (
 						<li>
@@ -824,21 +870,21 @@ if (sku.price != null) {
 
 		{related.length > 0 && (
 			<section class="related">
-				<h2>Похожие позиции — {sku.grade}{roll && `, ${roll}`}</h2>
+				<h2>Похожие позиции — {sku.grade || (subLabel || hubLabel).toLowerCase()}{roll && `, ${roll}`}</h2>
 				<div class="related__grid">
 					{related.map((r) => (
 						<a class="related__card" href={`${hubHref}${r.slug}/`}>
 							<img
 								class="related__img"
 								src={`/img/catalog/${r.hub}/${r.sub}.webp`}
-								alt={`${r.grade} ${r.size || ''}`.trim()}
+								alt={[r.grade, r.size].filter(Boolean).join(' ')}
 								width="120"
 								height="120"
 								loading="lazy"
 								onerror="this.style.display='none';"
 							/>
 							<div class="related__body">
-								<span class="related__title">{r.grade}{r.size && ` · ${r.size} мм`}</span>
+								<span class="related__title">{r.grade || SUB_LABELS[r.sub] || r.sub}{r.size && ` · ${r.size} мм`}</span>
 								<span class="related__meta">{[SUB_LABELS[r.sub] ?? r.sub, r.surface].filter(Boolean).join(' · ')}</span>
 								<span class="related__price">
 									{r.price ? `${fmt(r.price)} ₽/${r.unit}` : 'по запросу'}
@@ -1175,6 +1221,22 @@ if (sku.price != null) {
 		background: var(--color-primary-50);
 		padding: 0.2rem 0.7rem;
 		border-radius: var(--radius-pill);
+	}
+	/* Полное имя из прайса как заголовок — переопределяем .product__title,
+	   чтобы не сжимать длинное название во flex-row и переносить нормально. */
+	.product__title--name {
+		display: block;
+		font-weight: 700;
+		color: var(--color-text);
+		line-height: 1.2;
+		overflow-wrap: break-word;
+	}
+	.product__article {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--color-muted);
+		letter-spacing: 0.02em;
 	}
 	.product__tags {
 		margin: 0;
