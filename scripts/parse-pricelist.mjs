@@ -1,6 +1,11 @@
 // Parses планы/nerzhaveika_utf8.csv (semicolon, two-stream layout) → src/data/pricelist.json
 // Two streams per row: cols 0..3 (Марка/Размер/Ед.изм/Цена) and cols 5..8.
 // Applies a configurable price markup (default +5%) and emits a stable URL slug per SKU.
+//
+// ВНИМАНИЕ: src/data/pricelist.json содержит РУЧНЫЕ дополнения сверх CSV
+// (например, /detali-truboprovoda/ — 756 SKU при 40 из CSV). Запуск этого
+// скрипта ПЕРЕТРЁТ все ручные данные. Для переиздания slug'ов без потери
+// данных используй scripts/reslug-pricelist.mjs.
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -150,7 +155,14 @@ function surfaceSlug(surface) {
 }
 
 function buildSlug(sku) {
+	/* sub в начале slug — главное, что разводит коллизии в /detali-truboprovoda/
+	   (otvod/flanec/troynik одной марки и размера) и в /krug/, /truba/.
+	   Без него 333 SKU из 756 в детали-трубопровода становились недоступны:
+	   getStaticPaths отдаёт первый paths-entry, остальные SKU висят в данных
+	   без своей страницы — клик из PriceTable открывает чужую (бажный скрин
+	   24.06.2026: клик по «Отводы 25x2.5» открывал фланец 25x10x1). */
 	const parts = [
+		sku.sub ? slugify(sku.sub) : '',
 		slugify(sku.grade),
 		rollSlug(sku.roll),
 		surfaceSlug(sku.surface),
