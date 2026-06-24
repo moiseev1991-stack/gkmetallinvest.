@@ -84,6 +84,22 @@ const subLabel = SUB_LABELS[sku.sub] ?? sku.sub;
 const surface = sku.surface ?? '';
 const roll = sku.roll ?? '';
 
+/* Фактические описания типов фитингов — взяты из текстов на хабе
+   /detali-truboprovoda/index.astro. Для ограждений (lestn-osnovnye,
+   povoroty, derzhatel-rigelya и т.п.) описания не делаем — нет
+   проверенного источника. */
+const SUB_DESCRIPTIONS: Record<string, string> = {
+	otvod: 'Гнутые и штампованные элементы для поворота трассы трубопровода под углами 45°, 60°, 90°, реже 180°. Бесшовные крутоизогнутые — ГОСТ 17375 (R = 1,0–1,5 Ду), штампосварные — ГОСТ 30753, малого Ду — ГОСТ 17380. Сохраняют проходное сечение и работают наравне с трубой по давлению.',
+	flanec: 'Плоские приварные (тип 01, ГОСТ 33259, ранее ГОСТ 12820) и воротниковые приварные встык (тип 11, ГОСТ 33259, ранее ГОСТ 12821). Условные давления Ру 6 / 10 / 16 / 25 / 40 атм. Плоский фланец проще в монтаже на низких давлениях, воротниковый держит Ру 25–40 и циклические нагрузки на встыковом шве.',
+	'flanec-nastennyy': 'Декоративный фланец для крепления нержавеющих стоек ограждения к стене или полу. Скрывает точку крепления и придаёт сборке завершённый вид. Под стандартный диаметр стойки 38/42/50,8 мм.',
+	troynik: 'Узловая деталь для ответвления магистрали под 90°. Равнопроходные (Т-образные, диаметр магистрали равен диаметру отвода) и переходные (с уменьшенным боковым отводом). ГОСТ 17376 на бесшовные крутоизогнутые. Применяются на коллекторах пара и горячей воды, парораздаточных гребёнках, обвязке теплообменников.',
+	perehod: 'Фасонная деталь для соединения труб разных диаметров. Концентрические — соосные, для вертикальных участков. Эксцентрические — со смещением оси, для горизонтальных трубопроводов (исключают застойную зону по нижней образующей). ГОСТ 17378.',
+	zaglushka: 'Приварные эллиптические по ГОСТ 17379 (стандартная форма для трубопроводов давления), плоские круглые и отбортованные. Закрывают концы трубопроводов в тупиковых точках, патрубки ёмкостей, резервные отводы под будущее подключение.',
+	zadvizhka: 'Запорная арматура, перекрывает поток клином или шибером перпендикулярно оси. Маркировка 30нж41нж: 30 — задвижка клиновая, 41 — фланцевая, нж — нержавеющий корпус и затвор. Класс герметичности «А» по ГОСТ 9544.',
+	klapan: 'Запорный клапан перекрывает поток прижатием плоского или конусного золотника к седлу. Маркировка 15нж — клапан запорный нержавеющий, фланцевое присоединение. Рабочие давления Ру 16 и Ру 40 атм.',
+};
+const subDescription = SUB_DESCRIPTIONS[sku.sub] ?? null;
+
 const titleParts = [hubLabel, sku.grade, sku.size ? `${sku.size} мм` : ''].filter(Boolean);
 const fullTitle = titleParts.join(' · ');
 
@@ -804,12 +820,14 @@ if (sku.price != null) {
 						</svg>
 						<span>Сертификат завода и паспорт качества на каждую партию</span>
 					</li>
-					<li>
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
-						</svg>
-						<span>Резка в размер, перфорация, полировка — по запросу</span>
-					</li>
+					{sku.unit !== 'шт' && (
+						<li>
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
+							</svg>
+							<span>Резка в размер, перфорация, полировка — по запросу</span>
+						</li>
+					)}
 					<li>
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 							<circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
@@ -819,6 +837,13 @@ if (sku.price != null) {
 				</ul>
 			</div>
 		</section>
+
+		{subDescription && (
+			<section class="sub-info">
+				<h2>Об изделии — {subLabel.toLowerCase()}</h2>
+				<p>{subDescription}</p>
+			</section>
+		)}
 
 		{gradeMeta && (
 			<section class="grade-info">
@@ -1370,6 +1395,25 @@ if (sku.price != null) {
 		flex: 0 0 20px;
 		margin-top: 2px;
 		color: var(--color-primary-500);
+	}
+
+	.sub-info {
+		padding: var(--space-6);
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--space-6);
+	}
+	.sub-info h2 {
+		font-size: 1.15rem;
+		margin: 0 0 var(--space-3);
+	}
+	.sub-info p {
+		margin: 0;
+		color: var(--color-text);
+		font-size: 0.95rem;
+		line-height: 1.6;
+		max-width: 75ch;
 	}
 
 	.grade-info {
