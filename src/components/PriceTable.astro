@@ -515,6 +515,86 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
 		}
 
+		/* === Каскадные фильтры =====================================================
+		   Для каждого селекта (sub/grade/surface/roll/cut/fact) считаем доступные
+		   значения, применяя ВСЕ остальные активные фильтры, кроме самого этого
+		   поля. Опции с count=0 не показываем. Если текущее значение селекта
+		   перестало быть доступным — авто-сбрасываем. Запрос клиента 24.06.2026:
+		   «выбираешь тип — в остальных фильтрах доступны только подходящие». */
+		function valuesFor(field, f) {
+			const constraints = { ...f, [field]: '' };
+			const counts = new Map();
+			for (const s of allSkus) {
+				if (!rowMatches(s, constraints)) continue;
+				const v = field === 'cut' ? extractCut(s) : s[field];
+				if (v == null || v === '') continue;
+				counts.set(v, (counts.get(v) ?? 0) + 1);
+			}
+			return counts;
+		}
+		function refreshSelect(el, currentVal, sortedEntries, labelFn) {
+			if (!el || el.tagName !== 'SELECT') return currentVal;
+			let html = '<option value="">все</option>';
+			let foundCurrent = false;
+			for (const [val, count] of sortedEntries) {
+				if (val === currentVal) foundCurrent = true;
+				const label = labelFn ? labelFn(val) : String(val);
+				html += `<option value="${escapeHtml(val)}">${escapeHtml(label)} (${count})</option>`;
+			}
+			el.innerHTML = html;
+			el.value = foundCurrent ? currentVal : '';
+			return el.value;
+		}
+		function refreshFilterOptions(f) {
+			if (inputs.sub) {
+				const counts = valuesFor('sub', f);
+				const entries = [...counts.entries()].sort((a, b) =>
+					(SUB_LABELS[a[0]] ?? a[0]).localeCompare(SUB_LABELS[b[0]] ?? b[0], 'ru'));
+				f.sub = refreshSelect(inputs.sub, f.sub, entries, (v) => SUB_LABELS[v] ?? v);
+			}
+			if (inputs.grade) {
+				const counts = valuesFor('grade', f);
+				const entries = [...counts.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'ru'));
+				f.grade = refreshSelect(inputs.grade, f.grade, entries);
+			}
+			if (inputs.surface) {
+				const counts = valuesFor('surface', f);
+				const entries = [...counts.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'ru'));
+				f.surface = refreshSelect(inputs.surface, f.surface, entries, (v) => SURFACE_LABELS[v] ?? v);
+			}
+			if (inputs.roll) {
+				const counts = valuesFor('roll', f);
+				const entries = [...counts.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'ru'));
+				f.roll = refreshSelect(inputs.roll, f.roll, entries);
+			}
+			if (inputs.cut) {
+				const counts = valuesFor('cut', f);
+				/* Крой: сортируем по убыванию количества — самые ходовые сверху. */
+				const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+				f.cut = refreshSelect(inputs.cut, f.cut, entries, (v) => cutLabel(v));
+			}
+			if (inputs.fact) {
+				const counts = valuesFor('fact', f);
+				const entries = [...counts.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'ru'));
+				f.fact = refreshSelect(inputs.fact, f.fact, entries);
+			}
+			return f;
+		}
+		function refreshSubchipCounts(f) {
+			if (!subChips.length) return;
+			const otherF = { ...f, sub: '' };
+			const baseMatching = allSkus.filter((s) => rowMatches(s, otherF));
+			subChips.forEach((c) => {
+				const key = c.getAttribute('data-pt-subchip') || '';
+				const count = key
+					? baseMatching.filter((s) => (s.sub || '') === key).length
+					: baseMatching.length;
+				const countEl = c.querySelector('.pt__subchip-count');
+				if (countEl) countEl.textContent = String(count);
+				c.classList.toggle('pt__subchip--zero', count === 0);
+			});
+		}
+
 		const storageKey = `pt-view`;
 		const storedView = (() => { try { return localStorage.getItem(storageKey); } catch { return null; } })();
 		const state = { page: 1, sortKey: null, sortDir: 'asc', view: storedView === 'grid' ? 'grid' : 'table' };
@@ -746,6 +826,10 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				inStock: !!inputs.inStock?.checked,
 				film: !!inputs.film?.checked,
 			};
+			/* Каскад: пересобираем опции каждого селекта с учётом ОСТАЛЬНЫХ фильтров,
+			   авто-сбрасываем те, чьи значения стали недоступны. Мутирует f. */
+			refreshFilterOptions(f);
+			refreshSubchipCounts(f);
 			const filtered = sortRows(allSkus.filter((s) => rowMatches(s, f)));
 
 			const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -847,6 +931,9 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 		subChips.forEach((c) => {
 			c.addEventListener('click', () => {
 				if (!inputs.sub) return;
+				/* Заблокированный (count=0) чип кликабелен браузером, но логически
+				   ничего не даст — пропускаем, чтобы не вешать пустой результат. */
+				if (c.classList.contains('pt__subchip--zero')) return;
 				const key = c.getAttribute('data-pt-subchip') || '';
 				inputs.sub.value = key;
 				state.page = 1;
@@ -1211,6 +1298,13 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 		outline: 2px solid var(--color-primary-500);
 		outline-offset: 2px;
 	}
+	/* Чип, у которого в текущем контексте 0 позиций — кликабелен, но визуально
+	   приглушён, чтобы не вводить в заблуждение «выбираю — и пусто». */
+	.pt__subchip--zero {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+	.pt__subchip--zero:hover { background: var(--color-bg-elev); border-color: var(--color-border); }
 
 	/* Колонка «Длина» скрывается, когда в текущей выборке у всех строк она пустая
 	   (например, при фильтре «Тип: Отводы» в /detali-truboprovoda/). */
