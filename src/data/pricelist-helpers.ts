@@ -27,10 +27,74 @@ export function rulonizeName(name: string | null | undefined): string {
 	);
 }
 
+/* Плотность нержавейки, г/см³ (≈ 7,9 для аустенитных, чуть меньше для
+   феррита/мартенсита; берём усреднённое значение для конвертации цен). */
+const RHO_STEEL = 7.9;
+
+/* Источник прайса (mc.ru) хранит цены электросварных и перфорированных труб
+   в ₽/м, а не ₽/т, но `unit` у всех труб помечен как «т». Это давало
+   нонсенс «119 ₽/т» для маленьких ESV (правка клиента 24.06.2026).
+   Конвертируем: parsим геометрию из названия → кг/м → умножаем на 1000
+   и делим на кг/м, чтобы получить ₽/т. ostatok (метры на складе) тоже
+   приводим к тоннам. Бесшовные оставляем без изменений — у них цены и
+   так в ₽/т. */
+function esvKgPerMeter(s: any): number | null {
+	const sub = String(s?.sub ?? '');
+	const name = String(s?.name ?? '').replace(/[хХX×]/g, 'x');
+	if (sub === 'elsvarnaya-pryamougolnaya') {
+		/* Прямоугольная — a×b×wall в названии (size хранит только a×b). */
+		const m = name.match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)/);
+		if (!m) return null;
+		const a = parseFloat(m[1]);
+		const b = parseFloat(m[2]);
+		const w = parseFloat(m[3]);
+		if (!(a > 0 && b > 0 && w > 0 && w < Math.min(a, b) / 2)) return null;
+		return ((2 * (a + b) - 4 * w) * w * RHO_STEEL) / 1000;
+	}
+	if (sub === 'elsvarnaya-kvadrat') {
+		/* Квадратная — A×wall, два числа. */
+		const m = name.match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)(?!\.?\d|x)/);
+		if (!m) return null;
+		const a = parseFloat(m[1]);
+		const w = parseFloat(m[2]);
+		if (!(a > 0 && w > 0 && w < a / 2)) return null;
+		return ((4 * a - 4 * w) * w * RHO_STEEL) / 1000;
+	}
+	if (sub === 'elsvarnaya' || sub === 'perforirovannaya') {
+		/* Круглая — D×wall. У perforirovannaya по факту меньше материала
+		   (есть отверстия), но это всего 4 SKU — допустимая погрешность. */
+		const m = name.match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)(?!\.?\d|x)/);
+		if (!m) return null;
+		const D = parseFloat(m[1]);
+		const w = parseFloat(m[2]);
+		if (!(D > 0 && w > 0 && w < D / 2)) return null;
+		return (Math.PI * (D - w) * w * RHO_STEEL) / 1000;
+	}
+	return null;
+}
+
+function normalizeTrubaSku(s: any): any {
+	if (!s || s.hub !== 'truba') return s;
+	const sub = String(s.sub ?? '');
+	const isEsv =
+		sub === 'elsvarnaya' ||
+		sub === 'elsvarnaya-kvadrat' ||
+		sub === 'elsvarnaya-pryamougolnaya' ||
+		sub === 'perforirovannaya';
+	if (!isEsv) return s;
+	const kgPerM = esvKgPerMeter(s);
+	if (kgPerM == null || kgPerM <= 0) return s;
+	const out: any = { ...s };
+	if (typeof s.price === 'number') out.price = Math.round((s.price * 1000) / kgPerM);
+	if (typeof s.priceUnit === 'number') out.priceUnit = Math.round((s.priceUnit * 1000) / kgPerM);
+	if (typeof s.ostatok === 'number') out.ostatok = Math.round((s.ostatok * kgPerM) / 1000);
+	return out;
+}
+
 /* Единая точка чтения SKU из прайса: для /list/ выкидывает рулон-стайл,
-   для /rulon/ — переименовывает «лист» в «рулон». Все потребители (PriceTable,
-   страницы хабов, [slug]-роуты рулона) должны идти через неё, иначе данные
-   и счётчики разойдутся. */
+   для /rulon/ — переименовывает «лист» в «рулон», для /truba/ — конвертирует
+   ESV-трубы из ₽/м в ₽/т. Все потребители (PriceTable, страницы хабов,
+   [slug]-роуты) должны идти через неё, иначе данные и счётчики разойдутся. */
 export function getHubSkus(hub: string): any[] {
 	const raw = ((pricelist as any).hubs?.[hub] ?? []) as any[];
 	if (hub === 'list') {
@@ -38,6 +102,9 @@ export function getHubSkus(hub: string): any[] {
 	}
 	if (hub === 'rulon') {
 		return raw.map((s) => ({ ...s, name: rulonizeName(s?.name) }));
+	}
+	if (hub === 'truba') {
+		return raw.map(normalizeTrubaSku);
 	}
 	return raw;
 }

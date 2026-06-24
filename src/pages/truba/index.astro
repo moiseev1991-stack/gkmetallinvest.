@@ -2,9 +2,9 @@
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
 import HubExtras from '../../components/HubExtras.astro';
 import PriceTable from '../../components/PriceTable.astro';
-import pricelist from '../../data/pricelist.json';
+import { getHubSkus } from '../../data/pricelist-helpers';
 
-const skus = (pricelist.hubs as any).truba as any[];
+const skus = getHubSkus('truba');
 const grades = [...new Set(skus.map((s) => s.grade).filter(Boolean))] as string[];
 grades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
 
