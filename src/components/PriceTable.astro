@@ -48,6 +48,21 @@ function hasFilmSku(s: any): boolean {
 	return surf === 'BA' || surf === '4N';
 }
 
+/* Крой листа/рулона из названия. Формат: «толщина×ширина×длина» (3 числа) или
+   «толщина×ширина» (2 числа, рулон-стайл). Возвращаем «ширина×длина» (или
+   просто «ширина»). Поле size в данных хранит только толщину, поэтому
+   нужна доп. разбор названия. Запрос клиента от 24.06.2026. */
+function extractCutSku(s: any): string | null {
+	const raw = String(s?.name ?? '').replace(/[хХX]/g, 'x');
+	const m = raw.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)(?:x(\d+(?:[.,]\d+)?))?/);
+	if (!m) return null;
+	return m[3] ? `${m[2]}x${m[3]}` : m[2];
+}
+function cutLabel(key: string): string {
+	return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
+}
+const CUT_HUBS = new Set(['list', 'rulon']);
+
 const SUB_LABELS: Record<string, string> = {
 	nikelesod: 'Никелесодержащий',
 	beznikelya: 'Без никеля',
@@ -109,6 +124,23 @@ const surfaces = uniq(allSkus.map((s) => s.surface)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
 const anyFilm = allSkus.some(hasFilmSku);
+
+/* Стандартные крои для select «Крой». Порог ≥3 — отсекает редкие нестандартные
+   форматы, чтобы не захламлять дропдаун; такие позиции по-прежнему ищутся
+   текстовым поиском. Сортировка по количеству убывающе — самые ходовые наверху. */
+const cutCounts: Array<{ key: string; label: string; count: number }> = (() => {
+	if (!CUT_HUBS.has(hub)) return [];
+	const map = new Map<string, number>();
+	for (const s of allSkus) {
+		const k = extractCutSku(s);
+		if (!k) continue;
+		map.set(k, (map.get(k) ?? 0) + 1);
+	}
+	return [...map.entries()]
+		.filter(([_, n]) => n >= 3)
+		.map(([k, count]) => ({ key: k, label: cutLabel(k), count }))
+		.sort((a, b) => b.count - a.count);
+})();
 const rolls = uniq(allSkus.map((s) => s.roll)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
@@ -260,6 +292,19 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 							<option value="">все</option>
 							{rolls.map((r) => (
 								<option value={r}>{r}</option>
+							))}
+						</select>
+					</label>
+				)
+			}
+			{
+				cutCounts.length > 1 && (
+					<label class="pt__field pt__field--select" data-pt-label="Крой">
+						<span class="pt__label">Крой</span>
+						<select id={`${hub}-cut`} data-pt-cut aria-label="Крой">
+							<option value="">все</option>
+							{cutCounts.map((c) => (
+								<option value={c.key}>{c.label}</option>
 							))}
 						</select>
 					</label>
@@ -444,6 +489,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			grade: root.querySelector('[data-pt-grade]'),
 			surface: root.querySelector('[data-pt-surface]'),
 			roll: root.querySelector('[data-pt-roll]'),
+			cut: root.querySelector('[data-pt-cut]'),
 			fact: root.querySelector('[data-pt-fact]'),
 			sizeMin: root.querySelector('[data-pt-size-min]'),
 			sizeMax: root.querySelector('[data-pt-size-max]'),
@@ -456,6 +502,17 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (/\+PI\b/i.test(String(s?.name ?? ''))) return true;
 			const surf = String(s?.surface ?? '');
 			return surf === 'BA' || surf === '4N';
+		}
+
+		/* Зеркало extractCutSku из frontmatter — толщина×ширина[×длина] → ширина[×длина]. */
+		function extractCut(s) {
+			const raw = String(s?.name ?? '').replace(/[хХX]/g, 'x');
+			const m = raw.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)(?:x(\d+(?:[.,]\d+)?))?/);
+			if (!m) return null;
+			return m[3] ? `${m[2]}x${m[3]}` : m[2];
+		}
+		function cutLabel(key) {
+			return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
 		}
 
 		const storageKey = `pt-view`;
@@ -488,6 +545,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.grade && s.grade !== f.grade) return false;
 			if (f.surface && (s.surface || '') !== f.surface) return false;
 			if (f.roll && (s.roll || '') !== f.roll) return false;
+			if (f.cut && extractCut(s) !== f.cut) return false;
 			if (f.fact && (s.fact || '') !== f.fact) return false;
 			if (f.inStock && !s.ostatok) return false;
 			if (f.film && !hasFilm(s)) return false;
@@ -626,6 +684,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.grade) chips.push({ key: 'grade', label: `Марка: ${f.grade}` });
 			if (f.surface) chips.push({ key: 'surface', label: `Поверхность: ${SURFACE_LABELS[f.surface] ?? f.surface}` });
 			if (f.roll) chips.push({ key: 'roll', label: `Прокат: ${f.roll}` });
+			if (f.cut) chips.push({ key: 'cut', label: `Крой: ${cutLabel(f.cut)}` });
 			if (f.fact) chips.push({ key: 'fact', label: `Склад: ${f.fact}` });
 			if (f.inStock) chips.push({ key: 'inStock', label: 'В наличии' });
 			if (f.film) chips.push({ key: 'film', label: 'С плёнкой' });
@@ -660,7 +719,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 
 		function resetAll() {
 			if (inputs.q) inputs.q.value = '';
-			['sub','grade','surface','roll','fact','sizeMin','sizeMax'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
+			['sub','grade','surface','roll','cut','fact','sizeMin','sizeMax'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
 			if (inputs.inStock) inputs.inStock.checked = false;
 			if (inputs.film) inputs.film.checked = false;
 			state.sortKey = null; state.sortDir = 'asc'; state.page = 1;
@@ -680,6 +739,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				grade: inputs.grade?.value || '',
 				surface: inputs.surface?.value || '',
 				roll: inputs.roll?.value || '',
+				cut: inputs.cut?.value || '',
 				fact: inputs.fact?.value || '',
 				sizeMin: parseRange(inputs.sizeMin),
 				sizeMax: parseRange(inputs.sizeMax),
