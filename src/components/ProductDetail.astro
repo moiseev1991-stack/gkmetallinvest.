@@ -143,6 +143,13 @@ const RHO = 7.9; // g/cm³
 function fmtNum(n: number, digits = 2): string {
 	return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
 }
+/* В прайсе размеры толщины приходят с русской запятой как разделитель
+   («0,4», «1,5»). Стандартный parseFloat обрывает на запятой и возвращает 0,
+   из-за чего вычисление веса для листа/круга/проволоки/рулона давало 0
+   и «Вес 1 м²» вообще не отображался. */
+function parseNum(s: string | number | null | undefined): number {
+	return parseFloat(String(s ?? '').replace(',', '.'));
+}
 
 let weightLine: { label: string; value: string } | null = null;
 /* Вес 1 пог. м (кг). Заполняется только для длинномера (круг/квадрат/шестигранник,
@@ -152,15 +159,37 @@ let weightLine: { label: string; value: string } | null = null;
 let kgPerMeter: number | null = null;
 
 if (sku.hub === 'list' && sku.size) {
-	const t = parseFloat(sku.size);
+	const t = parseNum(sku.size);
 	if (Number.isFinite(t) && t > 0) {
 		// Вес 1 м² = t (мм) × ρ (кг/м³) × 1м² = t × 7.9 кг/м²
 		const kgM2 = t * RHO;
 		weightLine = { label: 'Вес 1 м²', value: `${fmtNum(kgM2, 2)} кг` };
 	}
 }
+
+/* Вес 1 шт (кг). Для листа — толщина × ширина × длина × ρ из размеров в имени.
+   Для длинномера (круг/труба/уголок-швеллер) — kgPerMeter × длина хлыста.
+   Запрос клиента 2026-06-24: переключатель «шт ↔ т» в калькуляторе. */
+let kgPerPiece: number | null = null;
+
+if (sku.hub === 'list' && sku.size && sku.unit === 'т') {
+	const t = parseNum(sku.size);
+	if (Number.isFinite(t) && t > 0) {
+		const nameStr = String(sku.name ?? '').replace(/[хХXx]/g, 'x');
+		/* Берём 3-числовой шаблон толщина×ширина×длина. Если 2-числовой —
+		   позиция уже отфильтрована getHubSkus как рулон-стайл, сюда не дойдёт. */
+		const m = nameStr.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)/);
+		if (m) {
+			const w = parseNum(m[2]);
+			const l = parseNum(m[3]);
+			if (Number.isFinite(w) && Number.isFinite(l) && w > 0 && l > 0) {
+				kgPerPiece = (t * w * l * RHO) / 1_000_000;
+			}
+		}
+	}
+}
 if (sku.hub === 'krug' && sku.size) {
-	const d = parseFloat(sku.size);
+	const d = parseNum(sku.size);
 	if (Number.isFinite(d) && d > 0) {
 		// Площадь сечения зависит от подкатегории.
 		// d — диаметр для круга, сторона квадрата или размер «под ключ» шестигранника.
@@ -184,8 +213,8 @@ if (sku.hub === 'truba' && sku.size) {
 	// truba size: "Ø100.0 × 2"
 	const m = sku.size.match(/Ø?\s*([\d.]+)\s*×\s*([\d.]+)/);
 	if (m) {
-		const D = parseFloat(m[1]);
-		const w = parseFloat(m[2]);
+		const D = parseNum(m[1]);
+		const w = parseNum(m[2]);
 		if (Number.isFinite(D) && Number.isFinite(w) && D > 0 && w > 0 && w < D / 2) {
 			// труба: m = π × (D − w) × w × ρ × 1000 (D, w в мм; m в кг/м)
 			kgPerMeter = (Math.PI * (D - w) * w * RHO) / 1000;
@@ -194,10 +223,19 @@ if (sku.hub === 'truba' && sku.size) {
 	}
 }
 if (sku.hub === 'provoloka' && sku.size) {
-	const d = parseFloat(sku.size);
+	const d = parseNum(sku.size);
 	if (Number.isFinite(d) && d > 0) {
 		kgPerMeter = (Math.PI * (d / 2) ** 2 * RHO) / 1000;
 		weightLine = { label: 'Вес 1 пог. м', value: `${fmtNum(kgPerMeter, 3)} кг` };
+	}
+}
+
+/* Для длинномера с известной длиной хлыста (труба/круг/уголок-швеллер) —
+   вес 1 шт = kgPerMeter × длина в метрах. Значения dlina вроде «н/д» отсеиваем. */
+if (kgPerPiece == null && kgPerMeter != null && kgPerMeter > 0 && sku.dlina) {
+	const lenMm = parseNum(sku.dlina);
+	if (Number.isFinite(lenMm) && lenMm > 0) {
+		kgPerPiece = kgPerMeter * (lenMm / 1000);
 	}
 }
 
@@ -237,6 +275,11 @@ if (sku.size) detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + me
 if (sku.dlina) detailRows.push({ label: 'Длина', value: `${sku.dlina} мм` });
 detailRows.push({ label: 'Единица измерения', value: sku.unit });
 if (weightLine) detailRows.push(weightLine);
+if (kgPerPiece != null && kgPerPiece > 0) {
+	const pieceLabel = sku.hub === 'list' ? 'Вес 1 листа' : 'Вес 1 шт';
+	const digits = kgPerPiece >= 10 ? 1 : 2;
+	detailRows.push({ label: pieceLabel, value: `${fmtNum(kgPerPiece, digits)} кг` });
+}
 if (sku.fact) detailRows.push({ label: 'Склад', value: sku.fact });
 if (sku.ostatok != null) detailRows.push({ label: 'Остаток на складе', value: `${sku.ostatok} ${sku.unit}` });
 if (aliases.length) detailRows.push({ label: 'Аналоги марки', value: aliases.join(', ') });
@@ -591,10 +634,15 @@ if (sku.price != null) {
 						<div class="calc">
 							<div class="calc__head">
 								<label class="calc__label" for={`calc-${sku.slug}`} data-calc-label>Расчёт по объёму, {sku.unit}</label>
-								{kgPerMeter != null && kgPerMeter > 0 && (
+								{((kgPerMeter != null && kgPerMeter > 0) || (kgPerPiece != null && kgPerPiece > 0)) && (
 									<div class="calc__modes" role="group" aria-label="Единица расчёта">
 										<button type="button" class="calc__mode calc__mode--active" data-calc-mode="unit" aria-pressed="true">{sku.unit}</button>
-										<button type="button" class="calc__mode" data-calc-mode="meter" aria-pressed="false">пог. м</button>
+										{kgPerMeter != null && kgPerMeter > 0 && (
+											<button type="button" class="calc__mode" data-calc-mode="meter" aria-pressed="false">пог. м</button>
+										)}
+										{kgPerPiece != null && kgPerPiece > 0 && (
+											<button type="button" class="calc__mode" data-calc-mode="piece" aria-pressed="false">шт</button>
+										)}
 									</div>
 								)}
 							</div>
@@ -612,6 +660,7 @@ if (sku.price != null) {
 									data-retail-price={sku.priceUnit ?? sku.price}
 									data-unit={sku.unit}
 									data-kg-per-m={kgPerMeter != null ? kgPerMeter.toFixed(4) : ''}
+									data-kg-per-piece={kgPerPiece != null ? kgPerPiece.toFixed(4) : ''}
 								/>
 								<span class="calc__unit" data-calc-unit>{sku.unit}</span>
 							</div>
@@ -822,13 +871,21 @@ if (sku.price != null) {
 			const retailPrice = parseFloat(input.dataset.retailPrice || String(unitPrice));
 			const unit = input.dataset.unit || 'т';
 			const kgPerM = parseFloat(input.dataset.kgPerM || '0');
+			const kgPerPiece = parseFloat(input.dataset.kgPerPiece || '0');
 			const fmt = new Intl.NumberFormat('ru-RU');
 			const fmt3 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 });
 			const baseHref = cta?.dataset.baseHref || cta?.getAttribute('href') || '/zapros-kp/';
 
-			// 'unit' — пользователь вводит в единице товара (обычно т).
-			// 'meter' — пользователь вводит в пог. м, пересчёт идёт через kgPerM.
+			// 'unit'  — пользователь вводит в нативной единице товара (обычно т).
+			// 'meter' — пог. м, пересчёт через kgPerM.
+			// 'piece' — шт (лист/хлыст), пересчёт через kgPerPiece.
 			let mode = 'unit';
+
+			function modeUnitLabel(m) {
+				if (m === 'meter') return 'пог. м';
+				if (m === 'piece') return 'шт';
+				return unit;
+			}
 
 			function setMode(next) {
 				mode = next;
@@ -837,10 +894,10 @@ if (sku.price != null) {
 					b.classList.toggle('calc__mode--active', active);
 					b.setAttribute('aria-pressed', String(active));
 				});
-				const labelUnit = mode === 'meter' ? 'пог. м' : unit;
+				const labelUnit = modeUnitLabel(mode);
 				if (labelEl) labelEl.textContent = `Расчёт по объёму, ${labelUnit}`;
 				if (unitEl) unitEl.textContent = labelUnit;
-				input.placeholder = mode === 'meter' ? '10' : '1';
+				input.placeholder = mode === 'unit' ? '1' : '10';
 				recalc();
 			}
 
@@ -859,17 +916,22 @@ if (sku.price != null) {
 					return;
 				}
 
-				// Приводим введённое к нативной единице товара (тоннам).
-				// Если выбрано «пог. м» и есть kgPerM — пересчитываем.
+				// Приводим введённое к нативной единице товара (тоннам, обычно).
 				let qtyInUnit = qty;
 				let extraHint = '';
 				if (mode === 'meter' && kgPerM > 0) {
 					qtyInUnit = (qty * kgPerM) / 1000;
 					extraHint = ` · ≈ ${fmt3.format(qtyInUnit)} ${unit}`;
-				} else if (mode === 'unit' && kgPerM > 0 && unit === 'т') {
-					// Подсказка обратного пересчёта: «1 т ≈ X пог. м»
-					const meters = (qty * 1000) / kgPerM;
-					extraHint = ` · ≈ ${fmt.format(Math.round(meters))} пог. м`;
+				} else if (mode === 'piece' && kgPerPiece > 0) {
+					qtyInUnit = (qty * kgPerPiece) / 1000;
+					extraHint = ` · ≈ ${fmt3.format(qtyInUnit)} ${unit}`;
+				} else if (mode === 'unit' && unit === 'т') {
+					/* Обратные подсказки: «1 т ≈ X пог. м · X шт» — пользователь сразу
+					   видит, во что переводится введённый тоннаж. */
+					const hints = [];
+					if (kgPerM > 0) hints.push(`≈ ${fmt.format(Math.round((qty * 1000) / kgPerM))} пог. м`);
+					if (kgPerPiece > 0) hints.push(`≈ ${fmt.format(Math.round((qty * 1000) / kgPerPiece))} шт`);
+					if (hints.length) extraHint = ' · ' + hints.join(' · ');
 				}
 
 				const price = qtyInUnit < 1 ? retailPrice : unitPrice;
@@ -879,12 +941,12 @@ if (sku.price != null) {
 				result.classList.add('calc__result--ok');
 
 				const sep = baseHref.includes('?') ? '&' : '?';
-				// В форму запроса КП передаём количество в нативной единице (т) —
-				// менеджер видит понятную ему величину. Если был режим «м»,
-				// дополнительно прикладываем m=<метры>, чтобы не потерять контекст.
+				// В форму запроса КП передаём количество в нативной единице (т),
+				// плюс исходное значение из удобной пользователю единицы (m/pcs).
 				const qtyParam = qtyInUnit.toFixed(3);
 				let newHref = baseHref.replace('#lead-form', '') + `${sep}qty=${encodeURIComponent(qtyParam)}`;
 				if (mode === 'meter') newHref += `&m=${encodeURIComponent(qty)}`;
+				if (mode === 'piece') newHref += `&pcs=${encodeURIComponent(qty)}`;
 				newHref += '#lead-form';
 				if (cta) cta.setAttribute('href', newHref);
 				if (stickyCta) stickyCta.setAttribute('href', newHref);
