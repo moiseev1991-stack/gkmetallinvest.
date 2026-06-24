@@ -7,6 +7,7 @@
  * марки можно опустить. Для хабов с прайсом — передаёте grades.
  */
 import { cities } from '../data/cities';
+import { marks, type HubKey } from '../data/marks';
 
 interface Props {
 	hubHref: string;
@@ -17,14 +18,50 @@ interface Props {
 }
 const { hubHref, hubLabel, hubLabelGenitive, grades = [], surfaces = [], } = Astro.props;
 const labelGen = hubLabelGenitive ?? hubLabel.toLowerCase();
+
+/* hubKey достаём из hubHref («/list/» → «list»), чтобы не менять 8 родителей. */
+const hubKey = (hubHref.replace(/^\/|\/$/g, '') || null) as HubKey | null;
+
+/* Сопоставляем каждый grade c маркой, у которой есть посадочная страница
+   именно для этого хаба. Match по aliases (точный или substring). Запрос
+   клиента 24.06.2026: «вот тут марки не кликабельны, так и должно быть?» */
+function findMark(grade: string) {
+	if (!hubKey) return null;
+	const up = String(grade ?? '').toUpperCase();
+	let best: { mark: typeof marks[number]; len: number } | null = null;
+	for (const m of marks) {
+		if (!m.hubs.includes(hubKey)) continue;
+		for (const a of m.aliases) {
+			const au = a.toUpperCase();
+			if (up === au) return m; // точный матч сильнее всего
+			if (up.includes(au)) {
+				/* Длиннейший alias выигрывает — иначе «08Х18Н10Т» матчится
+				   с alias «08Х18Н10» (AISI 304) вместо более специфичного
+				   «08Х18Н10Т» (AISI 321). */
+				if (!best || au.length > best.len) best = { mark: m, len: au.length };
+			}
+		}
+	}
+	return best ? best.mark : null;
+}
 ---
 
 {grades.length > 0 && (
 	<section class="hex-block">
 		<h2>Марки в наличии</h2>
-		<p>В прайсе выше выберите марку через фильтр. Российские номенклатурные обозначения (08Х18Н10, 12Х18Н10Т, 03Х17Н14М2) указаны в карточках товара рядом с AISI.</p>
+		<p>По топовым маркам — отдельные посадочные страницы с составом, аналогами и ГОСТами; остальные марки выберите в фильтре прайса выше.</p>
 		<ul class="hex-chip-grid">
-			{grades.map((g) => <li><span class="hex-chip">{g}</span></li>)}
+			{grades.map((g) => {
+				const m = findMark(g);
+				return (
+					<li>
+						{m
+							? <a class="hex-chip hex-chip--link" href={`${hubHref}${m.slug}/`}>{g}</a>
+							: <span class="hex-chip">{g}</span>
+						}
+					</li>
+				);
+			})}
 		</ul>
 	</section>
 )}
@@ -76,6 +113,22 @@ const labelGen = hubLabelGenitive ?? hubLabel.toLowerCase();
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-pill);
 		color: var(--color-text);
+	}
+	/* Кликабельные чипы (есть марочная посадочная) — визуально отличаем
+	   подцветкой границы и подсветкой при наведении, чтобы пользователь
+	   понимал: можно тапнуть. */
+	a.hex-chip--link {
+		text-decoration: none;
+		color: var(--color-primary-600);
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+	}
+	a.hex-chip--link:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-surface);
+		text-decoration: none;
 	}
 	.hex-chip--accent {
 		background: var(--color-primary-50);
