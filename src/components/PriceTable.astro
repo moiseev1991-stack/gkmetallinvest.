@@ -800,6 +800,10 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 
 <style is:global>
 	.pt { margin-block: var(--space-8); min-width: 0; }
+	/* HTML-атрибут hidden у дочерних элементов (.pt__pager, .pt__grid, .pt__chips)
+	   перебивается их же display: flex/grid из правил ниже — браузерное
+	   [hidden]{display:none} проигрывает по специфичности. Фиксируем явно. */
+	.pt [hidden] { display: none !important; }
 	.pt__head {
 		display: flex;
 		align-items: end;
