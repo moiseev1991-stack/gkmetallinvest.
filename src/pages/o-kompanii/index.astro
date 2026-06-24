@@ -75,14 +75,27 @@ const aboutJsonLd = {
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'О компании' }]} />
 
 		<header class="about__hero">
-			<span class="eyebrow">О компании</span>
-			<h1>Группа компаний «Металлинвест»</h1>
-			<p class="about__lead">
-				Семь лет на рынке нержавеющего металлопроката и прецизионных сплавов. За пять лет
-				работы выстроили эффективную систему партнёрства с поставщиками металла —
-				держим редкие позиции на складах и закрываем заказы любого объёма для производств
-				по всей России и СНГ.
-			</p>
+			<div class="about__hero-text">
+				<span class="eyebrow">О компании</span>
+				<h1>Группа компаний «Металлинвест»</h1>
+				<p class="about__lead">
+					Семь лет на рынке нержавеющего металлопроката и прецизионных сплавов. За пять лет
+					работы выстроили эффективную систему партнёрства с поставщиками металла —
+					держим редкие позиции на складах и закрываем заказы любого объёма для производств
+					по всей России и СНГ.
+				</p>
+			</div>
+			<figure class="about__hero-figure">
+				<img
+					src="/img/team/team.jpg"
+					alt="Команда ГК «Металлинвест»"
+					width="1258"
+					height="880"
+					loading="eager"
+					fetchpriority="high"
+				/>
+				<figcaption>Команда ГК «Металлинвест»</figcaption>
+			</figure>
 			<dl class="about__stats">
 				{stats.map((s) => (
 					<div>
@@ -148,13 +161,50 @@ const aboutJsonLd = {
 <style>
 	.about { padding-block: var(--space-8); }
 
-	.about__hero { margin-bottom: var(--space-10); max-width: 80ch; }
+	.about__hero {
+		margin-bottom: var(--space-10);
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-6);
+	}
+	/* На широком экране — текст слева, фото справа; статы под ними на всю ширину. */
+	@media (min-width: 880px) {
+		.about__hero {
+			grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+			column-gap: var(--space-7);
+			align-items: start;
+		}
+		.about__hero-text { grid-column: 1; grid-row: 1; }
+		.about__hero-figure { grid-column: 2; grid-row: 1; }
+		.about__stats { grid-column: 1 / -1; grid-row: 2; }
+	}
+	.about__hero-text { max-width: 60ch; }
 	.about__lead {
 		font-size: 1.1rem;
-		max-width: 70ch;
-		margin: var(--space-3) 0 var(--space-6);
+		margin: var(--space-3) 0 0;
 		color: var(--color-text);
 		line-height: 1.6;
+	}
+
+	.about__hero-figure {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+	.about__hero-figure img {
+		width: 100%;
+		height: auto;
+		display: block;
+		border-radius: var(--radius-lg);
+		object-fit: cover;
+		aspect-ratio: 1258 / 880;
+		box-shadow: var(--shadow-sm);
+	}
+	.about__hero-figure figcaption {
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		text-align: center;
 	}
 
 	.about__stats {
