@@ -596,8 +596,12 @@ const hubs = [
 		custom: 'Своя плотность',
 	};
 
-	/* Какие поля показываем под каждый вид проката. mm — миллиметры. */
-	const FIELDS: Record<Shape, { unit: 'pcs' | 'meter' | 'sheet'; fields: { key: string; label: string; def?: number }[] }> = {
+	/* Какие поля показываем под каждый вид проката. По умолчанию значение в мм;
+	   для длинномера длина в метрах (правка клиента 24.06.2026: «210000 мм»
+	   на профильной трубе — неудобно, естественнее «6 м»). Внутри все формулы
+	   работают в мм, getDim сам конвертирует. */
+	type FieldUnit = 'mm' | 'm';
+	const FIELDS: Record<Shape, { unit: 'pcs' | 'meter' | 'sheet'; fields: { key: string; label: string; def?: number; valueUnit?: FieldUnit }[] }> = {
 		list: { unit: 'sheet', fields: [
 			{ key: 'thickness', label: 'Толщина, мм', def: 1 },
 			{ key: 'width', label: 'Ширина, мм', def: 1000 },
@@ -606,40 +610,40 @@ const hubs = [
 		polosa: { unit: 'pcs', fields: [
 			{ key: 'thickness', label: 'Толщина, мм', def: 4 },
 			{ key: 'width', label: 'Ширина, мм', def: 40 },
-			{ key: 'length', label: 'Длина, мм', def: 6000 },
+			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
 		]},
 		krug: { unit: 'meter', fields: [
 			{ key: 'diameter', label: 'Диаметр, мм', def: 20 },
-			{ key: 'length', label: 'Длина, мм', def: 1000 },
+			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
 		]},
 		kvadrat: { unit: 'meter', fields: [
 			{ key: 'side', label: 'Сторона, мм', def: 20 },
-			{ key: 'length', label: 'Длина, мм', def: 1000 },
+			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
 		]},
 		shestigrannik: { unit: 'meter', fields: [
 			{ key: 'side', label: 'Размер «под ключ» (через грани), мм', def: 22 },
-			{ key: 'length', label: 'Длина, мм', def: 1000 },
+			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
 		]},
 		truba: { unit: 'meter', fields: [
 			{ key: 'diameter', label: 'Наружный диаметр, мм', def: 50 },
 			{ key: 'wall', label: 'Стенка, мм', def: 2 },
-			{ key: 'length', label: 'Длина, мм', def: 1000 },
+			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
 		]},
 		'truba-pryam': { unit: 'meter', fields: [
 			{ key: 'side_a', label: 'Сторона A, мм', def: 40 },
 			{ key: 'side_b', label: 'Сторона B, мм', def: 20 },
 			{ key: 'wall', label: 'Стенка, мм', def: 2 },
-			{ key: 'length', label: 'Длина, мм', def: 1000 },
+			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
 		]},
 		provoloka: { unit: 'meter', fields: [
 			{ key: 'diameter', label: 'Диаметр, мм', def: 1 },
-			{ key: 'length', label: 'Длина, мм', def: 1000 },
+			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
 		]},
 		ugolok: { unit: 'meter', fields: [
 			{ key: 'side_a', label: 'Полка A, мм', def: 50 },
 			{ key: 'side_b', label: 'Полка B, мм', def: 50 },
 			{ key: 'thickness', label: 'Толщина, мм', def: 5 },
-			{ key: 'length', label: 'Длина, мм', def: 6000 },
+			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
 		]},
 	};
 
@@ -708,6 +712,7 @@ const hubs = [
 				inp.step = 'any';
 				inp.min = '0.01';
 				inp.dataset.dim = f.key;
+				if (f.valueUnit) inp.dataset.valueUnit = f.valueUnit;
 				inp.value = String(f.def ?? '');
 				/* Изменение размера — пересчёт идёт от количества к массе. */
 				inp.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
@@ -721,7 +726,11 @@ const hubs = [
 
 		function getDim(key: string): number {
 			const el = dimsEl!.querySelector(`[data-dim="${key}"]`) as HTMLInputElement | null;
-			return el ? parseFloat(el.value) || 0 : 0;
+			if (!el) return 0;
+			const raw = parseFloat(el.value) || 0;
+			/* Формулы геометрии работают в мм; поля с valueUnit="m" пользователь
+			   вводит в метрах — приводим к мм. */
+			return el.dataset.valueUnit === 'm' ? raw * 1000 : raw;
 		}
 
 		function calcVolumeMm3(): number {
