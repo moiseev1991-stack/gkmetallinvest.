@@ -10,7 +10,8 @@ interface Props {
 	title: string;
 	description?: string;
 	h1: string;
-	intro: string;
+	/** Текст-описание под H1. Строка — один параграф; массив — серия параграфов. */
+	intro: string | string[];
 	breadcrumbs: BreadcrumbItem[];
 	noindex?: boolean;
 	image?: string;
@@ -61,7 +62,10 @@ const faqJsonLd = faq && faq.length
 		<div class="hub__hero">
 			<div class="hub__hero-text">
 				<h1>{h1}</h1>
-				<p class="hub__intro">{intro}</p>
+				{Array.isArray(intro)
+					? intro.map((p) => <p class="hub__intro">{p}</p>)
+					: <p class="hub__intro">{intro}</p>
+				}
 			</div>
 			{hubKey && (
 				<div class="hub__hero-illo" aria-hidden="true">
