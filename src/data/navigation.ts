@@ -65,7 +65,6 @@ export const navCatalog: NavCol[] = navGroups.flatMap((g) => g.items);
 export const navTop = [
 	{ label: 'О компании', href: '/o-kompanii/' },
 	{ label: 'Доставка и оплата', href: '/dostavka-i-oplata/' },
-	{ label: 'Справочник', href: '/spravochnik/' },
 	{ label: 'Блог', href: '/blog/' },
 	{ label: 'Контакты', href: '/kontakty/' },
 ];
