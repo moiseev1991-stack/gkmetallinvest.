@@ -158,11 +158,23 @@ export function getDetailDimensions(sku: any): DetailDimensions | null {
 		const m = name.match(/(\d+)x(\d+)x(\d+)/);
 		if (m) {
 			const [_, exec, du, ru] = m;
+			/* «Исполнение» по ГОСТ — номер типа фланца (1 плоский, 2 воротниковый,
+			   3 свободный и т.д.). В лид-абзац его не выводим — единиц у него нет
+			   и клиента путает («1» без «мм»). Оставляем только в характеристиках,
+			   там рядом ГОСТ и всё понятно из контекста. */
+			const execHint: Record<string, string> = {
+				'1': 'плоский приварной',
+				'2': 'воротниковый',
+				'3': 'свободный на приварном кольце',
+			};
 			return {
-				display: `${exec} × ${du} × ${ru} (исполнение × Ду × Ру)`,
-				descriptionInline: `исполнение ${exec}, Ду ${du} мм, Ру ${ru} кгс/см²`,
+				display: `Ду ${du} мм, Ру ${ru} кгс/см²`,
+				descriptionInline: `Ду ${du} мм, Ру ${ru} кгс/см²`,
 				rows: [
-					{ label: 'Исполнение', value: exec },
+					{
+						label: 'Исполнение (тип по ГОСТ)',
+						value: execHint[exec] ? `${exec} — ${execHint[exec]}` : exec,
+					},
 					{ label: 'Ду (условный проход)', value: `${du} мм` },
 					{ label: 'Ру (условное давление)', value: `${ru} кгс/см²` },
 				],
