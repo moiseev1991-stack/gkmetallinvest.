@@ -150,6 +150,28 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			</nav>
 			<div class="head__cta">
 				<Button href="/zapros-kp/" variant="primary" size="sm">Запросить цену</Button>
+				<div class="head__search" data-header-search>
+					<label class="head__search-wrap">
+						<span class="visually-hidden">Поиск по сайту</span>
+						<svg class="head__search-icon" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+							<circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.7" />
+							<path d="M14 14l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+						</svg>
+						<input
+							type="search"
+							class="head__search-input"
+							placeholder="Поиск"
+							autocomplete="off"
+							aria-controls="header-search-results"
+							aria-expanded="false"
+							data-header-search-input
+						/>
+					</label>
+					<div class="head__search-panel" id="header-search-results" hidden data-header-search-panel>
+						<div class="head__search-status" data-header-search-status></div>
+						<ul class="head__search-list" data-header-search-list></ul>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -215,6 +237,164 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	document.addEventListener('keydown', (e) => {
 		if (e.key === 'Escape' && drawer?.classList.contains('head__nav-wrap--open')) closeDrawer();
 	});
+
+	/* ---------- HEADER SEARCH (Pagefind) ---------- */
+	const searchRoot = document.querySelector<HTMLElement>('[data-header-search]');
+	const searchInput = document.querySelector<HTMLInputElement>('[data-header-search-input]');
+	const searchPanel = document.querySelector<HTMLElement>('[data-header-search-panel]');
+	const searchList = document.querySelector<HTMLUListElement>('[data-header-search-list]');
+	const searchStatus = document.querySelector<HTMLElement>('[data-header-search-status]');
+
+	if (searchRoot && searchInput && searchPanel && searchList && searchStatus) {
+		type Pagefind = {
+			search: (q: string) => Promise<{ results: Array<{ id: string; data: () => Promise<any> }> }>;
+		};
+		let pagefind: Pagefind | null = null;
+		let loading: Promise<Pagefind | null> | null = null;
+		let seq = 0;
+		let selectedIdx = -1;
+
+		const loadPagefind = () => {
+			if (pagefind) return Promise.resolve(pagefind);
+			if (loading) return loading;
+			loading = (async () => {
+				try {
+					/* Собираем URL из runtime-переменных, иначе Vite/Rollup пытается
+					   резолвить путь на этапе билда — а pagefind/pagefind.js
+					   создаётся только пост-билд шагом `pagefind --site dist`. */
+					const base = window.location.origin;
+					const url = base + '/pagefind/pagefind.js';
+					// @ts-ignore
+					const mod = await import(/* @vite-ignore */ url);
+					if (mod?.options) await mod.options({ excerptLength: 20 });
+					pagefind = mod as Pagefind;
+					return pagefind;
+				} catch (err) {
+					console.warn('Pagefind не загрузился:', err);
+					return null;
+				}
+			})();
+			return loading;
+		};
+
+		const openPanel = () => {
+			searchPanel.removeAttribute('hidden');
+			searchInput.setAttribute('aria-expanded', 'true');
+		};
+		const closePanel = () => {
+			searchPanel.setAttribute('hidden', '');
+			searchInput.setAttribute('aria-expanded', 'false');
+			selectedIdx = -1;
+		};
+		const setStatus = (msg: string) => {
+			searchStatus.textContent = msg;
+		};
+		const renderResults = (items: Array<{ url: string; title: string; sub: string; excerpt: string }>) => {
+			searchList.innerHTML = '';
+			items.forEach((r, i) => {
+				const li = document.createElement('li');
+				const a = document.createElement('a');
+				a.href = r.url;
+				a.dataset.idx = String(i);
+				const t = document.createElement('span');
+				t.className = 'head__search-title';
+				t.textContent = r.title;
+				a.appendChild(t);
+				if (r.sub) {
+					const s = document.createElement('span');
+					s.className = 'head__search-sub';
+					s.innerHTML = r.excerpt || r.sub;
+					a.appendChild(s);
+				}
+				li.appendChild(a);
+				searchList.appendChild(li);
+			});
+		};
+
+		const runSearch = async (q: string) => {
+			const my = ++seq;
+			if (!q || q.trim().length < 2) {
+				setStatus('');
+				searchList.innerHTML = '';
+				closePanel();
+				return;
+			}
+			openPanel();
+			setStatus('Ищу…');
+			const pf = await loadPagefind();
+			if (my !== seq) return;
+			if (!pf) {
+				setStatus('Поиск временно недоступен');
+				return;
+			}
+			try {
+				const res = await pf.search(q);
+				if (my !== seq) return;
+				if (!res.results.length) {
+					setStatus(`Ничего не найдено по «${q}»`);
+					searchList.innerHTML = '';
+					return;
+				}
+				const top = res.results.slice(0, 8);
+				const items = await Promise.all(
+					top.map(async (r) => {
+						const d = await r.data();
+						const url = String(d.url || '').replace(/index\.html$/, '');
+						const title = String(d.meta?.title || d.raw_content?.split('\n')[0] || url);
+						const sub = String(d.meta?.description || d.excerpt || '').replace(/<[^>]+>/g, '');
+						const excerpt = String(d.excerpt || '');
+						return { url, title, sub, excerpt };
+					}),
+				);
+				if (my !== seq) return;
+				setStatus(`Найдено: ${res.results.length}`);
+				renderResults(items);
+			} catch (err) {
+				console.error(err);
+				setStatus('Ошибка поиска');
+			}
+		};
+
+		let t: number | undefined;
+		searchInput.addEventListener('input', () => {
+			window.clearTimeout(t);
+			const val = searchInput.value;
+			t = window.setTimeout(() => runSearch(val), 160);
+		});
+		searchInput.addEventListener('focus', () => {
+			if (searchInput.value.trim().length >= 2) openPanel();
+			loadPagefind();
+		});
+
+		document.addEventListener('click', (e) => {
+			if (!searchRoot.contains(e.target as Node)) closePanel();
+		});
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				closePanel();
+				searchInput.blur();
+				return;
+			}
+			if (searchPanel.hasAttribute('hidden')) return;
+			const items = Array.from(searchList.querySelectorAll<HTMLAnchorElement>('a'));
+			if (!items.length) return;
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+				selectedIdx = Math.min(items.length - 1, selectedIdx + 1);
+			} else if (e.key === 'ArrowUp') {
+				e.preventDefault();
+				selectedIdx = Math.max(0, selectedIdx - 1);
+			} else if (e.key === 'Enter' && selectedIdx >= 0) {
+				e.preventDefault();
+				items[selectedIdx].click();
+				return;
+			} else {
+				return;
+			}
+			items.forEach((a, i) => a.setAttribute('aria-selected', i === selectedIdx ? 'true' : 'false'));
+			items[selectedIdx]?.scrollIntoView({ block: 'nearest' });
+		});
+	}
 </script>
 
 <style>
@@ -720,6 +900,7 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	.head__cta {
 		display: flex;
 		flex-wrap: wrap;
+		align-items: center;
 		gap: var(--space-2);
 	}
 	@media (max-width: 1023px) {
@@ -727,6 +908,134 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			margin-top: var(--space-4);
 			padding-top: var(--space-4);
 			border-top: 1px solid var(--color-border);
+		}
+	}
+
+	/* Header search */
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	.head__search {
+		position: relative;
+	}
+	.head__search-wrap {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.35rem 0.7rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		min-width: 180px;
+		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.head__search-wrap:focus-within {
+		border-color: var(--color-primary-500);
+		box-shadow: 0 0 0 3px rgba(22, 59, 102, 0.12);
+	}
+	.head__search-icon {
+		color: var(--color-muted);
+		flex-shrink: 0;
+	}
+	.head__search-input {
+		border: 0;
+		outline: 0;
+		background: transparent;
+		font: inherit;
+		font-size: 0.9rem;
+		color: var(--color-text);
+		width: 100%;
+		padding: 0;
+	}
+	.head__search-input::placeholder {
+		color: var(--color-muted);
+	}
+	.head__search-panel {
+		position: absolute;
+		top: calc(100% + 6px);
+		right: 0;
+		min-width: 320px;
+		max-width: 420px;
+		max-height: 60vh;
+		overflow-y: auto;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-lg, 0 12px 32px rgba(10, 31, 61, 0.14));
+		z-index: 60;
+	}
+	.head__search-status {
+		padding: 0.6rem 0.85rem;
+		font-size: 0.8rem;
+		color: var(--color-muted);
+	}
+	.head__search-status:empty {
+		display: none;
+	}
+	.head__search-list {
+		list-style: none;
+		margin: 0;
+		padding: 0.25rem 0;
+	}
+	.head__search-list:empty {
+		display: none;
+	}
+	.head__search-list li {
+		margin: 0;
+	}
+	.head__search-list a {
+		display: block;
+		padding: 0.55rem 0.85rem;
+		color: var(--color-text);
+		text-decoration: none;
+		line-height: 1.35;
+		border-radius: var(--radius-sm);
+	}
+	.head__search-list a:hover,
+	.head__search-list a:focus,
+	.head__search-list a[aria-selected='true'] {
+		background: var(--color-bg-alt, rgba(22, 59, 102, 0.06));
+		color: var(--color-text);
+	}
+	.head__search-list .head__search-title {
+		display: block;
+		font-size: 0.9rem;
+		font-weight: 500;
+	}
+	.head__search-list .head__search-sub {
+		display: block;
+		font-size: 0.78rem;
+		color: var(--color-muted);
+		margin-top: 2px;
+	}
+	.head__search-list mark {
+		background: rgba(22, 59, 102, 0.14);
+		color: inherit;
+		padding: 0 2px;
+		border-radius: 2px;
+	}
+	@media (max-width: 1023px) {
+		.head__search {
+			width: 100%;
+			margin-top: var(--space-2);
+		}
+		.head__search-wrap {
+			width: 100%;
+			min-width: 0;
+		}
+		.head__search-panel {
+			right: auto;
+			left: 0;
+			width: 100%;
+			max-width: none;
 		}
 	}
 </style>
