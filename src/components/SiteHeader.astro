@@ -671,7 +671,7 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		.head__nav-wrap {
 			display: flex;
 			align-items: center;
-			gap: var(--space-5);
+			gap: var(--space-4);
 			flex: 1;
 			justify-content: flex-end;
 		}
@@ -679,9 +679,17 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 
 	.head__nav {
 		display: flex;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
 		align-items: center;
-		gap: var(--space-2) var(--space-5);
+		gap: var(--space-2) var(--space-4);
+	}
+	@media (min-width: 1024px) and (max-width: 1279px) {
+		.head__nav {
+			gap: var(--space-2) var(--space-3);
+		}
+		.head__link {
+			font-size: 0.9rem;
+		}
 	}
 	.head__link {
 		color: var(--color-text);
@@ -930,14 +938,15 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 0.35rem 0.7rem;
+		padding: 0.3rem 0.6rem;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
-		min-width: 180px;
-		transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+		width: 140px;
+		transition: width var(--dur-base) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 	}
 	.head__search-wrap:focus-within {
+		width: 220px;
 		border-color: var(--color-primary-500);
 		box-shadow: 0 0 0 3px rgba(22, 59, 102, 0.12);
 	}
