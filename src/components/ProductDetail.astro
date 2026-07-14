@@ -529,7 +529,14 @@ const usePieceTitle = sku.unit === 'шт' && !!skuDisplayName;
    («Задвижка»), а не «null · 50 мм». На остальных — как было. */
 const breadcrumbTail = (() => {
 	if (usePieceTitle) {
-		const sizePart = sku.size ? ` · ${sku.size} мм` : '';
+		/* Для деталей трубопровода — полная геометрия из имени, чтобы
+		   хлебная крошка отражала то, что клиент видел в прайс-таблице,
+		   а не одинокое «1 мм» (толщина/исполнение). */
+		const sizePart = detailDims?.descriptionInline
+			? ` · ${detailDims.descriptionInline}`
+			: sku.size
+				? ` · ${sku.size} мм`
+				: '';
 		return `${subLabel || sku.grade || hubLabel}${sizePart}`;
 	}
 	const head = sku.grade || subLabel || hubLabel;
@@ -599,7 +606,12 @@ function shortGrade(grade: string | null | undefined): string {
 	return g;
 }
 
-const mainSize = extractMainSize(sku.hub, sku.size);
+/* Для деталей трубопровода в mainSize кладём полную геометрию из имени
+   (Ду 10, Ру 40; Ø 25 × стенка 2,5 и т.д.) вместо куцого «1 мм» — иначе
+   <title>, description и JSON-LD рендерятся с бесполезным одиночным
+   числом, а клиент, попав на карточку, не видит того размера, который
+   был в прайс-таблице. */
+const mainSize = detailDims?.descriptionInline || extractMainSize(sku.hub, sku.size);
 const shortGradeLabel = shortGrade(sku.grade);
 
 // Title с размером и маркой первыми. Цель — полный <title> ≤ 70 знаков
