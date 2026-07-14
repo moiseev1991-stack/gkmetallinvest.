@@ -225,7 +225,6 @@ const websiteJsonLd = {
 											playsinline
 											aria-label={s.title}
 										/>
-										{s.tag && <span class="ship-card__tag">{s.tag}</span>}
 										<button
 											type="button"
 											class="ship-card__btn"
@@ -1386,22 +1385,6 @@ const websiteJsonLd = {
 		inset: 0;
 		background: linear-gradient(180deg, rgba(10, 31, 61, 0) 55%, rgba(10, 31, 61, 0.55) 100%);
 		pointer-events: none;
-	}
-	.ship-card__tag {
-		position: absolute;
-		top: var(--space-3);
-		left: var(--space-3);
-		font-size: 0.68rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: #fff;
-		background: rgba(10, 31, 61, 0.65);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		padding: 0.3rem 0.7rem;
-		border-radius: var(--radius-pill);
-		z-index: 2;
 	}
 	.ship-card__btn {
 		position: absolute;

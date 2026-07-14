@@ -119,24 +119,23 @@ export const homeServices: Array<{
 /** Отгрузки — слайдер с видео реальных отгрузок */
 export const shipments: Array<{
 	title: string;
-	tag?: string;
 	video: string;
 	poster?: string;
 }> = [
-	{ title: 'Лист нержавеющий', tag: 'Лист', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.png' },
-	{ title: 'Отгрузка с маркировкой', tag: 'Лист', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.png' },
-	{ title: 'Погрузка манипулятором', tag: 'Лист', video: '/slaider/video (2).mp4' },
-	{ title: 'Рулон в упаковке', tag: 'Рулон', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.png' },
-	{ title: 'Загрузка в фуру', tag: 'Рулон', video: '/slaider/video (4).mp4' },
-	{ title: 'Палета на отгрузке', tag: 'Лист', video: '/slaider/video (5).mp4' },
-	{ title: 'Подготовка к доставке', tag: 'Лист', video: '/slaider/video (6).mp4' },
-	{ title: 'Профильная труба', tag: 'Труба', video: '/slaider/video (7).mp4' },
-	{ title: 'Закрепление стропами', tag: 'Лист', video: '/slaider/video (8).mp4' },
-	{ title: 'Контроль упаковки', tag: 'Рулон', video: '/slaider/video (9).mp4' },
-	{ title: 'Резка под размер', tag: 'Лист', video: '/slaider/video (10).mp4' },
-	{ title: 'Отгрузка профиля', tag: 'Труба', video: '/slaider/video (11).mp4' },
-	{ title: 'Складская площадка', tag: 'Лист', video: '/slaider/video (12).mp4' },
-	{ title: 'Экспедирование', tag: 'Лист', video: '/slaider/video (13).mp4' },
+	{ title: 'Лист нержавеющий', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.png' },
+	{ title: 'Отгрузка с маркировкой', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.png' },
+	{ title: 'Погрузка манипулятором', video: '/slaider/video (2).mp4' },
+	{ title: 'Рулон в упаковке', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.png' },
+	{ title: 'Загрузка в фуру', video: '/slaider/video (4).mp4' },
+	{ title: 'Палета на отгрузке', video: '/slaider/video (5).mp4' },
+	{ title: 'Подготовка к доставке', video: '/slaider/video (6).mp4' },
+	{ title: 'Профильная труба', video: '/slaider/video (7).mp4' },
+	{ title: 'Закрепление стропами', video: '/slaider/video (8).mp4' },
+	{ title: 'Контроль упаковки', video: '/slaider/video (9).mp4' },
+	{ title: 'Резка под размер', video: '/slaider/video (10).mp4' },
+	{ title: 'Отгрузка профиля', video: '/slaider/video (11).mp4' },
+	{ title: 'Складская площадка', video: '/slaider/video (12).mp4' },
+	{ title: 'Экспедирование', video: '/slaider/video (13).mp4' },
 ];
 
 /** Преимущества — слот под иконку */
