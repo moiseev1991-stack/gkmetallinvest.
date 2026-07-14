@@ -261,12 +261,22 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 				try {
 					/* Собираем URL из runtime-переменных, иначе Vite/Rollup пытается
 					   резолвить путь на этапе билда — а pagefind/pagefind.js
-					   создаётся только пост-билд шагом `pagefind --site dist`. */
+					   создаётся только пост-билд шагом `pagefind --site dist`.
+					   basePath/bundlePath обязательны — иначе pagefind не может
+					   найти свои wasm/index чанки при динамическом импорте
+					   (document.currentScript = null для ESM). */
 					const base = window.location.origin;
 					const url = base + '/pagefind/pagefind.js';
 					// @ts-ignore
 					const mod = await import(/* @vite-ignore */ url);
-					if (mod?.options) await mod.options({ excerptLength: 20 });
+					if (mod?.options) {
+						await mod.options({
+							excerptLength: 20,
+							basePath: '/pagefind/',
+							bundlePath: '/pagefind/',
+						});
+					}
+					if (mod?.init) await mod.init();
 					pagefind = mod as Pagefind;
 					return pagefind;
 				} catch (err) {
