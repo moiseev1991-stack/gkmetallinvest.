@@ -115,6 +115,131 @@ function normalizeTrubaSku(s: any): any {
    для /rulon/ — переименовывает «лист» в «рулон», для /truba/ — конвертирует
    ESV-трубы из ₽/м в ₽/т. Все потребители (PriceTable, страницы хабов,
    [slug]-роуты) должны идти через неё, иначе данные и счётчики разойдутся. */
+/* Разбор размеров у деталей трубопровода. В прайсе sku.size хранит только
+   первое число обозначения (например "1" для фланца «1x10x40»), а полное
+   обозначение по ГОСТ — три или два параметра — сидит в name. Из-за этого
+   на карточке товара клиент видел «размер 1 мм», хотя реальный размер —
+   исполнение × Ду × Ру. Здесь достаём полную геометрию из имени и
+   раскладываем по семантическим полям per-sub. */
+export type DetailDimensions = {
+	/** Компактная строка для лид-абзаца и meta-description, напр. "1 × 10 × 40 (исполнение × Ду × Ру)". */
+	display: string;
+	/** Отдельные строки для блока «Характеристики». */
+	rows: Array<{ label: string; value: string }>;
+	/** Кусок для meta description, обычно тот же display без круглых скобок. */
+	descriptionInline: string;
+	/** ГОСТ (если распарсен из имени). */
+	gost?: string;
+};
+
+const GOST_RE = /ГОСТ\s+(\d+[-–]\d+)/i;
+
+function parseGost(name: string): string | undefined {
+	const m = name.match(GOST_RE);
+	return m ? `ГОСТ ${m[1].replace('–', '-')}` : undefined;
+}
+
+/** Заменяет запятую на точку для .replace: source мог прийти как «2,5». */
+function num(s: string): string {
+	return s.replace(',', '.');
+}
+
+export function getDetailDimensions(sku: any): DetailDimensions | null {
+	if (sku?.hub !== 'detali-truboprovoda') return null;
+	const name = String(sku?.name ?? '').replace(/[Х×хX]/g, 'x');
+	const gost = parseGost(name);
+
+	const sub = String(sku?.sub ?? '');
+
+	/* --- Фланец: <исполнение>x<Ду>x<Ру>, три целых числа. Ру в наименовании
+	   идёт как «кгс/см²» (0.25, 0.6, 1, 1.6, 2.5, 4, 6.3, 10, 16, 25, 40, 63),
+	   исполнение = тип фланца по ГОСТ 12820-80 (1 — плоский приварной). */
+	if (sub === 'flanec' || sub === 'flanec-nastennyy') {
+		const m = name.match(/(\d+)x(\d+)x(\d+)/);
+		if (m) {
+			const [_, exec, du, ru] = m;
+			return {
+				display: `${exec} × ${du} × ${ru} (исполнение × Ду × Ру)`,
+				descriptionInline: `исполнение ${exec}, Ду ${du} мм, Ру ${ru} кгс/см²`,
+				rows: [
+					{ label: 'Исполнение', value: exec },
+					{ label: 'Ду (условный проход)', value: `${du} мм` },
+					{ label: 'Ру (условное давление)', value: `${ru} кгс/см²` },
+				],
+				gost,
+			};
+		}
+	}
+
+	/* --- Переход: <Ø1>x<Ø2>x<стенка>, где Ø1 — больший диаметр, Ø2 — меньший.
+	   Пример: «Переход 76x48x3» = c 76 на 48, стенка 3 мм. */
+	if (sub === 'perehod') {
+		const m = name.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)/);
+		if (m) {
+			const [_, d1, d2, wall] = m;
+			return {
+				display: `Ø ${num(d1)} → Ø ${num(d2)}, стенка ${num(wall)} мм`,
+				descriptionInline: `Ø ${num(d1)} → Ø ${num(d2)} мм, стенка ${num(wall)} мм`,
+				rows: [
+					{ label: 'Больший диаметр', value: `${num(d1)} мм` },
+					{ label: 'Меньший диаметр', value: `${num(d2)} мм` },
+					{ label: 'Стенка', value: `${num(wall)} мм` },
+				],
+				gost,
+			};
+		}
+	}
+
+	/* --- Отвод/тройник/заглушка: <Ø>x<стенка>, два числа. */
+	if (sub === 'otvod' || sub === 'troynik' || sub === 'zaglushka') {
+		const m = name.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)(?!x)/);
+		if (m) {
+			const [_, d, wall] = m;
+			return {
+				display: `Ø ${num(d)} × стенка ${num(wall)} мм`,
+				descriptionInline: `Ø ${num(d)} мм, стенка ${num(wall)} мм`,
+				rows: [
+					{ label: 'Диаметр', value: `${num(d)} мм` },
+					{ label: 'Стенка', value: `${num(wall)} мм` },
+				],
+				gost,
+			};
+		}
+	}
+
+	/* --- Клапан/задвижка: «Ду50 Ру16» в имени, парсим обе.
+	   sku.size у этих часто пуст или дублирует Ду. */
+	if (sub === 'klapan' || sub === 'zadvizhka') {
+		const mDu = name.match(/Ду\s*(\d+)/i);
+		const mRu = name.match(/Ру\s*(\d+(?:[.,]\d+)?)/i);
+		if (mDu || mRu) {
+			const parts: string[] = [];
+			const rows: Array<{ label: string; value: string }> = [];
+			if (mDu) {
+				parts.push(`Ду ${mDu[1]}`);
+				rows.push({ label: 'Ду (условный проход)', value: `${mDu[1]} мм` });
+			}
+			if (mRu) {
+				parts.push(`Ру ${num(mRu[1])}`);
+				rows.push({ label: 'Ру (условное давление)', value: `${num(mRu[1])} кгс/см²` });
+			}
+			return {
+				display: parts.join(', '),
+				descriptionInline: parts.join(', '),
+				rows,
+				gost,
+			};
+		}
+	}
+
+	/* Прочие sub-типы (декоративные, крепления, лестничные) — оставляем
+	   стандартный sku.size fallback, но всё ещё возвращаем ГОСТ, если он есть. */
+	if (gost) {
+		return { display: '', descriptionInline: '', rows: [], gost };
+	}
+	return null;
+}
+
 export function getHubSkus(hub: string): any[] {
 	const raw = ((pricelist as any).hubs?.[hub] ?? []) as any[];
 	if (hub === 'list') {

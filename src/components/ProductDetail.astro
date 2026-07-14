@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import pricelist from '../data/pricelist.json';
-import { getHubSkus } from '../data/pricelist-helpers';
+import { getHubSkus, getDetailDimensions } from '../data/pricelist-helpers';
 import { siteName, siteUrl, contacts } from '../data/site';
 import { cities } from '../data/cities';
 
@@ -60,6 +60,9 @@ const SUB_LABELS: Record<string, string> = {
 	// ugolok-shveller
 	shveller: 'Швеллер',
 	ugolok: 'Уголок',
+	'ugolok-ravnopolochnyy': 'Уголок равнополочный',
+	'ugolok-neravnopolochnyy': 'Уголок неравнополочный',
+	'shveller-gnutyy': 'Швеллер гнутый',
 	// detali-truboprovoda
 	flanec: 'Фланец',
 	'flanec-nastennyy': 'Фланец настенный',
@@ -275,11 +278,17 @@ const gradeMeta = (() => {
 	return null;
 })();
 
-const description = `${hubLabel}${sku.grade ? ` ${sku.grade}` : ''}${roll ? `, ${roll}` : ''}${surface ? `, ${surface}` : ''}${
-	sku.size
+/* Детали трубопровода в прайсе имеют sku.size = только первое число
+   обозначения; полный размер (Ø × стенка, исполнение × Ду × Ру и т.д.)
+   вытаскиваем из имени. */
+const detailDims = getDetailDimensions(sku);
+
+const sizeForDescription = detailDims?.descriptionInline
+	? `, ${detailDims.descriptionInline}`
+	: sku.size
 		? `, ${sku.hub === 'polosa' || sku.hub === 'truba' ? sku.size : `${measureLabel} ${sku.size}`} мм`
-		: ''
-}. Цена ${sku.price ? `от ${new Intl.NumberFormat('ru-RU').format(sku.price)} ₽/${sku.unit}` : 'по запросу'}.`;
+		: '';
+const description = `${hubLabel}${sku.grade ? ` ${sku.grade}` : ''}${roll ? `, ${roll}` : ''}${surface ? `, ${surface}` : ''}${sizeForDescription}. Цена ${sku.price ? `от ${new Intl.NumberFormat('ru-RU').format(sku.price)} ₽/${sku.unit}` : 'по запросу'}.`;
 
 const fmt = (p: number | null) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
 
@@ -308,6 +317,7 @@ if (sku.unit === 'шт' && (sku.sub === 'klapan' || sku.sub === 'zadvizhka')) {
 	detailRows.push({ label: 'Присоединение', value: 'фланцевое' });
 	detailRows.push({ label: 'Привод', value: 'ручной маховик' });
 	detailRows.push({ label: 'Материал корпуса', value: 'нержавеющая сталь' });
+	if (sku.country) detailRows.push({ label: 'Производитель', value: sku.country });
 }
 // «Тип сплава» обычно дублирует «Категорию» (никелесодержащий/без никеля).
 // Показываем, только если отличается от subLabel.
@@ -319,12 +329,17 @@ if (sku.hub === 'polosa' && sku.width != null && sku.thickness != null) {
 	   не было лжи «Толщина 20 мм» там, где 20 — это ширина. */
 	detailRows.push({ label: 'Ширина', value: `${sku.width} мм` });
 	detailRows.push({ label: 'Толщина', value: `${sku.thickness} мм` });
+} else if (detailDims && detailDims.rows.length) {
+	/* Детали трубопровода — многопараметровое обозначение из имени, вместо
+	   куцого «размер 1 мм» (где 1 — только исполнение фланца). */
+	for (const r of detailDims.rows) detailRows.push(r);
 } else if (sku.size && sku.sub !== 'klapan' && sku.sub !== 'zadvizhka') {
 	/* Для запорной арматуры sku.size дублирует «Условный проход Ду» — выводим
 	   Ду как самостоятельную характеристику выше, а sku.size («Размер 15 мм»)
 	   только сбивал с толку. */
 	detailRows.push({ label: measureLabel.charAt(0).toUpperCase() + measureLabel.slice(1), value: `${sku.size} мм` });
 }
+if (detailDims?.gost) detailRows.push({ label: 'ГОСТ', value: detailDims.gost });
 /* sku.dlina выводим, только если это похоже на число (мм). У задвижек поле
    dlina содержит «Назначение: ручной (маховик)» — не длина, мусорно. */
 if (sku.dlina && /^\s*\d/.test(String(sku.dlina))) detailRows.push({ label: 'Длина', value: `${sku.dlina} мм` });
@@ -334,6 +349,12 @@ if (kgPerPiece != null && kgPerPiece > 0) {
 	const pieceLabel = sku.hub === 'list' ? 'Вес 1 листа' : 'Вес 1 шт';
 	const digits = kgPerPiece >= 10 ? 1 : 2;
 	detailRows.push({ label: pieceLabel, value: `${fmtNum(kgPerPiece, digits)} кг` });
+}
+/* Паспортный вес нетто с карточки MC (запорная арматура). Расчётного веса
+   у клапанов/задвижек нет — геометрия сложная, поэтому берём справочное
+   значение поставщика. Правка заказчика 2026-07-01. */
+if (sku.vesNetto != null) {
+	detailRows.push({ label: 'Вес нетто', value: `${fmtNum(sku.vesNetto, Number.isInteger(sku.vesNetto) ? 0 : 1)} кг` });
 }
 if (sku.fact) detailRows.push({ label: 'Склад', value: sku.fact });
 if (sku.ostatok != null) detailRows.push({ label: 'Остаток на складе', value: `${sku.ostatok} ${sku.unit}` });
@@ -733,9 +754,11 @@ if (sku.price != null) {
 				    хедере (часть задвижек идёт без grade в прайсе). */}
 				<p class="product__lead">
 					{usePieceTitle ? (subLabel || hubLabel) : hubLabel}{sku.grade ? ` ${sku.grade}` : ''}{surface ? ` · ${surface}` : ''}{
-						sku.size
-							? `, ${sku.hub === 'truba' || sku.hub === 'polosa' ? sku.size : `${measureLabel} ${sku.size}`} мм`
-							: ''
+						detailDims?.descriptionInline
+							? `, ${detailDims.descriptionInline}`
+							: sku.size
+								? `, ${sku.hub === 'truba' || sku.hub === 'polosa' ? sku.size : `${measureLabel} ${sku.size}`} мм`
+								: ''
 					}.
 					{gradeMeta ? ` ${gradeMeta.applications}` : ` Поставка со склада в Нижнем Новгороде, доставка по России. Сертификат завода-изготовителя на каждую партию.`}
 				</p>
