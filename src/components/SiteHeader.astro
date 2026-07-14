@@ -1022,67 +1022,8 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	.head__search-status:empty {
 		display: none;
 	}
-	.head__search-list {
-		list-style: none;
-		margin: 0;
-		padding: 0.3rem 0;
-	}
 	.head__search-list:empty {
 		display: none;
-	}
-	.head__search-list li + li {
-		border-top: 1px solid var(--color-border);
-	}
-	.head__search-list li {
-		margin: 0;
-	}
-	.head__search-list a {
-		display: block;
-		padding: 0.65rem 0.9rem;
-		color: var(--color-text);
-		text-decoration: none;
-		line-height: 1.35;
-	}
-	.head__search-list a:hover,
-	.head__search-list a:focus,
-	.head__search-list a[aria-selected='true'] {
-		background: rgba(22, 59, 102, 0.06);
-		color: var(--color-text);
-	}
-	.head__search-list .head__search-title {
-		display: block;
-		font-size: 0.92rem;
-		font-weight: 600;
-		color: var(--color-text);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.head__search-list .head__search-crumb {
-		display: block;
-		font-size: 0.72rem;
-		color: var(--color-primary-500);
-		margin-top: 2px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.head__search-list .head__search-excerpt {
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-		font-size: 0.82rem;
-		color: var(--color-muted);
-		margin-top: 4px;
-		line-height: 1.4;
-	}
-	.head__search-list mark {
-		background: rgba(255, 203, 0, 0.35);
-		color: inherit;
-		padding: 0 1px;
-		border-radius: 2px;
-		font-weight: 500;
 	}
 	@media (max-width: 1023px) {
 		.head__search {
@@ -1099,5 +1040,73 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			width: 100%;
 			max-width: none;
 		}
+	}
+</style>
+
+<!-- Глобальные стили — для элементов дропдауна поиска, которые создаются
+     в JS. Astro-скопированные селекторы не применяются к DOM-нодам,
+     созданным вне шаблона (у них нет data-astro-cid-*). -->
+<style is:global>
+	.head__search-list {
+		list-style: none;
+		margin: 0;
+		padding: 0.3rem 0;
+	}
+	.head__search-list li {
+		margin: 0;
+	}
+	.head__search-list li + li {
+		border-top: 1px solid var(--color-border);
+	}
+	.head__search-list a {
+		display: block;
+		padding: 0.7rem 0.9rem;
+		color: var(--color-text);
+		text-decoration: none;
+		line-height: 1.35;
+	}
+	.head__search-list a:hover,
+	.head__search-list a:focus,
+	.head__search-list a[aria-selected='true'] {
+		background: rgba(22, 59, 102, 0.06);
+		color: var(--color-text);
+		text-decoration: none;
+	}
+	.head__search-list .head__search-title {
+		display: block;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: var(--color-text);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.head__search-list .head__search-crumb {
+		display: block;
+		font-size: 0.72rem;
+		color: var(--color-primary-500);
+		margin-top: 3px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+	.head__search-list .head__search-excerpt {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		font-size: 0.83rem;
+		color: var(--color-muted);
+		margin-top: 5px;
+		line-height: 1.4;
+	}
+	.head__search-list mark {
+		background: rgba(255, 203, 0, 0.4);
+		color: inherit;
+		padding: 0 2px;
+		border-radius: 2px;
+		font-weight: 500;
 	}
 </style>
