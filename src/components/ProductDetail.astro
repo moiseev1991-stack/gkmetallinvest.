@@ -974,26 +974,40 @@ if (sku.price != null) {
 			<section class="related">
 				<h2>Похожие позиции — {sku.grade || (subLabel || hubLabel).toLowerCase()}{roll && `, ${roll}`}</h2>
 				<div class="related__grid">
-					{related.map((r) => (
-						<a class="related__card" href={`${hubHref}${r.slug}/`}>
-							<img
-								class="related__img"
-								src={`/img/catalog/${r.hub}/${r.sub}.webp`}
-								alt={[r.grade, r.size].filter(Boolean).join(' ')}
-								width="120"
-								height="120"
-								loading="lazy"
-								onerror="this.style.display='none';"
-							/>
-							<div class="related__body">
-								<span class="related__title">{r.grade || SUB_LABELS[r.sub] || r.sub}{r.size && ` · ${r.size} мм`}</span>
-								<span class="related__meta">{[SUB_LABELS[r.sub] ?? r.sub, r.surface].filter(Boolean).join(' · ')}</span>
-								<span class="related__price">
-									{r.price ? `${fmt(r.price)} ₽/${r.unit}` : 'по запросу'}
-								</span>
-							</div>
-						</a>
-					))}
+					{related.map((r) => {
+						/* Для деталей трубопровода sku.size = только первое число обозначения
+						   (у фланца — исполнение, у отвода — диаметр без стенки), поэтому все
+						   похожие карточки выглядели одинаково («12Х18Н10Т · 1 мм» × 6).
+						   Тянем полное обозначение из имени тем же хелпером, что и характеристики. */
+						const rDims = getDetailDimensions(r);
+						const rSubLabel = SUB_LABELS[r.sub] ?? r.sub;
+						const rTitle = rDims?.descriptionInline
+							|| `${r.grade || rSubLabel}${r.size ? ` · ${r.size} мм` : ''}`;
+						const rMeta = (rDims
+							? [rSubLabel, r.grade, rDims.gost]
+							: [rSubLabel, r.surface]
+						).filter(Boolean).join(' · ');
+						return (
+							<a class="related__card" href={`${hubHref}${r.slug}/`}>
+								<img
+									class="related__img"
+									src={`/img/catalog/${r.hub}/${r.sub}.webp`}
+									alt={rTitle}
+									width="120"
+									height="120"
+									loading="lazy"
+									onerror="this.style.display='none';"
+								/>
+								<div class="related__body">
+									<span class="related__title">{rTitle}</span>
+									<span class="related__meta">{rMeta}</span>
+									<span class="related__price">
+										{r.price ? `${fmt(r.price)} ₽/${r.unit}` : 'по запросу'}
+									</span>
+								</div>
+							</a>
+						);
+					})}
 				</div>
 				<p class="related__back">
 					<a href={hubHref}>← Все позиции «{hubLabel}»</a>
