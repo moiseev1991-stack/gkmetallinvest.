@@ -158,13 +158,27 @@ const cutCounts: Array<{ key: string; label: string; count: number }> = (() => {
 		.sort((a, b) => b.count - a.count);
 })();
 
-/* Ру (давление) — извлекаем из названия для запорной арматуры. Показываем
-   фильтр только при ≥2 различных значениях. Запрос клиента 24.06.2026 — по
-   образцу santech.ru: «запорка» разрезается по material × type × pressure.
-   У нас material = grade, type = sub, pressure = вот этот фильтр. */
+/* Ру (давление) — извлекаем из названия. Три источника:
+   1) Явный маркер «Ру<N>» — стандартный формат для клапанов/задвижек.
+   2) Фланцы по ГОСТ 12820/12821: имя вида «Исп × Ду × Ру» (три числа),
+      Ру — третье. Пример: «1x100x6 ГОСТ 12820-80» → Ру 6.
+   3) Фланцы по ГОСТ 33259-2015: имя вида «Ду × Ру × Тип» (три числа),
+      Ру — второе, тип (1 плоский / 11 воротниковый / 21 свободный) — третье.
+      Пример: «15x16x1 ГОСТ 33259-2015» → Ру 16, тип 1.
+   Без ветки на ГОСТ 33259 фильтр показывал «Ру 1» и «Ру 11» — это на самом
+   деле были типы фланца, ошибочно принятые за давление, и весь массив 33259
+   выпадал из отбора по реальным Ру 6/10/16/25/40. */
 function extractPressureSku(s: any): string | null {
-	const m = String(s?.name ?? '').match(/Ру\s?(\d+)/i);
-	return m ? m[1] : null;
+	const raw = String(s?.name ?? '');
+	const m1 = raw.match(/Ру\s?(\d+)/i);
+	if (m1) return m1[1];
+	if (s?.sub === 'flanec' || s?.sub === 'flanec-nastennyy') {
+		const norm = raw.replace(/[хХ]/g, 'x');
+		const m = norm.match(/(\d+)x(\d+)x(\d+)/);
+		if (!m) return null;
+		return /33259/.test(raw) ? m[2] : m[3];
+	}
+	return null;
 }
 const pressureCounts: Array<{ key: string; count: number }> = (() => {
 	const map = new Map<string, number>();
@@ -566,10 +580,19 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
 		}
 
-		/* Зеркало extractPressureSku из frontmatter — «Ру16» / «Ру 40» из названия. */
+		/* Зеркало extractPressureSku из frontmatter — «Ру16» / «Ру 40» + разбор
+		   геометрии фланца по ГОСТ (12820/12821: Ру=3-е число, 33259: Ру=2-е). */
 		function extractPressure(s) {
-			const m = String(s?.name ?? '').match(/Ру\s?(\d+)/i);
-			return m ? m[1] : null;
+			const raw = String(s?.name ?? '');
+			const m1 = raw.match(/Ру\s?(\d+)/i);
+			if (m1) return m1[1];
+			if (s?.sub === 'flanec' || s?.sub === 'flanec-nastennyy') {
+				const norm = raw.replace(/[хХ]/g, 'x');
+				const m = norm.match(/(\d+)x(\d+)x(\d+)/);
+				if (!m) return null;
+				return /33259/.test(raw) ? m[2] : m[3];
+			}
+			return null;
 		}
 
 		/* === Каскадные фильтры =====================================================
