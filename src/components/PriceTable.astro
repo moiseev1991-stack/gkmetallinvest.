@@ -26,6 +26,10 @@ const allSkusRaw: any[] = getHubSkus(hub);
 const allSkus = initialGrade && initialGrade.length > 0
 	? allSkusRaw.filter((s) => {
 			const g = String(s.grade || '').toLowerCase();
+			/* Пустой grade нельзя матчить через includes — `x.includes('')` === true,
+			   поэтому раньше на марочной посадочной в таблицу подтягивались все
+			   безgrade-позиции (декоративка, крепёж). Явно отсекаем. */
+			if (!g) return false;
 			return initialGrade.some((a) => g.includes(a.toLowerCase()) || a.toLowerCase().includes(g));
 		})
 	: allSkusRaw;

@@ -31,14 +31,32 @@ interface Props {
 
 const { mark, hub, hubLabel, hubLabelGenitive, hubHref, measure } = Astro.props;
 
-/* Количество позиций по этой марке в этом хабе — для intro. */
+/* Количество позиций по этой марке в этом хабе — для intro. Также определяем,
+   вся ли эта марка идёт «под заказ» (price===null на всех совпавших SKU) —
+   тогда меняем формулировки в шапке/FAQ/чипе. Специальные марки для агрессивных
+   сред (310S, 316Ti, 904L, Duplex 2205 и т.п.) на складе не держим, для них
+   расчёт цены — индивидуальный. */
 const skus = (pricelist.hubs as any)[hub] as any[];
-const count = skus.filter((s) =>
-	mark.aliases.some((a) => (s.grade || '').toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes((s.grade || '').toLowerCase())),
-).length;
+const markSkus = skus.filter((s) => {
+	const g = String(s.grade || '').toLowerCase();
+	/* Пустой grade нельзя сравнивать через includes — `''.includes(x)` === false,
+	   но `x.includes('')` === true, что раньше засчитывало ВСЕ безgrade-позиции
+	   (декоративные, крепёж, часть задвижек) в каждую марку. */
+	if (!g) return false;
+	return mark.aliases.some((a) => {
+		const al = a.toLowerCase();
+		return g.includes(al) || al.includes(g);
+	});
+});
+const count = markSkus.length;
+const underOrder = count > 0 && markSkus.every((s) => s.price == null);
 
-const title = `${hubLabel} ${mark.aisi} (${mark.gost}) — купить, цена за тонну в Нижнем Новгороде`;
-const description = `${hubLabel} марки ${mark.aisi} / ${mark.gost} в наличии: ${count} позиций. Характеристики, химический состав, ГОСТы и аналоги. Сертификат завода, отгрузка в день оплаты, доставка по России. ${contacts.phone}.`;
+const title = underOrder
+	? `${hubLabel} ${mark.aisi} (${mark.gost}) — под заказ, цена по запросу, Нижний Новгород`
+	: `${hubLabel} ${mark.aisi} (${mark.gost}) — купить, цена за тонну в Нижнем Новгороде`;
+const description = underOrder
+	? `${hubLabel} марки ${mark.aisi} / ${mark.gost} под индивидуальный заказ: ${count} типоразмеров. Характеристики, химический состав, ГОСТы, аналоги. Сертификат завода-изготовителя, доставка по России. Расчёт цены и сроков — по запросу. ${contacts.phone}.`
+	: `${hubLabel} марки ${mark.aisi} / ${mark.gost} в наличии: ${count} позиций. Характеристики, химический состав, ГОСТы и аналоги. Сертификат завода, отгрузка в день оплаты, доставка по России. ${contacts.phone}.`;
 const h1 = `${hubLabel} ${mark.aisi} (${mark.gost})`;
 
 /* Прочие хабы, где есть эта марка — для кросс-линков «то же AISI 304 в других форматах». */
@@ -71,10 +89,15 @@ const faq = [
 		q: `Какие ГОСТы регламентируют ${hubLabelGenitive.toLowerCase()} ${mark.aisi}?`,
 		a: `${mark.standards.slice(0, 3).map((s) => s.code).join(', ')} — основные ГОСТы для марки ${mark.gost} в формате «${hubLabel.toLowerCase()}». Полный список стандартов и зарубежных аналогов — в разделе «Стандарты и ГОСТы» выше. Сертификат на партию ссылается на эти ГОСТы.`,
 	},
-	{
-		q: `Сколько стоит ${hubLabelGenitive.toLowerCase()} ${mark.aisi} за тонну?`,
-		a: `Цена зависит от размера и поверхности. Актуальные цены в прайсе выше — обновляется ежедневно. Для коммерческого предложения с фиксацией цены на 5 рабочих дней — отправьте заявку.`,
-	},
+	underOrder
+		? {
+			q: `Сколько стоит ${hubLabelGenitive.toLowerCase()} ${mark.aisi}?`,
+			a: `${mark.aisi} — специальная марка под индивидуальный заказ у профильного завода-изготовителя. На складе не держим. Цена зависит от размера, партии и сроков — присылайте спецификацию (типоразмер × количество × требуемый ГОСТ), менеджер даст расчёт и срок изготовления в течение дня.`,
+		}
+		: {
+			q: `Сколько стоит ${hubLabelGenitive.toLowerCase()} ${mark.aisi} за тонну?`,
+			a: `Цена зависит от размера и поверхности. Актуальные цены в прайсе выше — обновляется ежедневно. Для коммерческого предложения с фиксацией цены на 5 рабочих дней — отправьте заявку.`,
+		},
 	{
 		q: `Какие документы предоставляются на партию?`,
 		a: `Сертификат завода-изготовителя с указанием плавки, химсостава и механических свойств. Маркировка партии. По запросу — копии в PDF / через ЭДО до отгрузки. Подходит для тендерных закупок.`,
@@ -147,12 +170,29 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 			<span class="mark__chip mark__chip--main">{mark.aisi}</span>
 			<span class="mark__chip">{mark.gost}</span>
 			<span class="mark__chip mark__chip--type">{TYPE_LABEL[mark.type]} нержавеющая сталь</span>
-			{count > 0 && <span class="mark__chip mark__chip--count">{count} позиций в наличии</span>}
+			{count > 0 && (
+				<span class:list={['mark__chip', underOrder ? 'mark__chip--order' : 'mark__chip--count']}>
+					{count} {underOrder ? 'типоразмеров под заказ' : 'позиций в наличии'}
+				</span>
+			)}
 		</div>
 
 		<p class="mark__short">{mark.short}</p>
 
-		<PriceTable hub={hub} title={`Прайс на ${hubLabelGenitive.toLowerCase()} ${mark.aisi}`} measure={measure} initialGrade={mark.aliases} />
+		{underOrder && (
+			<aside class="mark__order-note" role="note">
+				<div class="mark__order-note-title">Марка поставляется под индивидуальный заказ</div>
+				<p>
+					{mark.aisi} на складе в Нижнем Новгороде мы не держим — это специальная сталь
+					для агрессивных / высокотемпературных сред, партии заказываются у профильного завода-изготовителя.
+					Расчёт цены и сроков — по запросу: пришлите типоразмер и количество, менеджер даст расчёт
+					и срок поставки в течение дня. Партия — от 500 кг, доставка по России.
+				</p>
+				<a class="mark__order-note-cta" href="/zapros-kp/#lead-form">Запросить расчёт</a>
+			</aside>
+		)}
+
+		<PriceTable hub={hub} title={`${underOrder ? 'Типоразмеры под заказ — ' : 'Прайс на '}${hubLabelGenitive.toLowerCase()} ${mark.aisi}`} measure={measure} initialGrade={mark.aliases} />
 
 		<section class="mark__block">
 			<h2>Характеристики и химический состав {mark.aisi} ({mark.gost})</h2>
@@ -298,6 +338,53 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 		border-color: var(--color-accent);
 		color: var(--color-accent-600);
 		font-family: var(--font-sans);
+	}
+	.mark__chip--order {
+		background: #fef3c7;
+		border-color: #f59e0b;
+		color: #92400e;
+		font-family: var(--font-sans);
+	}
+
+	.mark__order-note {
+		margin: 0 0 var(--space-6);
+		padding: var(--space-4) var(--space-5);
+		background: #fffbeb;
+		border: 1px solid #fcd34d;
+		border-left: 3px solid #f59e0b;
+		border-radius: var(--radius-md);
+		max-width: 80ch;
+	}
+	.mark__order-note-title {
+		font-size: 0.85rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #92400e;
+		margin-bottom: 0.5rem;
+	}
+	.mark__order-note p {
+		margin: 0 0 0.85rem;
+		color: var(--color-text);
+		line-height: 1.55;
+		font-size: 0.95rem;
+		max-width: none;
+	}
+	.mark__order-note-cta {
+		display: inline-block;
+		padding: 0.55rem 1.1rem;
+		background: #f59e0b;
+		color: #fff;
+		font-weight: 600;
+		border-radius: var(--radius-sm);
+		text-decoration: none;
+		font-size: 0.92rem;
+		transition: background var(--dur-fast) var(--ease-out);
+	}
+	.mark__order-note-cta:hover {
+		background: #d97706;
+		color: #fff;
+		text-decoration: none;
 	}
 	.mark__short {
 		font-size: 1.05rem;
