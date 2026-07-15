@@ -208,6 +208,11 @@ const sizePh = (n: number) =>
 // показывали «Длина» из-за единичных SKU из 756).
 const _hasDlinaCount = allSkus.filter((s) => s.dlina !== null && s.dlina !== undefined && s.dlina !== '').length;
 const hasDlina = allSkus.length > 0 && _hasDlinaCount / allSkus.length >= 0.1;
+/* Для деталей трубопровода поле dlina хранит толщину стенки (значения
+   типа «х6», «x5», «х3,5»), а не длину хлыста. Правка заказчика 15.07.2026:
+   переименовать колонку и убрать префикс x/х, чтобы читалось как число. */
+const isWallThickness = hub === 'detali-truboprovoda';
+const lengthColLabel = isWallThickness ? 'Стенка, мм' : 'Длина, мм';
 const hasFact = allSkus.some((s) => s.fact);
 // Show second price column only when most SKUs actually have two distinct
 // prices — a handful of exceptions out of hundreds (e.g. detali-truboprovoda)
@@ -452,9 +457,15 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	<div class="pt__table-wrap">
 		<table class="pt__table">
 			<colgroup>
+				{/* Порядок колонок: Марка → Продукция → Размер → Стенка/Длина
+				   → Склад → Цена. Марка вынесена первой по запросу заказчика
+				   15.07.2026 — на карточках отводов и фитингов различия по
+				   марке критичнее, чем по имени, которое у большинства
+				   строк одинаковое. Стенка (dlina для деталей трубопровода)
+				   перенесена сразу после Размера — читается как «Ø × стенка». */}
+				<col class="pt__col-grade" />
 				<col class="pt__col-name" />
 				<col class="pt__col-size" />
-				<col class="pt__col-grade" />
 				{hasDlina && <col class="pt__col-len" />}
 				{hasFact && <col class="pt__col-fact" />}
 				{hasUniquePrices && <col class="pt__col-price" />}
@@ -462,6 +473,14 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			</colgroup>
 			<thead>
 				<tr>
+					<th class="pt__th" data-sort="grade">
+						<span class="pt__th-inner">Марка<span class="pt__sort" aria-hidden="true">
+							<svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+								<path class="pt__sort-up" d="M4 1.5l3 3.5H1z" fill="currentColor" />
+								<path class="pt__sort-dn" d="M4 10.5l3 -3.5H1z" fill="currentColor" />
+							</svg>
+						</span></span>
+					</th>
 					<th class="pt__th" data-sort="name">
 						<span class="pt__th-inner">Продукция<span class="pt__sort" aria-hidden="true">
 							<svg width="8" height="12" viewBox="0 0 8 12" fill="none">
@@ -478,15 +497,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 							</svg>
 						</span></span>
 					</th>
-					<th class="pt__th" data-sort="grade">
-						<span class="pt__th-inner">Марка<span class="pt__sort" aria-hidden="true">
-							<svg width="8" height="12" viewBox="0 0 8 12" fill="none">
-								<path class="pt__sort-up" d="M4 1.5l3 3.5H1z" fill="currentColor" />
-								<path class="pt__sort-dn" d="M4 10.5l3 -3.5H1z" fill="currentColor" />
-							</svg>
-						</span></span>
-					</th>
-					{hasDlina && <th class="pt__th pt__th--num pt__th--dlina"><span class="pt__th-inner">Длина</span></th>}
+					{hasDlina && <th class="pt__th pt__th--num pt__th--dlina"><span class="pt__th-inner">{lengthColLabel}</span></th>}
 					{hasFact && <th class="pt__th"><span class="pt__th-inner">Склад</span></th>}
 					{hasUniquePrices && (
 						<th class="pt__th pt__th--price" data-sort="priceUnit">
@@ -529,7 +540,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	<p class="pt__empty" data-pt-empty hidden>Ничего не найдено по фильтрам — попробуйте сбросить.</p>
 </section>
 
-<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices }}>
+<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices, IS_WALL_THICKNESS: isWallThickness, LENGTH_LABEL: lengthColLabel }}>
 	const root = document.querySelector(`.pt[data-hub="${hub}"]`);
 	if (root) {
 		const fmt = (p) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
@@ -783,8 +794,15 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			const priceCell = s.price != null ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
 			/* Размер: чистое значение без «мм» — единица очевидна из контекста колонки. */
 			const sizeText = escapeHtml(String(s.size));
+			/* Для деталей трубопровода поле dlina хранит толщину стенки
+			   в виде «х6», «x5», «х3,5» — префикс «х/x» убираем, чтобы
+			   в колонке было чистое число (единица «мм» уже в заголовке). */
+			const dlinaRaw = s.dlina || '';
+			const dlinaClean = IS_WALL_THICKNESS
+				? String(dlinaRaw).replace(/^[хx×]\s*/i, '')
+				: String(dlinaRaw);
 			const dlinaTd = HAS_DLINA
-				? `<td class="pt__cell-num pt__cell-muted pt__cell-dlina" data-label="Длина">${escapeHtml(s.dlina || '—')}</td>`
+				? `<td class="pt__cell-num pt__cell-muted pt__cell-dlina" data-label="${LENGTH_LABEL}">${escapeHtml(dlinaClean || '—')}</td>`
 				: '';
 			const factTd = HAS_FACT
 				? `<td class="pt__cell-fact" data-label="Склад"><span class="pt__fact-wrap"><span class="pt__fact">${escapeHtml(s.fact || '—')}</span>${s.ostatok ? `<span class="pt__ost"><span class="pt__ost-dot" aria-hidden="true"></span>${s.ostatok}</span>` : ''}</span></td>`
@@ -796,9 +814,9 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			/* Марка в одну строку: убираем переносы и принудительный nbsp вокруг скобок. */
 			const gradeClean = escapeHtml((s.grade || '—').replace(/\s+/g, ' ').replace(/\s*\(/g, ' ('));
 			return `<tr class="pt__row">
+				<td class="pt__cell-grade" data-label="Марка" title="${gradeClean}">${gradeClean}</td>
 				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}<svg class="pt__name-arrow" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>${articleHtml}</td>
 				<td class="pt__cell-num" data-label="Размер">${sizeText}</td>
-				<td class="pt__cell-grade" data-label="Марка" title="${gradeClean}">${gradeClean}</td>
 				${dlinaTd}
 				${factTd}
 				${priceUnitTd}
