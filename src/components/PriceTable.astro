@@ -77,6 +77,8 @@ const SUB_LABELS: Record<string, string> = {
 	shestigrannik: 'Шестигранник',
 	osnovnaya: 'Проволока',
 	flanec: 'Фланцы',
+	'flanec-ploskiy': 'Фланцы плоские',
+	'flanec-vorotnikovyy': 'Фланцы воротниковые',
 	otvod: 'Отводы',
 	troynik: 'Тройники',
 	perehod: 'Переходы',
@@ -107,6 +109,9 @@ const SUB_LABELS: Record<string, string> = {
 	pvl: 'ПВЛ',
 	ugolok: 'Уголок',
 	shveller: 'Швеллер',
+	'ugolok-ravnopolochnyy': 'Уголок равнополочный',
+	'ugolok-neravnopolochnyy': 'Уголок неравнополочный',
+	'shveller-gnutyy': 'Швеллер гнутый',
 	krepyozh: 'Крепёж',
 };
 
@@ -172,7 +177,7 @@ function extractPressureSku(s: any): string | null {
 	const raw = String(s?.name ?? '');
 	const m1 = raw.match(/Ру\s?(\d+)/i);
 	if (m1) return m1[1];
-	if (s?.sub === 'flanec' || s?.sub === 'flanec-nastennyy') {
+	if (String(s?.sub ?? '').startsWith('flanec')) {
 		const norm = raw.replace(/[хХ]/g, 'x');
 		const m = norm.match(/(\d+)x(\d+)x(\d+)/);
 		if (!m) return null;
@@ -597,7 +602,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			const raw = String(s?.name ?? '');
 			const m1 = raw.match(/Ру\s?(\d+)/i);
 			if (m1) return m1[1];
-			if (s?.sub === 'flanec' || s?.sub === 'flanec-nastennyy') {
+			if (String(s?.sub ?? '').startsWith('flanec')) {
 				const norm = raw.replace(/[хХ]/g, 'x');
 				const m = norm.match(/(\d+)x(\d+)x(\d+)/);
 				if (!m) return null;
@@ -715,6 +720,17 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return { name: rawName || '', article: null };
 		}
 
+		/* Паспортные атрибуты запорной арматуры (вес нетто + производитель) с
+		   карточки MC. Показываем компактной подписью только там, где данные
+		   есть — у остальных SKU (их сотни) поле пустое, шума нет. Правка
+		   заказчика 2026-07-01. */
+		function specBits(s) {
+			const bits = [];
+			if (s.vesNetto != null) bits.push(`${String(s.vesNetto).replace('.', ',')} кг`);
+			if (s.country) bits.push(String(s.country));
+			return bits;
+		}
+
 		function sizeNum(s) {
 			const m = String(s ?? '').match(/-?\d+(?:[.,]\d+)?/);
 			return m ? parseFloat(m[0].replace(',', '.')) : NaN;
@@ -737,7 +753,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				if (f.sizeMax != null && n > f.sizeMax) return false;
 			}
 			if (f.q) {
-				const hay = `${s.name || ''} ${s.grade || ''} ${SUB_LABELS[s.sub] || s.sub || ''} ${s.roll || ''} ${s.surface || ''} ${s.size || ''}`.toLowerCase();
+				const hay = `${s.name || ''} ${s.grade || ''} ${SUB_LABELS[s.sub] || s.sub || ''} ${s.roll || ''} ${s.surface || ''} ${s.size || ''} ${s.country || ''}`.toLowerCase();
 				if (!hay.includes(f.q)) return false;
 			}
 			return true;
@@ -790,6 +806,10 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			const articleHtml = article
 				? `<span class="pt__article">арт. ${escapeHtml(article)}</span>`
 				: '';
+			const specs = specBits(s);
+			const specHtml = specs.length
+				? `<span class="pt__spec">${specs.map((b) => escapeHtml(b)).join(' · ')}</span>`
+				: '';
 			const priceUnitCell = s.priceUnit != null ? `<strong>${fmt(s.priceUnit)}</strong>` : '<span class="pt__on-request">по запросу</span>';
 			const priceCell = s.price != null ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
 			/* Размер: чистое значение без «мм» — единица очевидна из контекста колонки. */
@@ -815,7 +835,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			const gradeClean = escapeHtml((s.grade || '—').replace(/\s+/g, ' ').replace(/\s*\(/g, ' ('));
 			return `<tr class="pt__row">
 				<td class="pt__cell-grade" data-label="Марка" title="${gradeClean}">${gradeClean}</td>
-				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}<svg class="pt__name-arrow" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>${articleHtml}</td>
+				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}<svg class="pt__name-arrow" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>${articleHtml}${specHtml}</td>
 				<td class="pt__cell-num" data-label="Размер">${sizeText}</td>
 				${dlinaTd}
 				${factTd}
@@ -841,6 +861,9 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				? `<span class="pt-tile__stock pt-tile__stock--ok"><span class="pt__ost-dot" aria-hidden="true"></span>${s.ostatok} ${escapeHtml(s.unit || 'т')}</span>`
 				: `<span class="pt-tile__stock">${escapeHtml(s.fact || 'под заказ')}</span>`;
 			const surfaceChip = s.surface ? `<span class="pt-tile__chip">${escapeHtml(s.surface)}</span>` : '';
+			const specChips = specBits(s)
+				.map((b) => `<span class="pt-tile__chip pt-tile__chip--spec">${escapeHtml(b)}</span>`)
+				.join('');
 			return `<article class="pt-tile">
 				<header class="pt-tile__head">
 					<span class="pt-tile__sub">${escapeHtml(SUB_LABELS[s.sub] || s.sub || '')}</span>
@@ -852,6 +875,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 					<span class="pt-tile__chip pt-tile__chip--grade">${escapeHtml(s.grade || '—')}</span>
 					<span class="pt-tile__chip pt-tile__chip--size">${escapeHtml(s.size)}${sizeSuffix}</span>
 					${surfaceChip}
+					${specChips}
 				</div>
 				<footer class="pt-tile__foot">
 					<div class="pt-tile__price">${priceMain}${priceRetail}</div>
@@ -1611,6 +1635,13 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 		color: var(--color-subtle);
 		letter-spacing: 0.02em;
 	}
+	/* Паспортная подпись арматуры (вес нетто · производитель) под названием. */
+	.pt__spec {
+		display: block;
+		margin-top: 0.15rem;
+		font-size: 0.76rem;
+		color: var(--color-muted);
+	}
 	.pt__cell-num { text-align: right; font-family: var(--font-mono); font-weight: 600; white-space: nowrap; }
 	.pt__cell-muted { color: var(--color-muted); font-weight: 400; }
 	.pt__unit-suffix { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-subtle); font-weight: 400; margin-left: 0.15rem; }
@@ -1738,6 +1769,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 		font-family: var(--font-mono);
 	}
 	.pt-tile__chip--grade { color: var(--color-text); }
+	.pt-tile__chip--spec { font-family: var(--font-sans); }
 	.pt-tile__chip--size {
 		background: var(--color-primary-50);
 		border-color: var(--color-primary-100);
