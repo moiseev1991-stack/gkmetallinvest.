@@ -14,6 +14,11 @@ const { hub } = Astro.props;
 		{hub.lines.map((line) => (
 			<li>
 				<a class="alc__card" href={`/${hub.slug}/${line.slug}/`}>
+					{line.image && (
+						<span class="alc__card-media">
+							<img src={line.image} alt={line.cardTitle} loading="lazy" decoding="async" width="480" height="360" />
+						</span>
+					)}
 					<span class="alc__card-head">
 						<span class="alc__card-title">{line.cardTitle}</span>
 						{line.brand && <span class="alc__card-brand">{line.brand}</span>}
@@ -62,6 +67,21 @@ const { hub } = Astro.props;
 		transform: translateY(-2px);
 		box-shadow: var(--shadow-md);
 		text-decoration: none;
+	}
+	.alc__card-media {
+		display: block;
+		margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-1);
+		aspect-ratio: 4 / 3;
+		background: #fff;
+		border-bottom: 1px solid var(--color-border);
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		overflow: hidden;
+	}
+	.alc__card-media img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		padding: var(--space-3);
 	}
 	.alc__card-head {
 		display: flex;
