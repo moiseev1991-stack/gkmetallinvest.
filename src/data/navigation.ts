@@ -62,7 +62,7 @@ export const navGroups: NavGroup[] = [
 		hint: 'Краны, задвижки, фитинги',
 		items: [
 			{ title: 'Запорная арматура', href: '/zapornaya-armatura/', meta: 'краны 11с67п · задвижки · затворы', empty: true },
-			{ title: 'Крепёж и фитинги', href: '/krepezh-fitingi/', meta: 'контргайки · муфты', empty: true },
+			{ title: 'Детали трубопровода', href: '/truboprovodnye-detali/', meta: 'фланцы · отводы · тройники · крепёж', empty: true },
 			{ title: 'Переточка фланцев', href: '/peretochka-flantsev/', meta: 'услуга · расчёт коэффициента', empty: true },
 		],
 	},

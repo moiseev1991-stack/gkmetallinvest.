@@ -4,7 +4,7 @@ import ArmaturaLineCards from '../../components/ArmaturaLineCards.astro';
 import HubRequest from '../../components/HubRequest.astro';
 import { getArmaturaHub } from '../../data/armatura';
 
-const hub = getArmaturaHub('krepezh-fitingi')!;
+const hub = getArmaturaHub('truboprovodnye-detali')!;
 ---
 
 <CatalogHubTemplate
@@ -12,9 +12,9 @@ const hub = getArmaturaHub('krepezh-fitingi')!;
 	description={hub.description}
 	h1={hub.h1}
 	intro={hub.intro}
-	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Крепёж и фитинги' }]}
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Детали трубопровода' }]}
 	faq={hub.faq}
 >
 	<ArmaturaLineCards hub={hub} />
-	<HubRequest what="Крепёж и фитинги: контргайки и муфты" />
+	<HubRequest what="Детали трубопровода: фланцы, отводы, тройники, переходы, заглушки, крепёж" />
 </CatalogHubTemplate>

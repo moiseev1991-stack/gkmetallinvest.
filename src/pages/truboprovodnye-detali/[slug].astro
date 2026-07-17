@@ -4,11 +4,11 @@ import ArmaturaLineBody from '../../components/ArmaturaLineBody.astro';
 import { getArmaturaHub, type ArmaturaLine } from '../../data/armatura';
 
 export async function getStaticPaths() {
-	const hub = getArmaturaHub('krepezh-fitingi')!;
+	const hub = getArmaturaHub('truboprovodnye-detali')!;
 	return hub.lines.map((line) => ({ params: { slug: line.slug }, props: { line } }));
 }
 
-const hub = getArmaturaHub('krepezh-fitingi')!;
+const hub = getArmaturaHub('truboprovodnye-detali')!;
 const { line } = Astro.props as { line: ArmaturaLine };
 
 const title = `${line.title} — цена по запросу`;
