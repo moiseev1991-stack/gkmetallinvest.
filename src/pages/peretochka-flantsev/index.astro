@@ -43,20 +43,32 @@ const faqJsonLd = {
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Переточка фланцев' }]} />
 
 		<header class="prf__hero">
-			<span class="prf__eyebrow">
-				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-					<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" />
-					<circle cx="8" cy="8" r="2.3" stroke="currentColor" stroke-width="1.4" />
-				</svg>
-				Услуга · ГОСТ 33259-2015
-			</span>
-			<h1 class="prf__h1">Переточка фланцев</h1>
-			<p class="prf__lead">
-				Дорабатываем готовые фланцы под нужное исполнение уплотнительной поверхности —
-				выступ, впадину, шип, паз, под линзу или кольцо. Из складской заготовки получаем
-				требуемое исполнение быстрее и дешевле, чем изготовление с нуля. Ниже — калькулятор
-				коэффициента: итоговая цена = базовая цена фланца × коэффициент.
-			</p>
+			<div class="prf__hero-text">
+				<span class="prf__eyebrow">
+					<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+						<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" />
+						<circle cx="8" cy="8" r="2.3" stroke="currentColor" stroke-width="1.4" />
+					</svg>
+					Услуга · ГОСТ 33259-2015
+				</span>
+				<h1 class="prf__h1">Переточка фланцев</h1>
+				<p class="prf__lead">
+					Дорабатываем готовые фланцы под нужное исполнение уплотнительной поверхности —
+					выступ, впадину, шип, паз, под линзу или кольцо. Из складской заготовки получаем
+					требуемое исполнение быстрее и дешевле, чем изготовление с нуля. Ниже — калькулятор
+					коэффициента: итоговая цена = базовая цена фланца × коэффициент.
+				</p>
+			</div>
+			<figure class="prf__hero-media">
+				<img
+					src="/img/services/peretochka-flantsev.webp"
+					alt="Стальной фланец с уплотнительной поверхностью под переточку"
+					width="800"
+					height="800"
+					loading="eager"
+					decoding="async"
+				/>
+			</figure>
 		</header>
 
 		<section class="prf__widget" data-prf-root>
@@ -288,7 +300,11 @@ const faqJsonLd = {
 
 <style>
 	.prf { padding-block: var(--space-8); min-width: 0; }
-	.prf__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.prf__hero { margin-bottom: var(--space-7); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: var(--space-6); align-items: center; }
+	.prf__hero-text { max-width: 80ch; }
+	.prf__hero-media { margin: 0; border: 1px solid var(--color-border); border-radius: var(--radius-xl); background: #fff; overflow: hidden; box-shadow: var(--shadow-sm); }
+	.prf__hero-media img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; padding: var(--space-4); }
+	@media (max-width: 760px) { .prf__hero { grid-template-columns: 1fr; } .prf__hero-media { max-width: 320px; } }
 	.prf__eyebrow {
 		display: inline-flex; align-items: center; gap: 0.4rem;
 		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
