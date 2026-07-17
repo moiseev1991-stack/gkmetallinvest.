@@ -44,7 +44,7 @@ export const navGroups: NavGroup[] = [
 		hint: 'Труба и фитинги',
 		items: [
 			{ title: 'Труба нержавеющая', href: '/truba/', meta: 'бесшовная · ЭСВ · профильная' },
-			{ title: 'Детали трубопровода, задвижки', href: '/detali-truboprovoda/', meta: 'фланцы · отводы · переходы · задвижки' },
+			{ title: 'Детали трубопровода и ограждения', href: '/detali-truboprovoda/', meta: 'фланцы, отводы + стойки, поручни, стекло' },
 		],
 	},
 	{
