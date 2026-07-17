@@ -10,6 +10,7 @@ const description = 'Нержавейка магнитится или нет —
 const datePublished = '2026-05-22';
 const dateModified = '2026-05-22';
 const url = `${siteUrl.replace(/\/$/, '')}/blog/magnitit-li-nerzhaveika/`;
+const cover = '/img/blog/magnitit-li-nerzhaveika.svg';
 
 /* Структура поста — массив H2-секций. Удобно итерировать и рендерить TOC. */
 const sections = [
@@ -67,6 +68,7 @@ const articleJsonLd = {
 	'@type': 'Article',
 	headline: 'Магнитится ли нержавейка',
 	description,
+	image: `${siteUrl.replace(/\/$/, '')}${cover}`,
 	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
 	datePublished,
 	dateModified,
@@ -90,7 +92,7 @@ const faqJsonLd = {
 };
 ---
 
-<BaseLayout title={title} description={description} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+<BaseLayout title={title} description={description} image={cover} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
 	<div class="container post">
 		<Breadcrumbs items={[
 			{ label: 'Главная', href: '/' },
@@ -119,6 +121,17 @@ const faqJsonLd = {
 				почему так и как проверить марку дома.
 			</p>
 		</header>
+
+		<figure class="post__cover">
+			<img
+				src={cover}
+				alt="Магнитится ли нержавейка — аустенит не магнитится, феррит и мартенсит магнитятся"
+				width="1200"
+				height="630"
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</figure>
 
 		<nav class="post__toc" aria-label="Содержание">
 			<div class="post__toc-title">На странице</div>
@@ -327,6 +340,21 @@ const faqJsonLd = {
 		margin: 0;
 	}
 	.post__lead strong { color: var(--color-primary); }
+
+	/* Cover */
+	.post__cover {
+		margin: 0 0 var(--space-8);
+		max-width: 80ch;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+	}
+	.post__cover img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 1200 / 630;
+	}
 
 	/* TOC */
 	.post__toc {

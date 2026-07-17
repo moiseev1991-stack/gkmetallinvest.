@@ -1,0 +1,549 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import { siteUrl, siteName } from '../../../data/site';
+
+const title = 'Сталь 20Х13, 30Х13, 40Х13 — мартенситная нержавейка (AISI 420)';
+const description = 'Мартенситные нержавеющие стали 20Х13, 30Х13, 40Х13 (аналог AISI 420): состав, твёрдость после закалки 48–55 HRC, магнитность, применение — ножи, инструмент, валы. Чем отличаются марки.';
+
+const cover = '/img/blog/martensitnaya-stal-20h13-40h13.svg';
+const datePublished = '2026-07-17';
+const dateModified = '2026-07-17';
+const url = `${siteUrl.replace(/\/$/, '')}/blog/martensitnaya-stal-20h13-40h13/`;
+
+const sections = [
+	{
+		id: 'chto-eto',
+		anchor: 'Что это за стали',
+		title: 'Мартенситные стали 13-й группы',
+		summary: 'Хромистые, закаливаемые, магнитные.',
+	},
+	{
+		id: 'tablica',
+		anchor: 'Сравнение марок',
+		title: '20Х13 vs 30Х13 vs 40Х13',
+		summary: 'Углерод, твёрдость, назначение.',
+	},
+	{
+		id: 'zakalka',
+		anchor: 'Закалка и твёрдость',
+		title: 'Термообработка и HRC',
+		summary: 'Как получают 48–55 HRC.',
+	},
+	{
+		id: 'primenenie',
+		anchor: 'Применение',
+		title: 'Где применяют 20Х13–40Х13',
+		summary: 'Ножи, инструмент, валы, крепёж.',
+	},
+];
+
+const rows = [
+	{ mark: '20Х13', c: '0,16–0,25', hrc: '43–48', note: 'Валы, лопатки турбин, крепёж', aisi: '420' },
+	{ mark: '30Х13', c: '0,26–0,35', hrc: '48–52', note: 'Инструмент, пружины, режущий инструмент', aisi: '420' },
+	{ mark: '40Х13', c: '0,36–0,45', hrc: '52–55', note: 'Ножи, скальпели, подшипники', aisi: '420' },
+];
+
+const faq = [
+	{
+		q: 'Что такое сталь 40Х13?',
+		a: '40Х13 — мартенситная нержавеющая сталь с содержанием 0,4 % углерода и 13 % хрома. Аналог AISI 420, EN 1.4031/1.4034. За счёт высокого углерода закаливается до 52–55 HRC, поэтому её берут для ножей, скальпелей, режущего и мерительного инструмента, деталей подшипников. Магнитится, в отличие от аустенитных 304 и 316. Коррозионная стойкость умеренная — держит влагу и слабые среды, но уступает 08Х18Н10.',
+	},
+	{
+		q: 'Чем отличаются 20Х13, 30Х13 и 40Х13?',
+		a: 'Разница в содержании углерода, а значит — в твёрдости после закалки. 20Х13 (0,2 % C) закаливается до 43–48 HRC, вязкая, идёт на валы и лопатки. 30Х13 (0,3 % C) — 48–52 HRC, инструмент и пружины. 40Х13 (0,4 % C) — 52–55 HRC, самая твёрдая, для ножей и режущего инструмента. Чем больше углерода, тем выше твёрдость, но ниже пластичность и свариваемость. Хрома во всех трёх около 13 %.',
+	},
+	{
+		q: 'Магнитится ли сталь 20Х13 и 40Х13?',
+		a: 'Да, мартенситные стали 20Х13, 30Х13 и 40Х13 магнитятся — их притягивает магнит и в отожжённом, и в закалённом состоянии. Магнитность связана с ферромагнитной мартенситной (и ферритной) структурой. Именно поэтому магнит — простой способ отличить эти «ножевые» марки от немагнитных аустенитных 304 и 316. Подробнее — в статье о том, магнитится ли нержавейка.',
+	},
+	{
+		q: 'Какой аналог у стали 40Х13 по AISI?',
+		a: 'Стали 20Х13, 30Х13 и 40Х13 относятся к группе AISI 420 (EN 1.4021, 1.4028, 1.4031, 1.4034). Точное соответствие по углероду: 20Х13 ≈ 1.4021, 30Х13 ≈ 1.4028, 40Х13 ≈ 1.4031. Все они — хромистые мартенситные стали «ножевого» назначения. Полная таблица соответствия марок AISI, ГОСТ и EN приведена в отдельном материале.',
+	},
+	{
+		q: 'Нержавеющая ли сталь 40Х13?',
+		a: 'Да, 40Х13 — нержавеющая, поскольку содержит 13 % хрома (порог нержавейки — от 10,5 %). Но её коррозионная стойкость ниже, чем у аустенитных марок: высокий углерод частично связывает хром в карбиды, уменьшая защиту. 40Х13 хорошо держит влажный воздух, пресную воду и слабые среды, но в морской воде и кислотах уступает 316L. Максимальная стойкость достигается на полированной закалённой поверхности.',
+	},
+];
+
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: title,
+	description,
+	image: `${siteUrl.replace(/\/$/, '')}${cover}`,
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	datePublished,
+	dateModified,
+	author: { '@type': 'Organization', name: siteName, url: siteUrl },
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+		logo: { '@type': 'ImageObject', url: `${siteUrl.replace(/\/$/, '')}/favicon.svg` },
+	},
+};
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} image={cover} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+	<div class="container post">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Блог', href: '/blog/' },
+			{ label: 'Сталь 20Х13, 30Х13, 40Х13' },
+		]} />
+
+		<header class="post__hero">
+			<span class="post__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M4 2v6a4 4 0 0 0 8 0V2M4 2h2v3H4M10 2h2v3h-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+				</svg>
+				Статья · марки стали
+			</span>
+			<h1 class="post__h1">Сталь 20Х13, 30Х13, 40Х13: мартенситная нержавейка (AISI 420)</h1>
+			<div class="post__meta">
+				<time datetime={datePublished}>17 июля 2026</time>
+				<span>·</span>
+				<span>чтение 6 минут</span>
+			</div>
+			<p class="post__lead">
+				<strong>Прямой ответ:</strong> 20Х13, 30Х13 и 40Х13 — мартенситные хромистые
+				нержавеющие стали (аналог AISI 420) с 13 % хрома. Различаются углеродом: чем его
+				больше, тем выше твёрдость после закалки — от 43–48 HRC у 20Х13 до 52–55 HRC
+				у 40Х13. Магнитятся, идут на ножи, инструмент, валы. Ниже — сравнение марок,
+				закалка и применение.
+			</p>
+		</header>
+
+		<figure class="post__cover">
+			<img
+				src={cover}
+				alt="Мартенситные стали 20Х13, 30Х13, 40Х13 — твёрдость 48–55 HRC, ножи и инструмент"
+				width="1200"
+				height="630"
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</figure>
+
+		<nav class="post__toc" aria-label="Содержание">
+			<div class="post__toc-title">На странице</div>
+			<ul>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<article class="post__body">
+			<section class="post__section" id="chto-eto">
+				<h2>Мартенситные стали 13-й группы</h2>
+				<p>
+					20Х13, 30Х13 и 40Х13 — семейство <strong>мартенситных хромистых</strong>
+					нержавеющих сталей. В обозначении по ГОСТ 5632: первые цифры — сотые доли
+					процента углерода (20 = 0,2 % C), Х13 = 13 % хрома. Никеля в них практически
+					нет, поэтому структура — не аустенит, а мартенсит, способный к закалке.
+				</p>
+				<p>
+					Ключевое отличие от аустенитных 304 и 316 — эти стали <strong>закаливаются
+					на высокую твёрдость</strong> и <strong>магнитятся</strong>. Хрома 13 % хватает,
+					чтобы считаться нержавеющими, но коррозионная стойкость умеренная: часть хрома
+					связана углеродом в карбиды. Международный аналог всей группы — AISI 420.
+				</p>
+			</section>
+
+			<section class="post__section" id="tablica">
+				<h2>20Х13 vs 30Х13 vs 40Х13</h2>
+				<p>
+					Марки различаются одним параметром — содержанием углерода, и оно определяет
+					всё остальное: твёрдость, вязкость, назначение.
+				</p>
+				<div class="post__table-wrap">
+					<table class="post__table">
+						<thead>
+							<tr>
+								<th scope="col">Марка</th>
+								<th scope="col">Углерод, %</th>
+								<th scope="col">Твёрдость, HRC</th>
+								<th scope="col">AISI</th>
+								<th scope="col">Применение</th>
+							</tr>
+						</thead>
+						<tbody>
+							{rows.map((r) => (
+								<tr>
+									<th scope="row">{r.mark}</th>
+									<td>{r.c}</td>
+									<td>{r.hrc}</td>
+									<td>{r.aisi}</td>
+									<td>{r.note}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+				<p>
+					Правило простое: <strong>больше углерода — выше твёрдость, но ниже вязкость
+					и свариваемость</strong>. 20Х13 ещё можно варить и гнуть, 40Х13 — уже хрупкая
+					после закалки, её обрабатывают до термообработки. Соответствие по EN и другим
+					системам — в <a href="/blog/analogi-marok-nerzhaveyki/">таблице аналогов марок</a>.
+				</p>
+			</section>
+
+			<section class="post__section" id="zakalka">
+				<h2>Термообработка и HRC</h2>
+				<p>
+					Высокая твёрдость мартенситных сталей достигается закалкой с последующим
+					отпуском:
+				</p>
+				<ul>
+					<li>
+						<strong>Закалка.</strong> Нагрев до 1000–1050 °C и быстрое охлаждение
+						(масло, воздух). Углерод фиксируется в решётке, образуется твёрдый мартенсит.
+					</li>
+					<li>
+						<strong>Отпуск.</strong> Нагрев до 150–400 °C снимает внутренние напряжения
+						и повышает вязкость без большой потери твёрдости.
+					</li>
+					<li>
+						<strong>Результат.</strong> 40Х13 после закалки даёт 52–55 HRC — уровень
+						ножевой и инструментальной стали. 20Х13 — 43–48 HRC, более вязкая для деталей
+						под нагрузкой.
+					</li>
+				</ul>
+				<p>
+					В отожжённом (мягком) состоянии эти стали хорошо обрабатываются резанием,
+					а твёрдость набирают уже готовые изделия. При нагреве выше +450 °C мартенсит
+					отпускается и теряет твёрдость — поэтому рабочая температура ограничена
+					(см. <a href="/blog/temperatura-plavleniya-nerzhaveyki/">температуру плавления
+					и рабочие температуры</a>).
+				</p>
+			</section>
+
+			<section class="post__section" id="primenenie">
+				<h2>Где применяют 20Х13–40Х13</h2>
+				<ul>
+					<li>
+						<strong>40Х13</strong> — ножи, скальпели, режущий и мерительный инструмент,
+						детали подшипников, пресс-формы. Там, где нужна максимальная твёрдость
+						и держание кромки.
+					</li>
+					<li>
+						<strong>30Х13</strong> — инструмент, пружины, режущие элементы, детали
+						арматуры. Баланс твёрдости и прочности.
+					</li>
+					<li>
+						<strong>20Х13</strong> — валы, лопатки паровых турбин, крепёж, детали
+						насосов. Где важнее вязкость и ударная стойкость, чем предельная твёрдость.
+					</li>
+				</ul>
+				<p>
+					В наличии — прокат из мартенситных марок: <a href="/krug/aisi-420/">круг
+					AISI 420 (20Х13, 40Х13)</a> и <a href="/polosa/aisi-420/">полоса AISI 420</a>.
+					Почему эти стали, в отличие от 304, притягивает магнит — в статье
+					<a href="/blog/magnitit-li-nerzhaveika/"> магнитится ли нержавейка</a>. Общая
+					классификация — в материале <a href="/blog/vidy-nerzhaveyushchey-stali/">виды
+					нержавеющей стали</a>.
+				</p>
+			</section>
+
+			<section class="post__faq">
+				<h2>Частые вопросы</h2>
+				<div class="post__faq-list">
+					{faq.map((f) => (
+						<details class="post__faq-item">
+							<summary class="post__faq-q">
+								<span>{f.q}</span>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p set:html={f.a} />
+						</details>
+					))}
+				</div>
+			</section>
+
+			<aside class="post__related">
+				<h2>Смежные страницы</h2>
+				<ul>
+					<li><a href="/krug/aisi-420/">Круг AISI 420 (20Х13, 40Х13)</a></li>
+					<li><a href="/blog/analogi-marok-nerzhaveyki/">Аналоги марок: AISI, ГОСТ, EN</a></li>
+					<li><a href="/blog/magnitit-li-nerzhaveika/">Магнитится ли нержавейка</a></li>
+					<li><a href="/blog/vidy-nerzhaveyushchey-stali/">Виды нержавеющей стали</a></li>
+					<li><a href="/blog/chto-takoe-nerzhaveyushchaya-stal/">Что такое нержавеющая сталь</a></li>
+					<li><a href="/gost/">Справочник ГОСТов на нержавеющий металлопрокат</a></li>
+				</ul>
+			</aside>
+		</article>
+	</div>
+
+	<CtaSection
+		title="Нужен прокат из 20Х13 или 40Х13?"
+		text="Уточните марку, размер и состояние поставки (отжиг/закалка) — менеджер проверит наличие круга и полосы AISI 420 на складе и пришлёт КП с сертификатом."
+	/>
+</BaseLayout>
+
+<style>
+	.post { padding-block: var(--space-8); min-width: 0; }
+
+	.post__hero { margin-bottom: var(--space-6); max-width: 75ch; }
+	.post__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.post__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-2);
+	}
+	.post__meta {
+		display: flex;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: var(--space-4);
+	}
+	.post__lead {
+		font-size: 1.08rem;
+		line-height: 1.6;
+		max-width: 70ch;
+		color: var(--color-text);
+		margin: 0;
+	}
+	.post__lead strong { color: var(--color-primary); }
+
+	.post__cover {
+		margin: 0 0 var(--space-8);
+		max-width: 80ch;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+	}
+	.post__cover img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 1200 / 630;
+	}
+
+	.post__toc {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+		max-width: 80ch;
+	}
+	.post__toc-title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.post__toc ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-2);
+	}
+	.post__toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.post__toc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.post__toc a strong {
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		font-weight: 600;
+	}
+	.post__toc a span {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		line-height: 1.35;
+	}
+
+	.post__body {
+		max-width: 75ch;
+		display: grid;
+		gap: var(--space-7);
+	}
+	.post__section {
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+	.post__section h2 {
+		font-size: 1.35rem;
+		line-height: 1.3;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__section p,
+	.post__section ul,
+	.post__section ol {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--color-text);
+		margin: 0 0 var(--space-3);
+	}
+	.post__section ul,
+	.post__section ol {
+		padding-left: 1.3rem;
+	}
+	.post__section li {
+		margin-bottom: 0.4rem;
+		line-height: 1.6;
+	}
+	.post__section li:last-child { margin-bottom: 0; }
+	.post__section a {
+		color: var(--color-primary-600);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.post__section a:hover { color: var(--color-primary); }
+
+	.post__table-wrap {
+		overflow-x: auto;
+		margin: 0 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+	.post__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 600px;
+	}
+	.post__table th,
+	.post__table td {
+		padding: 0.6rem 0.85rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+		line-height: 1.4;
+	}
+	.post__table thead th {
+		background: var(--color-bg-elev);
+		font-weight: 600;
+		color: var(--color-text);
+		font-size: 0.88rem;
+	}
+	.post__table tbody th {
+		font-weight: 700;
+		color: var(--color-primary-600);
+		background: var(--color-bg-elev);
+	}
+	.post__table tbody tr:last-child th,
+	.post__table tbody tr:last-child td { border-bottom: none; }
+
+	.post__faq h2 {
+		font-size: 1.35rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+	.post__faq-list { display: grid; gap: 0.6rem; }
+	.post__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.post__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.post__faq-q::-webkit-details-marker { display: none; }
+	.post__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] .post__faq-q svg { transform: rotate(180deg); }
+	.post__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); line-height: 1.6; }
+	.post__faq-item p a { color: var(--color-primary-600); text-decoration: underline; text-underline-offset: 2px; }
+
+	.post__related {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+	}
+	.post__related h2 {
+		font-size: 1.05rem;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__related ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.post__related a {
+		color: var(--color-primary-600);
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+	.post__related a:hover {
+		color: var(--color-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+</style>

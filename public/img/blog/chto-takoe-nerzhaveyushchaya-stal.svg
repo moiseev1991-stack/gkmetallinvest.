@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Что такое нержавеющая сталь — хром от 10,5 % и пассивная плёнка">
+	<defs>
+		<linearGradient id="bgW" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glowW" cx=".82" cy=".12" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="gridW" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bgW)"/>
+	<rect width="1200" height="630" fill="url(#gridW)"/>
+	<rect width="1200" height="630" fill="url(#glowW)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="248" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">ОСНОВЫ · ЛИКБЕЗ</text>
+	</g>
+
+	<!-- protective shield with Cr -->
+	<g transform="translate(600 300)">
+		<path d="M0 -108 L84 -76 V-6 C84 62 44 104 0 122 C-44 104 -84 62 -84 -6 V-76 Z"
+			fill="#1c4b80" fill-opacity=".55" stroke="#9db2cd" stroke-width="3" stroke-linejoin="round"/>
+		<path d="M0 -108 L84 -76 V-6 C84 62 44 104 0 122 C-44 104 -84 62 -84 -6 V-76 Z"
+			fill="none" stroke="#c4651b" stroke-width="2" stroke-opacity=".5" transform="scale(0.86)"/>
+		<text x="0" y="8" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="800" fill="#e7eef7" text-anchor="middle">Cr</text>
+		<text x="0" y="52" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="600" fill="#c4651b" text-anchor="middle">&#8805; 10,5 %</text>
+	</g>
+
+	<!-- passive-layer note -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<text x="600" y="470" font-size="26" font-weight="600" fill="#e7eef7">Хром образует пассивную плёнку Cr₂O₃</text>
+		<text x="600" y="512" font-size="19" fill="#a5b1c4">состав · классы · марки · применение</text>
+	</g>
+</svg>

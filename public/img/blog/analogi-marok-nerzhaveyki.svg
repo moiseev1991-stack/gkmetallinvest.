@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Аналоги марок нержавейки — таблица соответствия AISI, ГОСТ и EN">
+	<defs>
+		<linearGradient id="bgA" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glowA" cx=".82" cy=".12" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="gridA" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bgA)"/>
+	<rect width="1200" height="630" fill="url(#gridA)"/>
+	<rect width="1200" height="630" fill="url(#glowA)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="290" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">СООТВЕТСТВИЕ МАРОК</text>
+	</g>
+
+	<!-- correspondence table -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<rect x="250" y="168" width="700" height="240" rx="14" fill="#ffffff" fill-opacity=".05" stroke="#6c7d92" stroke-opacity=".45" stroke-width="1.5"/>
+		<!-- header -->
+		<rect x="250" y="168" width="700" height="52" rx="14" fill="#c4651b" fill-opacity=".18"/>
+		<line x1="483" y1="168" x2="483" y2="408" stroke="#6c7d92" stroke-opacity=".35"/>
+		<line x1="716" y1="168" x2="716" y2="408" stroke="#6c7d92" stroke-opacity=".35"/>
+		<line x1="250" y1="220" x2="950" y2="220" stroke="#6c7d92" stroke-opacity=".35"/>
+		<line x1="250" y1="283" x2="950" y2="283" stroke="#6c7d92" stroke-opacity=".35"/>
+		<line x1="250" y1="345" x2="950" y2="345" stroke="#6c7d92" stroke-opacity=".35"/>
+		<text x="366" y="202" font-size="19" font-weight="700" fill="#e7eef7">AISI</text>
+		<text x="600" y="202" font-size="19" font-weight="700" fill="#e7eef7">ГОСТ</text>
+		<text x="833" y="202" font-size="19" font-weight="700" fill="#e7eef7">EN / DIN</text>
+		<!-- rows -->
+		<text x="366" y="258" font-size="21" font-weight="700" fill="#ffffff">304</text>
+		<text x="600" y="258" font-size="19" fill="#a5b1c4">08Х18Н10</text>
+		<text x="833" y="258" font-size="19" fill="#a5b1c4">1.4301</text>
+		<rect x="250" y="283" width="700" height="62" fill="#c4651b" fill-opacity=".10"/>
+		<text x="366" y="320" font-size="21" font-weight="700" fill="#ffffff">316L</text>
+		<text x="600" y="320" font-size="19" fill="#a5b1c4">03Х17Н14М2</text>
+		<text x="833" y="320" font-size="19" fill="#a5b1c4">1.4404</text>
+		<text x="366" y="383" font-size="21" font-weight="700" fill="#ffffff">321</text>
+		<text x="600" y="383" font-size="19" fill="#a5b1c4">12Х18Н10Т</text>
+		<text x="833" y="383" font-size="19" fill="#a5b1c4">1.4541</text>
+	</g>
+
+	<!-- caption -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<text x="600" y="470" font-size="26" font-weight="600" fill="#e7eef7">AISI · ГОСТ · EN — таблица аналогов</text>
+		<text x="600" y="512" font-size="19" fill="#a5b1c4">304 · 316L · 321 · 430 · 20Х13 · 40Х13</text>
+	</g>
+</svg>

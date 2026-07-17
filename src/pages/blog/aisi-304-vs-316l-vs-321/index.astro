@@ -10,6 +10,7 @@ const description = 'AISI 304 — общие задачи, 316L — хлорид
 const datePublished = '2026-05-23';
 const dateModified = '2026-05-23';
 const url = `${siteUrl.replace(/\/$/, '')}/blog/aisi-304-vs-316l-vs-321/`;
+const cover = '/img/blog/aisi-304-vs-316l-vs-321.svg';
 
 /* Структура поста — массив H2-секций. Используется для TOC. */
 const sections = [
@@ -124,6 +125,7 @@ const articleJsonLd = {
 	'@type': 'Article',
 	headline: 'AISI 304 vs 316L vs 321 — какую марку нержавейки выбрать',
 	description,
+	image: `${siteUrl.replace(/\/$/, '')}${cover}`,
 	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
 	datePublished,
 	dateModified,
@@ -147,7 +149,7 @@ const faqJsonLd = {
 };
 ---
 
-<BaseLayout title={title} description={description} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+<BaseLayout title={title} description={description} image={cover} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
 	<div class="container post">
 		<Breadcrumbs items={[
 			{ label: 'Главная', href: '/' },
@@ -175,6 +177,17 @@ const faqJsonLd = {
 				детали и таблица сравнения.
 			</p>
 		</header>
+
+		<figure class="post__cover">
+			<img
+				src={cover}
+				alt="AISI 304 vs 316L vs 321 — сравнение марок нержавеющей стали"
+				width="1200"
+				height="630"
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</figure>
 
 		<nav class="post__toc" aria-label="Содержание">
 			<div class="post__toc-title">На странице</div>
@@ -423,6 +436,21 @@ const faqJsonLd = {
 		margin: 0;
 	}
 	.post__lead strong { color: var(--color-primary); }
+
+	/* Cover */
+	.post__cover {
+		margin: 0 0 var(--space-8);
+		max-width: 80ch;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+	}
+	.post__cover img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 1200 / 630;
+	}
 
 	/* TOC */
 	.post__toc {

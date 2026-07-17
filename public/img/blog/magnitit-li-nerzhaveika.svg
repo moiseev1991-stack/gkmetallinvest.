@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Магнитится ли нержавейка — аустенит не магнитится, феррит и мартенсит магнитятся">
+	<defs>
+		<linearGradient id="bgM" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glowM" cx=".8" cy=".12" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="gridM" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bgM)"/>
+	<rect width="1200" height="630" fill="url(#gridM)"/>
+	<rect width="1200" height="630" fill="url(#glowM)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="250" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">МАГНИТ И НЕРЖАВЕЙКА</text>
+	</g>
+
+	<!-- magnetic field lines -->
+	<g stroke="#c4651b" stroke-opacity=".45" fill="none" stroke-width="2">
+		<path d="M556 232 Q600 150 644 232"/>
+		<path d="M556 232 Q600 120 644 232"/>
+		<path d="M556 232 Q600 90 644 232"/>
+	</g>
+
+	<!-- horseshoe magnet -->
+	<path d="M556 236 V300 A44 44 0 0 0 644 300 V236" fill="none" stroke="#c4651b" stroke-width="40" stroke-linecap="butt"/>
+	<!-- pole caps -->
+	<rect x="536" y="222" width="40" height="26" rx="3" fill="#e7eef7"/>
+	<rect x="624" y="222" width="40" height="26" rx="3" fill="#9db2cd"/>
+	<text x="556" y="242" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="800" fill="#11304f" text-anchor="middle">N</text>
+	<text x="644" y="242" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="800" fill="#11304f" text-anchor="middle">S</text>
+
+	<!-- attracted steel balls at poles -->
+	<g fill="#9db2cd">
+		<circle cx="556" cy="210" r="9"/>
+		<circle cx="556" cy="192" r="8"/>
+		<circle cx="644" cy="210" r="9"/>
+		<circle cx="644" cy="192" r="8"/>
+	</g>
+
+	<!-- non-magnetic sample falling away (right) -->
+	<g transform="translate(760 250) rotate(14)">
+		<rect x="0" y="0" width="120" height="34" rx="6" fill="#ffffff" fill-opacity=".06" stroke="#9db2cd" stroke-width="2"/>
+		<text x="60" y="23" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700" fill="#e7eef7" text-anchor="middle">AISI 304</text>
+	</g>
+	<text x="820" y="330" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600" fill="#a5b1c4" text-anchor="middle">не притянулся</text>
+
+	<!-- caption -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<text x="600" y="470" font-size="26" font-weight="600" fill="#e7eef7">Аустенит — нет · феррит и мартенсит — да</text>
+		<text x="600" y="512" font-size="19" fill="#a5b1c4">AISI 304 / 316L / 321 · AISI 430 · 20Х13 · 40Х13</text>
+	</g>
+</svg>

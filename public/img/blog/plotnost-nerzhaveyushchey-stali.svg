@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Плотность нержавеющей стали — 7,9 г/см³, таблица по маркам">
+	<defs>
+		<linearGradient id="bgD" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glowD" cx=".82" cy=".12" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="gridD" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bgD)"/>
+	<rect width="1200" height="630" fill="url(#gridD)"/>
+	<rect width="1200" height="630" fill="url(#glowD)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="230" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">ПЛОТНОСТЬ СТАЛИ</text>
+	</g>
+
+	<!-- isometric steel cube -->
+	<g transform="translate(370 300)" stroke="#c4651b" stroke-width="2.5" stroke-linejoin="round">
+		<polygon points="0,-92 92,-46 0,0 -92,-46" fill="#c3d0e0"/>
+		<polygon points="-92,-46 0,0 0,94 -92,48" fill="#6c7d92"/>
+		<polygon points="92,-46 0,0 0,94 92,48" fill="#8aa0bd"/>
+		<text x="0" y="-40" font-family="Inter, system-ui, sans-serif" font-size="40" font-weight="800" fill="#11304f" text-anchor="middle" stroke="none">&#961;</text>
+	</g>
+
+	<!-- density value -->
+	<g font-family="Inter, system-ui, sans-serif">
+		<text x="560" y="290" font-size="72" font-weight="800" fill="#ffffff">7,9</text>
+		<text x="560" y="336" font-size="30" font-weight="600" fill="#c4651b">г / см³</text>
+	</g>
+
+	<!-- caption -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<text x="600" y="470" font-size="26" font-weight="600" fill="#e7eef7">Плотность по маркам · расчёт веса проката</text>
+		<text x="600" y="512" font-size="19" fill="#a5b1c4">304 · 316 · 12Х18Н10Т · 430 — 7,7–8,0 г/см³</text>
+	</g>
+</svg>

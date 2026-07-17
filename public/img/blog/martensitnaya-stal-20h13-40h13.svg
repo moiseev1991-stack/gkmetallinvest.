@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Мартенситные стали 20Х13, 30Х13, 40Х13 — закалка 48–55 HRC, ножи и инструмент">
+	<defs>
+		<linearGradient id="bgK" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glowK" cx=".82" cy=".12" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="gridK" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+		<linearGradient id="blade" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#e7eef7"/>
+			<stop offset=".55" stop-color="#9db2cd"/>
+			<stop offset="1" stop-color="#6c7d92"/>
+		</linearGradient>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bgK)"/>
+	<rect width="1200" height="630" fill="url(#gridK)"/>
+	<rect width="1200" height="630" fill="url(#glowK)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="286" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">МАРТЕНСИТНЫЕ СТАЛИ</text>
+	</g>
+
+	<!-- knife -->
+	<g transform="translate(0 12)">
+		<!-- blade -->
+		<path d="M300 250 L806 250 Q862 252 900 288 L318 302 Q300 302 300 284 Z" fill="url(#blade)" stroke="#e7eef7" stroke-opacity=".4" stroke-width="1.5"/>
+		<!-- edge highlight -->
+		<path d="M318 300 L900 288" stroke="#ffffff" stroke-opacity=".55" stroke-width="2"/>
+		<!-- bolster -->
+		<rect x="280" y="246" width="26" height="62" rx="5" fill="#c4651b"/>
+		<!-- handle -->
+		<path d="M150 250 h130 v58 h-130 a14 14 0 0 1 -14 -14 v-30 a14 14 0 0 1 14 -14 Z" fill="#6c7d92" stroke="#9db2cd" stroke-opacity=".4" stroke-width="1.5"/>
+		<circle cx="200" cy="279" r="6" fill="#11304f"/>
+		<circle cx="250" cy="279" r="6" fill="#11304f"/>
+	</g>
+
+	<!-- hardness badge -->
+	<g transform="translate(940 210)">
+		<circle r="66" fill="#c4651b"/>
+		<circle r="66" fill="none" stroke="#0a1f3d" stroke-opacity=".25" stroke-width="2"/>
+		<text x="0" y="-4" font-family="Inter, system-ui, sans-serif" font-size="30" font-weight="800" fill="#ffffff" text-anchor="middle">48–55</text>
+		<text x="0" y="26" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="middle">HRC</text>
+	</g>
+
+	<!-- caption -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<text x="600" y="470" font-size="26" font-weight="600" fill="#e7eef7">20Х13 · 30Х13 · 40Х13 — закаливаемые стали</text>
+		<text x="600" y="512" font-size="19" fill="#a5b1c4">ножи · инструмент · валы · AISI 420</text>
+	</g>
+</svg>

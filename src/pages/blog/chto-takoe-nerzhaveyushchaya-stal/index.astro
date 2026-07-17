@@ -1,0 +1,533 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import { siteUrl, siteName } from '../../../data/site';
+
+const title = 'Что такое нержавеющая сталь — состав, классы, марки и применение';
+const description = 'Нержавеющая сталь — это сплав железа с хромом не менее 10,5 %. Хром образует пассивную плёнку Cr₂O₃, которая защищает от коррозии. Разбираем состав, классы (аустенит, феррит, мартенсит, дуплекс), марки и применение.';
+
+const cover = '/img/blog/chto-takoe-nerzhaveyushchaya-stal.svg';
+const datePublished = '2026-07-17';
+const dateModified = '2026-07-17';
+const url = `${siteUrl.replace(/\/$/, '')}/blog/chto-takoe-nerzhaveyushchaya-stal/`;
+
+const sections = [
+	{
+		id: 'opredelenie',
+		anchor: 'Определение',
+		title: 'Что такое нержавеющая сталь',
+		summary: 'Сплав железа с хромом ≥ 10,5 %.',
+	},
+	{
+		id: 'kak-rabotaet',
+		anchor: 'Почему не ржавеет',
+		title: 'Как работает защита от коррозии',
+		summary: 'Пассивная плёнка Cr₂O₃.',
+	},
+	{
+		id: 'sostav',
+		anchor: 'Состав',
+		title: 'Из чего состоит нержавейка',
+		summary: 'Хром, никель, молибден, титан.',
+	},
+	{
+		id: 'klassy',
+		anchor: 'Классы и марки',
+		title: 'Классы нержавеющей стали',
+		summary: 'Аустенит, феррит, мартенсит, дуплекс.',
+	},
+];
+
+const rows = [
+	{ klass: 'Аустенитные', mark: '304, 316L, 321 (08Х18Н10, 12Х18Н10Т)', svoystvo: 'Не магнитятся, пластичны, свариваются', gde: 'Пищёвка, химия, архитектура' },
+	{ klass: 'Ферритные', mark: '430, 439 (12Х17)', svoystvo: 'Магнитятся, без никеля, дешевле', gde: 'Бытовая техника, отделка' },
+	{ klass: 'Мартенситные', mark: '410, 420 (20Х13, 40Х13)', svoystvo: 'Магнитятся, закаливаются, твёрдые', gde: 'Ножи, инструмент, валы' },
+	{ klass: 'Дуплексные', mark: '2205 (03Х22Н5АМ2)', svoystvo: 'Прочность + стойкость к хлоридам', gde: 'Море, нефтегаз, ёмкости' },
+];
+
+const faq = [
+	{
+		q: 'Что такое нержавеющая сталь простыми словами?',
+		a: 'Нержавеющая сталь — это стальной сплав, в который добавлено не менее 10,5 % хрома. Хром на воздухе образует на поверхности тончайшую невидимую плёнку оксида (Cr₂O₃), которая защищает металл от ржавчины. Если плёнку поцарапать, она мгновенно восстанавливается за счёт кислорода воздуха — поэтому нержавейка не ржавеет даже с царапинами. Обычная сталь такой плёнки не имеет и корродирует.',
+	},
+	{
+		q: 'Почему нержавеющая сталь не ржавеет?',
+		a: 'За счёт хрома. При содержании хрома от 10,5 % на поверхности стали образуется пассивная оксидная плёнка Cr₂O₃ толщиной в несколько нанометров. Она не пропускает кислород и влагу к металлу и самовосстанавливается при повреждении. Это называется пассивацией. Чем больше хрома (и молибдена в марках 316), тем выше стойкость к коррозии, в том числе в кислотах и морской воде.',
+	},
+	{
+		q: 'Из чего состоит нержавеющая сталь?',
+		a: 'Основа — железо. Обязательный легирующий элемент — хром (12–25 %), создающий защитную плёнку. Никель (8–14 %) в аустенитных марках даёт пластичность и делает сталь немагнитной. Молибден (2–3 %) в марках 316 повышает стойкость к хлоридам. Титан (321) связывает углерод и защищает сварные швы. Углерода в нержавейке мало — от 0,03 до 0,4 % в зависимости от назначения.',
+	},
+	{
+		q: 'Какие бывают виды нержавеющей стали?',
+		a: 'По структуре нержавейку делят на четыре класса: аустенитные (304, 316L, 321) — самые ходовые, немагнитные, пластичные; ферритные (430) — без никеля, дешевле, магнитятся; мартенситные (420, 20Х13, 40Х13) — закаливаемые, твёрдые, для ножей; дуплексные (2205) — сочетают прочность и коррозионную стойкость. Класс определяет магнитность, свариваемость и области применения.',
+	},
+	{
+		q: 'Чем нержавеющая сталь отличается от обычной?',
+		a: 'Главное отличие — хром от 10,5 %. Обычная (углеродистая) сталь состоит из железа и углерода, на воздухе покрывается ржавчиной. Нержавеющая за счёт хрома образует пассивную плёнку и не корродирует. Нержавейка дороже, но не требует покраски и оцинковки, служит десятилетиями в агрессивных средах, безопасна для пищи и медицины. По плотности и внешне металлы почти неотличимы.',
+	},
+];
+
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: title,
+	description,
+	image: `${siteUrl.replace(/\/$/, '')}${cover}`,
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	datePublished,
+	dateModified,
+	author: { '@type': 'Organization', name: siteName, url: siteUrl },
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+		logo: { '@type': 'ImageObject', url: `${siteUrl.replace(/\/$/, '')}/favicon.svg` },
+	},
+};
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} image={cover} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+	<div class="container post">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Блог', href: '/blog/' },
+			{ label: 'Что такое нержавеющая сталь' },
+		]} />
+
+		<header class="post__hero">
+			<span class="post__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M4 2v6a4 4 0 0 0 8 0V2M4 2h2v3H4M10 2h2v3h-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+				</svg>
+				Статья · база знаний
+			</span>
+			<h1 class="post__h1">Что такое нержавеющая сталь: состав, классы и применение</h1>
+			<div class="post__meta">
+				<time datetime={datePublished}>17 июля 2026</time>
+				<span>·</span>
+				<span>чтение 6 минут</span>
+			</div>
+			<p class="post__lead">
+				<strong>Прямой ответ:</strong> нержавеющая сталь — это сплав железа с хромом
+				не менее 10,5 %. Хром образует на поверхности пассивную оксидную плёнку Cr₂O₃,
+				которая защищает металл от коррозии и самовосстанавливается при повреждении.
+				Ниже — из чего состоит нержавейка, почему не ржавеет и какие бывают классы и марки.
+			</p>
+		</header>
+
+		<figure class="post__cover">
+			<img
+				src={cover}
+				alt="Что такое нержавеющая сталь — сплав железа с хромом не менее 10,5 %"
+				width="1200"
+				height="630"
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</figure>
+
+		<nav class="post__toc" aria-label="Содержание">
+			<div class="post__toc-title">На странице</div>
+			<ul>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<article class="post__body">
+			<section class="post__section" id="opredelenie">
+				<h2>Что такое нержавеющая сталь</h2>
+				<p>
+					<strong>Нержавеющая сталь (нержавейка)</strong> — это легированная сталь,
+					содержащая не менее <strong>10,5 % хрома</strong>. Именно хром отличает её от
+					обычной углеродистой стали и даёт устойчивость к коррозии. По-английски —
+					stainless steel, «сталь без пятен».
+				</p>
+				<p>
+					Порог 10,5 % хрома закреплён в стандартах (EN 10088, ГОСТ 5632-2014): ниже него
+					сплав уже не считается нержавеющим. На практике ходовые марки содержат 16–18 %
+					хрома, а жаропрочные — до 25 %. Кроме хрома в состав добавляют никель, молибден
+					и титан — они определяют класс и свойства стали.
+				</p>
+			</section>
+
+			<section class="post__section" id="kak-rabotaet">
+				<h2>Как работает защита от коррозии</h2>
+				<p>
+					Механизм называется <strong>пассивацией</strong>. Атомы хрома на поверхности
+					реагируют с кислородом воздуха и образуют тончайшую (несколько нанометров)
+					плёнку оксида хрома <strong>Cr₂O₃</strong>. Эта плёнка:
+				</p>
+				<ul>
+					<li>невидима и не влияет на внешний вид металла;</li>
+					<li>не пропускает кислород и влагу к железу — поэтому нет ржавчины;</li>
+					<li>
+						<strong>самовосстанавливается:</strong> если поверхность поцарапать, хром
+						тут же снова окисляется и «затягивает» повреждение.
+					</li>
+				</ul>
+				<p>
+					Именно поэтому нержавейку не нужно красить или оцинковывать: защита встроена
+					в сам металл. Чем выше содержание хрома и молибдена, тем прочнее плёнка —
+					вплоть до стойкости в кислотах и морской воде (марки 316L, дуплексы).
+				</p>
+			</section>
+
+			<section class="post__section" id="sostav">
+				<h2>Из чего состоит нержавейка</h2>
+				<p>
+					Каждый легирующий элемент отвечает за конкретное свойство:
+				</p>
+				<ul>
+					<li><strong>Хром (Cr), 12–25 %</strong> — образует пассивную плёнку, обязательный элемент.</li>
+					<li><strong>Никель (Ni), 8–14 %</strong> — делает сталь пластичной, немагнитной, аустенитной (марки 304, 316).</li>
+					<li><strong>Молибден (Mo), 2–3 %</strong> — резко повышает стойкость к хлоридам и питтингу (марки 316/316L).</li>
+					<li><strong>Титан (Ti)</strong> — связывает углерод, защищает сварные швы от межкристаллитной коррозии (марка 321).</li>
+					<li><strong>Углерод (C), 0,03–0,4 %</strong> — повышает твёрдость, но снижает коррозионную стойкость; в марках L его минимум.</li>
+					<li><strong>Марганец, кремний, азот</strong> — заменители никеля и упрочнители (марки 201, дуплексы).</li>
+				</ul>
+				<p>
+					Как расшифровываются обозначения состава (08Х18Н10, 12Х18Н10Т) — в
+					<a href="/blog/analogi-marok-nerzhaveyki/"> таблице аналогов AISI, ГОСТ, EN</a>.
+				</p>
+			</section>
+
+			<section class="post__section" id="klassy">
+				<h2>Классы нержавеющей стали</h2>
+				<p>
+					По типу кристаллической структуры нержавейку делят на четыре класса. От класса
+					зависят магнитность, свариваемость, прочность и цена.
+				</p>
+				<div class="post__table-wrap">
+					<table class="post__table">
+						<thead>
+							<tr>
+								<th scope="col">Класс</th>
+								<th scope="col">Марки</th>
+								<th scope="col">Свойства</th>
+								<th scope="col">Применение</th>
+							</tr>
+						</thead>
+						<tbody>
+							{rows.map((r) => (
+								<tr>
+									<th scope="row">{r.klass}</th>
+									<td>{r.mark}</td>
+									<td>{r.svoystvo}</td>
+									<td>{r.gde}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+				<p>
+					Подробный разбор каждого класса — в статье
+					<a href="/blog/vidy-nerzhaveyushchey-stali/"> виды нержавеющей стали</a>. Почему
+					одни марки магнитятся, а другие нет — в материале
+					<a href="/blog/magnitit-li-nerzhaveika/"> магнитится ли нержавейка</a>. Сортамент
+					по маркам — в каталогах <a href="/list/">листа</a>, <a href="/krug/">круга</a>
+					и <a href="/truba/">трубы</a>.
+				</p>
+			</section>
+
+			<section class="post__faq">
+				<h2>Частые вопросы</h2>
+				<div class="post__faq-list">
+					{faq.map((f) => (
+						<details class="post__faq-item">
+							<summary class="post__faq-q">
+								<span>{f.q}</span>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p set:html={f.a} />
+						</details>
+					))}
+				</div>
+			</section>
+
+			<aside class="post__related">
+				<h2>Смежные страницы</h2>
+				<ul>
+					<li><a href="/blog/vidy-nerzhaveyushchey-stali/">Виды нержавеющей стали</a></li>
+					<li><a href="/blog/magnitit-li-nerzhaveika/">Магнитится ли нержавейка</a></li>
+					<li><a href="/blog/analogi-marok-nerzhaveyki/">Аналоги марок: AISI, ГОСТ, EN</a></li>
+					<li><a href="/blog/aisi-304-vs-316l-vs-321/">AISI 304 vs 316L vs 321</a></li>
+					<li><a href="/list/aisi-304/">Лист AISI 304 (08Х18Н10)</a></li>
+					<li><a href="/gost/">Справочник ГОСТов на нержавеющий металлопрокат</a></li>
+				</ul>
+			</aside>
+		</article>
+	</div>
+
+	<CtaSection
+		title="Нужна нержавейка под задачу?"
+		text="Опишите условия эксплуатации — менеджер подскажет марку и класс, проверит наличие на складе и пришлёт КП с ценой за тонну и сертификатом."
+	/>
+</BaseLayout>
+
+<style>
+	.post { padding-block: var(--space-8); min-width: 0; }
+
+	.post__hero { margin-bottom: var(--space-6); max-width: 75ch; }
+	.post__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.post__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-2);
+	}
+	.post__meta {
+		display: flex;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: var(--space-4);
+	}
+	.post__lead {
+		font-size: 1.08rem;
+		line-height: 1.6;
+		max-width: 70ch;
+		color: var(--color-text);
+		margin: 0;
+	}
+	.post__lead strong { color: var(--color-primary); }
+
+	.post__cover {
+		margin: 0 0 var(--space-8);
+		max-width: 80ch;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+	}
+	.post__cover img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 1200 / 630;
+	}
+
+	.post__toc {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+		max-width: 80ch;
+	}
+	.post__toc-title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.post__toc ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-2);
+	}
+	.post__toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.post__toc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.post__toc a strong {
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		font-weight: 600;
+	}
+	.post__toc a span {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		line-height: 1.35;
+	}
+
+	.post__body {
+		max-width: 75ch;
+		display: grid;
+		gap: var(--space-7);
+	}
+	.post__section {
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+	.post__section h2 {
+		font-size: 1.35rem;
+		line-height: 1.3;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__section p,
+	.post__section ul,
+	.post__section ol {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--color-text);
+		margin: 0 0 var(--space-3);
+	}
+	.post__section ul,
+	.post__section ol {
+		padding-left: 1.3rem;
+	}
+	.post__section li {
+		margin-bottom: 0.4rem;
+		line-height: 1.6;
+	}
+	.post__section li:last-child { margin-bottom: 0; }
+	.post__section a {
+		color: var(--color-primary-600);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.post__section a:hover { color: var(--color-primary); }
+
+	.post__table-wrap {
+		overflow-x: auto;
+		margin: 0 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+	.post__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 600px;
+	}
+	.post__table th,
+	.post__table td {
+		padding: 0.6rem 0.85rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+		line-height: 1.4;
+	}
+	.post__table thead th {
+		background: var(--color-bg-elev);
+		font-weight: 600;
+		color: var(--color-text);
+		font-size: 0.88rem;
+	}
+	.post__table tbody th {
+		font-weight: 700;
+		color: var(--color-primary-600);
+		background: var(--color-bg-elev);
+	}
+	.post__table tbody tr:last-child th,
+	.post__table tbody tr:last-child td { border-bottom: none; }
+
+	.post__faq h2 {
+		font-size: 1.35rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+	.post__faq-list { display: grid; gap: 0.6rem; }
+	.post__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.post__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.post__faq-q::-webkit-details-marker { display: none; }
+	.post__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] .post__faq-q svg { transform: rotate(180deg); }
+	.post__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); line-height: 1.6; }
+	.post__faq-item p a { color: var(--color-primary-600); text-decoration: underline; text-underline-offset: 2px; }
+
+	.post__related {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+	}
+	.post__related h2 {
+		font-size: 1.05rem;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__related ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.post__related a {
+		color: var(--color-primary-600);
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+	.post__related a:hover {
+		color: var(--color-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+</style>

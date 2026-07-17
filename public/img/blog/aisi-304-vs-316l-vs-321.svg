@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="AISI 304 vs 316L vs 321 — сравнение марок нержавеющей стали">
+	<defs>
+		<linearGradient id="bgC" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glowC" cx=".82" cy=".12" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="gridC" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+		<linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#d7e0ec"/>
+			<stop offset=".5" stop-color="#9db2cd"/>
+			<stop offset="1" stop-color="#6c7d92"/>
+		</linearGradient>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bgC)"/>
+	<rect width="1200" height="630" fill="url(#gridC)"/>
+	<rect width="1200" height="630" fill="url(#glowC)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="232" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">СРАВНЕНИЕ МАРОК</text>
+	</g>
+
+	<!-- three metal sample plates -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<!-- 304 -->
+		<g transform="translate(300 210)">
+			<rect x="-95" y="0" width="190" height="150" rx="12" fill="url(#plate)"/>
+			<rect x="-95" y="0" width="190" height="150" rx="12" fill="none" stroke="#e7eef7" stroke-opacity=".35" stroke-width="1.5"/>
+			<rect x="-95" y="0" width="190" height="46" rx="12" fill="#ffffff" fill-opacity=".22"/>
+			<text x="0" y="88" font-size="34" font-weight="800" fill="#11304f">304</text>
+			<text x="0" y="120" font-size="15" font-weight="600" fill="#1c4b80">общие задачи</text>
+		</g>
+		<!-- 316L -->
+		<g transform="translate(600 210)">
+			<rect x="-95" y="0" width="190" height="150" rx="12" fill="url(#plate)"/>
+			<rect x="-95" y="0" width="190" height="150" rx="12" fill="none" stroke="#c4651b" stroke-width="2.5"/>
+			<rect x="-95" y="0" width="190" height="46" rx="12" fill="#ffffff" fill-opacity=".22"/>
+			<text x="0" y="88" font-size="34" font-weight="800" fill="#11304f">316L</text>
+			<text x="0" y="120" font-size="15" font-weight="600" fill="#1c4b80">хлориды, море</text>
+		</g>
+		<!-- 321 -->
+		<g transform="translate(900 210)">
+			<rect x="-95" y="0" width="190" height="150" rx="12" fill="url(#plate)"/>
+			<rect x="-95" y="0" width="190" height="150" rx="12" fill="none" stroke="#e7eef7" stroke-opacity=".35" stroke-width="1.5"/>
+			<rect x="-95" y="0" width="190" height="46" rx="12" fill="#ffffff" fill-opacity=".22"/>
+			<text x="0" y="88" font-size="34" font-weight="800" fill="#11304f">321</text>
+			<text x="0" y="120" font-size="15" font-weight="600" fill="#1c4b80">горячие узлы</text>
+		</g>
+		<!-- vs separators -->
+		<text x="450" y="298" font-size="22" font-weight="700" fill="#c4651b">vs</text>
+		<text x="750" y="298" font-size="22" font-weight="700" fill="#c4651b">vs</text>
+	</g>
+
+	<!-- caption -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<text x="600" y="470" font-size="26" font-weight="600" fill="#e7eef7">Состав · цена · температурный диапазон</text>
+		<text x="600" y="512" font-size="19" fill="#a5b1c4">08Х18Н10 · 03Х17Н14М2 · 12Х18Н10Т</text>
+	</g>
+</svg>
