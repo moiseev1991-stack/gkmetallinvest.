@@ -1,0 +1,20 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import ArmaturaLineCards from '../../components/ArmaturaLineCards.astro';
+import HubRequest from '../../components/HubRequest.astro';
+import { getArmaturaHub } from '../../data/armatura';
+
+const hub = getArmaturaHub('krepezh-fitingi')!;
+---
+
+<CatalogHubTemplate
+	title={hub.title}
+	description={hub.description}
+	h1={hub.h1}
+	intro={hub.intro}
+	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Крепёж и фитинги' }]}
+	faq={hub.faq}
+>
+	<ArmaturaLineCards hub={hub} />
+	<HubRequest what="Крепёж и фитинги: контргайки и муфты" />
+</CatalogHubTemplate>

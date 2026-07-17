@@ -1,0 +1,105 @@
+---
+/** Сетка карточек линеек внутри хаба трубопроводной арматуры. */
+import type { ArmaturaHub } from '../data/armatura';
+
+interface Props {
+	hub: ArmaturaHub;
+}
+const { hub } = Astro.props;
+---
+
+<section class="alc">
+	<h2 class="alc__h">Разделы</h2>
+	<ul class="alc__grid">
+		{hub.lines.map((line) => (
+			<li>
+				<a class="alc__card" href={`/${hub.slug}/${line.slug}/`}>
+					<span class="alc__card-head">
+						<span class="alc__card-title">{line.cardTitle}</span>
+						{line.brand && <span class="alc__card-brand">{line.brand}</span>}
+					</span>
+					<span class="alc__card-summary">{line.summary}</span>
+					<span class="alc__card-more">
+						{line.executions.length} исполнени{line.executions.length === 1 ? 'е' : line.executions.length < 5 ? 'я' : 'й'}
+						<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+							<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</span>
+				</a>
+			</li>
+		))}
+	</ul>
+</section>
+
+<style>
+	.alc { margin-bottom: var(--space-8); }
+	.alc__h { font-size: 1.15rem; margin-bottom: var(--space-4); }
+	.alc__grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: var(--space-4);
+	}
+	.alc__card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		height: 100%;
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: border-color var(--dur-fast) var(--ease-out),
+			transform var(--dur-fast) var(--ease-out),
+			box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.alc__card:hover {
+		border-color: var(--color-primary-500);
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
+		text-decoration: none;
+	}
+	.alc__card-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-2);
+	}
+	.alc__card-title {
+		font-weight: 700;
+		font-size: 1.05rem;
+		letter-spacing: -0.01em;
+	}
+	.alc__card-brand {
+		flex-shrink: 0;
+		font-size: 0.68rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-primary-600);
+		background: var(--color-primary-50);
+		padding: 0.15rem 0.5rem;
+		border-radius: var(--radius-pill);
+	}
+	.alc__card-summary {
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--color-muted);
+		flex: 1;
+	}
+	.alc__card-more {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-top: auto;
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: var(--color-primary-600);
+	}
+	.alc__card:hover .alc__card-more svg { transform: translateX(2px); }
+	.alc__card-more svg { transition: transform var(--dur-fast) var(--ease-out); }
+</style>

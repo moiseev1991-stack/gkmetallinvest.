@@ -1,0 +1,351 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import { peretochkaSteels, SURFACE_LABELS } from '../../data/peretochka';
+
+const title = 'Переточка фланцев — расчёт коэффициента стоимости | ГК Металлинвест';
+const description =
+	'Переточка фланцев в исполнения E, F, C, D, L, M, J по ГОСТ 33259-2015. Мини-калькулятор коэффициента переточки по стали (20, 09Г2С, 12Х18Н10Т), типу, Ду и Ру. Итоговая цена = цена фланца × коэффициент. Заявка — КП за 30 минут.';
+
+const faq = [
+	{
+		q: 'Что такое переточка фланца?',
+		a: 'Механическая доработка готового фланца под нужное исполнение уплотнительной поверхности: с плоской (исп. 1) на выступ/впадину (B/C), шип/паз (E/F по старому — 2/3), под линзу или кольцо (J, исп. 7) и т. д. Из складского фланца одного исполнения получают требуемое без изготовления с нуля — быстрее и дешевле.',
+	},
+	{
+		q: 'Как считается стоимость переточки?',
+		a: 'Итоговая цена = базовая цена фланца из прайса × коэффициент переточки. Коэффициент зависит от стали, типа фланца (плоский тип 01 / воротниковый тип 11), диаметра Ду, давления Ру и группы исполнения поверхности. Калькулятор на этой странице показывает коэффициент; базовую цену фланца пришлёт менеджер.',
+	},
+	{
+		q: 'Какие исполнения уплотнительной поверхности бывают?',
+		a: 'По ГОСТ 33259-2015: B/C — соединительный выступ/впадина, D/E — паз/шип, F — шип, L/M — паз под прокладку, J (исп. 7) — под линзовую прокладку или кольцо восьмиугольного сечения. В маркировке ГОСТ старые номера исполнений 2, 3, 4, 5, 7, 8, 9.',
+	},
+	{
+		q: 'Сколько занимает переточка по срокам?',
+		a: 'Плоские фланцы (тип 01) — уточняется у менеджера. Воротниковые (тип 11): от Ду15 до Ду300 — 5 рабочих дней; свыше Ду300 и на исполнение J (исп. 7) — 10 рабочих дней. Скидки на услугу переточки не применяются.',
+	},
+];
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} jsonLd={[faqJsonLd]}>
+	<div class="container prf">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Переточка фланцев' }]} />
+
+		<header class="prf__hero">
+			<span class="prf__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" />
+					<circle cx="8" cy="8" r="2.3" stroke="currentColor" stroke-width="1.4" />
+				</svg>
+				Услуга · ГОСТ 33259-2015
+			</span>
+			<h1 class="prf__h1">Переточка фланцев</h1>
+			<p class="prf__lead">
+				Дорабатываем готовые фланцы под нужное исполнение уплотнительной поверхности —
+				выступ, впадину, шип, паз, под линзу или кольцо. Из складской заготовки получаем
+				требуемое исполнение быстрее и дешевле, чем изготовление с нуля. Ниже — калькулятор
+				коэффициента: итоговая цена = базовая цена фланца × коэффициент.
+			</p>
+		</header>
+
+		<section class="prf__widget" data-prf-root>
+			<div class="prf__widget-inner">
+				<div class="prf__form">
+					<div class="prf__field">
+						<label class="prf__label" for="prf-steel">Сталь</label>
+						<select class="prf__input" id="prf-steel" data-prf-steel></select>
+					</div>
+					<div class="prf__field">
+						<label class="prf__label" for="prf-type">Тип фланца</label>
+						<select class="prf__input" id="prf-type" data-prf-type></select>
+					</div>
+					<div class="prf__row-2">
+						<div class="prf__field">
+							<label class="prf__label" for="prf-du">Диаметр Ду, мм</label>
+							<select class="prf__input" id="prf-du" data-prf-du></select>
+						</div>
+						<div class="prf__field">
+							<label class="prf__label" for="prf-pn">Давление Ру</label>
+							<select class="prf__input" id="prf-pn" data-prf-pn></select>
+						</div>
+					</div>
+					<div class="prf__field">
+						<label class="prf__label" for="prf-surf">Исполнение поверхности</label>
+						<select class="prf__input" id="prf-surf" data-prf-surf></select>
+						<p class="prf__hint" data-prf-surf-hint></p>
+					</div>
+				</div>
+
+				<aside class="prf__result">
+					<div class="prf__result-card">
+						<div class="prf__result-eyebrow">Коэффициент переточки</div>
+						<div class="prf__result-value" data-prf-coef>—</div>
+						<div class="prf__result-formula">
+							Цена переточки = <span>цена фланца</span> × <strong data-prf-coef-inline>K</strong>
+						</div>
+						<p class="prf__result-note" data-prf-note>
+							Выберите параметры фланца — покажем коэффициент.
+						</p>
+						<a class="prf__cta" href="/zapros-kp/#lead-form">
+							<span>Запросить цену переточки</span>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+						<p class="prf__result-foot">Скидки на переточку не применяются. Базовую цену фланца пришлёт менеджер.</p>
+					</div>
+				</aside>
+			</div>
+		</section>
+
+		<section class="prf__block">
+			<h2 class="prf__h2">Как работает переточка</h2>
+			<p class="prf__p">
+				Складской фланец обычно поставляется с соединительным выступом (исполнение 1, тип B).
+				Под конкретный узел трубопровода часто нужно другое уплотнение — шип/паз под ответный
+				фланец, впадина под прокладку овального сечения, поверхность J под линзу или кольцо.
+				Вместо заказа фланца с нуля мы протачиваем готовую заготовку на станке до требуемого
+				исполнения по ГОСТ 33259-2015.
+			</p>
+			<ul class="prf__list">
+				<li><strong>B, C</strong> — соединительный выступ и впадина</li>
+				<li><strong>D, E</strong> — паз и шип (старые исп. 4, 3)</li>
+				<li><strong>F</strong> — шип под прокладку (исп. 2)</li>
+				<li><strong>L, M</strong> — паз под прокладку (исп. 8, 9)</li>
+				<li><strong>J</strong> — под линзовую прокладку / кольцо восьмиугольного сечения (исп. 7)</li>
+			</ul>
+		</section>
+
+		<section class="prf__block">
+			<h2 class="prf__h2">Сроки и условия</h2>
+			<ul class="prf__list">
+				<li>Плоские фланцы (тип 01) — срок уточняется у менеджера</li>
+				<li>Воротниковые (тип 11) Ду15–Ду300 — 5 рабочих дней</li>
+				<li>Свыше Ду300 и исполнение J (исп. 7) — 10 рабочих дней</li>
+				<li>Стали: 20, 09Г2С, 12Х18Н10Т (нержавеющая)</li>
+				<li>Скидки на услугу переточки не применяются</li>
+			</ul>
+		</section>
+
+		<section class="prf__block">
+			<h2 class="prf__h2">Связанное</h2>
+			<ul class="prf__related">
+				<li>
+					<a href="/detali-truboprovoda/">
+						<strong>Фланцы и детали трубопровода</strong>
+						<small>плоские и воротниковые фланцы, отводы, переходы — в наличии</small>
+					</a>
+				</li>
+				<li>
+					<a href="/kalkulyator-flantsa/">
+						<strong>Калькулятор веса фланца</strong>
+						<small>масса плоского приварного фланца по ГОСТ 33259-2015</small>
+					</a>
+				</li>
+				<li>
+					<a href="/zapornaya-armatura/">
+						<strong>Запорная арматура</strong>
+						<small>краны, задвижки, затворы, фильтры — цена по запросу</small>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<section class="prf__faq">
+			<h2 class="prf__h2">Частые вопросы</h2>
+			<div class="prf__faq-list">
+				{faq.map((f) => (
+					<details class="prf__faq-item">
+						<summary class="prf__faq-q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<CtaSection
+		title="Нужна переточка фланцев?"
+		text="Пришлите тип, сталь, Ду × Ру и требуемое исполнение — менеджер рассчитает стоимость переточки от базовой цены фланца и подтвердит срок."
+	/>
+</BaseLayout>
+
+<script define:vars={{ steels: peretochkaSteels, surfaceLabels: SURFACE_LABELS }}>
+	const root = document.querySelector('[data-prf-root]');
+	if (root) {
+		const steelSel = root.querySelector('[data-prf-steel]');
+		const typeSel = root.querySelector('[data-prf-type]');
+		const duSel = root.querySelector('[data-prf-du]');
+		const pnSel = root.querySelector('[data-prf-pn]');
+		const surfSel = root.querySelector('[data-prf-surf]');
+		const surfHint = root.querySelector('[data-prf-surf-hint]');
+		const coefEl = root.querySelector('[data-prf-coef]');
+		const coefInline = root.querySelector('[data-prf-coef-inline]');
+		const noteEl = root.querySelector('[data-prf-note]');
+
+		const opt = (val, label) => {
+			const o = document.createElement('option');
+			o.value = String(val);
+			o.textContent = label;
+			return o;
+		};
+		const curSteel = () => steels.find((s) => s.id === steelSel.value);
+		const curType = () => {
+			const s = curSteel();
+			return s ? s.types.find((t) => t.id === typeSel.value) : null;
+		};
+
+		function fillSteels() {
+			steelSel.innerHTML = '';
+			steels.forEach((s) => steelSel.appendChild(opt(s.id, s.label)));
+		}
+		function fillTypes() {
+			const s = curSteel();
+			typeSel.innerHTML = '';
+			if (s) s.types.forEach((t) => typeSel.appendChild(opt(t.id, t.label)));
+		}
+		function fillDuPnSurf() {
+			const t = curType();
+			duSel.innerHTML = '';
+			pnSel.innerHTML = '';
+			surfSel.innerHTML = '';
+			if (!t) return;
+			const dus = new Set(Object.keys(t.grid));
+			if (t.hasJ) Object.keys(t.jGrid).forEach((d) => dus.add(d));
+			[...dus].map(Number).sort((a, b) => a - b).forEach((d) => duSel.appendChild(opt(d, d + ' мм')));
+			t.pns.forEach((p) => pnSel.appendChild(opt(p, 'Ру' + p)));
+			['EF', 'CDLM'].forEach((sf) => surfSel.appendChild(opt(sf, surfaceLabels[sf])));
+			if (t.hasJ) surfSel.appendChild(opt('J', surfaceLabels['J']));
+		}
+
+		function fmtVal(v) {
+			if (typeof v === 'number') return v.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+			return String(v);
+		}
+
+		function recalc() {
+			const t = curType();
+			const surf = surfSel.value;
+			const du = duSel.value;
+			const pn = pnSel.value;
+			pnSel.disabled = surf === 'J';
+			surfHint.textContent = surf === 'J'
+				? 'Исполнение J не зависит от Ру — для воротниковых фланцев.'
+				: (surfaceLabels[surf] || '');
+
+			let val = null;
+			if (t) {
+				if (surf === 'J') {
+					val = t.jGrid[du] ?? null;
+				} else {
+					val = t.grid[du]?.[pn]?.[surf] ?? null;
+				}
+			}
+
+			if (val === null || val === undefined) {
+				coefEl.textContent = '—';
+				coefInline.textContent = 'K';
+				noteEl.textContent = 'Для этой комбинации нет табличного коэффициента — уточните у менеджера.';
+			} else if (typeof val === 'number') {
+				coefEl.textContent = '× ' + fmtVal(val);
+				coefInline.textContent = fmtVal(val);
+				noteEl.textContent = 'Итоговая цена переточки = базовая цена фланца × ' + fmtVal(val) + '.';
+			} else {
+				coefEl.textContent = val;
+				coefInline.textContent = val;
+				noteEl.textContent = val === 'Договорная'
+					? 'Стоимость договорная — рассчитает менеджер.'
+					: 'Это исполнение для выбранного Ду не выполняется. Уточните альтернативу у менеджера.';
+			}
+		}
+
+		steelSel.addEventListener('change', () => { fillTypes(); fillDuPnSurf(); recalc(); });
+		typeSel.addEventListener('change', () => { fillDuPnSurf(); recalc(); });
+		[duSel, pnSel, surfSel].forEach((el) => el.addEventListener('change', recalc));
+
+		fillSteels();
+		fillTypes();
+		fillDuPnSurf();
+		recalc();
+	}
+</script>
+
+<style>
+	.prf { padding-block: var(--space-8); min-width: 0; }
+	.prf__hero { margin-bottom: var(--space-7); max-width: 80ch; }
+	.prf__eyebrow {
+		display: inline-flex; align-items: center; gap: 0.4rem;
+		font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--color-primary-500); background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); margin-bottom: var(--space-3);
+	}
+	.prf__h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); line-height: 1.15; margin: 0 0 var(--space-3); letter-spacing: -0.02em; }
+	.prf__lead { font-size: 1.05rem; line-height: 1.6; max-width: 72ch; color: var(--color-text); margin: 0; }
+
+	.prf__widget { background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-10); box-shadow: var(--shadow-md); }
+	.prf__widget-inner { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--space-6); }
+	@media (max-width: 900px) { .prf__widget { padding: var(--space-4); } .prf__widget-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+	.prf__form { display: grid; gap: var(--space-4); }
+	.prf__row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+	@media (max-width: 480px) { .prf__row-2 { grid-template-columns: 1fr; } }
+	.prf__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+	.prf__label { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-subtle); }
+	.prf__input { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); outline: none; width: 100%; appearance: none; -webkit-appearance: none; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M4 6l4 4 4-4' stroke='%23667' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 0.9rem; padding-right: 2rem; }
+	.prf__input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-100); background-color: #fff; }
+	.prf__input:disabled { opacity: 0.5; }
+	.prf__hint { font-size: 0.78rem; color: var(--color-muted); margin: 0.2rem 0 0; line-height: 1.5; min-height: 1.2em; }
+
+	.prf__result { position: sticky; top: calc(var(--header-h) + 1rem); align-self: flex-start; }
+	@media (max-width: 900px) { .prf__result { position: static; } }
+	.prf__result-card { background: var(--grad-hero); color: var(--color-on-dark); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-glow); }
+	.prf__result-eyebrow { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent-100); margin-bottom: var(--space-3); }
+	.prf__result-value { font-family: var(--font-mono); font-size: clamp(2.4rem, 5vw, 3.4rem); font-weight: 700; line-height: 1.05; color: var(--color-accent-100); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+	.prf__result-formula { margin-top: var(--space-3); font-size: 0.9rem; color: var(--color-on-dark-muted); }
+	.prf__result-formula strong { font-family: var(--font-mono); color: #fff; }
+	.prf__result-note { margin: var(--space-3) 0 var(--space-4); font-size: 0.85rem; line-height: 1.5; color: var(--color-on-dark-muted); min-height: 2.6em; }
+	.prf__cta { display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.85rem 1rem; background: var(--grad-cta-warm); color: #fff; font-weight: 600; text-decoration: none; border-radius: var(--radius-md); font-size: 0.92rem; box-shadow: var(--shadow-warm-glow); transition: transform var(--dur-fast) var(--ease-out); }
+	.prf__cta:hover { color: #fff; text-decoration: none; transform: translateY(-1px); }
+	.prf__cta svg { transition: transform var(--dur-fast) var(--ease-out); }
+	.prf__cta:hover svg { transform: translateX(2px); }
+	.prf__result-foot { margin: var(--space-4) 0 0; font-size: 0.75rem; line-height: 1.5; color: var(--color-on-dark-muted); opacity: 0.85; }
+
+	.prf__block { margin-bottom: var(--space-10); }
+	.prf__h2 { font-size: 1.5rem; margin-bottom: var(--space-4); letter-spacing: -0.01em; }
+	.prf__p { max-width: 72ch; color: var(--color-muted); line-height: 1.65; margin: 0 0 var(--space-3); }
+	.prf__list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 72ch; }
+	.prf__list li { padding-left: 1.2rem; position: relative; font-size: 0.95rem; line-height: 1.5; color: var(--color-muted); }
+	.prf__list li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-500); }
+	.prf__list strong { font-family: var(--font-mono); color: var(--color-text); }
+
+	.prf__related { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+	.prf__related a { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: var(--color-primary); transition: all var(--dur-fast) var(--ease-out); }
+	.prf__related a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); text-decoration: none; }
+	.prf__related a small { color: var(--color-muted); font-size: 0.82rem; }
+
+	.prf__faq { margin-bottom: var(--space-8); }
+	.prf__faq-list { display: grid; gap: 0.6rem; max-width: 80ch; }
+	.prf__faq-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+	.prf__faq-item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.prf__faq-q { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-weight: 600; color: var(--color-text); cursor: pointer; list-style: none; }
+	.prf__faq-q::-webkit-details-marker { display: none; }
+	.prf__faq-q svg { flex-shrink: 0; color: var(--color-muted); transition: transform var(--dur-fast) var(--ease-out); }
+	.prf__faq-item[open] .prf__faq-q svg { transform: rotate(180deg); }
+	.prf__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); max-width: 72ch; line-height: 1.6; }
+</style>

@@ -57,6 +57,15 @@ export const navGroups: NavGroup[] = [
 			{ title: 'Проволока нержавеющая', href: '/provoloka/', meta: 'Ø 0,1–6 мм' },
 		],
 	},
+	{
+		title: 'Трубопроводная арматура',
+		hint: 'Краны, задвижки, фитинги',
+		items: [
+			{ title: 'Запорная арматура', href: '/zapornaya-armatura/', meta: 'краны 11с67п · задвижки · затворы', empty: true },
+			{ title: 'Крепёж и фитинги', href: '/krepezh-fitingi/', meta: 'контргайки · муфты', empty: true },
+			{ title: 'Переточка фланцев', href: '/peretochka-flantsev/', meta: 'услуга · расчёт коэффициента', empty: true },
+		],
+	},
 ];
 
 /** Плоский список всех категорий — для footer / sitemap-консьюмеров. */

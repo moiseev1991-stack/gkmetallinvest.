@@ -1,0 +1,141 @@
+---
+/** Тело страницы линейки: таблица исполнений + «по запросу» + related-линейки. */
+import HubRequest from './HubRequest.astro';
+import type { ArmaturaHub, ArmaturaLine } from '../data/armatura';
+
+interface Props {
+	hub: ArmaturaHub;
+	line: ArmaturaLine;
+}
+const { hub, line } = Astro.props;
+const related = hub.lines.filter((l) => l.slug !== line.slug);
+---
+
+<section class="alb">
+	<h2 class="alb__h">Исполнения и маркировка</h2>
+	<div class="alb__table-wrap">
+		<table class="alb__table">
+			<thead>
+				<tr>
+					<th>Исполнение</th>
+					<th>Маркировка</th>
+					<th>Среда / сталь</th>
+				</tr>
+			</thead>
+			<tbody>
+				{line.executions.map((ex) => (
+					<tr>
+						<td>{ex.name}</td>
+						<td class="alb__mark">{ex.mark}</td>
+						<td class="alb__note">{ex.note ?? '—'}</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
+	</div>
+	<p class="alb__hint">
+		Маркировка приведена по ГОСТ 4666-2015. Диаметр Ду, условное давление Ру и материал уточняются
+		в спецификации при заказе.
+	</p>
+</section>
+
+<HubRequest what={line.title} />
+
+<section class="alb__related">
+	<h2 class="alb__h">Другие разделы «{hub.hubLabel}»</h2>
+	<ul class="alb__rel-grid">
+		{related.map((r) => (
+			<li>
+				<a class="alb__rel" href={`/${hub.slug}/${r.slug}/`}>
+					<span class="alb__rel-title">{r.cardTitle}</span>
+					<span class="alb__rel-sum">{r.summary}</span>
+				</a>
+			</li>
+		))}
+		<li>
+			<a class="alb__rel alb__rel--hub" href={`/${hub.slug}/`}>
+				<span class="alb__rel-title">← Все разделы «{hub.hubLabel}»</span>
+			</a>
+		</li>
+	</ul>
+</section>
+
+<style>
+	.alb { margin-bottom: var(--space-6); }
+	.alb__h { font-size: 1.15rem; margin-bottom: var(--space-4); }
+	.alb__table-wrap {
+		overflow-x: auto;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+	}
+	.alb__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 480px;
+	}
+	.alb__table th,
+	.alb__table td {
+		text-align: left;
+		padding: 0.7rem 0.9rem;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+	}
+	.alb__table thead th {
+		background: var(--color-bg-elev);
+		font-size: 0.76rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-primary-600);
+	}
+	.alb__table tbody tr:last-child td { border-bottom: 0; }
+	.alb__table tbody tr:hover { background: var(--color-primary-50); }
+	.alb__mark {
+		font-family: var(--font-mono);
+		font-weight: 600;
+		color: var(--color-text);
+		white-space: nowrap;
+	}
+	.alb__note { color: var(--color-muted); }
+	.alb__hint {
+		margin-top: var(--space-3);
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+	}
+
+	.alb__related { margin-bottom: var(--space-8); }
+	.alb__rel-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-3);
+	}
+	.alb__rel {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		height: 100%;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+	}
+	.alb__rel:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+	}
+	.alb__rel-title { font-weight: 600; color: var(--color-text); }
+	.alb__rel:hover .alb__rel-title { color: var(--color-primary-600); }
+	.alb__rel-sum { font-size: 0.82rem; color: var(--color-muted); line-height: 1.45; }
+	.alb__rel--hub { justify-content: center; }
+	.alb__rel--hub .alb__rel-title { color: var(--color-primary-600); }
+</style>

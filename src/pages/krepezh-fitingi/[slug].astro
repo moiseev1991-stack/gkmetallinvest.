@@ -1,0 +1,30 @@
+---
+import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
+import ArmaturaLineBody from '../../components/ArmaturaLineBody.astro';
+import { getArmaturaHub, type ArmaturaLine } from '../../data/armatura';
+
+export async function getStaticPaths() {
+	const hub = getArmaturaHub('krepezh-fitingi')!;
+	return hub.lines.map((line) => ({ params: { slug: line.slug }, props: { line } }));
+}
+
+const hub = getArmaturaHub('krepezh-fitingi')!;
+const { line } = Astro.props as { line: ArmaturaLine };
+
+const title = `${line.title} — цена по запросу`;
+const description = `${line.summary} Цена и наличие — по запросу, КП за 30 минут.`;
+---
+
+<CatalogHubTemplate
+	title={title}
+	description={description}
+	h1={line.title}
+	intro={line.intro}
+	breadcrumbs={[
+		{ label: 'Главная', href: '/' },
+		{ label: hub.hubLabel, href: `/${hub.slug}/` },
+		{ label: line.cardTitle },
+	]}
+>
+	<ArmaturaLineBody hub={hub} line={line} />
+</CatalogHubTemplate>
