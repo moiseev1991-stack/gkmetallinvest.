@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Пищевая нержавейка — марки AISI 304 и 316L для пищевой промышленности">
+	<defs>
+		<linearGradient id="bg2" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glow2" cx=".82" cy=".12" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="grid2" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bg2)"/>
+	<rect width="1200" height="630" fill="url(#grid2)"/>
+	<rect width="1200" height="630" fill="url(#glow2)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="272" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">ПИЩЕВАЯ НЕРЖАВЕЙКА</text>
+	</g>
+
+	<!-- stainless tank -->
+	<g stroke="#9db2cd" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+		<!-- body -->
+		<path d="M500 200 v190 a100 34 0 0 0 200 0 v-190" fill="#ffffff" fill-opacity=".05"/>
+		<!-- top rim -->
+		<ellipse cx="600" cy="200" rx="100" ry="34" fill="#1c4b80" fill-opacity=".5"/>
+		<!-- weld seam -->
+		<path d="M500 300 a100 30 0 0 0 200 0" stroke-opacity=".5"/>
+		<!-- outlet pipe -->
+		<path d="M600 424 v46 h70" stroke-width="12" stroke="#8aa0bd"/>
+		<circle cx="676" cy="470" r="6" fill="#8aa0bd" stroke="none"/>
+		<!-- legs -->
+		<path d="M540 418 l-24 44 M660 418 l24 44" stroke-width="5"/>
+	</g>
+
+	<!-- food-safe badge -->
+	<g transform="translate(712 168)">
+		<circle r="50" fill="#c4651b"/>
+		<circle r="50" fill="none" stroke="#0a1f3d" stroke-opacity=".25" stroke-width="2"/>
+		<path d="M-22 2 l14 15 l30 -32" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+	</g>
+
+	<!-- caption -->
+	<g font-family="Inter, system-ui, sans-serif" text-anchor="middle">
+		<text x="600" y="560" font-size="26" font-weight="600" fill="#e7eef7">AISI 304 · 316L · поверхности 2B / BA</text>
+	</g>
+</svg>

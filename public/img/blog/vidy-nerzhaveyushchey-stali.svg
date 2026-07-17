@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Виды нержавеющей стали: аустенит, феррит, мартенсит, дуплекс">
+	<defs>
+		<linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#1c4b80"/>
+			<stop offset=".5" stop-color="#11304f"/>
+			<stop offset="1" stop-color="#0a1f3d"/>
+		</linearGradient>
+		<radialGradient id="glow" cx=".8" cy=".1" r=".55">
+			<stop offset="0" stop-color="#c4651b" stop-opacity=".30"/>
+			<stop offset="1" stop-color="#c4651b" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M60 0H0V60" fill="none" stroke="#6c7d92" stroke-opacity=".12" stroke-width="1"/>
+		</pattern>
+	</defs>
+
+	<rect width="1200" height="630" fill="url(#bg)"/>
+	<rect width="1200" height="630" fill="url(#grid)"/>
+	<rect width="1200" height="630" fill="url(#glow)"/>
+	<rect x="0" y="0" width="1200" height="6" fill="#c4651b"/>
+
+	<!-- eyebrow tag -->
+	<g transform="translate(80 74)">
+		<rect x="0" y="0" width="270" height="40" rx="20" fill="#ffffff" fill-opacity=".08" stroke="#6c7d92" stroke-opacity=".4"/>
+		<circle cx="24" cy="20" r="5" fill="#c4651b"/>
+		<text x="42" y="26" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#a5b1c4">НЕРЖАВЕЮЩАЯ СТАЛЬ</text>
+	</g>
+
+	<!-- crystal lattice motif -->
+	<g transform="translate(600 300)" stroke="#8aa0bd" stroke-opacity=".55" stroke-width="2">
+		<!-- bonds -->
+		<line x1="-120" y1="-120" x2="0" y2="-120"/>
+		<line x1="0" y1="-120" x2="120" y2="-120"/>
+		<line x1="-120" y1="0" x2="0" y2="0"/>
+		<line x1="0" y1="0" x2="120" y2="0"/>
+		<line x1="-120" y1="120" x2="0" y2="120"/>
+		<line x1="0" y1="120" x2="120" y2="120"/>
+		<line x1="-120" y1="-120" x2="-120" y2="0"/>
+		<line x1="-120" y1="0" x2="-120" y2="120"/>
+		<line x1="0" y1="-120" x2="0" y2="0"/>
+		<line x1="0" y1="0" x2="0" y2="120"/>
+		<line x1="120" y1="-120" x2="120" y2="0"/>
+		<line x1="120" y1="0" x2="120" y2="120"/>
+		<line x1="-120" y1="-120" x2="0" y2="0" stroke="#c4651b" stroke-opacity=".7"/>
+		<line x1="0" y1="0" x2="120" y2="120" stroke="#c4651b" stroke-opacity=".7"/>
+		<line x1="120" y1="-120" x2="0" y2="0" stroke="#c4651b" stroke-opacity=".7"/>
+		<line x1="0" y1="0" x2="-120" y2="120" stroke="#c4651b" stroke-opacity=".7"/>
+	</g>
+	<g transform="translate(600 300)">
+		<!-- nodes -->
+		<circle cx="-120" cy="-120" r="10" fill="#e7eef7"/>
+		<circle cx="0" cy="-120" r="10" fill="#e7eef7"/>
+		<circle cx="120" cy="-120" r="13" fill="#c4651b"/>
+		<circle cx="-120" cy="0" r="10" fill="#e7eef7"/>
+		<circle cx="0" cy="0" r="16" fill="#c4651b"/>
+		<circle cx="120" cy="0" r="10" fill="#e7eef7"/>
+		<circle cx="-120" cy="120" r="13" fill="#c4651b"/>
+		<circle cx="0" cy="120" r="10" fill="#e7eef7"/>
+		<circle cx="120" cy="120" r="10" fill="#e7eef7"/>
+	</g>
+
+	<!-- family caption strip -->
+	<g font-family="Inter, system-ui, sans-serif" font-size="26" font-weight="600" fill="#e7eef7" text-anchor="middle">
+		<text x="230" y="560">Аустенит</text>
+		<text x="480" y="560">Феррит</text>
+		<text x="730" y="560">Мартенсит</text>
+		<text x="975" y="560">Дуплекс</text>
+	</g>
+	<g fill="#c4651b">
+		<circle cx="355" cy="552" r="4"/>
+		<circle cx="605" cy="552" r="4"/>
+		<circle cx="852" cy="552" r="4"/>
+	</g>
+</svg>

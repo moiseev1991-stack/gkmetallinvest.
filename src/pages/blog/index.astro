@@ -10,6 +10,24 @@ const description = 'Блог о нержавеющем металлопрока
 /* Список статей блога. Добавляем сюда по мере роста — рендер автоматический. */
 const posts = [
 	{
+		slug: 'vidy-nerzhaveyushchey-stali',
+		title: 'Виды нержавеющей стали: аустенит, феррит, мартенсит, дуплекс',
+		lead: 'Нержавейку делят на 4 класса по структуре: аустенит (304, 316L, 321), феррит (430, 409), мартенсит (410, 420), дуплекс (2205). Чем различаются, где применяют, какие магнитятся.',
+		date: '2026-07-17',
+		dateLabel: '17 июля 2026',
+		readingMin: 7,
+		cover: '/img/blog/vidy-nerzhaveyushchey-stali.svg',
+	},
+	{
+		slug: 'pishchevaya-nerzhaveyka',
+		title: 'Пищевая нержавейка: какие марки разрешены и как выбрать',
+		lead: 'Для контакта с продуктами разрешены аустенитные AISI 304 и 316L. 304 — база для молочки и выпечки, 316L — для солей, кислот и рассолов. Поверхности 2B/BA и требования ГОСТ.',
+		date: '2026-07-17',
+		dateLabel: '17 июля 2026',
+		readingMin: 6,
+		cover: '/img/blog/pishchevaya-nerzhaveyka.svg',
+	},
+	{
 		slug: 'aisi-304-vs-316l-vs-321',
 		title: 'AISI 304 vs 316L vs 321 — какую марку нержавейки выбрать',
 		lead: 'Прямой ответ: 304 для общих задач, 316L для хлоридов и морской воды, 321 для горячих сварных узлов. Сравнение по составу, цене и температурному диапазону.',
@@ -72,6 +90,11 @@ const blogJsonLd = {
 		<div class="blog__list">
 			{posts.map((p) => (
 				<article class="blog__card">
+						{p.cover && (
+							<a class="blog__card-cover" href={`/blog/${p.slug}/`} tabindex="-1" aria-hidden="true">
+								<img src={p.cover} alt="" width="1200" height="630" loading="lazy" />
+							</a>
+						)}
 					<div class="blog__card-meta">
 						<time datetime={p.date}>{p.dateLabel}</time>
 						<span>·</span>
@@ -150,6 +173,21 @@ const blogJsonLd = {
 		border-color: var(--color-primary-500);
 		transform: translateY(-2px);
 		box-shadow: var(--shadow-md);
+	}
+	.blog__card-cover {
+		display: block;
+		margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) 0;
+		border-top-left-radius: var(--radius-lg);
+		border-top-right-radius: var(--radius-lg);
+		overflow: hidden;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.blog__card-cover img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 1200 / 630;
+		object-fit: cover;
 	}
 	.blog__card-meta {
 		display: flex;

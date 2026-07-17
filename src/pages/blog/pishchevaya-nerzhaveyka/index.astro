@@ -1,0 +1,642 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import { siteUrl, siteName } from '../../../data/site';
+
+const title = 'Пищевая нержавейка — какие марки разрешены для контакта с продуктами';
+const description = 'Для пищевого оборудования разрешены аустенитные AISI 304 (08Х18Н10) и 316L (03Х17Н14М2). 304 — базовый стандарт, 316L — для солей, кислот и рассолов. Поверхности 2B и BA, требования ГОСТ и ТР ТС 021/2011.';
+
+const cover = '/img/blog/pishchevaya-nerzhaveyka.svg';
+const datePublished = '2026-07-17';
+const dateModified = '2026-07-17';
+const url = `${siteUrl.replace(/\/$/, '')}/blog/pishchevaya-nerzhaveyka/`;
+
+/* Структура поста — массив H2-секций. Используется для TOC. */
+const sections = [
+	{
+		id: 'kakie-marki',
+		anchor: 'Разрешённые марки',
+		title: 'Какие марки разрешены для пищёвки',
+		summary: 'Аустенит 304 и 316L — база пищевого контакта.',
+	},
+	{
+		id: '304-vs-316l',
+		anchor: '304 или 316L',
+		title: 'AISI 304 или 316L — когда что',
+		summary: 'Нейтральная среда → 304, соли/кислоты → 316L.',
+	},
+	{
+		id: 'poverhnosti',
+		anchor: 'Поверхности 2B и BA',
+		title: 'Поверхности 2B, BA и шлифованные',
+		summary: 'Гладкость важнее марки для гигиены.',
+	},
+	{
+		id: 'trebovaniya',
+		anchor: 'Требования и стандарты',
+		title: 'Требования: ГОСТ, ТР ТС, санитария',
+		summary: 'Что проверяют контролирующие органы.',
+	},
+	{
+		id: 'chego-izbegat',
+		anchor: 'Чего избегать',
+		title: 'Чего избегать в пищевом контакте',
+		summary: 'Феррит, мартенсит и «техническая» сталь.',
+	},
+];
+
+const compareRows = [
+	{
+		param: 'ГОСТ-обозначение',
+		v304: '08Х18Н10',
+		v316l: '03Х17Н14М2',
+	},
+	{
+		param: 'Молибден',
+		v304: 'нет',
+		v316l: '2,0–3,0 %',
+	},
+	{
+		param: 'Стойкость к солям и кислотам',
+		v304: 'ограниченная',
+		v316l: 'высокая',
+	},
+	{
+		param: 'Нейтральные продукты (молоко, вода, мука)',
+		v304: 'да',
+		v316l: 'да',
+	},
+	{
+		param: 'Рассолы, маринады, соки, вино',
+		v304: 'нежелательно',
+		v316l: 'да',
+	},
+	{
+		param: 'Дезинфекция хлорными средствами',
+		v304: 'риск питтинга',
+		v316l: 'да',
+	},
+	{
+		param: 'Относительная цена',
+		v304: 'базовая',
+		v316l: '+50–100 %',
+	},
+	{
+		param: 'Типичное применение',
+		v304: 'молочка, пиво, выпечка',
+		v316l: 'соленья, соусы, фарма, CIP',
+	},
+];
+
+const faq = [
+	{
+		q: 'Какая нержавейка считается пищевой?',
+		a: 'Пищевой называют аустенитную хромоникелевую нержавейку, разрешённую для контакта с продуктами — прежде всего AISI 304 (08Х18Н10) и AISI 316L (03Х17Н14М2). Они инертны, не выделяют вредных веществ, не ржавеют в контакте с влагой и легко моются. «Пищевой» — это не отдельная марка, а требование к составу, чистоте поверхности и сертификации. Ключевой признак — аустенитная структура с 18 % хрома и 8–14 % никеля.',
+	},
+	{
+		q: 'В чём разница между пищевой и технической нержавейкой?',
+		a: 'Разница не в «сорте металла», а в марке, обработке поверхности и документах. Пищевая — это аустенитная 304/316L с гладкой поверхностью (2B, BA или шлиф) и сертификатом, подтверждающим состав. «Технической» часто называют ферритную (AISI 430) или сталь без сертификата: она может магнититься, содержать меньше хрома и никеля и подвергаться питтингу в контакте с солями и кислотами. Для оборудования, касающегося продуктов, берут только сертифицированный аустенит.',
+	},
+	{
+		q: 'Можно ли использовать AISI 430 для пищевого оборудования?',
+		a: 'Только для сухих и неагрессивных зон, не контактирующих напрямую с влажными продуктами и моющими средствами — например, наружные панели, кожухи, сухие бункеры. Для рабочих поверхностей, ёмкостей, трубопроводов и деталей, соприкасающихся с продуктом, влагой и дезинфекцией, ферритная AISI 430 не подходит: без никеля она хуже сопротивляется коррозии и питтингу. Стандарт пищевого контакта — аустенитные 304 и 316L.',
+	},
+	{
+		q: 'Что означают поверхности 2B и BA?',
+		a: '2B — стандартная холоднокатаная поверхность после отжига и лёгкой дрессировки: матово-гладкая, самая массовая для пищевого оборудования. BA (bright annealed) — светлый отжиг в защитной атмосфере, зеркально-гладкая поверхность, её берут там, где нужна максимальная гигиеничность и лёгкость мойки. Чем глаже поверхность (ниже шероховатость Ra), тем меньше микровпадин, где задерживаются продукт и бактерии. Для ответственных зон нормируют Ra ≤ 0,8 мкм, иногда ≤ 0,4 мкм.',
+	},
+	{
+		q: 'Магнитится ли пищевая нержавейка?',
+		a: 'В отожжённом состоянии пищевые 304 и 316L не магнитятся — они аустенитные. Но после гибки, штамповки или вытяжки (например, у моек и корпусов) в деформированном слое появляется мартенсит деформации, и магнит начинает слабо притягиваться. Это не признак «неправильной» или «технической» стали — свойство сохраняется. Проверять пищевую пригодность магнитом нельзя, нужен сертификат на плавку. Подробнее — в статье <a href="/blog/magnitit-li-nerzhaveika/">магнитится ли нержавейка</a>.',
+	},
+];
+
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: title,
+	description,
+	image: `${siteUrl.replace(/\/$/, '')}${cover}`,
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	datePublished,
+	dateModified,
+	author: { '@type': 'Organization', name: siteName, url: siteUrl },
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+		logo: { '@type': 'ImageObject', url: `${siteUrl.replace(/\/$/, '')}/favicon.svg` },
+	},
+};
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} image={cover} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+	<div class="container post">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Блог', href: '/blog/' },
+			{ label: 'Пищевая нержавейка' },
+		]} />
+
+		<header class="post__hero">
+			<span class="post__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M4 2v6a4 4 0 0 0 8 0V2M4 2h2v3H4M10 2h2v3h-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+				</svg>
+				Статья · пищевой контакт
+			</span>
+			<h1 class="post__h1">Пищевая нержавейка: какие марки разрешены и как выбрать</h1>
+			<div class="post__meta">
+				<time datetime={datePublished}>17 июля 2026</time>
+				<span>·</span>
+				<span>чтение 6 минут</span>
+			</div>
+			<p class="post__lead">
+				<strong>Прямой ответ:</strong> для контакта с продуктами разрешены аустенитные
+				нержавеющие стали AISI 304 (08Х18Н10) и AISI 316L (03Х17Н14М2). 304 — базовый
+				стандарт для молочки, пива и выпечки; 316L — для солей, кислот, рассолов и
+				дезинфекции хлорными средствами. Важна не только марка, но и гладкость поверхности
+				(2B, BA) и сертификат на плавку. Дальше — детали и таблица.
+			</p>
+		</header>
+
+		<figure class="post__cover">
+			<img
+				src={cover}
+				alt="Пищевая нержавейка — марки AISI 304 и 316L для пищевой промышленности"
+				width="1200"
+				height="630"
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</figure>
+
+		<nav class="post__toc" aria-label="Содержание">
+			<div class="post__toc-title">На странице</div>
+			<ul>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<article class="post__body">
+			<section class="post__section" id="kakie-marki">
+				<h2>Какие марки разрешены для пищёвки</h2>
+				<p>
+					«Пищевая нержавейка» — это не отдельная марка, а требование: сталь должна быть
+					инертной к продуктам, не выделять вредных веществ, не ржаветь от влаги и легко
+					отмываться. Этому отвечают <strong>аустенитные хромоникелевые стали</strong> — в
+					первую очередь две марки:
+				</p>
+				<ul>
+					<li>
+						<strong><a href="/list/aisi-304/">AISI 304</a> (08Х18Н10)</strong> — базовый
+						стандарт пищевого оборудования. 18 % хрома, 8–10 % никеля. Закрывает
+						большинство задач молочной, пивоваренной, хлебопекарной отраслей.
+					</li>
+					<li>
+						<strong><a href="/list/aisi-316l/">AISI 316L</a> (03Х17Н14М2)</strong> — то же,
+						плюс молибден 2–3 %. Нужен там, где есть соли, кислоты, рассолы или агрессивная
+						мойка.
+					</li>
+				</ul>
+				<p>
+					Обе — аустенитные, с гранецентрированной решёткой, не магнитятся в отожжённом
+					состоянии, отлично свариваются и полируются. Почему именно аустенит, а не феррит
+					или мартенсит, — разобрано в статье
+					<a href="/blog/vidy-nerzhaveyushchey-stali/"> виды нержавеющей стали</a>. Реже
+					применяют 321 (12Х18Н10Т) — для горячих сварных узлов пищевого пара, и 316Ti —
+					как термостойкую версию 316L.
+				</p>
+			</section>
+
+			<section class="post__section" id="304-vs-316l">
+				<h2>AISI 304 или 316L — когда что</h2>
+				<p>
+					Разница между марками — в одном элементе: у 316L есть молибден 2–3 %, у 304 нет.
+					Молибден даёт стойкость к точечной (питтинговой) коррозии в присутствии хлоридов —
+					то есть солей, рассолов, кислых сред и хлорных дезрастворов.
+				</p>
+				<div class="post__table-wrap">
+					<table class="post__table">
+						<thead>
+							<tr>
+								<th scope="col">Параметр</th>
+								<th scope="col">AISI 304</th>
+								<th scope="col">AISI 316L</th>
+							</tr>
+						</thead>
+						<tbody>
+							{compareRows.map((row) => (
+								<tr>
+									<th scope="row">{row.param}</th>
+									<td>{row.v304}</td>
+									<td>{row.v316l}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+				<p>
+					<strong>Практическое правило:</strong> нейтральные продукты (молоко, вода, пиво,
+					мука, сухие смеси) — берите 304, это экономично и надёжно. Соленья, маринады,
+					томатные и уксусные соусы, соки, вино, сыроварение с рассолом, фармацевтика и
+					CIP-мойки хлорными и щелочными растворами — только 316L. Подробное сравнение с
+					третьей маркой — в статье
+					<a href="/blog/aisi-304-vs-316l-vs-321/"> AISI 304 vs 316L vs 321</a>.
+				</p>
+			</section>
+
+			<section class="post__section" id="poverhnosti">
+				<h2>Поверхности 2B, BA и шлифованные</h2>
+				<p>
+					Для гигиены важна не только марка, но и <strong>гладкость поверхности</strong>: чем
+					меньше микровпадин, тем меньше мест, где задерживаются остатки продукта и
+					размножаются бактерии. Гладкость нормируют параметром шероховатости Ra.
+				</p>
+				<ul>
+					<li>
+						<strong>2B</strong> — стандартная холоднокатаная поверхность после отжига и
+						дрессировки, матово-гладкая. Самый массовый вариант для пищевых ёмкостей и
+						обшивки.
+					</li>
+					<li>
+						<strong>BA (bright annealed)</strong> — светлый отжиг в защитной атмосфере,
+						зеркально-гладкая. Для зон с повышенными требованиями к мойке и внешнему виду.
+					</li>
+					<li>
+						<strong>Шлифованные (4N/320 grit, зеркало)</strong> — под требования по Ra ≤ 0,8
+						или ≤ 0,4 мкм, для контактных поверхностей ответственного оборудования.
+					</li>
+				</ul>
+				<p>
+					Мы держим лист 304 и 316L в поверхностях 2B и BA, а также предлагаем
+					<a href="/uslugi/shlifovanie/"> шлифовку до Ra ≤ 0,4 мкм</a> под пищевые и
+					фармацевтические требования. Каталог листа — <a href="/list/">лист нержавеющий</a>,
+					трубы для пищевых линий — <a href="/truba/">труба нержавеющая</a>.
+				</p>
+			</section>
+
+			<section class="post__section" id="trebovaniya">
+				<h2>Требования: ГОСТ, ТР ТС, санитария</h2>
+				<p>
+					Оборудование, контактирующее с продуктами, в ЕАЭС подпадает под технический
+					регламент <strong>ТР ТС 021/2011</strong> «О безопасности пищевой продукции» и
+					сопутствующие требования к материалам и изделиям (ТР ТС 005/2011). Сам
+					металлопрокат поставляют по ГОСТ 5632-2014 (марки и химсостав) и ГОСТ на
+					конкретный формат — например, ГОСТ 7350-77 на толстый лист, ГОСТ 5949-75 на
+					сортовой прокат.
+				</p>
+				<p>Что проверяют на практике:</p>
+				<ul>
+					<li><strong>Сертификат качества (плавки)</strong> — химсостав должен соответствовать 08Х18Н10 или 03Х17Н14М2.</li>
+					<li><strong>Марку и класс</strong> — аустенит, а не феррит/мартенсит.</li>
+					<li><strong>Состояние поверхности</strong> — гладкость под нормируемую Ra, отсутствие ржавых точек и заусенцев.</li>
+					<li><strong>Качество сварных швов</strong> — зачистка, отсутствие цветов побежалости и непроваров, где скапливается загрязнение.</li>
+				</ul>
+				<p>
+					Мы отгружаем прокат с сертификатом на плавку — с указанием марки и химанализа, что
+					закрывает требования по прослеживаемости материала. Стандарты по форматам — в
+					<a href="/gost/"> справочнике ГОСТов</a>.
+				</p>
+			</section>
+
+			<section class="post__section" id="chego-izbegat">
+				<h2>Чего избегать в пищевом контакте</h2>
+				<ul>
+					<li>
+						<strong>Ферритная AISI 430 (12Х17)</strong> на контактных поверхностях. Без
+						никеля она хуже держит коррозию, магнитится и подвержена питтингу в контакте с
+						влагой, солями и дезсредствами. Допустима только для сухих наружных зон.
+					</li>
+					<li>
+						<strong>Мартенситные 20Х13/40Х13</strong> — это стали для ножей и инструмента, а
+						не для ёмкостей и трубопроводов. Низкая коррозионная стойкость.
+					</li>
+					<li>
+						<strong>Сталь без сертификата.</strong> «Похоже на нержавейку» и «не магнитится»
+						— не гарантия пищевого состава. Проверять маркой по магниту нельзя, нужен
+						документ на плавку.
+					</li>
+					<li>
+						<strong>AISI 304 в кислых и солёных средах.</strong> Экономия на молибдене
+						оборачивается точечной коррозией и заменой узла — для солений, соусов и рассолов
+						берите 316L.
+					</li>
+				</ul>
+				<p>
+					Итог: базовый выбор пищевого оборудования — <strong>AISI 304</strong>, для
+					агрессивных сред — <strong>AISI 316L</strong>, обязательно с гладкой поверхностью
+					(2B/BA) и сертификатом на плавку. Всё остальное — компромисс, который вскроется на
+					санитарном контроле или через сезон коррозии.
+				</p>
+			</section>
+
+			<section class="post__faq">
+				<h2>Частые вопросы</h2>
+				<div class="post__faq-list">
+					{faq.map((f) => (
+						<details class="post__faq-item">
+							<summary class="post__faq-q">
+								<span>{f.q}</span>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p set:html={f.a} />
+						</details>
+					))}
+				</div>
+			</section>
+
+			<aside class="post__related">
+				<h2>Смежные страницы</h2>
+				<ul>
+					<li><a href="/list/aisi-304/">Лист AISI 304 (08Х18Н10) — каталог и цена</a></li>
+					<li><a href="/list/aisi-316l/">Лист AISI 316L (03Х17Н14М2)</a></li>
+					<li><a href="/blog/aisi-304-vs-316l-vs-321/">AISI 304 vs 316L vs 321 — какую марку выбрать</a></li>
+					<li><a href="/blog/vidy-nerzhaveyushchey-stali/">Виды нержавеющей стали</a></li>
+					<li><a href="/blog/magnitit-li-nerzhaveika/">Магнитится ли нержавейка</a></li>
+					<li><a href="/truba/">Труба нержавеющая — для пищевых линий</a></li>
+					<li><a href="/gost/">Справочник ГОСТов на нержавеющий металлопрокат</a></li>
+				</ul>
+			</aside>
+		</article>
+	</div>
+
+	<CtaSection
+		title="Нужна пищевая нержавейка с сертификатом?"
+		text="Менеджер подберёт 304 или 316L, поверхность 2B/BA и формат под ваше оборудование — пришлёт КП с химанализом плавки в течение 30 минут."
+	/>
+</BaseLayout>
+
+<style>
+	.post { padding-block: var(--space-8); min-width: 0; }
+
+	/* Hero */
+	.post__hero { margin-bottom: var(--space-6); max-width: 75ch; }
+	.post__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.post__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-2);
+	}
+	.post__meta {
+		display: flex;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: var(--space-4);
+	}
+	.post__lead {
+		font-size: 1.08rem;
+		line-height: 1.6;
+		max-width: 70ch;
+		color: var(--color-text);
+		margin: 0;
+	}
+	.post__lead strong { color: var(--color-primary); }
+
+	/* Cover */
+	.post__cover {
+		margin: 0 0 var(--space-8);
+		max-width: 80ch;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+	}
+	.post__cover img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 1200 / 630;
+	}
+
+	/* TOC */
+	.post__toc {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+		max-width: 80ch;
+	}
+	.post__toc-title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.post__toc ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-2);
+	}
+	.post__toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.post__toc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.post__toc a strong {
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		font-weight: 600;
+	}
+	.post__toc a span {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		line-height: 1.35;
+	}
+
+	/* Body */
+	.post__body {
+		max-width: 75ch;
+		display: grid;
+		gap: var(--space-7);
+	}
+	.post__section {
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+	.post__section h2 {
+		font-size: 1.35rem;
+		line-height: 1.3;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__section p,
+	.post__section ul,
+	.post__section ol {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--color-text);
+		margin: 0 0 var(--space-3);
+	}
+	.post__section ul,
+	.post__section ol {
+		padding-left: 1.3rem;
+	}
+	.post__section li {
+		margin-bottom: 0.4rem;
+		line-height: 1.6;
+	}
+	.post__section li:last-child { margin-bottom: 0; }
+	.post__section a {
+		color: var(--color-primary-600);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.post__section a:hover { color: var(--color-primary); }
+
+	/* Compare table */
+	.post__table-wrap {
+		overflow-x: auto;
+		margin: 0 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+	.post__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 480px;
+	}
+	.post__table th,
+	.post__table td {
+		padding: 0.6rem 0.85rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+		line-height: 1.4;
+	}
+	.post__table thead th {
+		background: var(--color-bg-elev);
+		font-weight: 600;
+		color: var(--color-text);
+		font-size: 0.88rem;
+	}
+	.post__table tbody th {
+		font-weight: 500;
+		color: var(--color-muted);
+		background: var(--color-bg-elev);
+	}
+	.post__table tbody tr:last-child th,
+	.post__table tbody tr:last-child td { border-bottom: none; }
+
+	/* FAQ */
+	.post__faq h2 {
+		font-size: 1.35rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+	.post__faq-list { display: grid; gap: 0.6rem; }
+	.post__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.post__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.post__faq-q::-webkit-details-marker { display: none; }
+	.post__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] .post__faq-q svg { transform: rotate(180deg); }
+	.post__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); line-height: 1.6; }
+	.post__faq-item p a { color: var(--color-primary-600); text-decoration: underline; text-underline-offset: 2px; }
+
+	/* Related */
+	.post__related {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+	}
+	.post__related h2 {
+		font-size: 1.05rem;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__related ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.post__related a {
+		color: var(--color-primary-600);
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+	.post__related a:hover {
+		color: var(--color-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+</style>

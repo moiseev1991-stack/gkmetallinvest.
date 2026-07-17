@@ -1,0 +1,682 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CtaSection from '../../../components/CtaSection.astro';
+import { siteUrl, siteName } from '../../../data/site';
+
+const title = 'Виды нержавеющей стали — аустенит, феррит, мартенсит, дуплекс';
+const description = 'Нержавейку делят на 4 класса по структуре: аустенитная (304, 316L, 321), ферритная (430, 409), мартенситная (410, 420), дуплексная (2205). Чем различаются, где применяют, какие магнитятся.';
+
+const cover = '/img/blog/vidy-nerzhaveyushchey-stali.svg';
+const datePublished = '2026-07-17';
+const dateModified = '2026-07-17';
+const url = `${siteUrl.replace(/\/$/, '')}/blog/vidy-nerzhaveyushchey-stali/`;
+
+/* Структура поста — массив H2-секций. Используется для TOC. */
+const sections = [
+	{
+		id: 'klassy',
+		anchor: 'Четыре класса',
+		title: 'Четыре класса нержавеющей стали',
+		summary: 'Структура решётки определяет свойства.',
+	},
+	{
+		id: 'austenit',
+		anchor: 'Аустенитные',
+		title: 'Аустенитные стали — 70 % рынка',
+		summary: 'Cr-Ni, не магнитятся, лучшая свариваемость.',
+	},
+	{
+		id: 'ferrit',
+		anchor: 'Ферритные',
+		title: 'Ферритные стали — без никеля',
+		summary: 'Только хром, магнитятся, дешевле аустенита.',
+	},
+	{
+		id: 'martensit',
+		anchor: 'Мартенситные',
+		title: 'Мартенситные стали — под закалку',
+		summary: 'Твёрдость и режущая кромка, ножи и валы.',
+	},
+	{
+		id: 'dupleks',
+		anchor: 'Дуплексные',
+		title: 'Дуплексные стали — двойная структура',
+		summary: 'Аустенит + феррит, прочность и хлориды.',
+	},
+	{
+		id: 'kak-vybrat',
+		anchor: 'Как выбрать',
+		title: 'Как выбрать класс под задачу',
+		summary: 'Среда, температура, нагрузка, бюджет.',
+	},
+];
+
+const compareRows = [
+	{
+		param: 'Основа легирования',
+		aust: 'Cr 16–26 % + Ni 6–22 %',
+		ferr: 'Cr 11–30 %, без Ni',
+		mart: 'Cr 11–17 % + C 0,1–1,2 %',
+		dupl: 'Cr 22–25 % + Ni 4–7 % + Mo',
+	},
+	{
+		param: 'Структура решётки',
+		aust: 'ГЦК (аустенит)',
+		ferr: 'ОЦК (феррит)',
+		mart: 'ОЦТ (мартенсит)',
+		dupl: 'аустенит + феррит ~50/50',
+	},
+	{
+		param: 'Магнитится',
+		aust: 'нет*',
+		ferr: 'да',
+		mart: 'да',
+		dupl: 'да (слабо)',
+	},
+	{
+		param: 'Упрочнение закалкой',
+		aust: 'нет',
+		ferr: 'нет',
+		mart: 'да',
+		dupl: 'нет',
+	},
+	{
+		param: 'Свариваемость',
+		aust: 'отличная',
+		ferr: 'ограниченная',
+		mart: 'плохая',
+		dupl: 'хорошая',
+	},
+	{
+		param: 'Коррозионная стойкость',
+		aust: 'высокая',
+		ferr: 'средняя',
+		mart: 'низкая',
+		dupl: 'очень высокая',
+	},
+	{
+		param: 'Примеры марок (AISI)',
+		aust: '304, 316L, 321',
+		ferr: '430, 409, 439',
+		mart: '410, 420, 440C',
+		dupl: '2205, 2507',
+	},
+	{
+		param: 'ГОСТ-аналоги',
+		aust: '08Х18Н10, 12Х18Н10Т',
+		ferr: '12Х17, 08Х13',
+		mart: '20Х13, 40Х13',
+		dupl: '03Х22Н5АМ2',
+	},
+];
+
+const faq = [
+	{
+		q: 'Сколько всего видов нержавеющей стали?',
+		a: 'По структуре выделяют четыре основных класса: аустенитный, ферритный, мартенситный и дуплексный. Иногда отдельно рассматривают пятую группу — дисперсионно-твердеющие (PH) стали, например 17-4PH. Внутри каждого класса — десятки марок по ГОСТ 5632 и стандарту AISI, но именно тип кристаллической решётки определяет ключевые свойства: магнитность, свариваемость, способность к закалке и коррозионную стойкость.',
+	},
+	{
+		q: 'Какая нержавейка не магнитится?',
+		a: 'Не магнитится только аустенитный класс — AISI 304, 316L, 321 и другие хромоникелевые марки в отожжённом состоянии. Ферритные (430), мартенситные (420) и дуплексные (2205) стали магнитятся. Но после холодной деформации — гибки, штамповки, резки — даже аустенит может слабо притягивать магнит из-за мартенсита деформации. Подробный разбор — в статье <a href="/blog/magnitit-li-nerzhaveika/">магнитится ли нержавейка</a>.',
+	},
+	{
+		q: 'Чем аустенитная сталь отличается от ферритной?',
+		a: 'Аустенитная содержит никель (6–22 %) и имеет гранецентрированную решётку (ГЦК) — она пластична, отлично сваривается, не магнитится и держит коррозию лучше. Ферритная почти без никеля, на одном хроме, с объёмноцентрированной решёткой (ОЦК) — она магнитится, дешевле, но хуже сваривается и менее стойкая. Ферритную (AISI 430) берут там, где важна цена и нет агрессивной среды: бытовая техника, выхлопные системы, отделка.',
+	},
+	{
+		q: 'Какая нержавейка самая прочная?',
+		a: 'По пределу текучести — дуплексные стали (AISI 2205, 2507): 450–550 МПа против 200–250 МПа у аустенита, то есть вдвое прочнее. По твёрдости — мартенситные (AISI 440C, 40Х13) после закалки до 55–60 HRC, но они хрупкие и слабо стойкие к коррозии. Дуплекс сочетает высокую прочность с отличной стойкостью к хлоридам, поэтому его применяют в морских конструкциях и химическом оборудовании, где нужны и прочность, и коррозионная стойкость.',
+	},
+	{
+		q: 'Какой класс нержавейки дешевле?',
+		a: 'Ферритный — в нём нет дорогого никеля, только хром. Тонна ферритной AISI 430 стоит на 20–40 % дешевле аустенитной AISI 304. Мартенситные тоже недорогие. Самые дорогие — дуплексные и высоконикелевые аустенитные марки (316L с молибденом). Если среда неагрессивна и не нужна свариваемость, ферритная сталь закрывает задачу дешевле аустенита — но проверьте стойкость к вашей среде.',
+	},
+];
+
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: title,
+	description,
+	image: `${siteUrl.replace(/\/$/, '')}${cover}`,
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	datePublished,
+	dateModified,
+	author: { '@type': 'Organization', name: siteName, url: siteUrl },
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+		logo: { '@type': 'ImageObject', url: `${siteUrl.replace(/\/$/, '')}/favicon.svg` },
+	},
+};
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} image={cover} type="article" jsonLd={[articleJsonLd, faqJsonLd]}>
+	<div class="container post">
+		<Breadcrumbs items={[
+			{ label: 'Главная', href: '/' },
+			{ label: 'Блог', href: '/blog/' },
+			{ label: 'Виды нержавеющей стали' },
+		]} />
+
+		<header class="post__hero">
+			<span class="post__eyebrow">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M4 2v6a4 4 0 0 0 8 0V2M4 2h2v3H4M10 2h2v3h-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+				</svg>
+				Статья · классы сталей
+			</span>
+			<h1 class="post__h1">Виды нержавеющей стали: аустенит, феррит, мартенсит, дуплекс</h1>
+			<div class="post__meta">
+				<time datetime={datePublished}>17 июля 2026</time>
+				<span>·</span>
+				<span>чтение 7 минут</span>
+			</div>
+			<p class="post__lead">
+				<strong>Прямой ответ:</strong> нержавеющие стали делят на четыре класса по структуре
+				кристаллической решётки — аустенитные (AISI 304, 316L, 321), ферритные (430, 409),
+				мартенситные (410, 420, 20Х13/40Х13) и дуплексные (2205). Структура определяет
+				магнитность, свариваемость, способность к закалке и коррозионную стойкость. Дальше —
+				разбор каждого класса и таблица сравнения.
+			</p>
+		</header>
+
+		<figure class="post__cover">
+			<img
+				src={cover}
+				alt="Виды нержавеющей стали: аустенит, феррит, мартенсит, дуплекс"
+				width="1200"
+				height="630"
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</figure>
+
+		<nav class="post__toc" aria-label="Содержание">
+			<div class="post__toc-title">На странице</div>
+			<ul>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+
+		<article class="post__body">
+			<section class="post__section" id="klassy">
+				<h2>Четыре класса нержавеющей стали</h2>
+				<p>
+					Нержавеющей сталь становится, когда в неё вводят не менее 10,5 % хрома: он
+					образует на поверхности плотную оксидную плёнку, которая защищает металл от
+					коррозии. Но добавка хрома, никеля, молибдена, титана и углерода в разных
+					пропорциях формирует разную <strong>кристаллическую решётку</strong> — и именно
+					она, а не марка сама по себе, определяет поведение стали.
+				</p>
+				<div class="post__table-wrap">
+					<table class="post__table">
+						<thead>
+							<tr>
+								<th scope="col">Параметр</th>
+								<th scope="col">Аустенитные</th>
+								<th scope="col">Ферритные</th>
+								<th scope="col">Мартенситные</th>
+								<th scope="col">Дуплексные</th>
+							</tr>
+						</thead>
+						<tbody>
+							{compareRows.map((row) => (
+								<tr>
+									<th scope="row">{row.param}</th>
+									<td>{row.aust}</td>
+									<td>{row.ferr}</td>
+									<td>{row.mart}</td>
+									<td>{row.dupl}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+				<p>
+					<strong>* Оговорка про магнитность:</strong> аустенит не магнитится только в
+					отожжённом состоянии. После гибки, штамповки или резки в поверхностном слое
+					появляется мартенсит деформации, и магнит начинает слабо притягиваться — это
+					нормально и не означает подделку.
+				</p>
+			</section>
+
+			<section class="post__section" id="austenit">
+				<h2>Аустенитные стали — 70 % всего рынка нержавейки</h2>
+				<p>
+					Самый распространённый класс. Основа — <strong>18 % хрома и 8–10 % никеля</strong>
+					(формула «18/8»), решётка гранецентрированная кубическая (ГЦК). Никель стабилизирует
+					аустенит при комнатной температуре и даёт стали пластичность, вязкость и лучшую в
+					своём роде свариваемость.
+				</p>
+				<ul>
+					<li><strong>Не магнитятся</strong> в отожжённом состоянии.</li>
+					<li><strong>Не упрочняются закалкой</strong> — только холодным наклёпом.</li>
+					<li>Высокая коррозионная стойкость и работа в широком диапазоне температур — от криогенных до +800 °C.</li>
+					<li>Отлично тянутся, гнутся, полируются до зеркала.</li>
+				</ul>
+				<p>
+					Ключевые марки: <a href="/list/aisi-304/">AISI 304</a> (08Х18Н10) — универсал для
+					пищёвки и архитектуры; <a href="/list/aisi-316l/">AISI 316L</a> (03Х17Н14М2) — с
+					молибденом для хлоридов и морской воды; <a href="/list/aisi-321/">AISI 321</a>
+					(12Х18Н10Т) — с титаном для горячих сварных узлов. Как выбрать между ними — в статье
+					<a href="/blog/aisi-304-vs-316l-vs-321/"> AISI 304 vs 316L vs 321</a>. Применение:
+					ёмкости, трубопроводы, теплообменники, фасады, оборудование пищевой и фармацевтической
+					промышленности.
+				</p>
+			</section>
+
+			<section class="post__section" id="ferrit">
+				<h2>Ферритные стали — на хроме, без никеля</h2>
+				<p>
+					Содержат <strong>11–30 % хрома и практически не содержат никеля</strong>. Решётка
+					объёмноцентрированная кубическая (ОЦК) — та же, что у обычной стали, поэтому феррит
+					<strong>магнитится</strong>. Отсутствие дорогого никеля делает этот класс на 20–40 %
+					дешевле аустенита при сопоставимой стойкости в мягких средах.
+				</p>
+				<ul>
+					<li><strong>Магнитятся</strong> в любом состоянии.</li>
+					<li><strong>Не упрочняются закалкой.</strong></li>
+					<li>Свариваемость ограничена — шов склонен к росту зерна и охрупчиванию.</li>
+					<li>Хорошая стойкость к атмосферной коррозии и к хлоридному растрескиванию под напряжением (лучше, чем у аустенита).</li>
+				</ul>
+				<p>
+					Ключевые марки: <a href="/list/aisi-430/">AISI 430</a> (12Х17) — самая массовая;
+					AISI 409 и 439 — для автомобильных выхлопных систем. Применение: бытовая техника
+					(барабаны стиральных машин, мойки эконом-класса), элементы интерьера, выхлопные
+					тракты, декоративная отделка. Там, где нет агрессивной среды и не нужна ответственная
+					сварка, ферритная сталь закрывает задачу дешевле.
+				</p>
+			</section>
+
+			<section class="post__section" id="martensit">
+				<h2>Мартенситные стали — единственные, что калятся</h2>
+				<p>
+					Содержат 11–17 % хрома и <strong>повышенный углерод (0,1–1,2 %)</strong>. Именно
+					углерод позволяет упрочнять эти стали закалкой до высокой твёрдости — как
+					инструментальную сталь. После закалки решётка становится объёмноцентрированной
+					тетрагональной (ОЦТ), сталь <strong>магнитится</strong> и достигает 55–60 HRC.
+				</p>
+				<ul>
+					<li><strong>Магнитятся.</strong></li>
+					<li><strong>Упрочняются закалкой</strong> — единственный класс с этим свойством.</li>
+					<li>Высокая твёрдость, прочность, износостойкость, держат режущую кромку.</li>
+					<li>Плата за это — низкая коррозионная стойкость и плохая свариваемость.</li>
+				</ul>
+				<p>
+					Ключевые марки: AISI 410 (12Х13), <a href="/krug/aisi-420/">AISI 420</a> (20Х13,
+					30Х13, 40Х13), AISI 440C. Применение: ножи и режущий инструмент, лопатки турбин,
+					валы, крепёж, подшипники, хирургический и измерительный инструмент. Где нужна
+					твёрдость и износостойкость, а не защита от кислот, — берут мартенсит.
+				</p>
+			</section>
+
+			<section class="post__section" id="dupleks">
+				<h2>Дуплексные стали — половина аустенита, половина феррита</h2>
+				<p>
+					Структура состоит <strong>примерно поровну из аустенита и феррита</strong>, отсюда
+					название «дуплекс». Такое сочетание даёт двойную выгоду: прочность феррита плюс
+					коррозионную стойкость и вязкость аустенита. Легируются 22–25 % хрома, 4–7 % никеля
+					и молибденом.
+				</p>
+				<ul>
+					<li>Предел текучести 450–550 МПа — <strong>вдвое прочнее аустенита</strong>, можно облегчить конструкцию.</li>
+					<li>Очень высокая стойкость к хлоридам и к коррозионному растрескиванию под напряжением.</li>
+					<li>Хорошо сваривается (лучше феррита), слабо магнитится.</li>
+					<li>Дороже 304, но за счёт прочности итоговая конструкция бывает экономичнее.</li>
+				</ul>
+				<p>
+					Ключевые марки: AISI 2205 (03Х22Н5АМ2) — рабочая лошадка; AISI 2507 (супердуплекс)
+					— для самых агрессивных сред. Применение: морские и оффшорные конструкции,
+					опреснительные установки, химические и целлюлозно-бумажные производства, резервуары
+					для агрессивных сред, мосты в приморском климате.
+				</p>
+			</section>
+
+			<section class="post__section" id="kak-vybrat">
+				<h2>Как выбрать класс под задачу</h2>
+				<ul>
+					<li>
+						<strong>Пищёвка, архитектура, сварные ёмкости (нейтральная среда):</strong>
+						аустенит AISI 304 — стандарт. Не магнитится, отлично варится и полируется.
+					</li>
+					<li>
+						<strong>Хлориды, морская вода, фарма, химия:</strong> аустенит AISI 316L (с
+						молибденом) или дуплекс 2205 — если нужна ещё и прочность.
+					</li>
+					<li>
+						<strong>Горячие сварные узлы, пар, нефтехимия:</strong> аустенит AISI 321
+						(12Х18Н10Т) — титан защищает шов от межкристаллитной коррозии.
+					</li>
+					<li>
+						<strong>Бытовая техника, выхлоп, отделка без агрессии, экономия:</strong>
+						феррит AISI 430 — дешевле за счёт отсутствия никеля.
+					</li>
+					<li>
+						<strong>Ножи, инструмент, валы, износостойкие детали:</strong> мартенсит
+						AISI 420 (20Х13/40Х13) — калится до высокой твёрдости.
+					</li>
+					<li>
+						<strong>Высоконагруженные конструкции в агрессивной среде:</strong> дуплекс
+						2205 — прочность плюс стойкость к хлоридам.
+					</li>
+				</ul>
+				<p>
+					Быстрая проверка «на пальцах»: если сталь <strong>не магнитится</strong> — почти
+					наверняка аустенит (304/316L/321). Магнитится и не калится — феррит. Магнитится и
+					твёрдая после закалки — мартенсит. Полный сортамент по всем классам — в каталогах
+					<a href="/list/">листа</a>, <a href="/truba/">трубы</a> и <a href="/krug/">круга</a>,
+					стандарты — в <a href="/gost/">справочнике ГОСТов</a>.
+				</p>
+			</section>
+
+			<section class="post__faq">
+				<h2>Частые вопросы</h2>
+				<div class="post__faq-list">
+					{faq.map((f) => (
+						<details class="post__faq-item">
+							<summary class="post__faq-q">
+								<span>{f.q}</span>
+								<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+									<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p set:html={f.a} />
+						</details>
+					))}
+				</div>
+			</section>
+
+			<aside class="post__related">
+				<h2>Смежные страницы</h2>
+				<ul>
+					<li><a href="/blog/aisi-304-vs-316l-vs-321/">AISI 304 vs 316L vs 321 — какую марку выбрать</a></li>
+					<li><a href="/blog/magnitit-li-nerzhaveika/">Магнитится ли нержавейка</a></li>
+					<li><a href="/list/aisi-304/">Лист AISI 304 (08Х18Н10) — каталог и цена</a></li>
+					<li><a href="/list/aisi-316l/">Лист AISI 316L (03Х17Н14М2)</a></li>
+					<li><a href="/list/aisi-430/">Лист AISI 430 (12Х17) — ферритный</a></li>
+					<li><a href="/truba/">Труба нержавеющая — все марки и сортамент</a></li>
+					<li><a href="/gost/">Справочник ГОСТов на нержавеющий металлопрокат</a></li>
+				</ul>
+			</aside>
+		</article>
+	</div>
+
+	<CtaSection
+		title="Не уверены, какой класс нужен?"
+		text="Менеджер подберёт аустенит, феррит, мартенсит или дуплекс под вашу среду и нагрузку — пришлёт КП с химанализом плавки в течение 30 минут."
+	/>
+</BaseLayout>
+
+<style>
+	.post { padding-block: var(--space-8); min-width: 0; }
+
+	/* Hero */
+	.post__hero { margin-bottom: var(--space-6); max-width: 75ch; }
+	.post__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.post__h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-2);
+	}
+	.post__meta {
+		display: flex;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: var(--space-4);
+	}
+	.post__lead {
+		font-size: 1.08rem;
+		line-height: 1.6;
+		max-width: 70ch;
+		color: var(--color-text);
+		margin: 0;
+	}
+	.post__lead strong { color: var(--color-primary); }
+
+	/* Cover */
+	.post__cover {
+		margin: 0 0 var(--space-8);
+		max-width: 80ch;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+	}
+	.post__cover img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 1200 / 630;
+	}
+
+	/* TOC */
+	.post__toc {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-8);
+		max-width: 80ch;
+	}
+	.post__toc-title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.post__toc ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: var(--space-2);
+	}
+	.post__toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--dur-fast) var(--ease-out);
+	}
+	.post__toc a:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		text-decoration: none;
+		transform: translateY(-1px);
+	}
+	.post__toc a strong {
+		font-size: 0.9rem;
+		color: var(--color-primary-600);
+		font-weight: 600;
+	}
+	.post__toc a span {
+		font-size: 0.82rem;
+		color: var(--color-muted);
+		line-height: 1.35;
+	}
+
+	/* Body */
+	.post__body {
+		max-width: 75ch;
+		display: grid;
+		gap: var(--space-7);
+	}
+	.post__section {
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+	.post__section h2 {
+		font-size: 1.35rem;
+		line-height: 1.3;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__section p,
+	.post__section ul,
+	.post__section ol {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--color-text);
+		margin: 0 0 var(--space-3);
+	}
+	.post__section ul,
+	.post__section ol {
+		padding-left: 1.3rem;
+	}
+	.post__section li {
+		margin-bottom: 0.4rem;
+		line-height: 1.6;
+	}
+	.post__section li:last-child { margin-bottom: 0; }
+	.post__section a {
+		color: var(--color-primary-600);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.post__section a:hover { color: var(--color-primary); }
+
+	/* Compare table */
+	.post__table-wrap {
+		overflow-x: auto;
+		margin: 0 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+	.post__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		min-width: 640px;
+	}
+	.post__table th,
+	.post__table td {
+		padding: 0.6rem 0.85rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-border);
+		vertical-align: top;
+		line-height: 1.4;
+	}
+	.post__table thead th {
+		background: var(--color-bg-elev);
+		font-weight: 600;
+		color: var(--color-text);
+		font-size: 0.88rem;
+	}
+	.post__table tbody th {
+		font-weight: 500;
+		color: var(--color-muted);
+		background: var(--color-bg-elev);
+	}
+	.post__table tbody tr:last-child th,
+	.post__table tbody tr:last-child td { border-bottom: none; }
+
+	/* FAQ */
+	.post__faq h2 {
+		font-size: 1.35rem;
+		margin-bottom: var(--space-4);
+		letter-spacing: -0.01em;
+	}
+	.post__faq-list { display: grid; gap: 0.6rem; }
+	.post__faq-item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] {
+		border-color: var(--color-primary-100);
+		background: var(--color-primary-50);
+	}
+	.post__faq-q {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+		list-style: none;
+	}
+	.post__faq-q::-webkit-details-marker { display: none; }
+	.post__faq-q svg {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+	.post__faq-item[open] .post__faq-q svg { transform: rotate(180deg); }
+	.post__faq-item p { margin: var(--space-3) 0 0; color: var(--color-muted); line-height: 1.6; }
+	.post__faq-item p a { color: var(--color-primary-600); text-decoration: underline; text-underline-offset: 2px; }
+
+	/* Related */
+	.post__related {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+	}
+	.post__related h2 {
+		font-size: 1.05rem;
+		margin: 0 0 var(--space-3);
+		letter-spacing: -0.01em;
+	}
+	.post__related ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.post__related a {
+		color: var(--color-primary-600);
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+	.post__related a:hover {
+		color: var(--color-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+</style>
