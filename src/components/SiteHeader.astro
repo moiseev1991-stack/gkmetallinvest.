@@ -1,5 +1,5 @@
 ---
-import { navGroups, navTop, navServices } from '../data/navigation';
+import { navGroups, navTop, navServicesAll } from '../data/navigation';
 import { siteName, contacts } from '../data/site';
 import Button from './ui/Button.astro';
 
@@ -16,7 +16,7 @@ const isActive = (href: string) => {
 const catalogHrefs = navGroups.flatMap((g) => g.items.map((i) => i.href));
 const inCatalog = catalogHrefs.some((h) => isActive(h));
 
-const serviceHrefs = navServices.map((s) => s.href);
+const serviceHrefs = navServicesAll.map((s) => s.href);
 const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h));
 ---
 
@@ -121,7 +121,7 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 							<span class="mega__svc-title">Услуги</span>
 							<ul>
 								{
-									navServices.map((s) => (
+									navServicesAll.map((s) => (
 										<li>
 											<a class={isActive(s.href) ? 'mega__svc-link--active' : ''} href={s.href} aria-current={isActive(s.href) ? 'page' : undefined}>{s.label}</a>
 										</li>

@@ -1,5 +1,5 @@
 ---
-import { navCatalog, navServices } from '../data/navigation';
+import { navCatalog, navServices, navCalculators } from '../data/navigation';
 import { contacts, siteName } from '../data/site';
 
 const path = Astro.url.pathname;
@@ -61,9 +61,9 @@ const isActive = (href: string) => {
 					{ href: '/o-kompanii/', label: 'О компании' },
 					{ href: '/dostavka-i-oplata/', label: 'Доставка и оплата' },
 					{ href: '/spravochnik/', label: 'Справочник' },
+					{ href: '/gost/', label: 'Справочник ГОСТов' },
 					{ href: '/kontakty/', label: 'Контакты' },
 					{ href: '/zapros-kp/', label: 'Запросить КП' },
-					{ href: '/kalkulyator-vesa/', label: 'Калькулятор веса' },
 					{ href: '/karta-sayta/', label: 'Карта сайта' },
 				].map((l) => (
 					<li><a class={isActive(l.href) ? 'foot__link--active' : ''} href={l.href} aria-current={isActive(l.href) ? 'page' : undefined}>{l.label}</a></li>
@@ -73,6 +73,30 @@ const isActive = (href: string) => {
 				<a href={`tel:${contacts.phoneTel}`} class="foot__phone">{contacts.phone}</a>
 				<a href={`mailto:${contacts.email}`}>{contacts.email}</a>
 			</p>
+		</div>
+	</div>
+
+	<div class="foot__calc">
+		<div class="container foot__calc-inner">
+			<span class="foot__h">Калькуляторы</span>
+			<div class="foot__chips">
+				{
+					navCalculators.map((c) => {
+						const short = c.label.replace(/^Калькулятор\s+/i, '');
+						return (
+							<a
+								class={`foot__chip${isActive(c.href) ? ' foot__chip--active' : ''}`}
+								href={c.href}
+								title={c.label}
+								aria-label={c.label}
+								aria-current={isActive(c.href) ? 'page' : undefined}
+							>
+								{short}
+							</a>
+						);
+					})
+				}
+			</div>
 		</div>
 	</div>
 
@@ -245,6 +269,43 @@ const isActive = (href: string) => {
 		color: #fff;
 		font-weight: 600;
 		font-size: 1.05rem;
+	}
+
+	.foot__calc {
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		padding: var(--space-6) 0;
+	}
+	.foot__calc-inner {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+	.foot__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+	.foot__chip {
+		display: inline-flex;
+		align-items: center;
+		padding: 5px 12px;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		background: rgba(255, 255, 255, 0.03);
+		font-size: 0.82rem;
+		line-height: 1.2;
+		color: var(--color-on-dark-muted);
+		white-space: nowrap;
+	}
+	.foot__chip:hover {
+		color: #fff;
+		border-color: rgba(244, 162, 97, 0.5);
+		background: rgba(255, 255, 255, 0.06);
+	}
+	.foot__chip--active {
+		color: #fff;
+		border-color: var(--color-accent, #c4651b);
+		background: rgba(244, 162, 97, 0.1);
 	}
 
 	.foot__legal {

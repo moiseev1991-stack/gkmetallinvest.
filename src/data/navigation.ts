@@ -74,6 +74,9 @@ export const navServices = [
 	{ label: 'Резка рулонов', href: '/uslugi/rezka-rulonov/' },
 	{ label: 'Перфорация листов', href: '/uslugi/perforaciya-listov/' },
 	{ label: 'Полировка и шлифование', href: '/uslugi/polirovka/' },
+];
+
+export const navCalculators = [
 	{ label: 'Калькулятор веса', href: '/kalkulyator-vesa/' },
 	{ label: 'Калькулятор арматуры', href: '/kalkulyator-armatury/' },
 	{ label: 'Калькулятор швеллера', href: '/kalkulyator-shvellera/' },
@@ -85,5 +88,11 @@ export const navServices = [
 	{ label: 'Калькулятор плоскоовальной трубы', href: '/kalkulyator-ovalnoy-truby/' },
 	{ label: 'Калькулятор сетки', href: '/kalkulyator-setki/' },
 	{ label: 'Калькулятор рулона', href: '/kalkulyator-rulona/' },
+];
+
+/** Полный список услуг + калькуляторы + справочник — для шапки и карты сайта. */
+export const navServicesAll = [
+	...navServices,
+	...navCalculators,
 	{ label: 'Справочник ГОСТов', href: '/gost/' },
 ];

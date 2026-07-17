@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import { navGroups, navServices } from '../../data/navigation';
+import { navGroups, navServicesAll } from '../../data/navigation';
 import { cities } from '../../data/cities';
 import { siteName } from '../../data/site';
 
@@ -19,7 +19,7 @@ const sections = [
 	},
 	{
 		title: 'Услуги',
-		links: navServices,
+		links: navServicesAll,
 	},
 	{
 		title: 'Юридическое',
