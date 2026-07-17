@@ -1,0 +1,93 @@
+---
+import { team } from '../data/team';
+
+interface Props {
+	/** eager для первой видимой секции (о компании), lazy для блока на главной */
+	loading?: 'eager' | 'lazy';
+}
+const { loading = 'lazy' } = Astro.props;
+---
+
+<ul class="team">
+	{
+		team.map((m) => (
+			<li class="tm-card">
+				<div class="tm-card__photo">
+					<img
+						src={m.photo}
+						alt={`${m.name} — ${m.role}`}
+						width="600"
+						height="750"
+						loading={loading}
+						decoding="async"
+					/>
+				</div>
+				<div class="tm-card__body">
+					<h3 class="tm-card__name">{m.name}</h3>
+					<p class="tm-card__role">{m.role}</p>
+					<p class="tm-card__bio">{m.bio}</p>
+				</div>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.team {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--space-5);
+	}
+	.tm-card {
+		display: flex;
+		flex-direction: column;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		box-shadow: var(--shadow-xs);
+		transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+	}
+	.tm-card:hover {
+		transform: translateY(-3px);
+		box-shadow: var(--shadow-md);
+	}
+	.tm-card__photo {
+		aspect-ratio: 4 / 5;
+		background: var(--color-primary-50);
+	}
+	.tm-card__photo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top center;
+		display: block;
+	}
+	.tm-card__body {
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.tm-card__name {
+		font-size: 1rem;
+		margin: 0;
+		line-height: 1.3;
+		letter-spacing: -0.01em;
+	}
+	.tm-card__role {
+		margin: 0;
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: var(--color-primary-600);
+	}
+	.tm-card__bio {
+		margin: var(--space-2) 0 0;
+		font-size: 0.88rem;
+		color: var(--color-muted);
+		line-height: 1.5;
+	}
+</style>

@@ -35,6 +35,10 @@ pnpm-debug.log*
 *.xlsx
 ~$*
 
+# source team photos (heavy PNG originals) — в репо только оптимизированный WebP в public/img/team/
+foto-tim/
+tim/
+
 # scraper cache (HTML dumps from mc.ru) and pricelist backups
 scripts/scrape-mc/.cache/
 src/data/pricelist.backup-*.json
