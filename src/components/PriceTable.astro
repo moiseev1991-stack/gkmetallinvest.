@@ -218,6 +218,33 @@ const hasDlina = allSkus.length > 0 && _hasDlinaCount / allSkus.length >= 0.1;
    переименовать колонку и убрать префикс x/х, чтобы читалось как число. */
 const isWallThickness = hub === 'detali-truboprovoda';
 const lengthColLabel = isWallThickness ? 'Стенка, мм' : 'Длина, мм';
+
+/* Нормализация толщины стенки: у деталей поле dlina хранит стенку в виде
+   «x6», «х5» (латиница/кириллица), «x4.5», «x3,5». Сводим к числовому ключу
+   («6», «4.5», «3.5»), чтобы варианты-дубли слились в один пункт фильтра.
+   ВАЖНО: у лестниц/стоек то же поле хранит зерно шлифовки «(зерно 400G)» —
+   это НЕ стенка. Поэтому принимаем только «[x]?число» целиком, а строки
+   вроде «(зерно 400G)» отбрасываем. Дублируется в клиентском wallKey. */
+function wallKey(raw: any): string | null {
+	if (raw == null || raw === '') return null;
+	const m = String(raw).trim().match(/^[хx×]?\s*(\d+(?:[.,]\d+)?)$/i);
+	if (!m) return null;
+	const n = parseFloat(m[1].replace(',', '.'));
+	return Number.isFinite(n) ? String(n) : null;
+}
+const wallCounts = isWallThickness
+	? (() => {
+			const m = new Map<string, number>();
+			for (const s of allSkus) {
+				const k = wallKey(s.dlina);
+				if (k == null) continue;
+				m.set(k, (m.get(k) ?? 0) + 1);
+			}
+			return [...m.entries()]
+				.sort((a, b) => Number(a[0]) - Number(b[0]))
+				.map(([key, count]) => ({ key, count }));
+		})()
+	: [];
 const hasFact = allSkus.some((s) => s.fact);
 // Show second price column only when most SKUs actually have two distinct
 // prices — a handful of exceptions out of hundreds (e.g. detali-truboprovoda)
@@ -416,6 +443,19 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				)
 			}
 			{
+				wallCounts.length > 1 && (
+					<label class="pt__field pt__field--select" data-pt-label="Стенка">
+						<span class="pt__label">Стенка, мм</span>
+						<select id={`${hub}-wall`} data-pt-wall aria-label="Толщина стенки">
+							<option value="">все</option>
+							{wallCounts.map((w) => (
+								<option value={w.key}>{w.key.replace('.', ',')}</option>
+							))}
+						</select>
+					</label>
+				)
+			}
+			{
 				facts.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Склад">
 						<span class="pt__label">Склад</span>
@@ -575,6 +615,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			fact: root.querySelector('[data-pt-fact]'),
 			sizeMin: root.querySelector('[data-pt-size-min]'),
 			sizeMax: root.querySelector('[data-pt-size-max]'),
+			wall: root.querySelector('[data-pt-wall]'),
 			inStock: root.querySelector('[data-pt-instock]'),
 			film: root.querySelector('[data-pt-film]'),
 		};
@@ -626,6 +667,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				let v;
 				if (field === 'cut') v = extractCut(s);
 				else if (field === 'pressure') v = extractPressure(s);
+				else if (field === 'wall') v = wallKey(s.dlina);
 				else v = s[field];
 				if (v == null || v === '') continue;
 				counts.set(v, (counts.get(v) ?? 0) + 1);
@@ -684,6 +726,12 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				const entries = [...counts.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'ru'));
 				f.fact = refreshSelect(inputs.fact, f.fact, entries);
 			}
+			if (inputs.wall) {
+				const counts = valuesFor('wall', f);
+				/* Стенка: сортируем числом по возрастанию (3, 3,5, 4, 5, 6, 8). */
+				const entries = [...counts.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
+				f.wall = refreshSelect(inputs.wall, f.wall, entries, (v) => String(v).replace('.', ','));
+			}
 			return f;
 		}
 		function refreshSubchipCounts(f) {
@@ -737,6 +785,16 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return m ? parseFloat(m[0].replace(',', '.')) : NaN;
 		}
 
+		/* Зеркало wallKey из frontmatter: «x6»/«х5»/«x3,5» → «6»/«5»/«3.5».
+		   Строки-зерно «(зерно 400G)» отбрасываем — это не стенка. */
+		function wallKey(raw) {
+			if (raw == null || raw === '') return null;
+			const m = String(raw).trim().match(/^[хx×]?\s*(\d+(?:[.,]\d+)?)$/i);
+			if (!m) return null;
+			const n = parseFloat(m[1].replace(',', '.'));
+			return Number.isFinite(n) ? String(n) : null;
+		}
+
 		function rowMatches(s, f) {
 			if (f.sub && (s.sub || '') !== f.sub) return false;
 			if (f.grade && s.grade !== f.grade) return false;
@@ -745,6 +803,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.roll && (s.roll || '') !== f.roll) return false;
 			if (f.cut && extractCut(s) !== f.cut) return false;
 			if (f.fact && (s.fact || '') !== f.fact) return false;
+			if (f.wall && wallKey(s.dlina) !== f.wall) return false;
 			if (f.inStock && !s.ostatok) return false;
 			if (f.film && !hasFilm(s)) return false;
 			if (f.sizeMin != null || f.sizeMax != null) {
@@ -900,6 +959,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.roll) chips.push({ key: 'roll', label: `Прокат: ${f.roll}` });
 			if (f.cut) chips.push({ key: 'cut', label: `Крой: ${cutLabel(f.cut)}` });
 			if (f.fact) chips.push({ key: 'fact', label: `Склад: ${f.fact}` });
+			if (f.wall) chips.push({ key: 'wall', label: `Стенка: ${String(f.wall).replace('.', ',')} мм` });
 			if (f.inStock) chips.push({ key: 'inStock', label: 'В наличии' });
 			if (f.film) chips.push({ key: 'film', label: 'С плёнкой' });
 			if (f.sizeMin != null || f.sizeMax != null) {
@@ -933,7 +993,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 
 		function resetAll() {
 			if (inputs.q) inputs.q.value = '';
-			['sub','grade','surface','pressure','roll','cut','fact','sizeMin','sizeMax'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
+			['sub','grade','surface','pressure','roll','cut','fact','sizeMin','sizeMax','wall'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
 			if (inputs.inStock) inputs.inStock.checked = false;
 			if (inputs.film) inputs.film.checked = false;
 			state.sortKey = null; state.sortDir = 'asc'; state.page = 1;
@@ -958,6 +1018,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				fact: inputs.fact?.value || '',
 				sizeMin: parseRange(inputs.sizeMin),
 				sizeMax: parseRange(inputs.sizeMax),
+				wall: inputs.wall?.value || '',
 				inStock: !!inputs.inStock?.checked,
 				film: !!inputs.film?.checked,
 			};
