@@ -31,6 +31,8 @@ interface Props {
 	h1: string;
 	tagline: string; // короткая подпись над H1
 	intro: string; // 2-3 абзаца
+	heroImage?: string; // фото по теме услуги — рендерится справа от текста в hero
+	heroImageAlt?: string; // alt для фото (по умолчанию = h1)
 	specs: SpecRow[]; // спецификация / характеристики
 	process: StepRow[]; // 4-6 шагов
 	materials: string[]; // марки и материалы, с которыми работаем
@@ -46,6 +48,8 @@ const {
 	h1,
 	tagline,
 	intro,
+	heroImage,
+	heroImageAlt,
 	specs,
 	process,
 	materials,
@@ -98,10 +102,17 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 	<div class="container svc-page">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, { label: h1 }]} />
 
-		<header class="svc-page__hero">
-			<span class="svc-page__tag">{tagline}</span>
-			<h1>{h1}</h1>
-			<p class="svc-page__lead" set:html={intro} />
+		<header class={`svc-page__hero${heroImage ? ' svc-page__hero--with-image' : ''}`}>
+			<div class="svc-page__hero-text">
+				<span class="svc-page__tag">{tagline}</span>
+				<h1>{h1}</h1>
+				<p class="svc-page__lead" set:html={intro} />
+			</div>
+			{heroImage && (
+				<div class="svc-page__hero-media">
+					<img src={heroImage} alt={heroImageAlt || h1} width="440" height="430" loading="eager" />
+				</div>
+			)}
 		</header>
 
 		<section class="svc-page__block">
@@ -200,6 +211,38 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 <style>
 	.svc-page { padding-block: var(--space-8); min-width: 0; }
 	.svc-page__hero { margin-bottom: var(--space-8); max-width: 80ch; }
+	.svc-page__hero--with-image {
+		max-width: none;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+		gap: var(--space-6);
+		align-items: center;
+	}
+	.svc-page__hero-media {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #fff;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+	}
+	.svc-page__hero-media img {
+		display: block;
+		width: 100%;
+		height: auto;
+		max-width: 280px;
+	}
+	@media (max-width: 720px) {
+		.svc-page__hero--with-image {
+			grid-template-columns: 1fr;
+			gap: var(--space-4);
+		}
+		.svc-page__hero-media {
+			order: -1;
+			max-width: 320px;
+		}
+	}
 	.svc-page__tag {
 		display: inline-block;
 		font-size: 0.74rem;
