@@ -411,6 +411,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 								data-pt-size-max
 							/>
 						</div>
+						<button type="button" class="pt__range-apply" data-pt-size-apply>Показать</button>
 					</div>
 				)
 			}
@@ -1040,12 +1041,25 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			});
 		});
 
-		Object.values(inputs).forEach((el) => {
+		Object.entries(inputs).forEach(([key, el]) => {
 			if (!el) return;
+			/* Поля размера применяются по кнопке «Показать» / Enter, а не на каждый
+			   ввод: иначе при наборе «30» фильтр дёргается на «3» и непонятно,
+			   применился ли он (жалоба пользователей). */
+			if (key === 'sizeMin' || key === 'sizeMax') return;
 			let ev = 'input';
 			if (el.tagName === 'SELECT') ev = 'change';
 			if (el.type === 'checkbox') ev = 'change';
 			el.addEventListener(ev, () => { state.page = 1; render(); });
+		});
+
+		const sizeApplyBtn = root.querySelector('[data-pt-size-apply]');
+		const applySize = () => { state.page = 1; render(); };
+		sizeApplyBtn?.addEventListener('click', applySize);
+		[inputs.sizeMin, inputs.sizeMax].forEach((el) => {
+			el?.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') { e.preventDefault(); applySize(); }
+			});
 		});
 		prevBtn?.addEventListener('click', () => { if (state.page > 1) { state.page--; render(); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
 		nextBtn?.addEventListener('click', () => { state.page++; render(); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
@@ -1305,6 +1319,27 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	}
 	.pt__field--range input::placeholder { color: var(--color-subtle); opacity: 1; font-weight: 400; }
 	.pt__range-sep { color: var(--color-subtle); font-size: 0.9rem; flex: 0 0 auto; }
+	.pt__range-apply {
+		align-self: stretch;
+		height: 34px;
+		padding: 0 0.9rem;
+		border: 1px solid var(--color-primary-500);
+		border-radius: var(--radius-md);
+		background: var(--color-primary-500);
+		color: #fff;
+		font: inherit;
+		font-size: 0.82rem;
+		font-weight: 600;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+	}
+	.pt__range-apply:hover { background: var(--color-primary-600); border-color: var(--color-primary-600); }
+	.pt__range-apply:active { transform: translateY(1px); }
+	.pt__range-apply:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 3px var(--color-primary-100);
+	}
 
 	/* Aside row под grid-фильтрами: toggle "Только в наличии" + кнопка сброса */
 	.pt__aside-row {
