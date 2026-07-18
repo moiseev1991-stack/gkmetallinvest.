@@ -232,11 +232,28 @@ function wallKey(raw: any): string | null {
 	const n = parseFloat(m[1].replace(',', '.'));
 	return Number.isFinite(n) ? String(n) : null;
 }
+/* Толщина стенки одной позиции. У переходов стенка лежит в поле dlina
+   («x6»). У отводов и тройников поля нет — стенка зашита в название как
+   «Ø×стенка ГОСТ …» (напр. «57x4 ГОСТ 17376-2001» → 4). Разбираем название
+   ТОЛЬКО для этих двух подтипов: у фланцев там Ду/Ру, у наконечников —
+   длина, разбор дал бы мусор. Дублируется в клиентском skuWall. */
+function skuWall(s: any): string | null {
+	const k = wallKey(s.dlina);
+	if (k != null) return k;
+	if (s.sub === 'otvod' || s.sub === 'troynik') {
+		const m = String(s.name || '').match(/(\d+(?:[.,]\d+)?)\s*[хx×]\s*(\d+(?:[.,]\d+)?)\s*ГОСТ/i);
+		if (m) {
+			const n = parseFloat(m[2].replace(',', '.'));
+			return Number.isFinite(n) ? String(n) : null;
+		}
+	}
+	return null;
+}
 const wallCounts = isWallThickness
 	? (() => {
 			const m = new Map<string, number>();
 			for (const s of allSkus) {
-				const k = wallKey(s.dlina);
+				const k = skuWall(s);
 				if (k == null) continue;
 				m.set(k, (m.get(k) ?? 0) + 1);
 			}
@@ -667,7 +684,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				let v;
 				if (field === 'cut') v = extractCut(s);
 				else if (field === 'pressure') v = extractPressure(s);
-				else if (field === 'wall') v = wallKey(s.dlina);
+				else if (field === 'wall') v = skuWall(s);
 				else v = s[field];
 				if (v == null || v === '') continue;
 				counts.set(v, (counts.get(v) ?? 0) + 1);
@@ -795,6 +812,21 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return Number.isFinite(n) ? String(n) : null;
 		}
 
+		/* Зеркало skuWall из frontmatter: стенка из dlina (переходы) либо из
+		   названия «Ø×стенка ГОСТ» — только для отводов и тройников. */
+		function skuWall(s) {
+			const k = wallKey(s.dlina);
+			if (k != null) return k;
+			if (s.sub === 'otvod' || s.sub === 'troynik') {
+				const m = String(s.name || '').match(/(\d+(?:[.,]\d+)?)\s*[хx×]\s*(\d+(?:[.,]\d+)?)\s*ГОСТ/i);
+				if (m) {
+					const n = parseFloat(m[2].replace(',', '.'));
+					return Number.isFinite(n) ? String(n) : null;
+				}
+			}
+			return null;
+		}
+
 		function rowMatches(s, f) {
 			if (f.sub && (s.sub || '') !== f.sub) return false;
 			if (f.grade && s.grade !== f.grade) return false;
@@ -803,7 +835,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.roll && (s.roll || '') !== f.roll) return false;
 			if (f.cut && extractCut(s) !== f.cut) return false;
 			if (f.fact && (s.fact || '') !== f.fact) return false;
-			if (f.wall && wallKey(s.dlina) !== f.wall) return false;
+			if (f.wall && skuWall(s) !== f.wall) return false;
 			if (f.inStock && !s.ostatok) return false;
 			if (f.film && !hasFilm(s)) return false;
 			if (f.sizeMin != null || f.sizeMax != null) {
