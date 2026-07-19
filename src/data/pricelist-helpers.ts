@@ -1,4 +1,5 @@
 import pricelist from './pricelist.json';
+import { dekorListy } from './dekor-listy';
 
 /* Эвристика «рулон-стайл»: в названии шаблон «толщина × ширина» без третьего
    числа (длины) — поставщик отгружает позицию мотком/рулоном, а не как лист
@@ -262,6 +263,11 @@ export function getDetailDimensions(sku: any): DetailDimensions | null {
 }
 
 export function getHubSkus(hub: string): any[] {
+	/* Декоративные листы живут в отдельном модуле (не в pricelist.json) —
+	   своя подкатегория с поверхностями DK-кодов. */
+	if (hub === 'dekorativnye-listy') {
+		return dekorListy as any[];
+	}
 	const raw = ((pricelist as any).hubs?.[hub] ?? []) as any[];
 	if (hub === 'list') {
 		return raw.filter((s) => !isRulonLikeName(s?.name));

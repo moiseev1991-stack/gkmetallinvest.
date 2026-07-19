@@ -1,6 +1,7 @@
 ---
 import pricelist from '../data/pricelist.json';
 import { getHubSkus } from '../data/pricelist-helpers';
+import { DEKOR_SURFACE_LABELS } from '../data/dekor-listy';
 
 interface Props {
 	hub:
@@ -11,7 +12,8 @@ interface Props {
 		| 'truba'
 		| 'polosa'
 		| 'ugolok-shveller'
-		| 'rulon';
+		| 'rulon'
+		| 'dekorativnye-listy';
 	title?: string;
 	measure?: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
 	/** Алиасы grade для предварительной фильтрации — используется на марочных
@@ -42,6 +44,9 @@ const SURFACE_LABELS: Record<string, string> = {
 	'BA': 'BA (зеркало, с плёнкой)',
 	'4N': '4N (шлифовка, с плёнкой)',
 	'No1': 'No1 (горячекатаный)',
+	/* Декоративные поверхности DK-кодов — «код / русское название».
+	   Источник маппинга — data/dekor-listy.ts (ТЗ SEO, п. 1.2). */
+	...DEKOR_SURFACE_LABELS,
 };
 
 /* «Плёнка» определяется эвристикой: явный маркер +PI в названии (точный сигнал

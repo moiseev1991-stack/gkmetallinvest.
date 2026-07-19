@@ -1,15 +1,90 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
-import HubRequest from '../../components/HubRequest.astro';
+import PriceTable from '../../components/PriceTable.astro';
+import { getHubSkus } from '../../data/pricelist-helpers';
+
+const skus = getHubSkus('dekorativnye-listy');
+const totalSkus = skus.length;
+
+/* Соответствие DK-кодов и русских названий — для текстового блока (SEO:
+   закрываем оба варианта запроса «DK8» и «нержавейка чёрное зеркало»).
+   Только подтверждённые ТЗ коды; DK3/5/6/7 — после уточнения у заказчика. */
+const dkMap = [
+	{ code: 'DK1', ru: 'Лён' },
+	{ code: 'DK2', ru: 'Клетка' },
+	{ code: 'DK4', ru: 'Кожа' },
+	{ code: 'DK8', ru: 'Чёрное зеркало' },
+	{ code: 'DK9', ru: 'Водная рябь' },
+	{ code: 'Gold Satin', ru: 'Золотая шлифовка' },
+	{ code: 'Black Mirror', ru: 'Чёрное зеркало' },
+	{ code: 'Black Nanomate', ru: 'Чёрное нанопокрытие' },
+];
+
+const faq = [
+	{
+		q: 'Что такое декоративный лист из нержавейки и чем он отличается от обычного?',
+		a: 'Декоративный лист — это нержавеющая сталь (обычно AISI 304) с рельефной или цветной поверхностью: тиснение (лён, клетка, кожа, водная рябь), чёрное зеркало, золотая шлифовка. Применяется в отделке лифтов, касс, интерьеров, рекламных конструкций. От обычного листа отличается финишной обработкой поверхности, а не маркой стали.',
+	},
+	{
+		q: 'Как расшифровываются коды DK1, DK8 и другие?',
+		a: 'DK-код обозначает рисунок тиснения: DK1 — лён, DK2 — клетка, DK4 — кожа, DK8 — чёрное зеркало, DK9 — водная рябь. Маркетинговые названия Gold Satin (золотая шлифовка), Black Mirror (чёрное зеркало), Black Nanomate (чёрное нанопокрытие) обозначают цветные PVD-покрытия.',
+	},
+	{
+		q: 'В каких форматах поставляются декоративные листы?',
+		a: 'Стандартные форматы — 1000×2000 и 1250×2500 мм, толщина 0,5–1,5 мм, марка AISI 304. Поставляются с защитной плёнкой для перевозки и монтажа без царапин. Наличие и цену конкретной позиции уточняйте у менеджера.',
+	},
+];
 ---
 
 <CatalogHubTemplate
-	title="Декоративные листы из нержавеющей стали"
-	description="Декоративные листы AISI DECO, зеркальные и шлифованные. Раздел в наполнении — наличие и цены по запросу."
+	title="Декоративные листы из нержавеющей стали — DK1–DK9, Black Mirror, Gold Satin"
+	description="Декоративные нержавеющие листы AISI 304: тиснение DK1–DK9 (лён, клетка, кожа, чёрное зеркало, водная рябь), Black Mirror, Gold Satin. Формат 1000×2000, 1250×2500. Раздел в наполнении — цены и наличие по запросу."
 	h1="Декоративные листы из нержавеющей стали"
-	intro=""
+	intro={`Декоративная нержавейка AISI 304 с тиснением (лён, клетка, кожа, водная рябь), чёрным зеркалом и цветными PVD-покрытиями — для отделки лифтов, касс, интерьеров и фасадов. Фильтр по поверхности ниже понимает и DK-коды, и русские названия. Раздел в наполнении — точные цены и наличие уточняйте у менеджера.`}
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Декоративные листы' }]}
 	hubKey="dekorativnye-listy"
+	faq={faq}
+	noindex
 >
-	<HubRequest what="Декоративные листы DECO/PE" />
+	<PriceTable hub="dekorativnye-listy" title="Декоративные листы нержавеющие" measure="толщина" />
+
+	<section class="block">
+		<h2>Поверхности декоративных листов: DK-коды и русские названия</h2>
+		<p>
+			Люди ищут декоративную нержавейку по-разному: одни вбивают код «DK8», другие —
+			«лист нержавеющий чёрное зеркало». В фильтре и на страницах товаров указываем оба
+			варианта. Соответствие кодов и названий:
+		</p>
+		<ul class="dk-list">
+			{dkMap.map((d) => (
+				<li><strong>{d.code}</strong> — {d.ru}</li>
+			))}
+		</ul>
+		<p class="dk-note">
+			Список пополняется. Нужной поверхности нет в таблице — <a href="/zapros-kp/">отправьте заявку</a>,
+			подберём под задачу.
+		</p>
+	</section>
 </CatalogHubTemplate>
+
+<style>
+	.block { margin-bottom: var(--space-8); }
+	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
+	.block p { max-width: 70ch; color: var(--color-muted); }
+	.block p a { color: var(--color-primary-600); }
+	.dk-list {
+		list-style: none;
+		padding: 0;
+		margin: var(--space-3) 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 0.4rem;
+		max-width: 70ch;
+		color: var(--color-muted);
+	}
+	.dk-list strong {
+		font-family: var(--font-mono);
+		color: var(--color-text);
+	}
+	.dk-note { font-size: 0.92rem; }
+</style>

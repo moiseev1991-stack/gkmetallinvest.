@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Button from '../../components/ui/Button.astro';
+import { dekorListy, DEKOR_SURFACE_LABELS } from '../../data/dekor-listy';
+import { contacts } from '../../data/site';
+
+export function getStaticPaths() {
+	return dekorListy.map((sku) => ({
+		params: { slug: sku.slug },
+		props: { sku },
+	}));
+}
+
+const { sku } = Astro.props;
+const surfaceLabel = DEKOR_SURFACE_LABELS[sku.surface] ?? sku.surface;
+/* Формат листа (ширина×длина) вытаскиваем из названия — «0,8×1250×2500». */
+const formatMatch = sku.name.match(/[\d,]+×(\d+×\d+)/);
+const format = formatMatch ? formatMatch[1].replace(/×/g, '×') : null;
+---
+
+<BaseLayout
+	title={`${sku.name} — купить в Нижнем Новгороде`}
+	description={`Декоративный нержавеющий лист ${surfaceLabel}, марка ${sku.grade}, толщина ${sku.size.replace('.', ',')} мм. Наличие и цену уточняйте у менеджера.`}
+	noindex
+>
+	<div class="container dekor-detail">
+		<Breadcrumbs
+			items={[
+				{ label: 'Главная', href: '/' },
+				{ label: 'Декоративные листы', href: '/dekorativnye-listy/' },
+				{ label: sku.name },
+			]}
+		/>
+
+		<h1>{sku.name}</h1>
+
+		<dl class="dekor-specs">
+			<div><dt>Марка</dt><dd>{sku.grade}</dd></div>
+			<div><dt>Поверхность</dt><dd>{surfaceLabel}</dd></div>
+			<div><dt>Толщина</dt><dd>{sku.size.replace('.', ',')} мм</dd></div>
+			{format && <div><dt>Формат</dt><dd>{format} мм</dd></div>}
+		</dl>
+
+		<aside class="dekor-cta">
+			<div class="dekor-cta__price">Цена по запросу</div>
+			<p class="dekor-cta__text">
+				Раздел в наполнении. Оставьте заявку — менеджер пришлёт актуальную цену и наличие
+				в течение 30 минут.
+			</p>
+			<div class="dekor-cta__actions">
+				<Button href="/zapros-kp/#lead-form" variant="primary">Запросить цену</Button>
+				<a class="dekor-cta__phone" href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+			</div>
+		</aside>
+	</div>
+</BaseLayout>
+
+<style>
+	.dekor-detail { padding-block: var(--space-8); max-width: 760px; }
+	.dekor-detail h1 { margin: var(--space-4) 0 var(--space-6); font-size: 1.5rem; }
+	.dekor-specs {
+		display: grid;
+		gap: 0;
+		margin: 0 0 var(--space-8);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+	}
+	.dekor-specs > div {
+		display: grid;
+		grid-template-columns: 200px 1fr;
+		gap: var(--space-4);
+		padding: var(--space-3) var(--space-4);
+		border-bottom: 1px solid var(--color-border);
+	}
+	.dekor-specs > div:last-child { border-bottom: none; }
+	.dekor-specs dt { margin: 0; color: var(--color-muted); }
+	.dekor-specs dd { margin: 0; font-weight: 600; color: var(--color-text); }
+	.dekor-cta {
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-lg);
+		padding: var(--space-6);
+	}
+	.dekor-cta__price {
+		font-size: 1.3rem;
+		font-weight: 800;
+		color: var(--color-primary-600);
+		margin-bottom: var(--space-2);
+	}
+	.dekor-cta__text { margin: 0 0 var(--space-4); color: var(--color-muted); max-width: 60ch; }
+	.dekor-cta__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+	}
+	.dekor-cta__phone { font-weight: 700; color: var(--color-primary-600); text-decoration: none; }
+	.dekor-cta__phone:hover { text-decoration: underline; }
+</style>
