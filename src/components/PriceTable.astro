@@ -197,6 +197,29 @@ const pressureCounts: Array<{ key: string; count: number }> = (() => {
 		.sort((a, b) => Number(a.key) - Number(b.key));
 })();
 
+/* Привод запорной арматуры (клапаны/задвижки). Тип привода лежит в поле
+   dlina как «Назначение: ручной (маховик)»; электрические, если появятся
+   в прайсе, придут как «электропривод». Нормализуем в две категории —
+   «Ручной» / «Электрический» — для фильтра и метки в строке. */
+function extractDriveSku(s: any): string | null {
+	const raw = String(s?.dlina ?? '');
+	if (!/Назначение/i.test(raw)) return null;
+	if (/электр/i.test(raw)) return 'Электрический';
+	if (/ручн/i.test(raw)) return 'Ручной';
+	return null;
+}
+const driveCounts: Array<{ key: string; count: number }> = (() => {
+	const map = new Map<string, number>();
+	for (const s of allSkus) {
+		const dr = extractDriveSku(s);
+		if (!dr) continue;
+		map.set(dr, (map.get(dr) ?? 0) + 1);
+	}
+	return [...map.entries()]
+		.map(([k, count]) => ({ key: k, count }))
+		.sort((a, b) => a.key.localeCompare(b.key, 'ru'));
+})();
+
 const rolls = uniq(allSkus.map((s) => s.roll)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
@@ -397,6 +420,19 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 							<option value="">все</option>
 							{pressureCounts.map((p) => (
 								<option value={p.key}>Ру {p.key}</option>
+							))}
+						</select>
+					</label>
+				)
+			}
+			{
+				driveCounts.length > 1 && (
+					<label class="pt__field pt__field--select" data-pt-label="Привод">
+						<span class="pt__label">Привод</span>
+						<select id={`${hub}-drive`} data-pt-drive aria-label="Тип привода">
+							<option value="">все</option>
+							{driveCounts.map((d) => (
+								<option value={d.key}>{d.key}</option>
 							))}
 						</select>
 					</label>
@@ -627,6 +663,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			grade: root.querySelector('[data-pt-grade]'),
 			surface: root.querySelector('[data-pt-surface]'),
 			pressure: root.querySelector('[data-pt-pressure]'),
+			drive: root.querySelector('[data-pt-drive]'),
 			roll: root.querySelector('[data-pt-roll]'),
 			cut: root.querySelector('[data-pt-cut]'),
 			fact: root.querySelector('[data-pt-fact]'),
@@ -684,6 +721,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				let v;
 				if (field === 'cut') v = extractCut(s);
 				else if (field === 'pressure') v = extractPressure(s);
+				else if (field === 'drive') v = extractDrive(s);
 				else if (field === 'wall') v = skuWall(s);
 				else v = s[field];
 				if (v == null || v === '') continue;
@@ -726,6 +764,11 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				/* Ру: сортируем числом по возрастанию (16, 25, 40), а не лексикографически. */
 				const entries = [...counts.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
 				f.pressure = refreshSelect(inputs.pressure, f.pressure, entries, (v) => `Ру ${v}`);
+			}
+			if (inputs.drive) {
+				const counts = valuesFor('drive', f);
+				const entries = [...counts.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'ru'));
+				f.drive = refreshSelect(inputs.drive, f.drive, entries);
 			}
 			if (inputs.roll) {
 				const counts = valuesFor('roll', f);
@@ -792,6 +835,17 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 		   заказчика 2026-07-01. */
 		function specBits(s) {
 			const bits = [];
+			/* Запорная арматура: Ру, класс герметичности и тип привода зашиты в
+			   длинном названии — вытаскиваем их в компактные подписи, чтобы
+			   различать позиции без чтения всей строки (правка 2026-07-19). */
+			if (isValve(s)) {
+				const p = extractPressure(s);
+				if (p) bits.push(`Ру ${p}`);
+				const lc = leakClass(s);
+				if (lc) bits.push(`класс ${lc}`);
+				const dr = extractDrive(s);
+				if (dr) bits.push(`${dr.toLowerCase()} привод`);
+			}
 			if (s.vesNetto != null) bits.push(`${String(s.vesNetto).replace('.', ',')} кг`);
 			if (s.country) bits.push(String(s.country));
 			return bits;
@@ -827,11 +881,33 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return null;
 		}
 
+		/* Зеркало extractDriveSku из frontmatter — тип привода из dlina
+		   («Назначение: ручной (маховик)» → «Ручной»). */
+		function extractDrive(s) {
+			const raw = String(s?.dlina ?? '');
+			if (!/Назначение/i.test(raw)) return null;
+			if (/электр/i.test(raw)) return 'Электрический';
+			if (/ручн/i.test(raw)) return 'Ручной';
+			return null;
+		}
+
+		/* Класс герметичности запорной арматуры зашит в название («… класс А»).
+		   Есть только у задвижек — у клапанов не указан. */
+		function leakClass(s) {
+			const m = String(s?.name ?? '').match(/класс\s+([А-ЯA-Z])/i);
+			return m ? m[1].toUpperCase() : null;
+		}
+
+		function isValve(s) {
+			return s.sub === 'klapan' || s.sub === 'zadvizhka';
+		}
+
 		function rowMatches(s, f) {
 			if (f.sub && (s.sub || '') !== f.sub) return false;
 			if (f.grade && s.grade !== f.grade) return false;
 			if (f.surface && (s.surface || '') !== f.surface) return false;
 			if (f.pressure && extractPressure(s) !== f.pressure) return false;
+			if (f.drive && extractDrive(s) !== f.drive) return false;
 			if (f.roll && (s.roll || '') !== f.roll) return false;
 			if (f.cut && extractCut(s) !== f.cut) return false;
 			if (f.fact && (s.fact || '') !== f.fact) return false;
@@ -927,8 +1003,11 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				? `<td class="pt__cell-price" data-label="Цена розн.">${priceUnitCell}</td>`
 				: '';
 			const priceLabel = HAS_UNIQUE_PRICES ? 'Цена от 1т' : 'Цена';
-			/* Марка в одну строку: убираем переносы и принудительный nbsp вокруг скобок. */
-			const gradeClean = escapeHtml((s.grade || '—').replace(/\s+/g, ' ').replace(/\s*\(/g, ' ('));
+			/* Марка в одну строку: убираем переносы и принудительный nbsp вокруг скобок.
+			   У запорной арматуры марка стали в прайсе не указана (grade=null) —
+			   вместо голого «—» показываем «нерж.» (весь сортамент нержавеющий). */
+			const gradeFallback = isValve(s) ? 'нерж.' : '—';
+			const gradeClean = escapeHtml((s.grade || gradeFallback).replace(/\s+/g, ' ').replace(/\s*\(/g, ' ('));
 			return `<tr class="pt__row">
 				<td class="pt__cell-grade" data-label="Марка" title="${gradeClean}">${gradeClean}</td>
 				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}<svg class="pt__name-arrow" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>${articleHtml}${specHtml}</td>
@@ -974,7 +1053,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				<a class="pt-tile__name" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}</a>
 				${articleHtml}
 				<div class="pt-tile__chips">
-					<span class="pt-tile__chip pt-tile__chip--grade">${escapeHtml(s.grade || '—')}</span>
+					<span class="pt-tile__chip pt-tile__chip--grade">${escapeHtml(s.grade || (isValve(s) ? 'нерж.' : '—'))}</span>
 					<span class="pt-tile__chip pt-tile__chip--size">${escapeHtml(s.size)}${sizeSuffix}</span>
 					${wallChip}
 					${surfaceChip}
@@ -999,6 +1078,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.grade) chips.push({ key: 'grade', label: `Марка: ${f.grade}` });
 			if (f.surface) chips.push({ key: 'surface', label: `Поверхность: ${SURFACE_LABELS[f.surface] ?? f.surface}` });
 			if (f.pressure) chips.push({ key: 'pressure', label: `Ру ${f.pressure}` });
+			if (f.drive) chips.push({ key: 'drive', label: `Привод: ${f.drive.toLowerCase()}` });
 			if (f.roll) chips.push({ key: 'roll', label: `Прокат: ${f.roll}` });
 			if (f.cut) chips.push({ key: 'cut', label: `Крой: ${cutLabel(f.cut)}` });
 			if (f.fact) chips.push({ key: 'fact', label: `Склад: ${f.fact}` });
@@ -1036,7 +1116,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 
 		function resetAll() {
 			if (inputs.q) inputs.q.value = '';
-			['sub','grade','surface','pressure','roll','cut','fact','sizeMin','sizeMax','wall'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
+			['sub','grade','surface','pressure','drive','roll','cut','fact','sizeMin','sizeMax','wall'].forEach((k) => { if (inputs[k]) inputs[k].value = ''; });
 			if (inputs.inStock) inputs.inStock.checked = false;
 			if (inputs.film) inputs.film.checked = false;
 			state.sortKey = null; state.sortDir = 'asc'; state.page = 1;
@@ -1056,6 +1136,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				grade: inputs.grade?.value || '',
 				surface: inputs.surface?.value || '',
 				pressure: inputs.pressure?.value || '',
+				drive: inputs.drive?.value || '',
 				roll: inputs.roll?.value || '',
 				cut: inputs.cut?.value || '',
 				fact: inputs.fact?.value || '',
