@@ -906,13 +906,17 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			const priceCell = s.price != null ? `<strong>${fmt(s.price)}</strong>` : '<span class="pt__on-request">по запросу</span>';
 			/* Размер: чистое значение без «мм» — единица очевидна из контекста колонки. */
 			const sizeText = escapeHtml(String(s.size));
-			/* Для деталей трубопровода поле dlina хранит толщину стенки
-			   в виде «х6», «x5», «х3,5» — префикс «х/x» убираем, чтобы
-			   в колонке было чистое число (единица «мм» уже в заголовке). */
-			const dlinaRaw = s.dlina || '';
+			/* Колонка «Стенка» для деталей трубопровода. У переходов стенка
+			   лежит в поле dlina («х6»), у отводов/тройников — зашита в
+			   название («57x4 ГОСТ …»); skuWall() достаёт её в обоих случаях
+			   и возвращает чистое число (единица «мм» уже в заголовке).
+			   У подтипов без стенки (лестницы, фланцы, наконечники) → «—».
+			   Раньше ячейка читала только dlina: отводы показывали «—», а
+			   стенка Ø57×3/×4/×5 (цена ±20-30%) была видна лишь в названии.
+			   Для остальных хабов колонка = длина хлыста из dlina. */
 			const dlinaClean = IS_WALL_THICKNESS
-				? String(dlinaRaw).replace(/^[хx×]\s*/i, '')
-				: String(dlinaRaw);
+				? (() => { const w = skuWall(s); return w != null ? String(w).replace('.', ',') : ''; })()
+				: String(s.dlina || '');
 			const dlinaTd = HAS_DLINA
 				? `<td class="pt__cell-num pt__cell-muted pt__cell-dlina" data-label="${LENGTH_LABEL}">${escapeHtml(dlinaClean || '—')}</td>`
 				: '';
@@ -943,6 +947,12 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				? `<span class="pt-tile__article">арт. ${escapeHtml(article)}</span>`
 				: '';
 			const sizeSuffix = String(s.size).startsWith('Ø') ? '' : ' мм';
+			/* Стенка отдельным чипом — у деталей трубопровода она различает
+			   позиции одного диаметра (Ø57×3 vs Ø57×5), цена ±20-30%. */
+			const wallTile = IS_WALL_THICKNESS ? skuWall(s) : null;
+			const wallChip = wallTile != null
+				? `<span class="pt-tile__chip pt-tile__chip--spec">стенка ${String(wallTile).replace('.', ',')} мм</span>`
+				: '';
 			const priceMain = s.price != null
 				? `<span class="pt-tile__price-num">${fmt(s.price)}</span><span class="pt-tile__price-unit">₽/${escapeHtml(s.unit || 'т')}</span>`
 				: `<span class="pt-tile__on-request">по запросу</span>`;
@@ -966,6 +976,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 				<div class="pt-tile__chips">
 					<span class="pt-tile__chip pt-tile__chip--grade">${escapeHtml(s.grade || '—')}</span>
 					<span class="pt-tile__chip pt-tile__chip--size">${escapeHtml(s.size)}${sizeSuffix}</span>
+					${wallChip}
 					${surfaceChip}
 					${specChips}
 				</div>
