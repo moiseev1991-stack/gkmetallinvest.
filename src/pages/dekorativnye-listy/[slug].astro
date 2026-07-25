@@ -2,8 +2,13 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Button from '../../components/ui/Button.astro';
-import { dekorListy, DEKOR_SURFACE_LABELS } from '../../data/dekor-listy';
-import { contacts } from '../../data/site';
+import {
+	dekorListy,
+	DEKOR_SURFACE_LABELS,
+	DEKOR_SURFACE_META,
+	DEKOR_GROUP_LABELS,
+} from '../../data/dekor-listy';
+import { contacts, siteUrl } from '../../data/site';
 
 export function getStaticPaths() {
 	return dekorListy.map((sku) => ({
@@ -13,15 +18,87 @@ export function getStaticPaths() {
 }
 
 const { sku } = Astro.props;
+const meta = DEKOR_SURFACE_META[sku.surface];
 const surfaceLabel = DEKOR_SURFACE_LABELS[sku.surface] ?? sku.surface;
-/* Формат листа (ширина×длина) вытаскиваем из названия — «0,8×1250×2500». */
-const formatMatch = sku.name.match(/[\d,]+×(\d+×\d+)/);
-const format = formatMatch ? formatMatch[1].replace(/×/g, '×') : null;
+const groupLabel = DEKOR_GROUP_LABELS[sku.sub ?? ''] ?? null;
+const thickness = sku.size.replace('.', ',');
+const formatHuman = sku.format.replace('x', '×');
+const coverImg = '/img/catalog/dekorativnye-listy/cover.webp';
+
+/* Варианты той же поверхности — другие толщины/форматы (как «другие размеры»). */
+const sameSurface = dekorListy.filter((s) => s.surface === sku.surface && s.slug !== sku.slug);
+
+/* Другие поверхности — по одной репрезентативной позиции на поверхность. */
+const otherSurfaces: typeof dekorListy = [];
+const seen = new Set([sku.surface]);
+for (const s of dekorListy) {
+	if (seen.has(s.surface)) continue;
+	seen.add(s.surface);
+	otherSurfaces.push(s);
+}
+
+const specs: Array<{ k: string; v: string }> = [
+	{ k: 'Марка стали', v: sku.grade ?? '—' },
+	{ k: 'Поверхность', v: surfaceLabel },
+	...(groupLabel ? [{ k: 'Группа фактуры', v: groupLabel }] : []),
+	{ k: 'Цвет', v: sku.color },
+	{ k: 'Толщина', v: `${thickness} мм` },
+	{ k: 'Формат листа', v: `${formatHuman} мм` },
+	{ k: 'Защитная плёнка', v: 'да (для перевозки и монтажа без царапин)' },
+];
+
+const faqItems = [
+	{
+		q: `Что за поверхность ${sku.surface}?`,
+		a: `${meta.desc}`,
+	},
+	{
+		q: 'Есть ли защитная плёнка и как хранить лист?',
+		a: 'Декоративные листы поставляются с защитной ПВХ-плёнкой — она предохраняет поверхность при перевозке, резке и монтаже. Плёнку снимают после установки. Хранить листы следует в сухом помещении, вертикально или на прокладках, без абразивного контакта.',
+	},
+	{
+		q: 'Можно ли заказать другой формат или толщину?',
+		a: 'Да. Помимо стандартных форматов доступны раскрой в размер и другие толщины под проект. Оставьте заявку — менеджер подтвердит наличие, срок и цену конкретной позиции.',
+	},
+];
+
+const seoTitle = `${sku.name} — купить в Нижнем Новгороде`;
+const seoDescription = `Декоративный нержавеющий лист ${surfaceLabel}, марка ${sku.grade}, толщина ${thickness} мм, формат ${formatHuman} мм. ${meta.short} Наличие и цену уточняйте у менеджера.`;
+
+const productJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Product',
+	name: sku.name,
+	category: 'Декоративные листы из нержавеющей стали',
+	material: sku.grade,
+	image: [`${siteUrl}${coverImg}`],
+	description: seoDescription,
+	brand: { '@type': 'Brand', name: 'ГК Металлинвест' },
+	offers: {
+		'@type': 'Offer',
+		priceCurrency: 'RUB',
+		availability: 'https://schema.org/InStock',
+		url: `${siteUrl}/dekorativnye-listy/${sku.slug}/`,
+		seller: { '@type': 'Organization', name: 'ГК Металлинвест' },
+	},
+};
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faqItems.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
 ---
 
 <BaseLayout
-	title={`${sku.name} — купить в Нижнем Новгороде`}
-	description={`Декоративный нержавеющий лист ${surfaceLabel}, марка ${sku.grade}, толщина ${sku.size.replace('.', ',')} мм. Наличие и цену уточняйте у менеджера.`}
+	title={seoTitle}
+	description={seoDescription}
+	image={coverImg}
+	type="product"
+	jsonLd={[productJsonLd, faqJsonLd]}
 	noindex
 >
 	<div class="container dekor-detail">
@@ -33,69 +110,312 @@ const format = formatMatch ? formatMatch[1].replace(/×/g, '×') : null;
 			]}
 		/>
 
-		<h1>{sku.name}</h1>
+		<header class="dp-head">
+			<figure class="dp-media">
+				<img
+					src={coverImg}
+					alt={sku.name}
+					width="640"
+					height="480"
+					loading="eager"
+					decoding="async"
+					onerror="this.style.display='none'; this.parentElement.classList.add('dp-media--missing');"
+				/>
+				<span class="dp-media__swatch" style={`background:${meta.swatch}`} aria-hidden="true">
+					<span class="dp-media__swatch-label">{sku.surface}</span>
+				</span>
+			</figure>
 
-		<dl class="dekor-specs">
-			<div><dt>Марка</dt><dd>{sku.grade}</dd></div>
-			<div><dt>Поверхность</dt><dd>{surfaceLabel}</dd></div>
-			<div><dt>Толщина</dt><dd>{sku.size.replace('.', ',')} мм</dd></div>
-			{format && <div><dt>Формат</dt><dd>{format} мм</dd></div>}
-		</dl>
+			<div class="dp-title-wrap">
+				{groupLabel && <span class="dp-eyebrow">{groupLabel}</span>}
+				<h1 class="dp-title">{sku.name}</h1>
 
-		<aside class="dekor-cta">
-			<div class="dekor-cta__price">Цена по запросу</div>
-			<p class="dekor-cta__text">
-				Раздел в наполнении. Оставьте заявку — менеджер пришлёт актуальную цену и наличие
-				в течение 30 минут.
-			</p>
-			<div class="dekor-cta__actions">
-				<Button href="/zapros-kp/#lead-form" variant="primary">Запросить цену</Button>
-				<a class="dekor-cta__phone" href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+				<p class="dp-tags">
+					<span class="tag tag--accent">{surfaceLabel}</span>
+					{sku.grade && <span class="tag">{sku.grade}</span>}
+					<span class="tag">{sku.color}</span>
+				</p>
+
+				<p class="dp-lead">{meta.desc}</p>
+
+				<dl class="dp-keys">
+					<div class="dp-key"><dt>Толщина</dt><dd>{thickness} мм</dd></div>
+					<div class="dp-key"><dt>Формат</dt><dd>{formatHuman} мм</dd></div>
+					<div class="dp-key"><dt>Марка</dt><dd>{sku.grade}</dd></div>
+				</dl>
 			</div>
-		</aside>
+
+			<aside class="dp-cta">
+				<div class="dp-cta__price">Цена по запросу</div>
+				<p class="dp-cta__text">
+					Раздел в наполнении. Оставьте заявку — менеджер пришлёт актуальную цену и наличие
+					в течение 30 минут.
+				</p>
+				<div class="dp-cta__actions">
+					<Button href="/zapros-kp/#lead-form" variant="primary">Запросить цену</Button>
+					<a class="dp-cta__phone" href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+				</div>
+			</aside>
+		</header>
+
+		<div class="dp-grid">
+			<section class="dp-section">
+				<h2>Характеристики</h2>
+				<dl class="dp-specs">
+					{specs.map((row) => (
+						<div><dt>{row.k}</dt><dd>{row.v}</dd></div>
+					))}
+				</dl>
+			</section>
+
+			<section class="dp-section">
+				<h2>Применение</h2>
+				<ul class="dp-apps">
+					{meta.applications.map((a) => (
+						<li>{a}</li>
+					))}
+				</ul>
+				<p class="dp-apps__note">
+					Декоративная нержавейка {sku.grade} с фактурой «{meta.ru.toLowerCase()}» устойчива к
+					коррозии и истиранию, не требует окраски и сохраняет вид годами.
+				</p>
+			</section>
+		</div>
+
+		{sameSurface.length > 0 && (
+			<section class="dp-section">
+				<h2>Другие размеры — {sku.surface} ({meta.ru.toLowerCase()})</h2>
+				<ul class="dp-chips">
+					<li><span class="dp-chip dp-chip--active">{thickness} мм · {formatHuman}</span></li>
+					{sameSurface.map((s) => (
+						<li>
+							<a class="dp-chip" href={`/dekorativnye-listy/${s.slug}/`}>
+								{s.size.replace('.', ',')} мм · {s.format.replace('x', '×')}{s.grade !== sku.grade ? ` · ${s.grade}` : ''}
+							</a>
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
+
+		{otherSurfaces.length > 0 && (
+			<section class="dp-section">
+				<h2>Другие поверхности декора</h2>
+				<div class="dp-related">
+					{otherSurfaces.slice(0, 6).map((s) => {
+						const m = DEKOR_SURFACE_META[s.surface];
+						return (
+							<a class="dp-related__card" href={`/dekorativnye-listy/${s.slug}/`}>
+								<span class="dp-related__swatch" style={`background:${m.swatch}`} aria-hidden="true"></span>
+								<span class="dp-related__body">
+									<span class="dp-related__code">{s.surface}</span>
+									<span class="dp-related__ru">{m.ru}</span>
+									<span class="dp-related__price">по запросу</span>
+								</span>
+							</a>
+						);
+					})}
+				</div>
+				<p class="dp-related__back"><a href="/dekorativnye-listy/">← Все декоративные листы</a></p>
+			</section>
+		)}
+
+		<section class="dp-section dp-faq">
+			<h2>Частые вопросы</h2>
+			<div class="dp-faq__list">
+				{faqItems.map((f) => (
+					<details class="dp-faq__item">
+						<summary class="dp-faq__q">
+							<span>{f.q}</span>
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+								<path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</summary>
+						<p class="dp-faq__a">{f.a}</p>
+					</details>
+				))}
+			</div>
+		</section>
 	</div>
 </BaseLayout>
 
 <style>
-	.dekor-detail { padding-block: var(--space-8); max-width: 760px; }
-	.dekor-detail h1 { margin: var(--space-4) 0 var(--space-6); font-size: 1.5rem; }
-	.dekor-specs {
+	.dekor-detail { padding-block: var(--space-8); max-width: 1080px; }
+
+	/* Hero */
+	.dp-head {
+		display: grid;
+		grid-template-columns: minmax(240px, 340px) 1fr minmax(240px, 300px);
+		gap: var(--space-6);
+		align-items: start;
+		margin: var(--space-4) 0 var(--space-8);
+	}
+	.dp-media {
+		position: relative;
+		margin: 0;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		background: var(--color-surface);
+		aspect-ratio: 4 / 3;
+	}
+	.dp-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+	.dp-media--missing { background: var(--color-primary-50); }
+	.dp-media__swatch {
+		position: absolute;
+		left: var(--space-3);
+		bottom: var(--space-3);
+		width: 72px;
+		height: 72px;
+		border-radius: var(--radius-md, 8px);
+		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.25);
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+	}
+	.dp-media__swatch-label {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		font-weight: 700;
+		color: #fff;
+		background: rgba(0, 0, 0, 0.55);
+		padding: 1px 5px;
+		border-radius: 4px;
+		margin-bottom: 4px;
+	}
+	.dp-title-wrap { min-width: 0; }
+	.dp-eyebrow {
+		display: inline-block;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-primary-600);
+		font-weight: 700;
+		margin-bottom: var(--space-2);
+	}
+	.dp-title { margin: 0 0 var(--space-3); font-size: 1.4rem; line-height: 1.25; }
+	.dp-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 var(--space-4); }
+	.tag {
+		display: inline-block;
+		font-size: 0.8rem;
+		padding: 0.2rem 0.6rem;
+		border-radius: 999px;
+		background: var(--color-bg-muted, #eef1f4);
+		color: var(--color-muted);
+	}
+	.tag--accent { background: var(--color-primary-50); color: var(--color-primary-600); font-weight: 600; }
+	.dp-lead { margin: 0 0 var(--space-4); color: var(--color-text); max-width: 60ch; line-height: 1.5; }
+	.dp-keys { display: flex; flex-wrap: wrap; gap: var(--space-5); margin: 0; }
+	.dp-key dt { font-size: 0.78rem; color: var(--color-muted); margin: 0; }
+	.dp-key dd { margin: 0.1rem 0 0; font-weight: 700; color: var(--color-text); }
+
+	.dp-cta {
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+	}
+	.dp-cta__price { font-size: 1.25rem; font-weight: 800; color: var(--color-primary-600); margin-bottom: var(--space-2); }
+	.dp-cta__text { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: 0.9rem; }
+	.dp-cta__actions { display: flex; flex-direction: column; gap: var(--space-3); align-items: stretch; }
+	.dp-cta__phone { font-weight: 700; color: var(--color-primary-600); text-decoration: none; text-align: center; }
+	.dp-cta__phone:hover { text-decoration: underline; }
+
+	/* Sections */
+	.dp-section { margin-bottom: var(--space-8); }
+	.dp-section h2 { font-size: 1.15rem; margin: 0 0 var(--space-4); }
+	.dp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+
+	.dp-specs {
 		display: grid;
 		gap: 0;
-		margin: 0 0 var(--space-8);
+		margin: 0;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
 		overflow: hidden;
 	}
-	.dekor-specs > div {
+	.dp-specs > div {
 		display: grid;
-		grid-template-columns: 200px 1fr;
+		grid-template-columns: 180px 1fr;
 		gap: var(--space-4);
 		padding: var(--space-3) var(--space-4);
 		border-bottom: 1px solid var(--color-border);
 	}
-	.dekor-specs > div:last-child { border-bottom: none; }
-	.dekor-specs dt { margin: 0; color: var(--color-muted); }
-	.dekor-specs dd { margin: 0; font-weight: 600; color: var(--color-text); }
-	.dekor-cta {
-		background: var(--color-primary-50);
-		border: 1px solid var(--color-primary-100);
-		border-radius: var(--radius-lg);
-		padding: var(--space-6);
+	.dp-specs > div:last-child { border-bottom: none; }
+	.dp-specs dt { margin: 0; color: var(--color-muted); }
+	.dp-specs dd { margin: 0; font-weight: 600; color: var(--color-text); }
+
+	.dp-apps { margin: 0 0 var(--space-3); padding-left: 1.1rem; color: var(--color-text); line-height: 1.6; }
+	.dp-apps li { margin-bottom: 0.25rem; }
+	.dp-apps__note { margin: 0; color: var(--color-muted); font-size: 0.9rem; max-width: 60ch; }
+
+	.dp-chips { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+	.dp-chip {
+		display: inline-block;
+		padding: 0.35rem 0.7rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		font-size: 0.85rem;
+		color: var(--color-text);
+		text-decoration: none;
+		background: var(--color-surface);
 	}
-	.dekor-cta__price {
-		font-size: 1.3rem;
-		font-weight: 800;
-		color: var(--color-primary-600);
-		margin-bottom: var(--space-2);
-	}
-	.dekor-cta__text { margin: 0 0 var(--space-4); color: var(--color-muted); max-width: 60ch; }
-	.dekor-cta__actions {
+	.dp-chip:hover { border-color: var(--color-primary-300, var(--color-primary-600)); color: var(--color-primary-600); }
+	.dp-chip--active { background: var(--color-primary-600); color: #fff; border-color: var(--color-primary-600); }
+
+	.dp-related { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-4); }
+	.dp-related__card {
 		display: flex;
-		flex-wrap: wrap;
+		gap: var(--space-3);
+		align-items: center;
+		padding: var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		text-decoration: none;
+		transition: box-shadow 0.15s ease, transform 0.15s ease;
+	}
+	.dp-related__card:hover { box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08); transform: translateY(-1px); }
+	.dp-related__swatch {
+		flex: 0 0 auto;
+		width: 48px;
+		height: 48px;
+		border-radius: var(--radius-md, 8px);
+		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+	}
+	.dp-related__body { display: flex; flex-direction: column; min-width: 0; }
+	.dp-related__code { font-family: var(--font-mono); font-weight: 700; color: var(--color-text); }
+	.dp-related__ru { font-size: 0.85rem; color: var(--color-text); }
+	.dp-related__price { font-size: 0.8rem; color: var(--color-muted); }
+	.dp-related__back { margin: var(--space-4) 0 0; }
+	.dp-related__back a { color: var(--color-primary-600); text-decoration: none; }
+
+	.dp-faq__list { display: grid; gap: 0; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+	.dp-faq__item { border-bottom: 1px solid var(--color-border); }
+	.dp-faq__item:last-child { border-bottom: none; }
+	.dp-faq__q {
+		display: flex;
+		justify-content: space-between;
 		align-items: center;
 		gap: var(--space-3);
+		padding: var(--space-4);
+		cursor: pointer;
+		font-weight: 600;
+		color: var(--color-text);
+		list-style: none;
 	}
-	.dekor-cta__phone { font-weight: 700; color: var(--color-primary-600); text-decoration: none; }
-	.dekor-cta__phone:hover { text-decoration: underline; }
+	.dp-faq__q::-webkit-details-marker { display: none; }
+	.dp-faq__item[open] .dp-faq__q svg { transform: rotate(180deg); }
+	.dp-faq__q svg { transition: transform 0.15s ease; flex: 0 0 auto; color: var(--color-muted); }
+	.dp-faq__a { margin: 0; padding: 0 var(--space-4) var(--space-4); color: var(--color-muted); line-height: 1.55; }
+
+	@media (max-width: 960px) {
+		.dp-head { grid-template-columns: minmax(200px, 280px) 1fr; }
+		.dp-cta { grid-column: 1 / -1; }
+	}
+	@media (max-width: 720px) {
+		.dp-head { grid-template-columns: 1fr; }
+		.dp-grid { grid-template-columns: 1fr; }
+		.dp-specs > div { grid-template-columns: 140px 1fr; }
+	}
 </style>

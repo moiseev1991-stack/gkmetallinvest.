@@ -63,6 +63,9 @@ function hasFilmSku(s: any): boolean {
    просто «ширина»). Поле size в данных хранит только толщину, поэтому
    нужна доп. разбор названия. Запрос клиента от 24.06.2026. */
 function extractCutSku(s: any): string | null {
+	/* Декор несёт формат явным полем — не зависим от разбора названия
+	   (там разделитель × U+00D7, который regex ниже не ловит). */
+	if (s?.format) return String(s.format).replace(/[×хХ]/g, 'x');
 	const raw = String(s?.name ?? '').replace(/[хХX]/g, 'x');
 	const m = raw.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)(?:x(\d+(?:[.,]\d+)?))?/);
 	if (!m) return null;
@@ -71,7 +74,9 @@ function extractCutSku(s: any): string | null {
 function cutLabel(key: string): string {
 	return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
 }
-const CUT_HUBS = new Set(['list', 'rulon']);
+const CUT_HUBS = new Set(['list', 'rulon', 'dekorativnye-listy']);
+/* Для декора поле «Крой» по смыслу — «Формат листа». */
+const cutFieldLabel = hub === 'dekorativnye-listy' ? 'Формат' : 'Крой';
 
 const SUB_LABELS: Record<string, string> = {
 	nikelesod: 'Никелесодержащий',
@@ -118,6 +123,11 @@ const SUB_LABELS: Record<string, string> = {
 	'ugolok-neravnopolochnyy': 'Уголок неравнополочный',
 	'shveller-gnutyy': 'Швеллер гнутый',
 	krepyozh: 'Крепёж',
+	/* Группы фактуры декоративных листов — «Тип» фильтра. */
+	tisnenie: 'Тиснение',
+	zerkalo: 'Зеркало',
+	satin: 'Сатин / шлифовка',
+	pvd: 'Цветное PVD',
 };
 
 function uniq<T>(arr: T[]): T[] {
@@ -310,7 +320,7 @@ const updatedAtDisplay = (() => {
 
 /* Единица очевидно в мм — выносим в заголовок колонки, чтобы числа в ячейках
    оставались чистыми (0,4 × 1000 а не 0,4 × 1000 мм + nbsp). */
-const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : 'Размер, мм';
+const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : measure === 'толщина' ? 'Толщина, мм' : 'Размер, мм';
 ---
 
 <section class="pt" data-hub={hub}>
@@ -458,9 +468,9 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			}
 			{
 				cutCounts.length > 1 && (
-					<label class="pt__field pt__field--select" data-pt-label="Крой">
-						<span class="pt__label">Крой</span>
-						<select id={`${hub}-cut`} data-pt-cut aria-label="Крой">
+					<label class="pt__field pt__field--select" data-pt-label={cutFieldLabel}>
+						<span class="pt__label">{cutFieldLabel}</span>
+						<select id={`${hub}-cut`} data-pt-cut aria-label={cutFieldLabel}>
 							<option value="">все</option>
 							{cutCounts.map((c) => (
 								<option value={c.key}>{c.label}</option>
@@ -644,7 +654,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 	<p class="pt__empty" data-pt-empty hidden>Ничего не найдено по фильтрам — попробуйте сбросить.</p>
 </section>
 
-<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices, IS_WALL_THICKNESS: isWallThickness, LENGTH_LABEL: lengthColLabel }}>
+<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices, IS_WALL_THICKNESS: isWallThickness, LENGTH_LABEL: lengthColLabel, CUT_FIELD_LABEL: cutFieldLabel }}>
 	const root = document.querySelector(`.pt[data-hub="${hub}"]`);
 	if (root) {
 		const fmt = (p) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
@@ -686,8 +696,10 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			return surf === 'BA' || surf === '4N';
 		}
 
-		/* Зеркало extractCutSku из frontmatter — толщина×ширина[×длина] → ширина[×длина]. */
+		/* Зеркало extractCutSku из frontmatter — толщина×ширина[×длина] → ширина[×длина].
+		   Декор несёт формат явным полем s.format. */
 		function extractCut(s) {
+			if (s?.format) return String(s.format).replace(/[×хХ]/g, 'x');
 			const raw = String(s?.name ?? '').replace(/[хХX]/g, 'x');
 			const m = raw.match(/(\d+(?:[.,]\d+)?)x(\d+(?:[.,]\d+)?)(?:x(\d+(?:[.,]\d+)?))?/);
 			if (!m) return null;
@@ -1085,7 +1097,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : '�
 			if (f.pressure) chips.push({ key: 'pressure', label: `Ру ${f.pressure}` });
 			if (f.drive) chips.push({ key: 'drive', label: `Привод: ${f.drive.toLowerCase()}` });
 			if (f.roll) chips.push({ key: 'roll', label: `Прокат: ${f.roll}` });
-			if (f.cut) chips.push({ key: 'cut', label: `Крой: ${cutLabel(f.cut)}` });
+			if (f.cut) chips.push({ key: 'cut', label: `${CUT_FIELD_LABEL}: ${cutLabel(f.cut)}` });
 			if (f.fact) chips.push({ key: 'fact', label: `Склад: ${f.fact}` });
 			if (f.wall) chips.push({ key: 'wall', label: `Стенка: ${String(f.wall).replace('.', ',')} мм` });
 			if (f.inStock) chips.push({ key: 'inStock', label: 'В наличии' });
