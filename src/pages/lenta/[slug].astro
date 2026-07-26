@@ -1,0 +1,21 @@
+---
+import ProductDetail from '../../components/ProductDetail.astro';
+import { getHubSkus } from '../../data/pricelist-helpers';
+
+export async function getStaticPaths() {
+	const skus = getHubSkus('lenta');
+	return skus.map((sku) => ({
+		params: { slug: sku.slug },
+		props: { sku },
+	}));
+}
+
+const { sku } = Astro.props as any;
+---
+
+<ProductDetail
+	sku={sku}
+	hubLabel="Лента нержавеющая"
+	hubHref="/lenta/"
+	measureLabel="толщина"
+/>

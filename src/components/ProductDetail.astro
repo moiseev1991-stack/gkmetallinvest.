@@ -324,9 +324,9 @@ if (sku.unit === 'шт' && (sku.sub === 'klapan' || sku.sub === 'zadvizhka')) {
 if (sku.alloy && sku.alloy.toLowerCase() !== subLabel.toLowerCase()) {
 	detailRows.push({ label: 'Тип сплава', value: sku.alloy });
 }
-if (sku.hub === 'polosa' && sku.width != null && sku.thickness != null) {
-	/* У полосы две существенные размерности — показываем раздельно, чтобы
-	   не было лжи «Толщина 20 мм» там, где 20 — это ширина. */
+if ((sku.hub === 'polosa' || sku.hub === 'lenta') && sku.width != null && sku.thickness != null) {
+	/* У полосы и ленты две существенные размерности — показываем раздельно,
+	   чтобы не было лжи «Толщина 20 мм» там, где 20 — это ширина. */
 	detailRows.push({ label: 'Ширина', value: `${sku.width} мм` });
 	detailRows.push({ label: 'Толщина', value: `${sku.thickness} мм` });
 } else if (detailDims && detailDims.rows.length) {

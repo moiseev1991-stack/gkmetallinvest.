@@ -35,7 +35,7 @@ export const navGroups: NavGroup[] = [
 			{ title: 'Лист нержавеющий', href: '/list/', meta: '0,4–120 мм · AISI 304/321/430' },
 			{ title: 'Рулон нержавеющий', href: '/rulon/', meta: '0,4–8 мм · ширина 500–1500' },
 			{ title: 'Декоративные листы', href: '/dekorativnye-listy/', meta: 'зеркало · 8K · DECO' },
-			{ title: 'Лента нержавеющая', href: '/lenta/', meta: 'штрипс, по запросу', empty: true },
+			{ title: 'Лента нержавеющая', href: '/lenta/', meta: 'штрипс · 0,15–0,8 мм · 200/400 мм' },
 			{ title: 'Фольга нержавеющая', href: '/folga/', meta: 'тонкая, под заказ', empty: true },
 		],
 	},

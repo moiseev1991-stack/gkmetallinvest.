@@ -1,5 +1,6 @@
 import pricelist from './pricelist.json';
 import { dekorListy } from './dekor-listy';
+import { lentaSkus } from './lenta';
 
 /* Эвристика «рулон-стайл»: в названии шаблон «толщина × ширина» без третьего
    числа (длины) — поставщик отгружает позицию мотком/рулоном, а не как лист
@@ -267,6 +268,11 @@ export function getHubSkus(hub: string): any[] {
 	   своя подкатегория с поверхностями DK-кодов. */
 	if (hub === 'dekorativnye-listy') {
 		return dekorListy as any[];
+	}
+	/* Лента (штрипс х/к) — отдельный модуль, собранный из импорта двух
+	   каталогов, не из pricelist.json. См. src/data/lenta.ts. */
+	if (hub === 'lenta') {
+		return lentaSkus as any[];
 	}
 	const raw = ((pricelist as any).hubs?.[hub] ?? []) as any[];
 	if (hub === 'list') {

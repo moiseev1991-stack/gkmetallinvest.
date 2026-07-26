@@ -13,7 +13,8 @@ interface Props {
 		| 'polosa'
 		| 'ugolok-shveller'
 		| 'rulon'
-		| 'dekorativnye-listy';
+		| 'dekorativnye-listy'
+		| 'lenta';
 	title?: string;
 	measure?: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
 	/** Алиасы grade для предварительной фильтрации — используется на марочных
@@ -44,6 +45,9 @@ const SURFACE_LABELS: Record<string, string> = {
 	'BA': 'BA (зеркало, с плёнкой)',
 	'4N': '4N (шлифовка, с плёнкой)',
 	'No1': 'No1 (горячекатаный)',
+	/* Поверхности ленты (штрипса): 2BA — светлый отжиг, PE — защитная плёнка. */
+	'2BA': '2BA (светлый отжиг)',
+	'PE': 'PE (с защитной плёнкой)',
 	/* Декоративные поверхности DK-кодов — «код / русское название».
 	   Источник маппинга — data/dekor-listy.ts (ТЗ SEO, п. 1.2). */
 	...DEKOR_SURFACE_LABELS,
@@ -74,9 +78,11 @@ function extractCutSku(s: any): string | null {
 function cutLabel(key: string): string {
 	return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
 }
-const CUT_HUBS = new Set(['list', 'rulon', 'dekorativnye-listy']);
-/* Для декора поле «Крой» по смыслу — «Формат листа». */
-const cutFieldLabel = hub === 'dekorativnye-listy' ? 'Формат' : 'Крой';
+const CUT_HUBS = new Set(['list', 'rulon', 'dekorativnye-listy', 'lenta']);
+/* Для декора поле «Крой» по смыслу — «Формат листа», для ленты — «Ширина»
+   (у ленты в поле format лежит только ширина 200/400). */
+const cutFieldLabel =
+	hub === 'dekorativnye-listy' ? 'Формат' : hub === 'lenta' ? 'Ширина' : 'Крой';
 
 const SUB_LABELS: Record<string, string> = {
 	nikelesod: 'Никелесодержащий',
