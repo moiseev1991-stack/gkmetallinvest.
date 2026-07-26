@@ -55,7 +55,7 @@ export const catalogCategories: Array<{
 	{ href: '/rulon/', title: 'Рулон нержавеющий', description: 'Рулонный прокат AISI 304, 316L, 321. Толщины 0,4–8 мм.', image: '/img/catalog/rulon.jpg' },
 	{ href: '/detali-truboprovoda/', title: 'Детали трубопровода', description: 'Фланцы, отводы, переходы, тройники, задвижки, клапаны.', image: '/img/catalog/detali-truboprovoda.jpg' },
 	{ href: '/provoloka/', title: 'Проволока нержавеющая', description: 'Проволока AISI 304, 316L, 12Х18Н10Т, Ø 0,1–6 мм.', image: '/img/catalog/provoloka.jpg' },
-	{ href: '/lenta/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: '/img/catalog/lenta.jpg' },
+	{ href: '/lenta-nerzhaveyushchaya/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: '/img/catalog/lenta.jpg' },
 	{ href: '/folga/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: '/img/catalog/folga.avif' },
 	{ href: '/dekorativnye-listy/', title: 'Декоративные листы', description: 'BA, 4N, шлифовка, ткань — для интерьера и фасадов.', image: '/img/catalog/dekorativnye.webp' },
 ];
