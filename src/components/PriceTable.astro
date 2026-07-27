@@ -21,11 +21,21 @@ interface Props {
 	 *  посадочных (/list/aisi-304/), чтобы в таблице сразу были только позиции
 	 *  нужной марки. Сравнение case-insensitive по substring matching. */
 	initialGrade?: string[];
+	/** Фильтр по происхождению (лента): показать только импорт или только РФ. */
+	origin?: 'import' | 'rf';
+	/** Неймспейс DOM/JS для нескольких инстансов одного hub на странице
+	 *  (переключатель Импорт/РФ у ленты). Пусто — поведение как раньше. */
+	variant?: string;
 }
 
-const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade } = Astro.props;
+const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade, origin, variant } = Astro.props;
 
-const allSkusRaw: any[] = getHubSkus(hub);
+/* uid неймспейсит id селектов/инпутов, чтобы два инстанса ленты на одной
+   странице не давали дублирующихся id. */
+const uid = variant ? `${hub}-${variant}` : hub;
+
+const allSkusRaw0: any[] = getHubSkus(hub);
+const allSkusRaw = origin ? allSkusRaw0.filter((s) => s.origin === origin) : allSkusRaw0;
 const allSkus = initialGrade && initialGrade.length > 0
 	? allSkusRaw.filter((s) => {
 			const g = String(s.grade || '').toLowerCase();
@@ -53,10 +63,26 @@ const SURFACE_LABELS: Record<string, string> = {
 	...DEKOR_SURFACE_LABELS,
 };
 
+/* Подписи поверхностей ленты (штрипса) отличаются от листа: у импорта родные
+   коды AISI/EN, у РФ — русские термины. BA у ленты — просто зеркальная (плёнка
+   выведена в отдельный флаг film, бывш. PE). Клиент 2026-07-27. */
+const LENTA_SURFACE_LABELS: Record<string, string> = {
+	'2B': '2B (полуматовая)',
+	'BA': 'BA (зеркальная)',
+	'4N': '4N (шлифованная)',
+	'Обычная': 'Обычная (матовая)',
+	'Блестящая': 'Блестящая (зеркальная)',
+};
+
+const surfaceLabels = hub === 'lenta' ? LENTA_SURFACE_LABELS : SURFACE_LABELS;
+
 /* «Плёнка» определяется эвристикой: явный маркер +PI в названии (точный сигнал
    от поставщика) ИЛИ surface ∈ {BA, 4N} — отраслевой дефолт для холоднокатаного
-   зеркала/шлифовки. См. обсуждение с клиентом 2026-06-24. */
+   зеркала/шлифовки. У ленты плёнка — только явный флаг film (бывш. PE);
+   BA/4N ленты плёнкой не считаем. Клиент 2026-07-27. */
 function hasFilmSku(s: any): boolean {
+	if (s?.film) return true;
+	if (hub === 'lenta') return false;
 	if (/\+PI\b/i.test(String(s?.name ?? ''))) return true;
 	const surf = String(s?.surface ?? '');
 	return surf === 'BA' || surf === '4N';
@@ -329,7 +355,7 @@ const updatedAtDisplay = (() => {
 const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : measure === 'толщина' ? 'Толщина, мм' : 'Размер, мм';
 ---
 
-<section class="pt" data-hub={hub}>
+<section class="pt" data-hub={hub} data-variant={variant}>
 	<header class="pt__head">
 		<div>
 			<h2 class="pt__title">{title}</h2>
@@ -385,7 +411,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 						<path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
 					</svg>
 					<input
-						id={`${hub}-q`}
+						id={`${uid}-q`}
 						type="search"
 						placeholder="по марке, размеру, названию"
 						data-pt-q
@@ -398,7 +424,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				subs.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Тип">
 						<span class="pt__label">Тип</span>
-						<select id={`${hub}-sub`} data-pt-sub aria-label="Тип">
+						<select id={`${uid}-sub`} data-pt-sub aria-label="Тип">
 							<option value="">все</option>
 							{subs.map((s) => (
 								<option value={s}>{SUB_LABELS[s] ?? s}</option>
@@ -411,7 +437,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				grades.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Марка">
 						<span class="pt__label">Марка</span>
-						<select id={`${hub}-grade`} data-pt-grade aria-label="Марка">
+						<select id={`${uid}-grade`} data-pt-grade aria-label="Марка">
 							<option value="">все</option>
 							{grades.map((g) => (
 								<option value={g}>{g}</option>
@@ -424,10 +450,10 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				surfaces.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Поверхность">
 						<span class="pt__label">Поверхность</span>
-						<select id={`${hub}-surface`} data-pt-surface aria-label="Поверхность">
+						<select id={`${uid}-surface`} data-pt-surface aria-label="Поверхность">
 							<option value="">все</option>
 							{surfaces.map((s) => (
-								<option value={s}>{SURFACE_LABELS[s as string] ?? s}</option>
+								<option value={s}>{surfaceLabels[s as string] ?? s}</option>
 							))}
 						</select>
 					</label>
@@ -437,7 +463,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				pressureCounts.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Давление">
 						<span class="pt__label">Ру, атм</span>
-						<select id={`${hub}-pressure`} data-pt-pressure aria-label="Давление, Ру">
+						<select id={`${uid}-pressure`} data-pt-pressure aria-label="Давление, Ру">
 							<option value="">все</option>
 							{pressureCounts.map((p) => (
 								<option value={p.key}>Ру {p.key}</option>
@@ -450,7 +476,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				driveCounts.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Привод">
 						<span class="pt__label">Привод</span>
-						<select id={`${hub}-drive`} data-pt-drive aria-label="Тип привода">
+						<select id={`${uid}-drive`} data-pt-drive aria-label="Тип привода">
 							<option value="">все</option>
 							{driveCounts.map((d) => (
 								<option value={d.key}>{d.key}</option>
@@ -463,7 +489,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				rolls.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Прокат">
 						<span class="pt__label">Прокат</span>
-						<select id={`${hub}-roll`} data-pt-roll aria-label="Прокат">
+						<select id={`${uid}-roll`} data-pt-roll aria-label="Прокат">
 							<option value="">все</option>
 							{rolls.map((r) => (
 								<option value={r}>{r}</option>
@@ -476,7 +502,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				cutCounts.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label={cutFieldLabel}>
 						<span class="pt__label">{cutFieldLabel}</span>
-						<select id={`${hub}-cut`} data-pt-cut aria-label={cutFieldLabel}>
+						<select id={`${uid}-cut`} data-pt-cut aria-label={cutFieldLabel}>
 							<option value="">все</option>
 							{cutCounts.map((c) => (
 								<option value={c.key}>{c.label}</option>
@@ -520,7 +546,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				wallCounts.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Стенка">
 						<span class="pt__label">Стенка, мм</span>
-						<select id={`${hub}-wall`} data-pt-wall aria-label="Толщина стенки">
+						<select id={`${uid}-wall`} data-pt-wall aria-label="Толщина стенки">
 							<option value="">все</option>
 							{wallCounts.map((w) => (
 								<option value={w.key}>{w.key.replace('.', ',')}</option>
@@ -533,7 +559,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				facts.length > 1 && (
 					<label class="pt__field pt__field--select" data-pt-label="Склад">
 						<span class="pt__label">Склад</span>
-						<select id={`${hub}-fact`} data-pt-fact aria-label="Склад">
+						<select id={`${uid}-fact`} data-pt-fact aria-label="Склад">
 							<option value="">все</option>
 							{facts.map((f) => (
 								<option value={f}>{f}</option>
@@ -660,8 +686,8 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 	<p class="pt__empty" data-pt-empty hidden>Ничего не найдено по фильтрам — попробуйте сбросить.</p>
 </section>
 
-<script define:vars={{ hub, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices, IS_WALL_THICKNESS: isWallThickness, LENGTH_LABEL: lengthColLabel, CUT_FIELD_LABEL: cutFieldLabel }}>
-	const root = document.querySelector(`.pt[data-hub="${hub}"]`);
+<script define:vars={{ hub, variant, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS: surfaceLabels, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices, IS_WALL_THICKNESS: isWallThickness, LENGTH_LABEL: lengthColLabel, CUT_FIELD_LABEL: cutFieldLabel }}>
+	const root = document.querySelector(`.pt[data-hub="${hub}"]${variant ? `[data-variant="${variant}"]` : ''}`);
 	if (root) {
 		const fmt = (p) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
 		const body = root.querySelector('[data-pt-body]');
@@ -695,8 +721,11 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 			film: root.querySelector('[data-pt-film]'),
 		};
 
-		/* Зеркало hasFilmSku из frontmatter: явный +PI или surface BA/4N. */
+		/* Зеркало hasFilmSku из frontmatter: явный флаг film / +PI / surface BA|4N.
+		   У ленты — только явный film (бывш. PE). */
 		function hasFilm(s) {
+			if (s?.film) return true;
+			if (hub === 'lenta') return false;
 			if (/\+PI\b/i.test(String(s?.name ?? ''))) return true;
 			const surf = String(s?.surface ?? '');
 			return surf === 'BA' || surf === '4N';

@@ -5,6 +5,8 @@ import PriceTable from '../../components/PriceTable.astro';
 import { getHubSkus } from '../../data/pricelist-helpers';
 
 const skus = getHubSkus('lenta');
+const importSkus = skus.filter((s) => s.origin === 'import');
+const rfSkus = skus.filter((s) => s.origin === 'rf');
 const grades = [...new Set(skus.map((s) => s.grade).filter(Boolean))] as string[];
 grades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
 
@@ -23,7 +25,7 @@ const faq = [
 	},
 	{
 		q: 'Какая поверхность у ленты?',
-		a: '2B (матовая), BA (зеркальная, с защитной плёнкой), 2BA (светлый отжиг), 4N (шлифованная) и PE (с защитной плёнкой). Поверхность выбирается в фильтре прайса.',
+		a: 'Зависит от происхождения. У импортной ленты — обозначения AISI/EN: 2B (полуматовая), BA (зеркальная, светлый отжиг), 4N (шлифованная); часть позиций поставляется с защитной плёнкой. У российской ленты по ГОСТ 4986 — русские термины: «Обычная» (матовая) и «Блестящая» (зеркальная). Переключатель «Импорт / РФ» и фильтр поверхности — в прайсе.',
 	},
 	{
 		q: 'Можно ли заказать резку ленты в размер по длине?',
@@ -43,7 +45,42 @@ const faq = [
 	hubKey="lenta"
 	faq={faq}
 >
-	<PriceTable hub="lenta" title="Прайс на ленту нержавеющую" measure="толщина" />
+	<div class="lenta-origins" data-lenta-origins role="group" aria-label="Происхождение ленты">
+		<button type="button" class="lenta-origin lenta-origin--active" data-lenta-origin="import" aria-pressed="true">
+			Импорт <span class="lenta-origin__count">{importSkus.length}</span>
+		</button>
+		<button type="button" class="lenta-origin" data-lenta-origin="rf" aria-pressed="false">
+			РФ (ГОСТ 4986) <span class="lenta-origin__count">{rfSkus.length}</span>
+		</button>
+	</div>
+
+	<div data-lenta-pane="import">
+		<PriceTable hub="lenta" origin="import" variant="import" title="Прайс на импортную ленту нержавеющую" measure="толщина" />
+	</div>
+	<div data-lenta-pane="rf" hidden>
+		<PriceTable hub="lenta" origin="rf" variant="rf" title="Прайс на российскую ленту нержавеющую (ГОСТ 4986)" measure="толщина" />
+	</div>
+
+	<script>
+		const wrap = document.querySelector('[data-lenta-origins]');
+		if (wrap) {
+			const btns = Array.from(wrap.querySelectorAll('[data-lenta-origin]'));
+			const panes = Array.from(document.querySelectorAll('[data-lenta-pane]'));
+			for (const b of btns) {
+				b.addEventListener('click', () => {
+					const o = b.getAttribute('data-lenta-origin');
+					for (const x of btns) {
+						const on = x === b;
+						x.classList.toggle('lenta-origin--active', on);
+						x.setAttribute('aria-pressed', on ? 'true' : 'false');
+					}
+					for (const p of panes) {
+						(p as HTMLElement).hidden = p.getAttribute('data-lenta-pane') !== o;
+					}
+				});
+			}
+		}
+	</script>
 
 	<HubExtras
 		hubHref="/lenta-nerzhaveyushchaya/"
@@ -63,7 +100,8 @@ const faq = [
 		<ul class="list-plain">
 			<li>Ширины: 200 и 400 мм (нестандартные — под заявку, шаг 5 мм)</li>
 			<li>Толщины: 0,15; 0,2; 0,25; 0,3; 0,4; 0,5; 0,6; 0,7; 0,8 мм</li>
-			<li>Поверхности: 2B (матовая), BA (зеркальная), 2BA, 4N, PE (с плёнкой)</li>
+			<li>Поверхности импорта: 2B (полуматовая), BA (зеркальная), 4N (шлифованная), с плёнкой</li>
+			<li>Поверхности РФ (ГОСТ 4986): «Обычная» (матовая), «Блестящая» (зеркальная)</li>
 			<li>ГОСТ 4986 — лента холоднокатаная из коррозионностойкой стали</li>
 			<li>Резка мерными отрезами или мотком, от одной единицы</li>
 		</ul>
@@ -112,6 +150,47 @@ const faq = [
 </CatalogHubTemplate>
 
 <style>
+	.lenta-origins {
+		display: inline-flex;
+		gap: 4px;
+		padding: 4px;
+		margin-bottom: var(--space-4);
+		background: var(--color-surface-2, #f1f3f5);
+		border: 1px solid var(--color-border, #e2e6ea);
+		border-radius: 10px;
+	}
+	.lenta-origin {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 16px;
+		border: 0;
+		border-radius: 7px;
+		background: transparent;
+		color: var(--color-muted);
+		font-size: 0.95rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+	}
+	.lenta-origin:hover { color: var(--color-text, #1a1a1a); }
+	.lenta-origin--active {
+		background: var(--color-surface, #fff);
+		color: var(--color-primary-600, #0b62d6);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+	.lenta-origin__count {
+		font-size: 0.8rem;
+		font-weight: 700;
+		padding: 1px 7px;
+		border-radius: 999px;
+		background: var(--color-surface-2, #eef1f4);
+		color: var(--color-muted);
+	}
+	.lenta-origin--active .lenta-origin__count {
+		background: var(--color-primary-50, #e7f0ff);
+		color: var(--color-primary-600, #0b62d6);
+	}
 	.block { margin-bottom: var(--space-8); }
 	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
 	.list-plain {
