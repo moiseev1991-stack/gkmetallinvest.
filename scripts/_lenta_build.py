@@ -123,10 +123,15 @@ def add(x, origin):
     dedup = (origin, cyr, surf, film, th, w)
 
     aisi = CANON_AISI.get(cyr) or clean_aisi(x.get('gradeAisi'))
+    # Отображаемая марка: у импорта — только AISI (отечественный аналог убран,
+    # он путает; кир. остаётся на детальной в блоке «Аналоги марки»). У РФ —
+    # родная кир. марка + AISI как зарубежный аналог. Клиент 2026-07-27.
     if origin == 'import':
-        grade = f'{aisi} ({cyr})' if aisi else cyr
+        grade = aisi or cyr
+        name_mark = aisi or cyr
     else:
         grade = f'{cyr} ({aisi})' if aisi else cyr
+        name_mark = cyr
     sub = 'nikelesod' if has_nickel(cyr) else 'beznikelya'
 
     # цена
@@ -144,9 +149,9 @@ def add(x, origin):
     # имя
     thn = '%g' % th
     if film:
-        name = f'Лента нержавеющая х/к {thn}×{w} {cyr} (с плёнкой)'
+        name = f'Лента нержавеющая х/к {thn}×{w} {name_mark} (с плёнкой)'
     else:
-        name = f'Лента нержавеющая х/к {thn}×{w} {surf} {cyr}'
+        name = f'Лента нержавеющая х/к {thn}×{w} {surf} {name_mark}'
 
     gost = '' if origin == 'import' else (x.get('gost') or 'ГОСТ 4986-79')
 
