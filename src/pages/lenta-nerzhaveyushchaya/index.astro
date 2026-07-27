@@ -9,6 +9,10 @@ const importSkus = skus.filter((s) => s.origin === 'import');
 const rfSkus = skus.filter((s) => s.origin === 'rf');
 const grades = [...new Set(skus.map((s) => s.grade).filter(Boolean))] as string[];
 grades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+const importGrades = [...new Set(importSkus.map((s) => s.grade).filter(Boolean))] as string[];
+importGrades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+const rfGrades = [...new Set(rfSkus.map((s) => s.grade).filter(Boolean))] as string[];
+rfGrades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
 
 const faq = [
 	{
@@ -55,9 +59,21 @@ const faq = [
 	</div>
 
 	<div data-lenta-pane="import">
+		<div class="lenta-marks" data-lenta-pane-marks role="group" aria-label="Быстрый выбор марки">
+			<span class="lenta-marks__label">Марка:</span>
+			{importGrades.map((g) => (
+				<button type="button" class="lenta-mark" data-grade={g} data-target="lenta-import-grade">{g}</button>
+			))}
+		</div>
 		<PriceTable hub="lenta" origin="import" variant="import" title="Прайс на импортную ленту нержавеющую" measure="толщина" />
 	</div>
 	<div data-lenta-pane="rf" hidden>
+		<div class="lenta-marks" data-lenta-pane-marks role="group" aria-label="Быстрый выбор марки">
+			<span class="lenta-marks__label">Марка:</span>
+			{rfGrades.map((g) => (
+				<button type="button" class="lenta-mark" data-grade={g} data-target="lenta-rf-grade">{g}</button>
+			))}
+		</div>
 		<PriceTable hub="lenta" origin="rf" variant="rf" title="Прайс на российскую ленту нержавеющую (ГОСТ 4986)" measure="толщина" />
 	</div>
 
@@ -80,13 +96,39 @@ const faq = [
 				});
 			}
 		}
+
+		// Чипы марок → фильтр «Марка» в прайсе соответствующей вкладки.
+		for (const chip of Array.from(document.querySelectorAll('.lenta-mark'))) {
+			chip.addEventListener('click', () => {
+				const targetId = chip.getAttribute('data-target') || '';
+				const grade = chip.getAttribute('data-grade') || '';
+				const sel = document.getElementById(targetId);
+				if (!(sel instanceof HTMLSelectElement)) return;
+				sel.value = sel.value === grade ? '' : grade;
+				sel.dispatchEvent(new Event('change', { bubbles: true }));
+				sel.closest('.pt')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		}
+		// Синхронизация подсветки чипов с состоянием селекта (в т.ч. ручной выбор).
+		for (const id of ['lenta-import-grade', 'lenta-rf-grade']) {
+			const sel = document.getElementById(id);
+			if (!(sel instanceof HTMLSelectElement)) continue;
+			const sync = () => {
+				const pane = sel.closest('[data-lenta-pane]');
+				if (!pane) return;
+				for (const c of Array.from(pane.querySelectorAll('.lenta-mark'))) {
+					c.classList.toggle('lenta-mark--active', c.getAttribute('data-grade') === sel.value);
+				}
+			};
+			sel.addEventListener('change', sync);
+			sync();
+		}
 	</script>
 
 	<HubExtras
 		hubHref="/lenta-nerzhaveyushchaya/"
 		hubLabel="Лента нержавеющая"
 		hubLabelGenitive="ленту нержавеющую"
-		grades={grades}
 	/>
 
 	<section class="block">
@@ -190,6 +232,40 @@ const faq = [
 	.lenta-origin--active .lenta-origin__count {
 		background: var(--color-primary-50, #e7f0ff);
 		color: var(--color-primary-600, #0b62d6);
+	}
+	.lenta-marks {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem;
+		margin-bottom: var(--space-4);
+	}
+	.lenta-marks__label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-muted);
+		margin-right: 0.2rem;
+	}
+	.lenta-mark {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 0.3rem 0.7rem;
+		border: 1px solid var(--color-primary-100, #cfe0fb);
+		border-radius: var(--radius-pill, 999px);
+		background: var(--color-primary-50, #e7f0ff);
+		color: var(--color-primary-600, #0b62d6);
+		cursor: pointer;
+		transition: border-color 0.15s, background 0.15s, color 0.15s;
+	}
+	.lenta-mark:hover {
+		border-color: var(--color-primary-500, #2b7cf0);
+		background: var(--color-surface, #fff);
+	}
+	.lenta-mark--active {
+		background: var(--color-primary-600, #0b62d6);
+		border-color: var(--color-primary-600, #0b62d6);
+		color: #fff;
 	}
 	.block { margin-bottom: var(--space-8); }
 	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
