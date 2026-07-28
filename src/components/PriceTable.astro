@@ -31,9 +31,14 @@ interface Props {
 	/** Неймспейс DOM/JS для нескольких инстансов одного hub на странице
 	 *  (переключатель Импорт/РФ у ленты). Пусто — поведение как раньше. */
 	variant?: string;
+	/** Нижняя граница диапазон-фильтра размера (мм), если её нужно показать
+	 *  шире фактических данных. Напр. фольга: в наличии только 0,15 мм, но по
+	 *  определению это 0,05–0,15 мм — задаём `sizeRangeFrom={0.05}`, чтобы фильтр
+	 *  отражал категорию, а не единственный типоразмер. */
+	sizeRangeFrom?: number;
 }
 
-const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade, origin, variant, hubPath } = Astro.props;
+const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade, origin, variant, hubPath, sizeRangeFrom } = Astro.props;
 
 /* База ссылок на карточки товара. По умолчанию совпадает с hub, но фольга
    (и на всякий случай лента) указывает реальный путь страниц каталога. */
@@ -284,12 +289,14 @@ const rolls = uniq(allSkus.map((s) => s.roll)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
 const sizeNums = allSkus.map((s) => sizeNum(s.size)).filter((n) => !Number.isNaN(n));
-/* Диапазон-фильтр нужен только когда есть что фильтровать — минимум две разные
-   величины. При одном значении (напр. фольга — только 0,15 мм) ползунок «от–до»
-   бессмыслен и показывал бы «0,15 – 0,15», поэтому скрываем его. */
-const hasSizeRange = new Set(sizeNums).size > 1;
-const sizeRangeMin = hasSizeRange ? Math.min(...sizeNums) : 0;
-const sizeRangeMax = hasSizeRange ? Math.max(...sizeNums) : 0;
+/* Диапазон-фильтр показываем, когда есть что фильтровать (2+ разных величины)
+   ИЛИ когда явно задана нижняя граница sizeRangeFrom (фольга: одна толщина
+   0,15 мм в наличии, но по определению категория — 0,05–0,15 мм). */
+const dataSizeMin = sizeNums.length ? Math.min(...sizeNums) : 0;
+const dataSizeMax = sizeNums.length ? Math.max(...sizeNums) : 0;
+const hasSizeRange = new Set(sizeNums).size > 1 || sizeRangeFrom != null;
+const sizeRangeMin = sizeRangeFrom ?? dataSizeMin;
+const sizeRangeMax = dataSizeMax;
 const sizePh = (n: number) =>
 	Number.isInteger(n) ? String(n) : String(+n.toFixed(2)).replace('.', ',');
 

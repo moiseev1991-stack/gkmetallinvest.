@@ -23,10 +23,12 @@ interface Props {
 	hubHref: string; // /list/
 	/** База URL карточек товара, если отличается от hub (напр. фольга → лента). */
 	hubPath?: string;
+	/** Нижняя граница диапазон-фильтра размера (мм) — прокидывается в PriceTable. */
+	sizeRangeFrom?: number;
 	measure: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
 	city: CityInfo;
 }
-const { hub, hubLabel, hubLabelGenitive, hubHref, hubPath, measure, city } = Astro.props;
+const { hub, hubLabel, hubLabelGenitive, hubHref, hubPath, sizeRangeFrom, measure, city } = Astro.props;
 
 const title = `${hubLabel} в ${city.loc} — купить с доставкой из Нижнего Новгорода`;
 const description = `${hubLabel} с доставкой в ${city.from}. Отправка ${city.transit}, попутный транспорт и собственные машины. Сертификаты завода, отгрузка из НН. ${contacts.phone}.`;
@@ -69,7 +71,7 @@ const breadcrumbs = [
 			</ul>
 		</section>
 
-		<PriceTable hub={hub} hubPath={hubPath} title={`Прайс на ${hubLabelGenitive.toLowerCase()}`} measure={measure} />
+		<PriceTable hub={hub} hubPath={hubPath} sizeRangeFrom={sizeRangeFrom} title={`Прайс на ${hubLabelGenitive.toLowerCase()}`} measure={measure} />
 
 		<CtaSection
 			title={`Нужен ${hubLabel.toLowerCase()} в ${city.loc}?`}

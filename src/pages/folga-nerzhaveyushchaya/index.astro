@@ -63,7 +63,7 @@ const faq = [
 				<button type="button" class="lenta-mark" data-grade={g} data-target="folga-import-grade">{g}</button>
 			))}
 		</div>
-		<PriceTable hub="folga" hubPath="lenta-nerzhaveyushchaya" origin="import" variant="import" title="Прайс на импортную нержавеющую фольгу" measure="толщина" />
+		<PriceTable hub="folga" hubPath="lenta-nerzhaveyushchaya" origin="import" variant="import" title="Прайс на импортную нержавеющую фольгу" measure="толщина" sizeRangeFrom={0.05} />
 	</div>
 	<div data-lenta-pane="rf" hidden>
 		<div class="lenta-marks" data-lenta-pane-marks role="group" aria-label="Быстрый выбор марки">
@@ -72,7 +72,7 @@ const faq = [
 				<button type="button" class="lenta-mark" data-grade={g} data-target="folga-rf-grade">{g}</button>
 			))}
 		</div>
-		<PriceTable hub="folga" hubPath="lenta-nerzhaveyushchaya" origin="rf" variant="rf" title="Прайс на российскую нержавеющую фольгу (ГОСТ 4986)" measure="толщина" />
+		<PriceTable hub="folga" hubPath="lenta-nerzhaveyushchaya" origin="rf" variant="rf" title="Прайс на российскую нержавеющую фольгу (ГОСТ 4986)" measure="толщина" sizeRangeFrom={0.05} />
 	</div>
 
 	<script>
