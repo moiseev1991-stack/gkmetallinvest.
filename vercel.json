@@ -61,6 +61,8 @@
     { "source": "/catalog/lenta", "destination": "/lenta-nerzhaveyushchaya/", "permanent": true },
     { "source": "/lenta", "destination": "/lenta-nerzhaveyushchaya/", "permanent": true },
     { "source": "/lenta/", "destination": "/lenta-nerzhaveyushchaya/", "permanent": true },
+    { "source": "/folga", "destination": "/folga-nerzhaveyushchaya/", "permanent": true },
+    { "source": "/folga/", "destination": "/folga-nerzhaveyushchaya/", "permanent": true },
     { "source": "/rulon", "destination": "/rulon/", "permanent": true },
     { "source": "/listdeco", "destination": "/dekorativnye-listy/", "permanent": true },
     { "source": "/uslugi/perforation", "destination": "/uslugi/perforaciya-listov/", "permanent": true },

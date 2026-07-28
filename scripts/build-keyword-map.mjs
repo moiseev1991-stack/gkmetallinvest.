@@ -58,7 +58,7 @@ const HUBS = {
 	ugolok: { url: '/ugolok-shveller/', tokens: ['уголок', 'швеллер'] },
 	detali: { url: '/detali-truboprovoda/', tokens: ['отвод', 'фланец', 'фланцы', 'тройник', 'переход', 'заглушк'] },
 	lenta: { url: '/lenta/', tokens: ['лента'] },
-	folga: { url: '/folga/', tokens: ['фольга'] },
+	folga: { url: '/folga-nerzhaveyushchaya/', tokens: ['фольга'] },
 	metizy: { url: '/metizy/', tokens: ['метизы', 'болт', 'гайк', 'шайб', 'винт', 'самореез', 'саморез', 'шпильк'] },
 	podshipniki: { url: '/podshipniki/', tokens: ['подшипник'] },
 	elektrody: { url: '/elektrody/', tokens: ['электрод'] },
