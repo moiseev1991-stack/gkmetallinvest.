@@ -92,7 +92,15 @@ const LENTA_SURFACE_LABELS: Record<string, string> = {
 	'Блестящая': 'Блестящая (зеркальная)',
 };
 
-const surfaceLabels = isLenta ? LENTA_SURFACE_LABELS : SURFACE_LABELS;
+/* Фольга: у РФ те же поверхности, что у ленты, но заказчик просил короткие
+   подписи — «Зеркальная» / «Матовая» (без слова «Блестящая»). Клиент 2026-07-28. */
+const FOLGA_SURFACE_LABELS: Record<string, string> = {
+	...LENTA_SURFACE_LABELS,
+	'Блестящая': 'Зеркальная',
+};
+
+const surfaceLabels =
+	hub === 'folga' ? FOLGA_SURFACE_LABELS : isLenta ? LENTA_SURFACE_LABELS : SURFACE_LABELS;
 
 /* «Плёнка» определяется эвристикой: явный маркер +PI в названии (точный сигнал
    от поставщика) ИЛИ surface ∈ {BA, 4N} — отраслевой дефолт для холоднокатаного
