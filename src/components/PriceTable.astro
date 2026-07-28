@@ -284,7 +284,10 @@ const rolls = uniq(allSkus.map((s) => s.roll)).sort((a: any, b: any) =>
 	String(a).localeCompare(String(b), 'ru'),
 );
 const sizeNums = allSkus.map((s) => sizeNum(s.size)).filter((n) => !Number.isNaN(n));
-const hasSizeRange = sizeNums.length > 0;
+/* Диапазон-фильтр нужен только когда есть что фильтровать — минимум две разные
+   величины. При одном значении (напр. фольга — только 0,15 мм) ползунок «от–до»
+   бессмыслен и показывал бы «0,15 – 0,15», поэтому скрываем его. */
+const hasSizeRange = new Set(sizeNums).size > 1;
 const sizeRangeMin = hasSizeRange ? Math.min(...sizeNums) : 0;
 const sizeRangeMax = hasSizeRange ? Math.max(...sizeNums) : 0;
 const sizePh = (n: number) =>
