@@ -274,6 +274,13 @@ export function getHubSkus(hub: string): any[] {
 	if (hub === 'lenta') {
 		return lentaSkus as any[];
 	}
+	/* Фольга — самые тонкие позиции ленты (толщина 0,15 мм). Отдельного
+	   каталога нет: физически это лента с фольговыми параметрами, поэтому
+	   поверхностно выносим её на /folga/, ссылаясь на те же карточки товара
+	   в /lenta-nerzhaveyushchaya/. См. диалог с заказчиком (вариант 1). */
+	if (hub === 'folga') {
+		return (lentaSkus as any[]).filter((s) => s.thickness === 0.15);
+	}
 	const raw = ((pricelist as any).hubs?.[hub] ?? []) as any[];
 	if (hub === 'list') {
 		return raw.filter((s) => !isRulonLikeName(s?.name));

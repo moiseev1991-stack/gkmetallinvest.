@@ -1,16 +1,276 @@
 ---
 import CatalogHubTemplate from '../../components/CatalogHubTemplate.astro';
-import HubRequest from '../../components/HubRequest.astro';
+import HubExtras from '../../components/HubExtras.astro';
+import PriceTable from '../../components/PriceTable.astro';
+import { getHubSkus } from '../../data/pricelist-helpers';
+
+const skus = getHubSkus('folga');
+const importSkus = skus.filter((s) => s.origin === 'import');
+const rfSkus = skus.filter((s) => s.origin === 'rf');
+const importGrades = [...new Set(importSkus.map((s) => s.grade).filter(Boolean))] as string[];
+importGrades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+const rfGrades = [...new Set(rfSkus.map((s) => s.grade).filter(Boolean))] as string[];
+rfGrades.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+
+const faq = [
+	{
+		q: 'Чем фольга отличается от ленты?',
+		a: 'Разница только в толщине. Фольга — тонкий холоднокатаный прокат до 0,15 мм, лента (штрипс) — 0,15–0,8 мм. В наличии фольга толщиной 0,15 мм шириной 200 и 400 мм; более тонкую (0,05–0,1 мм) получаем прокаткой под заявку.',
+	},
+	{
+		q: 'Какие ширины фольги есть в наличии?',
+		a: 'Складские ширины — 200 и 400 мм. Другие ширины (шаг 5 мм) режем продольно из рулона под заявку, от одного мотка.',
+	},
+	{
+		q: 'Из каких марок бывает нержавеющая фольга?',
+		a: `Импортная фольга — марки AISI: 304, 316, 316L, 321, 430 и другие. Российская по ГОСТ 4986 — аустенитные 12Х18Н10Т, 08Х18Н10; ферритные и мартенситные 20Х13, 08Х13. Полный список — в фильтре прайса по марке.`,
+	},
+	{
+		q: 'Какая поверхность у фольги?',
+		a: 'Зависит от происхождения. У импортной фольги — обозначения AISI/EN: 2B (полуматовая), BA (зеркальная, светлый отжиг), 4N (шлифованная). У российской по ГОСТ 4986 — русские термины: «Обычная» (матовая) и «Блестящая» (зеркальная). Переключатель «Импорт / РФ» и фильтр поверхности — в прайсе.',
+	},
+	{
+		q: 'Можно ли заказать резку фольги в размер?',
+		a: 'Да, режем мерными отрезами или отгружаем мотком. Минимальная партия — от одного мотка, рулон режем продольно под нужную ширину.',
+	},
+];
 ---
 
 <CatalogHubTemplate
-	title="Фольга нержавеющая"
-	description="Нержавеющая фольга по маркам и толщинам. Раздел в наполнении — наличие и цены по запросу."
+	title="Фольга нержавеющая 0,15 мм — 200 и 400 мм — цена за тонну"
+	description={`Нержавеющая фольга х/к: толщина 0,15 мм, ширина 200 и 400 мм, марки AISI 304, 316, 321, 12Х18Н10Т, 08Х18Н10, 20Х13. Поверхности 2B, BA, 4N, «Обычная», «Блестящая». Со склада в Нижнем Новгороде.`}
 	h1="Фольга нержавеющая"
-	intro=""
+	intro={`Фольга нержавеющая холоднокатаная — самый тонкий узкий прокат, толщина 0,15 мм, ширина 200 и 400 мм. Импорт в марках AISI 304/316/321/430 и российская по ГОСТ 4986 (12Х18Н10Т, 08Х18Н10, 20Х13). ${skus.length} типоразмеров в наличии; более тонкую фольгу 0,05–0,1 мм и резку под ширину делаем по заявке.`}
 	breadcrumbs={[{ label: 'Главная', href: '/' }, { label: 'Фольга нержавеющая' }]}
+	hubHref="/folga/"
+	hubLabel="Фольга нержавеющая"
 	hubKey="folga"
-	noindex
+	faq={faq}
 >
-	<HubRequest what="Нержавеющая фольга" />
+	<div class="lenta-origins" data-lenta-origins role="group" aria-label="Происхождение фольги">
+		<button type="button" class="lenta-origin lenta-origin--active" data-lenta-origin="import" aria-pressed="true">
+			Импорт <span class="lenta-origin__count">{importSkus.length}</span>
+		</button>
+		<button type="button" class="lenta-origin" data-lenta-origin="rf" aria-pressed="false">
+			РФ (ГОСТ 4986) <span class="lenta-origin__count">{rfSkus.length}</span>
+		</button>
+	</div>
+
+	<div data-lenta-pane="import">
+		<div class="lenta-marks" data-lenta-pane-marks role="group" aria-label="Быстрый выбор марки">
+			<span class="lenta-marks__label">Марка:</span>
+			{importGrades.map((g) => (
+				<button type="button" class="lenta-mark" data-grade={g} data-target="folga-import-grade">{g}</button>
+			))}
+		</div>
+		<PriceTable hub="folga" hubPath="lenta-nerzhaveyushchaya" origin="import" variant="import" title="Прайс на импортную нержавеющую фольгу" measure="толщина" />
+	</div>
+	<div data-lenta-pane="rf" hidden>
+		<div class="lenta-marks" data-lenta-pane-marks role="group" aria-label="Быстрый выбор марки">
+			<span class="lenta-marks__label">Марка:</span>
+			{rfGrades.map((g) => (
+				<button type="button" class="lenta-mark" data-grade={g} data-target="folga-rf-grade">{g}</button>
+			))}
+		</div>
+		<PriceTable hub="folga" hubPath="lenta-nerzhaveyushchaya" origin="rf" variant="rf" title="Прайс на российскую нержавеющую фольгу (ГОСТ 4986)" measure="толщина" />
+	</div>
+
+	<script>
+		const wrap = document.querySelector('[data-lenta-origins]');
+		if (wrap) {
+			const btns = Array.from(wrap.querySelectorAll('[data-lenta-origin]'));
+			const panes = Array.from(document.querySelectorAll('[data-lenta-pane]'));
+			for (const b of btns) {
+				b.addEventListener('click', () => {
+					const o = b.getAttribute('data-lenta-origin');
+					for (const x of btns) {
+						const on = x === b;
+						x.classList.toggle('lenta-origin--active', on);
+						x.setAttribute('aria-pressed', on ? 'true' : 'false');
+					}
+					for (const p of panes) {
+						(p as HTMLElement).hidden = p.getAttribute('data-lenta-pane') !== o;
+					}
+				});
+			}
+		}
+
+		// Чипы марок → фильтр «Марка» в прайсе соответствующей вкладки.
+		for (const chip of Array.from(document.querySelectorAll('.lenta-mark'))) {
+			chip.addEventListener('click', () => {
+				const targetId = chip.getAttribute('data-target') || '';
+				const grade = chip.getAttribute('data-grade') || '';
+				const sel = document.getElementById(targetId);
+				if (!(sel instanceof HTMLSelectElement)) return;
+				sel.value = sel.value === grade ? '' : grade;
+				sel.dispatchEvent(new Event('change', { bubbles: true }));
+				sel.closest('.pt')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		}
+		// Синхронизация подсветки чипов с состоянием селекта (в т.ч. ручной выбор).
+		for (const id of ['folga-import-grade', 'folga-rf-grade']) {
+			const sel = document.getElementById(id);
+			if (!(sel instanceof HTMLSelectElement)) continue;
+			const sync = () => {
+				const pane = sel.closest('[data-lenta-pane]');
+				if (!pane) return;
+				for (const c of Array.from(pane.querySelectorAll('.lenta-mark'))) {
+					c.classList.toggle('lenta-mark--active', c.getAttribute('data-grade') === sel.value);
+				}
+			};
+			sel.addEventListener('change', sync);
+			sync();
+		}
+	</script>
+
+	<HubExtras
+		hubHref="/folga/"
+		hubLabel="Фольга нержавеющая"
+		hubLabelGenitive="фольгу нержавеющую"
+	/>
+
+	<section class="block">
+		<h2>Размеры фольги нержавеющей — толщины и ширины</h2>
+		<p>
+			Фольга — самый тонкий холоднокатаный прокат, который получают продольной
+			резкой рулона. В наличии две стандартные ширины — <strong>200 и 400 мм</strong>,
+			толщина <strong>0,15 мм</strong>. Более толстый прокат (0,15–0,8 мм) — это
+			<a href="/lenta-nerzhaveyushchaya/">нержавеющая лента (штрипс)</a>, ещё толще —
+			рулон и лист.
+		</p>
+		<ul class="list-plain">
+			<li>Ширины: 200 и 400 мм (нестандартные — под заявку, шаг 5 мм)</li>
+			<li>Толщина склада: 0,15 мм; более тонкую 0,05–0,1 мм — по заявке</li>
+			<li>Поверхности импорта: 2B (полуматовая), BA (зеркальная), 4N (шлифованная)</li>
+			<li>Поверхности РФ (ГОСТ 4986): «Обычная» (матовая), «Блестящая» (зеркальная)</li>
+			<li>ГОСТ 4986 — тонкий холоднокатаный прокат из коррозионностойкой стали</li>
+			<li>Резка мерными отрезами или мотком, от одной единицы</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Марки и применение фольги</h2>
+		<ul class="list-plain">
+			<li>
+				<strong>08Х18Н10</strong> — универсальная аустенитная марка:
+				экранирование, прокладки, упругие и уплотнительные элементы.
+			</li>
+			<li>
+				<strong>12Х18Н10Т</strong> — для узлов с нагревом выше 450 °C:
+				термокомпенсаторы, сильфоны, датчики. Титан снимает риск МКК после сварки.
+			</li>
+			<li>
+				<strong>AISI 316L</strong> — для агрессивных сред с хлоридами:
+				лабораторное и фармацевтическое оборудование. Молибден повышает питтинговую стойкость.
+			</li>
+			<li>
+				<strong>AISI 430</strong> — экономичная ферритная для сухих условий:
+				отражающие и декоративные слои, корпуса приборов.
+			</li>
+			<li>
+				<strong>20Х13</strong> — мартенситная под закалку: щупы,
+				упругие и пружинные элементы, где нужна твёрдость.
+			</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<h2>Документы и поставка</h2>
+		<ul class="list-plain">
+			<li>Сертификат завода-изготовителя по ГОСТ 4986</li>
+			<li>Продольная резка рулона под нужную ширину</li>
+			<li>Отгрузка со склада в Нижнем Новгороде</li>
+			<li>Доставка по России — авто, ж/д, ТК</li>
+		</ul>
+	</section>
 </CatalogHubTemplate>
+
+<style>
+	.lenta-origins {
+		display: inline-flex;
+		gap: 4px;
+		padding: 4px;
+		margin-bottom: var(--space-4);
+		background: var(--color-surface-2, #f1f3f5);
+		border: 1px solid var(--color-border, #e2e6ea);
+		border-radius: 10px;
+	}
+	.lenta-origin {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 16px;
+		border: 0;
+		border-radius: 7px;
+		background: transparent;
+		color: var(--color-muted);
+		font-size: 0.95rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+	}
+	.lenta-origin:hover { color: var(--color-text, #1a1a1a); }
+	.lenta-origin--active {
+		background: var(--color-surface, #fff);
+		color: var(--color-primary-600, #0b62d6);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+	.lenta-origin__count {
+		font-size: 0.8rem;
+		font-weight: 700;
+		padding: 1px 7px;
+		border-radius: 999px;
+		background: var(--color-surface-2, #eef1f4);
+		color: var(--color-muted);
+	}
+	.lenta-origin--active .lenta-origin__count {
+		background: var(--color-primary-50, #e7f0ff);
+		color: var(--color-primary-600, #0b62d6);
+	}
+	.lenta-marks {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem;
+		margin-bottom: var(--space-4);
+	}
+	.lenta-marks__label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-muted);
+		margin-right: 0.2rem;
+	}
+	.lenta-mark {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 0.3rem 0.7rem;
+		border: 1px solid var(--color-primary-100, #cfe0fb);
+		border-radius: var(--radius-pill, 999px);
+		background: var(--color-primary-50, #e7f0ff);
+		color: var(--color-primary-600, #0b62d6);
+		cursor: pointer;
+		transition: border-color 0.15s, background 0.15s, color 0.15s;
+	}
+	.lenta-mark:hover {
+		border-color: var(--color-primary-500, #2b7cf0);
+		background: var(--color-surface, #fff);
+	}
+	.lenta-mark--active {
+		background: var(--color-primary-600, #0b62d6);
+		border-color: var(--color-primary-600, #0b62d6);
+		color: #fff;
+	}
+	.block { margin-bottom: var(--space-8); }
+	.block h2 { font-size: 1.15rem; margin-bottom: var(--space-3); }
+	.list-plain {
+		margin: 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted);
+		max-width: 70ch;
+		display: grid;
+		gap: var(--space-2);
+	}
+	.note { font-size: 0.92rem; color: var(--color-muted); max-width: 70ch; }
+	.note a, .block a { color: var(--color-primary-600); }
+</style>

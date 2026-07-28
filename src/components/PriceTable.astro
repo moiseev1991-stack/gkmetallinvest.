@@ -14,9 +14,14 @@ interface Props {
 		| 'ugolok-shveller'
 		| 'rulon'
 		| 'dekorativnye-listy'
-		| 'lenta';
+		| 'lenta'
+		| 'folga';
 	title?: string;
 	measure?: 'толщина' | 'диаметр' | 'размер' | 'Ø × стенка';
+	/** База URL для ссылок на карточки товара, если она отличается от `hub`.
+	 *  Напр. фольга (`hub="folga"`) ссылается на карточки ленты
+	 *  (`hubPath="lenta-nerzhaveyushchaya"`), т.к. отдельных страниц у неё нет. */
+	hubPath?: string;
 	/** Алиасы grade для предварительной фильтрации — используется на марочных
 	 *  посадочных (/list/aisi-304/), чтобы в таблице сразу были только позиции
 	 *  нужной марки. Сравнение case-insensitive по substring matching. */
@@ -28,7 +33,15 @@ interface Props {
 	variant?: string;
 }
 
-const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade, origin, variant } = Astro.props;
+const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade, origin, variant, hubPath } = Astro.props;
+
+/* База ссылок на карточки товара. По умолчанию совпадает с hub, но фольга
+   (и на всякий случай лента) указывает реальный путь страниц каталога. */
+const hrefBase = hubPath ?? hub;
+
+/* Лента и фольга делят один набор данных и одинаковую логику поверхностей,
+   плёнки, кроя. isLenta объединяет обе категории. */
+const isLenta = hub === 'lenta' || hub === 'folga';
 
 /* uid неймспейсит id селектов/инпутов, чтобы два инстанса ленты на одной
    странице не давали дублирующихся id. */
@@ -74,7 +87,7 @@ const LENTA_SURFACE_LABELS: Record<string, string> = {
 	'Блестящая': 'Блестящая (зеркальная)',
 };
 
-const surfaceLabels = hub === 'lenta' ? LENTA_SURFACE_LABELS : SURFACE_LABELS;
+const surfaceLabels = isLenta ? LENTA_SURFACE_LABELS : SURFACE_LABELS;
 
 /* «Плёнка» определяется эвристикой: явный маркер +PI в названии (точный сигнал
    от поставщика) ИЛИ surface ∈ {BA, 4N} — отраслевой дефолт для холоднокатаного
@@ -82,7 +95,7 @@ const surfaceLabels = hub === 'lenta' ? LENTA_SURFACE_LABELS : SURFACE_LABELS;
    BA/4N ленты плёнкой не считаем. Клиент 2026-07-27. */
 function hasFilmSku(s: any): boolean {
 	if (s?.film) return true;
-	if (hub === 'lenta') return false;
+	if (isLenta) return false;
 	if (/\+PI\b/i.test(String(s?.name ?? ''))) return true;
 	const surf = String(s?.surface ?? '');
 	return surf === 'BA' || surf === '4N';
@@ -104,11 +117,11 @@ function extractCutSku(s: any): string | null {
 function cutLabel(key: string): string {
 	return key.includes('x') ? `${key.replace('x', '×')} мм` : `${key} мм`;
 }
-const CUT_HUBS = new Set(['list', 'rulon', 'dekorativnye-listy', 'lenta']);
-/* Для декора поле «Крой» по смыслу — «Формат листа», для ленты — «Ширина»
+const CUT_HUBS = new Set(['list', 'rulon', 'dekorativnye-listy', 'lenta', 'folga']);
+/* Для декора поле «Крой» по смыслу — «Формат листа», для ленты/фольги — «Ширина»
    (у ленты в поле format лежит только ширина 200/400). */
 const cutFieldLabel =
-	hub === 'dekorativnye-listy' ? 'Формат' : hub === 'lenta' ? 'Ширина' : 'Крой';
+	hub === 'dekorativnye-listy' ? 'Формат' : isLenta ? 'Ширина' : 'Крой';
 
 const SUB_LABELS: Record<string, string> = {
 	nikelesod: 'Никелесодержащий',
@@ -686,7 +699,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 	<p class="pt__empty" data-pt-empty hidden>Ничего не найдено по фильтрам — попробуйте сбросить.</p>
 </section>
 
-<script define:vars={{ hub, variant, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS: surfaceLabels, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices, IS_WALL_THICKNESS: isWallThickness, LENGTH_LABEL: lengthColLabel, CUT_FIELD_LABEL: cutFieldLabel }}>
+<script define:vars={{ hub, hrefBase, isLenta, variant, allSkus, PAGE_SIZE, SUB_LABELS, SURFACE_LABELS: surfaceLabels, HAS_DLINA: hasDlina, HAS_FACT: hasFact, HAS_UNIQUE_PRICES: hasUniquePrices, IS_WALL_THICKNESS: isWallThickness, LENGTH_LABEL: lengthColLabel, CUT_FIELD_LABEL: cutFieldLabel }}>
 	const root = document.querySelector(`.pt[data-hub="${hub}"]${variant ? `[data-variant="${variant}"]` : ''}`);
 	if (root) {
 		const fmt = (p) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
@@ -725,7 +738,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 		   У ленты — только явный film (бывш. PE). */
 		function hasFilm(s) {
 			if (s?.film) return true;
-			if (hub === 'lenta') return false;
+			if (isLenta) return false;
 			if (/\+PI\b/i.test(String(s?.name ?? ''))) return true;
 			const surf = String(s?.surface ?? '');
 			return surf === 'BA' || surf === '4N';
@@ -1062,7 +1075,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 			const gradeClean = escapeHtml((s.grade || gradeFallback).replace(/\s+/g, ' ').replace(/\s*\(/g, ' ('));
 			return `<tr class="pt__row">
 				<td class="pt__cell-grade" data-label="Марка" title="${gradeClean}">${gradeClean}</td>
-				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}<svg class="pt__name-arrow" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>${articleHtml}${specHtml}</td>
+				<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href="/${hrefBase}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}<svg class="pt__name-arrow" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>${articleHtml}${specHtml}</td>
 				<td class="pt__cell-num" data-label="Размер">${sizeText}</td>
 				${dlinaTd}
 				${factTd}
@@ -1102,7 +1115,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 					<span class="pt-tile__sub">${escapeHtml(SUB_LABELS[s.sub] || s.sub || '')}</span>
 					${ostatok}
 				</header>
-				<a class="pt-tile__name" href="/${hub}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}</a>
+				<a class="pt-tile__name" href="/${hrefBase}/${escapeHtml(s.slug)}/" title="${escapeHtml(rawName)}">${escapeHtml(name)}</a>
 				${articleHtml}
 				<div class="pt-tile__chips">
 					<span class="pt-tile__chip pt-tile__chip--grade">${escapeHtml(s.grade || (isValve(s) ? 'нерж.' : '—'))}</span>
@@ -1113,7 +1126,7 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 				</div>
 				<footer class="pt-tile__foot">
 					<div class="pt-tile__price">${priceMain}${priceRetail}</div>
-					<a class="pt-tile__cta" href="/${hub}/${escapeHtml(s.slug)}/" aria-label="Перейти на страницу товара ${escapeHtml(name)}">
+					<a class="pt-tile__cta" href="/${hrefBase}/${escapeHtml(s.slug)}/" aria-label="Перейти на страницу товара ${escapeHtml(name)}">
 						Перейти на товар
 						<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 							<path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />

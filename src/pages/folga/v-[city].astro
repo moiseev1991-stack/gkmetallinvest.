@@ -1,0 +1,21 @@
+---
+import CatalogCityHub from '../../components/CatalogCityHub.astro';
+import { cities, cityBySlug } from '../../data/cities';
+
+export async function getStaticPaths() {
+	return cities.map((c) => ({ params: { city: c.slug } }));
+}
+
+const { city: citySlug } = Astro.params;
+const city = cityBySlug[citySlug!];
+---
+
+<CatalogCityHub
+	hub="folga"
+	hubPath="lenta-nerzhaveyushchaya"
+	hubLabel="Фольга нержавеющая"
+	hubLabelGenitive="фольгу нержавеющую"
+	hubHref="/folga/"
+	measure="толщина"
+	city={city}
+/>
