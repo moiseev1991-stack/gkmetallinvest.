@@ -22,7 +22,8 @@
  * держать руками написанный реестр, который снова разъедется с реальностью.
  */
 
-import { readdirSync, statSync, existsSync } from 'node:fs';
+import { readdirSync, statSync, existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,10 +59,10 @@ function files() {
 	if (filesCache) return filesCache;
 	const dir = resolveImgDir();
 	const map = new Map();
-	const version = (p) => {
-		const s = statSync(p);
-		return (s.size.toString(36) + Math.floor(s.mtimeMs / 1000).toString(36)).slice(-8);
-	};
+	/* Метку считаем от содержимого, а не от mtime: на Vercel время файла равно
+	   моменту чекаута, поэтому по mtime метка менялась бы на каждом деплое и
+	   30-дневный кеш картинок обнулялся бы впустую. */
+	const version = (p) => createHash('md5').update(readFileSync(p)).digest('hex').slice(0, 8);
 	for (const entry of readdirSync(dir)) {
 		const p = join(dir, entry);
 		if (statSync(p).isDirectory()) {
