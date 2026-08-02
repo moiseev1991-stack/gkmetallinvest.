@@ -1,6 +1,7 @@
 import pricelist from './pricelist.json';
 import { dekorListy } from './dekor-listy';
 import { lentaSkus } from './lenta';
+import { buildDupMap, variantCandidates, shortGradeForSeo } from './sku-seo.mjs';
 
 /* Эвристика «рулон-стайл»: в названии шаблон «толщина × ширина» без третьего
    числа (длины) — поставщик отгружает позицию мотком/рулоном, а не как лист
@@ -261,6 +262,212 @@ export function getDetailDimensions(sku: any): DetailDimensions | null {
 		return { display: '', descriptionInline: '', rows: [], gost };
 	}
 	return null;
+}
+
+/* ===== SEO: уникальные заголовки карточек =====
+
+   Задача: у карточек одного размера и марки не должно быть одинаковых <title>,
+   H1 и description. До правки 30.07.2026 заголовок собирался как
+   «хаб + размер + марка», из-за чего, например, 23 разных листа AISI 430
+   толщиной 1,5 мм (форматы 1000×2000 / 1250×2500 / рулон, с плёнкой и без,
+   разные заводы) получали один и тот же заголовок, а 47 разных изделий
+   ограждения Ø50,8 — заголовок «Лестничные элементы 50,8 мм AISI 304».
+
+   Решение: считаем «хвост» заголовка (всё после названия хаба) сразу по всему
+   хабу и дописываем к нему минимальный набор различителей из sku-seo.mjs,
+   которого хватает, чтобы хвосты не совпадали. Размер берём тот же
+   производный, что и в заголовке страницы (Ø × стенка у трубы, Ду/Ру у
+   арматуры, ширина×толщина у полосы), иначе группы «одинаковых» считаются не
+   по тому, что реально видно в <title>. */
+
+export type SkuSeoBits = {
+	/** Хвост <title> после названия хаба: «1,5 мм AISI 304 2B 1250×2500». */
+	tail: string;
+	/** Хвост для description — все различители, не только минимум. */
+	tailLong: string;
+	/** Только различитель, без размера и марки — для отдельного span в H1. */
+	variant: string;
+	/** true — та же позиция, что и `canonicalSlug` (другая партия/остаток). */
+	isDup: boolean;
+	canonicalSlug: string;
+};
+
+const EMPTY_BITS: SkuSeoBits = { tail: '', tailLong: '', variant: '', isDup: false, canonicalSlug: '' };
+
+function ruNumSeo(s: string): string {
+	return String(s).replace('.', ',');
+}
+
+/** Размер в том виде, в котором он попадает в заголовок страницы. Должен
+ *  совпадать с extractMainSize в ProductDetail.astro. */
+function mainSizeForSeo(sku: any): string {
+	const dims = getDetailDimensions(sku);
+	if (dims?.descriptionInline) return dims.descriptionInline;
+	const size = sku?.size;
+	if (!size) return '';
+	const raw = String(size).trim();
+	if (sku.hub === 'truba') {
+		const m = raw.match(/Ø?\s*([\d.,]+)\s*[×x]\s*([\d.,]+)/i);
+		if (m) return `Ø ${ruNumSeo(m[1])} × ${ruNumSeo(m[2])} мм`;
+		const m1 = raw.match(/Ø?\s*([\d.,]+)/);
+		return m1 ? `Ø ${ruNumSeo(m1[1])} мм` : raw;
+	}
+	/* Полоса: size уже нормализован в «ширина×толщина» — берём целиком, иначе
+	   полосы 40×3 и 40×4 дают один заголовок «Полоса 40 мм». */
+	if (sku.hub === 'polosa' && /[×x]/.test(raw)) return `${ruNumSeo(raw)} мм`;
+	const m = raw.match(/([\d.,]+)/);
+	return m ? `${ruNumSeo(m[1])} мм` : raw;
+}
+
+/** Обрезка по границе слова — чтобы длинные названия из прайса не раздували
+ *  <title> целиком. */
+function clampBaseForSeo(s: string, limit: number): string {
+	const str = String(s ?? '').trim();
+	if (str.length <= limit) return str;
+	const cut = str.slice(0, limit);
+	const sp = cut.lastIndexOf(' ');
+	return (sp > limit * 0.5 ? cut.slice(0, sp) : cut).trim();
+}
+
+/** Имя позиции без артикула, с заглавной буквы — заголовок штучного товара. */
+function pieceNameForSeo(sku: any): string {
+	const raw = String(sku?.name ?? '').replace(/\s+арт\.?\s*\S+\s*$/i, '').trim();
+	if (!raw) return '';
+	return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+/* Часть роутов (`/list/[slug].astro`) генерирует страницы из сырого массива
+   прайса, а не через getHubSkus — то есть страницы есть и у позиций, которые
+   отфильтрованы из таблицы хаба (рулон-стайл). Если считать SEO-раскладку
+   только по getHubSkus, такие карточки остаются без различителя и снова
+   получают одинаковые заголовки. Поэтому объединяем: нормализованные записи в
+   приоритете, сырые — добираем по слагу. */
+function seoSkuUniverse(hub: string): any[] {
+	const bySlug = new Map<string, any>();
+	for (const sku of getHubSkus(hub)) bySlug.set(sku.slug, sku);
+	const raw = ((pricelist as any).hubs?.[hub] ?? []) as any[];
+	for (const sku of raw) if (!bySlug.has(sku.slug)) bySlug.set(sku.slug, sku);
+	return [...bySlug.values()];
+}
+
+function buildHubSeo(hub: string): Map<string, SkuSeoBits> {
+	const skus = seoSkuUniverse(hub);
+	const dupMap = buildDupMap(skus);
+	const out = new Map<string, SkuSeoBits>();
+
+	const canonicalSkus = skus.filter((s) => !dupMap.get(s.slug)?.isDup);
+
+	/* Базовый хвост: у штучного товара — имя позиции (оно уникально и
+	   описательно), у тонного проката — размер + марка. */
+	const baseOf = new Map<string, string>();
+	for (const sku of canonicalSkus) {
+		const raw =
+			sku.unit === 'шт' && pieceNameForSeo(sku)
+				? pieceNameForSeo(sku)
+				: [mainSizeForSeo(sku), shortGradeForSeo(sku.grade)].filter(Boolean).join(' ');
+		/* Обрезаем базу здесь, а не в шаблоне: если резать готовый хвост, срежется
+		   как раз различитель, и заголовки снова станут одинаковыми (так вышло у
+		   фланцев «100x10x11 ГОСТ 33259-2015» — 4 карточки). */
+		baseOf.set(sku.slug, clampBaseForSeo(raw, sku.unit === 'шт' ? 58 : 70));
+	}
+
+	/* Группируем по базовому хвосту и добавляем ровно столько различителей,
+	   сколько нужно для уникальности внутри группы. */
+	const groups = new Map<string, any[]>();
+	for (const sku of canonicalSkus) {
+		const k = baseOf.get(sku.slug)!;
+		if (!groups.has(k)) groups.set(k, []);
+		groups.get(k)!.push(sku);
+	}
+
+	const resolved = new Map<string, { tail: string; tailLong: string; variant: string }>();
+	for (const [base, members] of groups) {
+		if (members.length === 1) {
+			resolved.set(members[0].slug, { tail: base, tailLong: base, variant: '' });
+			continue;
+		}
+		const candidateLists = new Map<string, string[]>();
+		for (const sku of members) candidateLists.set(sku.slug, variantCandidates(sku));
+		/* Берём только признаки, которые внутри группы реально различаются: иначе
+		   в заголовок лезет «2B 1000×2000 Россия» там, где хватает формата. */
+		const total = variantCandidates(members[0]).length;
+		const varyingIdx: number[] = [];
+		for (let i = 0; i < total; i++) {
+			const vals = new Set(members.map((m) => candidateLists.get(m.slug)![i] ?? ''));
+			if (vals.size > 1) varyingIdx.push(i);
+		}
+		const bitsOf = (slug: string, upto: number) =>
+			varyingIdx
+				.slice(0, upto)
+				.map((i) => candidateLists.get(slug)![i])
+				.filter(Boolean);
+		/* Минимальное число признаков, при котором хвосты в группе различаются. */
+		let depth = varyingIdx.length;
+		for (let d = 1; d <= varyingIdx.length; d++) {
+			const tails = members.map((m) => `${base} ${bitsOf(m.slug, d).join(' ')}`.trim());
+			if (new Set(tails).size === members.length) {
+				depth = d;
+				break;
+			}
+		}
+		/* Крайний случай (полностью идентичные по всем признакам, но разные
+		   позиции) — размер как последний различитель, потом слаг. */
+		for (const sku of members) {
+			const minBits = bitsOf(sku.slug, depth);
+			const allBits = bitsOf(sku.slug, varyingIdx.length);
+			let tail = `${base} ${minBits.join(' ')}`.trim();
+			resolved.set(sku.slug, {
+				tail,
+				tailLong: `${base}${allBits.length ? ', ' + allBits.join(', ') : ''}`,
+				variant: minBits.join(' '),
+			});
+		}
+		/* Позиции, неразличимые по всем признакам (в прайсе действительно нет
+		   отличий, кроме цены/остатка). Первый проход дописывает штучному
+		   товару размер — он часто и есть отличие («Низ стойки малый» Ø38,1 и
+		   Ø50,8 с одинаковым названием). Второй проход добивает остаток
+		   коротким «вар. N»: длинный хвост не годится — заголовок обрезается по
+		   лимиту и снова становится одинаковым. */
+		const disambiguate = (force: boolean) => {
+			const seen = new Map<string, number>();
+			for (const sku of members) {
+				const r = resolved.get(sku.slug)!;
+				const n = (seen.get(r.tail) ?? 0) + 1;
+				seen.set(r.tail, n);
+				if (n === 1) continue;
+				const size = mainSizeForSeo(sku);
+				const extra =
+					!force && sku.unit === 'шт' && size && !r.tail.includes(size) ? size : `вар. ${n}`;
+				r.tail = `${r.tail} ${extra}`.trim();
+				r.variant = `${r.variant} ${extra}`.trim();
+				r.tailLong = `${r.tailLong}, ${extra}`;
+			}
+		};
+		disambiguate(false);
+		disambiguate(true);
+	}
+
+	for (const sku of skus) {
+		const dup = dupMap.get(sku.slug) ?? { isDup: false, canonicalSlug: sku.slug };
+		const r = resolved.get(dup.canonicalSlug) ?? resolved.get(sku.slug);
+		out.set(sku.slug, {
+			tail: r?.tail ?? '',
+			tailLong: r?.tailLong ?? '',
+			variant: r?.variant ?? '',
+			isDup: dup.isDup,
+			canonicalSlug: dup.canonicalSlug,
+		});
+	}
+	return out;
+}
+
+/* Считается один раз на хаб за сборку: до 1000+ карточек на хаб, пересчёт на
+   каждой странице заметно удлиняет билд. */
+const seoBitsCache = new Map<string, Map<string, SkuSeoBits>>();
+
+export function getSkuSeoBits(hub: string, slug: string): SkuSeoBits {
+	if (!seoBitsCache.has(hub)) seoBitsCache.set(hub, buildHubSeo(hub));
+	return seoBitsCache.get(hub)!.get(slug) ?? { ...EMPTY_BITS, canonicalSlug: slug };
 }
 
 export function getHubSkus(hub: string): any[] {

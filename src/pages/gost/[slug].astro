@@ -139,14 +139,16 @@ const breadcrumbsJsonLd = {
 					</dl>
 
 					<div class="gost-page__actions">
-						<a class="gost-page__pdf" href={gost.pdf} target="_blank" rel="noopener">
-							<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-								<path d="M5 2h6l3 3v11H5V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-								<path d="M11 2v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-								<text x="9.5" y="13.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="4.5" font-weight="700" fill="currentColor">PDF</text>
-							</svg>
-							<span>Открыть PDF стандарта</span>
-						</a>
+						{gost.pdf && (
+							<a class="gost-page__pdf" href={gost.pdf} target="_blank" rel="noopener">
+								<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+									<path d="M5 2h6l3 3v11H5V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+									<path d="M11 2v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+									<text x="9.5" y="13.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="4.5" font-weight="700" fill="currentColor">PDF</text>
+								</svg>
+								<span>Открыть PDF стандарта</span>
+							</a>
+						)}
 						{gost.hub && hubLabel && (
 							<a class="gost-page__hub" href={gost.hub}>
 								<span>В каталог · {hubLabel}</span>
@@ -173,13 +175,19 @@ const breadcrumbsJsonLd = {
 						)}
 					</p>
 
-					<div class="gost-page__pdf-cta">
-						<div>
-							<strong>Скачать или открыть стандарт</strong>
-							<p>Файл хранится на нашем сервере — открывается в новой вкладке.</p>
+					{/* PDF есть не у всех стандартов: часть добавлена как справочная
+					    карточка (номер, наименование, привязка к разделу каталога),
+					    файл добираем отдельно. Блок скачивания в этом случае не рисуем,
+					    чтобы не вести на 404. */}
+					{gost.pdf && (
+						<div class="gost-page__pdf-cta">
+							<div>
+								<strong>Скачать или открыть стандарт</strong>
+								<p>Файл хранится на нашем сервере — открывается в новой вкладке.</p>
+							</div>
+							<a href={gost.pdf} target="_blank" rel="noopener">Открыть PDF →</a>
 						</div>
-						<a href={gost.pdf} target="_blank" rel="noopener">Открыть PDF →</a>
-					</div>
+					)}
 				</section>
 
 				{gost.hub && (
