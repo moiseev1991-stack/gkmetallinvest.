@@ -4,7 +4,7 @@ import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import pricelist from '../data/pricelist.json';
 import { getHubSkus, getDetailDimensions, getSkuSeoBits } from '../data/pricelist-helpers';
-import { catalogImage } from '../data/catalog-images.mjs';
+import { catalogImage, hubPhoto } from '../data/catalog-images.mjs';
 import { siteName, siteUrl, contacts } from '../data/site';
 import { cities } from '../data/cities';
 
@@ -391,6 +391,14 @@ const services = SERVICES_BY_HUB[sku.hub] || [];
    расхождение имён после перепарса прайса оставляло карточку без картинки. */
 const imgPath = catalogImage(sku.hub, sku.sub);
 const imgAlt = [hubLabel, sku.grade, sku.size ? `${sku.size} мм` : ''].filter(Boolean).join(' ');
+/* Запасное фото раздела на случай, если основное не отдалось браузеру (у
+   посетителей, заходивших до появления файла, лежит закешированный 404 —
+   /img/ отдаётся с max-age 30 дней). Подставляем настоящий снимок, а не
+   нарисованную заглушку. */
+const imgFallback = hubPhoto(sku.hub);
+const imgOnError = imgFallback && imgFallback !== imgPath
+	? `this.onerror=null; this.src='${imgFallback}';`
+	: null;
 
 // 6 близких позиций по той же марке/переделу — для блока «Похожие позиции»
 // Идём через getHubSkus, чтобы данные были согласованы с PriceTable и
@@ -767,8 +775,8 @@ if (sku.price != null) {
 		<Breadcrumbs items={breadcrumbs} />
 
 		<header class="product__head">
-			<figure class={`product__media${imgPath ? '' : ' product__media--missing'}`}>
-				{imgPath ? (
+			<figure class="product__media">
+				{imgPath && (
 					<img
 						src={imgPath}
 						alt={imgAlt}
@@ -777,16 +785,8 @@ if (sku.price != null) {
 						loading="eager"
 						fetchpriority="high"
 						decoding="async"
-						onerror="this.style.display='none'; this.parentElement.classList.add('product__media--missing');"
+						onerror={imgOnError}
 					/>
-				) : (
-					/* Ни фото подкатегории, ни обложки раздела — рисуем силуэт рулона.
-					   SVG вместо эмодзи: одинаково выглядит во всех системах. */
-					<svg class="product__media-fallback" viewBox="0 0 64 64" role="img" aria-label={imgAlt} focusable="false">
-						<ellipse cx="32" cy="32" rx="19" ry="21" fill="none" stroke="currentColor" stroke-width="2.5" />
-						<ellipse cx="32" cy="32" rx="7" ry="8" fill="none" stroke="currentColor" stroke-width="2.5" />
-						<path d="M13 32c0-11.6 8.5-21 19-21M51 32c0 11.6-8.5 21-19 21" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-					</svg>
 				)}
 			</figure>
 
@@ -1062,12 +1062,12 @@ if (sku.price != null) {
 							<a class="related__card" href={`${hubHref}${r.slug}/`}>
 								<img
 									class="related__img"
-									src={catalogImage(r.hub, r.sub) ?? '/img/catalog/list.jpg'}
+									src={catalogImage(r.hub, r.sub) ?? imgFallback ?? imgPath}
 									alt={rTitle}
 									width="120"
 									height="120"
 									loading="lazy"
-									onerror="this.style.display='none';"
+									onerror={imgOnError}
 								/>
 								<div class="related__body">
 									<span class="related__title">{rTitle}</span>
@@ -1276,22 +1276,6 @@ if (sku.price != null) {
 		height: 100%;
 		object-fit: cover;
 		display: block;
-	}
-	.product__media-fallback {
-		width: 45%;
-		height: 45%;
-		color: var(--color-text-muted, #8a8f98);
-		opacity: 0.45;
-	}
-	/* Срабатывает, если файл в сборке есть, но не отдался браузеру (onerror):
-	   тот же силуэт рулона, что и в SVG выше, но фоном. */
-	.product__media--missing::before {
-		content: '';
-		width: 45%;
-		height: 45%;
-		opacity: 0.45;
-		background: no-repeat center / contain
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%238a8f98' stroke-width='2.5'%3E%3Cellipse cx='32' cy='32' rx='19' ry='21'/%3E%3Cellipse cx='32' cy='32' rx='7' ry='8'/%3E%3Cpath d='M13 32c0-11.6 8.5-21 19-21M51 32c0 11.6-8.5 21-19 21' stroke-linecap='round'/%3E%3C/svg%3E");
 	}
 	.product__media-caption {
 		position: absolute;

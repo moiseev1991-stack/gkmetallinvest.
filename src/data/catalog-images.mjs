@@ -46,24 +46,40 @@ function resolveImgDir() {
 	return found;
 }
 
-/** Набор существующих файлов: 'hub/sub.webp' и 'hub.jpg' (обложки хабов). */
+/** Существующие файлы: 'hub/sub.webp' и 'hub.jpg' (обложки хабов) → метка версии.
+ *
+ * Метка нужна из-за кеша. В vercel.json на /img/(.*) стоит max-age=2592000, и
+ * этот заголовок получает в том числе ответ 404. Посетитель, зашедший на
+ * карточку до появления файла, держит «этой картинки нет» 30 дней и после
+ * деплоя видит не фото, а пустоту. Метка меняет URL вместе с файлом, поэтому
+ * старый закешированный 404 к нему не относится. */
 let filesCache = null;
 function files() {
 	if (filesCache) return filesCache;
 	const dir = resolveImgDir();
-	const set = new Set();
+	const map = new Map();
+	const version = (p) => {
+		const s = statSync(p);
+		return (s.size.toString(36) + Math.floor(s.mtimeMs / 1000).toString(36)).slice(-8);
+	};
 	for (const entry of readdirSync(dir)) {
 		const p = join(dir, entry);
 		if (statSync(p).isDirectory()) {
 			for (const file of readdirSync(p)) {
-				if (statSync(join(p, file)).isFile()) set.add(`${entry}/${file}`);
+				const fp = join(p, file);
+				if (statSync(fp).isFile()) map.set(`${entry}/${file}`, version(fp));
 			}
 		} else {
-			set.add(entry);
+			map.set(entry, version(p));
 		}
 	}
-	filesCache = set;
-	return set;
+	filesCache = map;
+	return map;
+}
+
+/** Путь к файлу каталога с меткой версии. */
+function url(rel) {
+	return `/img/catalog/${rel}?v=${files().get(rel)}`;
 }
 
 /** Расширения обложки хаба — исторически разные: list.jpg, truba.png,
@@ -87,12 +103,30 @@ export function catalogImage(hub, sub) {
 	if (!hub) return null;
 	const all = files();
 
-	if (sub && all.has(`${hub}/${sub}.webp`)) return `/img/catalog/${hub}/${sub}.webp`;
-	if (all.has(`${hub}/cover.webp`)) return `/img/catalog/${hub}/cover.webp`;
+	if (sub && all.has(`${hub}/${sub}.webp`)) return url(`${hub}/${sub}.webp`);
+	if (all.has(`${hub}/cover.webp`)) return url(`${hub}/cover.webp`);
 
 	const base = HUB_COVER_ALIAS[hub] || hub;
 	for (const ext of HUB_COVER_EXT) {
-		if (all.has(`${base}.${ext}`)) return `/img/catalog/${base}.${ext}`;
+		if (all.has(`${base}.${ext}`)) return url(`${base}.${ext}`);
+	}
+	return null;
+}
+
+/**
+ * Фотография раздела — то, что показываем, если фото подкатегории не отдалось
+ * браузеру (например, у посетителя закеширован старый 404). Всегда настоящий
+ * снимок: обложка раздела или картинка хаба, никаких нарисованных заглушек.
+ *
+ * @returns {string|null}
+ */
+export function hubPhoto(hub) {
+	if (!hub) return null;
+	const all = files();
+	if (all.has(`${hub}/cover.webp`)) return url(`${hub}/cover.webp`);
+	const base = HUB_COVER_ALIAS[hub] || hub;
+	for (const ext of HUB_COVER_EXT) {
+		if (all.has(`${base}.${ext}`)) return url(`${base}.${ext}`);
 	}
 	return null;
 }
@@ -114,5 +148,5 @@ export function catalogImageLevel(hub, sub) {
 
 /** Все файлы каталога — аудиту, чтобы находить картинки без товаров. */
 export function catalogImageFiles() {
-	return [...files()];
+	return [...files().keys()];
 }
