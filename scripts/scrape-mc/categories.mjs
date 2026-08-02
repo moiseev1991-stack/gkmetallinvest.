@@ -52,14 +52,14 @@ export const CATEGORIES = [
 	},
 	{
 		mc: 'ugolok_nerzhaveyushchij_nikelsoderzhashchij',
-		hub: 'ugolok-shveller', sub: 'ugolok',
+		hub: 'ugolok-shveller', sub: 'ugolok-ravnopolochnyy',
 		alloy: 'никелесодержащий', defaultRoll: null,
 		unit: 'т',
 		title: 'Уголок нержавеющий никельсодержащий',
 	},
 	{
 		mc: 'sveller_nerzhaveyushchaya_nikelsoderzhashchaya',
-		hub: 'ugolok-shveller', sub: 'shveller',
+		hub: 'ugolok-shveller', sub: 'shveller-gnutyy',
 		alloy: 'никелесодержащий', defaultRoll: null,
 		unit: 'т',
 		title: 'Швеллер нержавеющий никельсодержащий',
@@ -174,14 +174,14 @@ export const CATEGORIES = [
 	},
 	{
 		mc: 'flancy_nerzhaveyushie_ploskie',
-		hub: 'detali-truboprovoda', sub: 'flanec',
+		hub: 'detali-truboprovoda', sub: 'flanec-ploskiy',
 		alloy: null, defaultRoll: null,
 		unit: 'шт',
 		title: 'Фланцы нержавеющие плоские',
 	},
 	{
 		mc: 'flancy_nerzhaveyushie_vorotnikovye',
-		hub: 'detali-truboprovoda', sub: 'flanec',
+		hub: 'detali-truboprovoda', sub: 'flanec-vorotnikovyy',
 		alloy: null, defaultRoll: null,
 		unit: 'шт',
 		title: 'Фланцы нержавеющие воротниковые',

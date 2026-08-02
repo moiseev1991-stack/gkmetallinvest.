@@ -101,15 +101,17 @@ for (const [mk, geom] of Object.entries({
 }
 
 /* ============================ KRUG ============================
-   Диаметр в мм. sub для жаропрочных — «zharoprochnyj», для остальных — «nikelesod». */
+   Диаметр в мм. sub для жаропрочных — «zharoprochnyj», для остальных — «nikelevyj»
+   (именно так называется подкатегория круга в прайсе и файл картинки;
+   «nikelesod» — имя из листа/рулона/полосы, в круге его нет). */
 const krugStubs = [];
 for (const [mk, spec] of Object.entries({
 	'310s':        { sub: 'zharoprochnyj', diams: ['20', '40', '80'] },
 	'309s':        { sub: 'zharoprochnyj', diams: ['20', '40'] },
-	'316ti':       { sub: 'nikelesod',     diams: ['20', '40', '80'] },
-	'904l':        { sub: 'nikelesod',     diams: ['30', '60'] },
-	'duplex-2205': { sub: 'nikelesod',     diams: ['30', '60', '100'] },
-	'420':         { sub: 'nikelesod',     diams: ['20', '40', '80'] },
+	'316ti':       { sub: 'nikelevyj',     diams: ['20', '40', '80'] },
+	'904l':        { sub: 'nikelevyj',     diams: ['30', '60'] },
+	'duplex-2205': { sub: 'nikelevyj',     diams: ['30', '60', '100'] },
+	'420':         { sub: 'nikelevyj',     diams: ['20', '40', '80'] },
 })) {
 	for (const d of spec.diams) {
 		krugStubs.push(stub({
@@ -135,7 +137,7 @@ for (const mk of ['310s', '316ti', '904l', 'duplex-2205']) {
 	// Флáнец Ду 50 Ру 16
 	detaliStubs.push(stub({
 		hub: 'detali-truboprovoda',
-		sub: 'flanec',
+		sub: 'flanec-ploskiy',
 		markKey: mk,
 		alloy: null,
 		surface: null,
@@ -147,7 +149,7 @@ for (const mk of ['310s', '316ti', '904l', 'duplex-2205']) {
 	// Флáнец Ду 100 Ру 16
 	detaliStubs.push(stub({
 		hub: 'detali-truboprovoda',
-		sub: 'flanec',
+		sub: 'flanec-ploskiy',
 		markKey: mk,
 		alloy: null,
 		surface: null,
