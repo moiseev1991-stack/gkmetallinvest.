@@ -99,6 +99,14 @@ body {
 	}
 }
 
+/* Блог: .post__body — grid, а .post__section — его элемент. Без min-width:0
+   grid-элемент не сжимается ниже min-content содержимого: широкая таблица
+   (post__table min-width:600px) раздувает секцию, и её обрезает body{overflow-x:clip}
+   вместо горизонтального скролла обёртки. min-width:0 возвращает скролл на мобильном. */
+.post__section {
+	min-width: 0;
+}
+
 img,
 svg {
 	display: block;
