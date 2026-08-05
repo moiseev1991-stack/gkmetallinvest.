@@ -51,7 +51,8 @@ export interface DekorSku {
 
 /** Группы фактуры — метки для фильтра «Тип» в PriceTable и карточек. */
 export const DEKOR_GROUP_LABELS: Record<string, string> = {
-	zerkalo: 'Супер- и чёрное зеркало',
+	superzerkalo: 'Суперзеркало 8K',
+	blackmirror: 'Чёрное зеркало',
 	zoloto: 'Золото / PVD',
 	shlifovka: 'Шлифованная',
 	uzor: 'Узорная (DECO)',
@@ -83,11 +84,12 @@ const IMG = '/img/catalog/dekorativnye-listy/surfaces';
 /** Единый справочник поверхностей: название, группа, цвет, CSS-свотч/фото и
  *  тексты. Порядок = порядок вывода в блоке поверхностей на хабе. */
 export const DEKOR_SURFACE_META: Record<string, DekorSurfaceMeta> = {
-	// ── Зеркальные (8K / Black Mirror) ───────────────────────────────────────
+	// ── Суперзеркало 8K ──────────────────────────────────────────────────────
 	// «Просто зеркало» (Mirror/BA) вынесено в /list/ — стандартный финиш листа.
+	// 8K и Black Mirror — отдельные декоративные типы (по требованию заказчика).
 	'8K': {
 		ru: 'Суперзеркало 8K',
-		group: 'zerkalo',
+		group: 'superzerkalo',
 		slugKey: '8k',
 		color: 'сталь',
 		swatch: 'linear-gradient(135deg,#ffffff 0%,#c9d2dc 26%,#f6f9fb 44%,#9fabb8 58%,#e6ebf1 74%,#bcc6d1)',
@@ -95,9 +97,10 @@ export const DEKOR_SURFACE_META: Record<string, DekorSurfaceMeta> = {
 		desc: 'Полировка класса 8K («суперзеркало») — более глубокий и чистый глянец, чем у стандартного Mirror. Максимально ровное отражение для премиальных интерьеров и акцентных плоскостей.',
 		applications: ['Премиальные интерьеры, HoReCa', 'Лифты, порталы, ресепшн', 'Витрины, декоративные панно'],
 	},
+	// ── Чёрное зеркало ───────────────────────────────────────────────────────
 	'Black Mirror': {
 		ru: 'Чёрное зеркало',
-		group: 'zerkalo',
+		group: 'blackmirror',
 		slugKey: 'black-mirror',
 		color: 'чёрный',
 		swatch: 'linear-gradient(135deg,#3b4147,#0c0e11 45%,#26292e 62%,#050506)',
