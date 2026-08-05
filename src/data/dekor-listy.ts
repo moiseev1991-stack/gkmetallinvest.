@@ -51,7 +51,7 @@ export interface DekorSku {
 
 /** Группы фактуры — метки для фильтра «Тип» в PriceTable и карточек. */
 export const DEKOR_GROUP_LABELS: Record<string, string> = {
-	zerkalo: 'Зеркало',
+	zerkalo: 'Супер- и чёрное зеркало',
 	zoloto: 'Золото / PVD',
 	shlifovka: 'Шлифованная',
 	uzor: 'Узорная (DECO)',
