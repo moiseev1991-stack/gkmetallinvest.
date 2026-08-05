@@ -20,6 +20,11 @@ const dkGroups = Object.entries(DEKOR_GROUP_LABELS)
 	}))
 	.filter((g) => g.items.length > 0);
 
+/* Плоский список всех поверхностей — единая галерея-сетка (без рваных
+   секций-строк, где у одиночных групп была одна карточка на всю ширину).
+   Тип фактуры выводим тегом на самой карточке. */
+const dkItems = dkGroups.flatMap((g) => g.items.map((it) => ({ ...it, groupLabel: g.label })));
+
 const faq = [
 	{
 		q: 'Что такое декоративный лист из нержавейки и чем он отличается от обычного?',
@@ -57,28 +62,26 @@ const faq = [
 		<p>
 			Люди ищут декоративную нержавейку по-разному: одни вбивают «8K» или «DECO 1», другие —
 			«суперзеркало» или «изморозь». В фильтре и на страницах товаров указываем оба варианта.
-			Для узорных листов показаны фото образцов фактуры; зеркало, 8K и золото — условная
-			CSS-визуализация оттенка.
+			Для узорных листов показаны фото образцов фактуры; 8K, чёрное и золотое зеркало —
+			условная CSS-визуализация оттенка.
 		</p>
-		{dkGroups.map((g) => (
-			<div class="dk-group">
-				<h3 class="dk-group__title">{g.label}</h3>
-				<ul class="dk-grid">
-					{g.items.map((it) => (
-						<li class="dk-card">
-							{it.img
-								? <img class="dk-card__swatch dk-card__swatch--img" src={it.img} alt={`Фактура ${it.code} — ${it.ru}`} loading="lazy" width="56" height="56" />
-								: <span class="dk-card__swatch" style={`background:${it.swatch}`} aria-hidden="true"></span>}
-							<span class="dk-card__body">
-								<span class="dk-card__code">{it.code}</span>
-								<span class="dk-card__ru">{it.ru}</span>
-								<span class="dk-card__short">{it.short}</span>
-							</span>
-						</li>
-					))}
-				</ul>
-			</div>
-		))}
+		<ul class="dk-grid">
+			{dkItems.map((it) => (
+				<li class="dk-card">
+					<div class="dk-card__media">
+						{it.img
+							? <img class="dk-card__swatch" src={it.img} alt={`Фактура ${it.code} — ${it.ru}`} loading="lazy" width="320" height="200" />
+							: <span class="dk-card__swatch" style={`background:${it.swatch}`} aria-hidden="true"></span>}
+						<span class="dk-card__type">{it.groupLabel}</span>
+					</div>
+					<div class="dk-card__body">
+						<span class="dk-card__code">{it.code}</span>
+						<span class="dk-card__ru">{it.ru}</span>
+						<span class="dk-card__short">{it.short}</span>
+					</div>
+				</li>
+			))}
+		</ul>
 		<p class="dk-note">
 			Список пополняется. Нужной поверхности нет в таблице — <a href="/zapros-kp/">отправьте заявку</a>,
 			подберём под задачу.
@@ -92,50 +95,64 @@ const faq = [
 	.block p { max-width: 70ch; color: var(--color-muted); }
 	.block p a { color: var(--color-primary-600); }
 
-	.dk-group { margin-top: var(--space-5); }
-	.dk-group__title {
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-muted);
-		margin: 0 0 var(--space-3);
-	}
 	.dk-grid {
 		list-style: none;
 		padding: 0;
-		margin: 0;
+		margin: var(--space-5) 0 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
 		gap: var(--space-4);
 	}
 	.dk-card {
 		display: flex;
-		gap: var(--space-3);
-		align-items: flex-start;
-		padding: var(--space-3);
+		flex-direction: column;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
 		background: var(--color-surface);
+		overflow: hidden;
 		transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 	}
 	.dk-card:hover {
 		border-color: var(--color-primary-200, var(--color-border));
-		box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-		transform: translateY(-1px);
+		box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+		transform: translateY(-2px);
+	}
+	.dk-card__media {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
 	}
 	.dk-card__swatch {
-		flex: 0 0 auto;
-		width: 56px;
-		aspect-ratio: 1 / 1;
-		border-radius: var(--radius-md, 8px);
-		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-	}
-	.dk-card__swatch--img {
-		object-fit: cover;
-		height: 56px;
 		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 	}
-	.dk-card__body { display: flex; flex-direction: column; min-width: 0; }
+	.dk-card__type {
+		position: absolute;
+		top: 8px;
+		left: 8px;
+		font-size: 0.66rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #fff;
+		background: rgba(15, 23, 42, 0.6);
+		-webkit-backdrop-filter: blur(2px);
+		backdrop-filter: blur(2px);
+		padding: 0.2rem 0.5rem;
+		border-radius: 999px;
+		line-height: 1.2;
+	}
+	.dk-card__body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: var(--space-3);
+		min-width: 0;
+	}
 	.dk-card__code {
 		font-family: var(--font-mono);
 		font-weight: 700;
@@ -144,7 +161,7 @@ const faq = [
 	}
 	.dk-card__ru { font-size: 0.9rem; color: var(--color-text); }
 	.dk-card__short {
-		margin-top: 0.25rem;
+		margin-top: 0.15rem;
 		font-size: 0.82rem;
 		color: var(--color-muted);
 		line-height: 1.35;
