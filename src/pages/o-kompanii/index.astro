@@ -86,17 +86,6 @@ const aboutJsonLd = {
 					по всей России и СНГ.
 				</p>
 			</div>
-			<figure class="about__hero-figure">
-				<img
-					src="/img/team/team.jpg"
-					alt="Команда ГК «Металлинвест»"
-					width="1258"
-					height="880"
-					loading="eager"
-					fetchpriority="high"
-				/>
-				<figcaption>Команда ГК «Металлинвест»</figcaption>
-			</figure>
 			<dl class="about__stats">
 				{stats.map((s) => (
 					<div>
@@ -177,16 +166,15 @@ const aboutJsonLd = {
 		grid-template-columns: 1fr;
 		gap: var(--space-6);
 	}
-	/* На широком экране — текст слева, фото справа; статы под ними на всю ширину. */
+	/* На широком экране — текст слева, плитка со статистикой справа. */
 	@media (min-width: 880px) {
 		.about__hero {
-			grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+			grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
 			column-gap: var(--space-7);
-			align-items: start;
+			align-items: stretch;
 		}
-		.about__hero-text { grid-column: 1; grid-row: 1; }
-		.about__hero-figure { grid-column: 2; grid-row: 1; }
-		.about__stats { grid-column: 1 / -1; grid-row: 2; }
+		.about__hero-text { grid-column: 1; grid-row: 1; align-self: center; }
+		.about__stats { grid-column: 2; grid-row: 1; }
 	}
 	.about__hero-text { max-width: 60ch; }
 	.about__lead {
@@ -196,51 +184,40 @@ const aboutJsonLd = {
 		line-height: 1.6;
 	}
 
-	.about__hero-figure {
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-	}
-	.about__hero-figure img {
-		width: 100%;
-		height: auto;
-		display: block;
-		border-radius: var(--radius-lg);
-		object-fit: cover;
-		aspect-ratio: 1258 / 880;
-		box-shadow: var(--shadow-sm);
-	}
-	.about__hero-figure figcaption {
-		font-size: 0.85rem;
-		color: var(--color-muted);
-		text-align: center;
-	}
-
 	.about__stats {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		grid-template-columns: repeat(2, 1fr);
 		gap: var(--space-4);
 		margin: 0;
-		padding: var(--space-5);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
+		padding: var(--space-6);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-xs);
 	}
-	.about__stats > div { min-width: 0; }
+	.about__stats > div {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
 	.about__stats dt {
-		font-size: 1.5rem;
+		font-size: 2rem;
 		font-weight: 700;
 		color: var(--color-primary-600);
 		letter-spacing: -0.02em;
+		line-height: 1.1;
 		font-family: var(--font-display);
 	}
 	.about__stats dd {
-		margin: 0.2rem 0 0;
-		font-size: 0.88rem;
+		margin: 0.35rem 0 0;
+		font-size: 0.9rem;
 		color: var(--color-muted);
 		line-height: 1.4;
+	}
+	@media (max-width: 420px) {
+		.about__stats { grid-template-columns: 1fr; }
+		.about__stats dt { font-size: 1.6rem; }
 	}
 
 	.about__section { margin-bottom: var(--space-10); }
