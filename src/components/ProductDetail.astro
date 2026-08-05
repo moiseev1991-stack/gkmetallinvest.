@@ -359,7 +359,6 @@ if (sku.vesNetto != null) {
 }
 if (sku.fact) detailRows.push({ label: 'Склад', value: sku.fact });
 if (sku.ostatok != null) detailRows.push({ label: 'Остаток на складе', value: `${sku.ostatok} ${sku.unit}` });
-if (aliases.length) detailRows.push({ label: 'Аналоги марки', value: aliases.join(', ') });
 
 // Cross-sell: which obrabotki applicable to this hub
 const SERVICES_BY_HUB: Record<string, Array<{ href: string; label: string; desc: string }>> = {
