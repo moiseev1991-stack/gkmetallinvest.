@@ -3,8 +3,14 @@ import ProductDetail from '../../components/ProductDetail.astro';
 import { getHubSkus } from '../../data/pricelist-helpers';
 
 export async function getStaticPaths() {
-	const skus = getHubSkus('lenta');
-	return skus.map((sku) => ({
+	/* Карточки-детали ленты И фольги живут по одному адресу /lenta-nerzhaveyushchaya/[slug].
+	   getHubSkus('lenta') отдаёт только ≥0,15 мм, фольга (тоньше) — в getHubSkus('folga').
+	   Объединяем и дедупим по slug, чтобы у тонкой фольги были свои страницы. */
+	const bySlug = new Map<string, any>();
+	for (const sku of [...getHubSkus('lenta'), ...getHubSkus('folga')]) {
+		if (!bySlug.has(sku.slug)) bySlug.set(sku.slug, sku);
+	}
+	return [...bySlug.values()].map((sku) => ({
 		params: { slug: sku.slug },
 		props: { sku },
 	}));
