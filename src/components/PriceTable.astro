@@ -375,6 +375,17 @@ const hasOstatok = allSkus.some((s) => s.ostatok);
 const PAGE_SIZE = 50;
 const unitDefault = allSkus[0]?.unit ?? 'т';
 
+/* SEO-фолбэк. tbody изначально заполняется только клиентским JS, поэтому
+   краулеры без исполнения скриптов (в первую очередь Яндекс) не видели ни
+   ссылок на карточки товара, ни цен. Рендерим первые PAGE_SIZE позиций на
+   сервере: внутренние ссылки + якорный текст + цены попадают в HTML.
+   Дефолтное состояние клиента (sortKey=null, page=1) = исходный порядок, а
+   render() при инициализации безусловно перезаписывает tbody
+   (body.innerHTML = ...), так что для JS-пользователей серверные строки
+   мгновенно заменяются интерактивной таблицей — визуально без изменений. */
+const seoRows = allSkus.slice(0, PAGE_SIZE);
+const fmtPrice = (p: any) => (p == null ? null : new Intl.NumberFormat('ru-RU').format(p));
+
 const updatedAtDisplay = (() => {
 	const m = String(pricelist.updatedAt || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
 	if (!m) return String(pricelist.updatedAt || '');
@@ -703,7 +714,25 @@ const measureLabel = measure === 'Ø × стенка' ? 'Ø × ст., мм' : me
 					</th>
 				</tr>
 			</thead>
-			<tbody data-pt-body></tbody>
+			<tbody data-pt-body>
+				{seoRows.map((s) => {
+					const rawName = s.name || `${SUB_LABELS[s.sub] || s.sub || ''} ${s.grade || ''}`.trim();
+					const dlinaClean = isWallThickness
+						? (() => { const w = skuWall(s); return w != null ? String(w).replace('.', ',') : '—'; })()
+						: (String(s.dlina || '') || '—');
+					return (
+						<tr class="pt__row">
+							<td class="pt__cell-grade" data-label="Марка">{s.grade || '—'}</td>
+							<td class="pt__cell-name" data-label="Продукция"><a class="pt__name-link" href={`/${hrefBase}/${s.slug}/`} title={rawName}>{rawName}</a></td>
+							<td class="pt__cell-num" data-label={measureLabel}>{String(s.size)}</td>
+							{hasDlina && <td class="pt__cell-num pt__cell-muted pt__cell-dlina" data-label={lengthColLabel}>{dlinaClean}</td>}
+							{hasFact && <td class="pt__cell-fact" data-label="Склад">{s.fact || '—'}</td>}
+							{hasUniquePrices && <td class="pt__cell-price" data-label="Цена розн.">{fmtPrice(s.priceUnit) ?? 'по запросу'}</td>}
+							<td class="pt__cell-price pt__cell-price--accent" data-label={hasUniquePrices ? 'Цена от 1т' : 'Цена'}>{fmtPrice(s.price) ?? 'по запросу'}</td>
+						</tr>
+					);
+				})}
+			</tbody>
 		</table>
 	</div>
 

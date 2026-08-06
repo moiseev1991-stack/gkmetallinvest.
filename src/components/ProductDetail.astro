@@ -736,10 +736,12 @@ const productJsonLd: Record<string, any> = {
 if (imgPath) productJsonLd.image = [`${siteUrl}${imgPath}`];
 if (sku.grade) productJsonLd.material = sku.grade;
 if (sku.price != null) {
+	const priceValidUntil = `${new Date().getFullYear() + 1}-12-31`;
 	const offer: Record<string, any> = {
 		'@type': 'Offer',
 		price: sku.price,
 		priceCurrency: 'RUB',
+		priceValidUntil,
 		availability:
 			sku.ostatok != null && sku.ostatok > 0
 				? 'https://schema.org/InStock'
