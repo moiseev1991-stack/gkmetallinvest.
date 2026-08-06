@@ -122,10 +122,10 @@ export const shipments: Array<{
 	video: string;
 	poster?: string;
 }> = [
-	{ title: 'Лист нержавеющий', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.png' },
-	{ title: 'Отгрузка с маркировкой', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.png' },
+	{ title: 'Лист нержавеющий', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.webp' },
+	{ title: 'Отгрузка с маркировкой', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.webp' },
 	{ title: 'Погрузка манипулятором', video: '/slaider/video (2).mp4' },
-	{ title: 'Рулон в упаковке', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.png' },
+	{ title: 'Рулон в упаковке', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.webp' },
 	{ title: 'Загрузка в фуру', video: '/slaider/video (4).mp4' },
 	{ title: 'Палета на отгрузке', video: '/slaider/video (5).mp4' },
 	{ title: 'Подготовка к доставке', video: '/slaider/video (6).mp4' },
@@ -263,7 +263,7 @@ export const mainCtaBanner = {
 	title: 'Заявка на нержавейку — под задачу',
 	text: 'Подбираем по марке, формату, объёму и срокам. Цены меняются ежедневно — отправьте смету и получите актуальный расчёт.',
 	cta: { href: '/zapros-kp/', label: 'Оставить заявку' },
-	image: '/img/cta/cta-banner.svg' as string | null,
+	image: '/img/cta/cta-banner.webp' as string | null,
 };
 
 /** Pricing strip перед футером */
