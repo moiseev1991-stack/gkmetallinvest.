@@ -168,6 +168,7 @@ const websiteJsonLd = {
 											src={p.image ?? PLACEHOLDER_PRODUCT}
 											alt={p.alt ?? p.title}
 											loading="eager"
+											fetchpriority={i === 0 ? 'high' : undefined}
 											decoding="async"
 											width="480"
 											height="360"

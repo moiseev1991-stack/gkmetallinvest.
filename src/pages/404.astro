@@ -3,15 +3,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 ---
 
-<BaseLayout title="Страница не найдена" description="404 — запрошенная страница не существует.">
+<BaseLayout
+	title="Страница не найдена"
+	description="Запрошенная страница не существует или была перемещена. Перейдите в каталог нержавеющего металлопроката или отправьте заявку."
+	noindex={true}
+>
 	<div class="container err">
-		<h1>404</h1>
-		<p class="lead">Такой страницы нет. Перейдите в каталог или отправьте заявку.</p>
+		<p class="err__code" aria-hidden="true">404</p>
+		<h1>Страница не найдена</h1>
+		<p class="lead">
+			Возможно, ссылка устарела или адрес введён с ошибкой. Выберите нужный раздел
+			каталога, воспользуйтесь поиском или отправьте заявку — подберём металлопрокат
+			под вашу задачу.
+		</p>
 		<div class="err__actions">
 			<Button href="/">На главную</Button>
-			<Button href="/list/" variant="secondary">Каталог: лист</Button>
-			<Button href="/zapros-kp/" variant="ghost">Запрос КП</Button>
+			<Button href="/zapros-kp/">Запрос КП</Button>
 		</div>
+		<nav class="err__nav" aria-label="Разделы каталога">
+			<span class="err__nav-label">Каталог:</span>
+			<ul class="err__links">
+				<li><a href="/list/">Лист</a></li>
+				<li><a href="/truba/">Труба</a></li>
+				<li><a href="/krug/">Круг</a></li>
+				<li><a href="/rulon/">Рулон</a></li>
+				<li><a href="/lenta-nerzhaveyushchaya/">Лента</a></li>
+				<li><a href="/dekorativnye-listy/">Декоративные листы</a></li>
+			</ul>
+		</nav>
 	</div>
 </BaseLayout>
 
@@ -20,13 +39,39 @@ import Button from '../components/ui/Button.astro';
 		padding: var(--space-12) 0;
 		min-height: 40vh;
 	}
+	.err__code {
+		font-size: clamp(3.5rem, 12vw, 6rem);
+		font-weight: 800;
+		line-height: 1;
+		color: var(--color-border, #d0d5dd);
+		margin: 0 0 var(--space-2);
+	}
 	.lead {
-		max-width: 40ch;
+		max-width: 52ch;
 	}
 	.err__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-3);
 		margin-top: var(--space-6);
+	}
+	.err__nav {
+		margin-top: var(--space-8);
+	}
+	.err__nav-label {
+		display: block;
+		font-weight: 600;
+		margin-bottom: var(--space-2);
+	}
+	.err__links {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-4);
+	}
+	.err__links a {
+		text-decoration: underline;
 	}
 </style>
