@@ -1,0 +1,39 @@
+# ============================================================================
+#  gkmetallinvest.ru — 301-редиректы со старого сайта (uCoz) на новый (Astro)
+#  Хостинг: Timeweb (Apache). Файл кладётся в public/ → копируется в корень dist/
+#  Формат: RedirectMatch (mod_alias), якоря ^...$ + опциональный слэш /?$
+#  На Vercel этот файл игнорируется — активен только на Apache.
+# ============================================================================
+
+# --- Каталог: точные соответствия --------------------------------------------
+RedirectMatch 301 ^/list/?$                     /list/
+RedirectMatch 301 ^/rulon/?$                    /rulon/
+RedirectMatch 301 ^/provolokanerzh/?$           /provoloka/
+RedirectMatch 301 ^/(lenta|catalog/lenta|cataloglent)/?$   /lenta-nerzhaveyushchaya/
+RedirectMatch 301 ^/folga/?$                    /folga-nerzhaveyushchaya/
+RedirectMatch 301 ^/catalog/truba/?$            /truba/
+RedirectMatch 301 ^/catalog/krug/prutok/?$      /krug/
+RedirectMatch 301 ^/(listdeco|ral/08u)/?$       /dekorativnye-listy/
+
+# --- Услуги ------------------------------------------------------------------
+RedirectMatch 301 ^/(uslugi/rezka|peremotkanerjaveyki)/?$   /uslugi/rezka-rulonov/
+RedirectMatch 301 ^/uslugi/perforation/?$       /uslugi/perforaciya-listov/
+RedirectMatch 301 ^/shlifovka/polirovka/?$      /uslugi/polirovka/
+
+# --- Тематические запасные ---------------------------------------------------
+RedirectMatch 301 ^/nerjaveykaizkitaya/?$       /postavka-nerzhaveyushchego-metalloprokata/
+RedirectMatch 301 ^/all/?$                       /karta-sayta/
+RedirectMatch 301 ^/alyuminiy/?$                 /
+RedirectMatch 301 ^/vacancy/?$                   /kontakty/
+
+# --- Оборудование и услуги, которых нет на новом сайте → раздел «Услуги» -------
+RedirectMatch 301 ^/(oborudovanie|vseoborudovanie|laser|lasertrub|gibka|gidroabraziv)/?$   /uslugi/
+
+# --- Старые uCoz-страницы pageXXXX.html --------------------------------------
+RedirectMatch 301 ^/page69390555\.html$          /truba/
+RedirectMatch 301 ^/page70855587\.html$          /uslugi/perforaciya-listov/
+RedirectMatch 301 ^/(page70854427|page70854587|page70854803|page70854999|page70855333)\.html$   /uslugi/
+RedirectMatch 301 ^/(page67050501|page69346493|page70855153|page70855255|page70855399|page70855439|page70855511)\.html$   /postavka-nerzhaveyushchego-metalloprokata/
+
+# --- Внутренние фиксы гео-слагов (Пермь) --------------------------------------
+RedirectMatch 301 ^/(list|truba|krug|rulon|polosa|provoloka|ugolok-shveller|detali-truboprovoda)/v-perme/?$   /$1/v-permi/
