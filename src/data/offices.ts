@@ -34,6 +34,8 @@ export interface Office {
 	isHead?: boolean;
 	/** Путь к фото офиса от корня сайта. Пусто → плейсхолдер */
 	photo?: string;
+	/** Координаты для метки-пина на карте. Пусто → карта по текстовому запросу без точки */
+	coords?: { lat: number; lon: number };
 }
 
 export const offices: Office[] = [
@@ -44,6 +46,7 @@ export const offices: Office[] = [
 		street: 'ул. Варварская, д. 32, помещение П7, офис 518',
 		zip: '603006',
 		mapQuery: 'Нижний Новгород, улица Варварская, 32',
+		coords: { lat: 56.32849, lon: 44.00465 },
 		isHead: true,
 	},
 	{
@@ -53,6 +56,7 @@ export const offices: Office[] = [
 		street: 'мкр Междуречье, ул. Славянская, 2',
 		zip: '141201',
 		mapQuery: 'Московская область, Пушкино, Славянская улица, 2',
+		coords: { lat: 55.9805336, lon: 37.858669 },
 	},
 	{
 		slug: 'sankt-peterburg',
@@ -60,6 +64,7 @@ export const offices: Office[] = [
 		street: 'Глухоозёрское шоссе, д. 4',
 		zip: '192019',
 		mapQuery: 'Санкт-Петербург, Глухоозёрское шоссе, 4',
+		coords: { lat: 59.9106347, lon: 30.3760344 },
 	},
 	{
 		slug: 'ekaterinburg',
@@ -67,6 +72,7 @@ export const offices: Office[] = [
 		street: 'ул. Бахчиванджи, 2А/21',
 		zip: '620025',
 		mapQuery: 'Екатеринбург, улица Бахчиванджи, 2А',
+		coords: { lat: 56.7579598, lon: 60.7956856 },
 	},
 	{
 		slug: 'novosibirsk',
@@ -74,6 +80,7 @@ export const offices: Office[] = [
 		street: '2-я Станционная улица, 40Е',
 		zip: '630041',
 		mapQuery: 'Новосибирск, 2-я Станционная улица, 40',
+		coords: { lat: 54.6509745, lon: 83.2909576 },
 	},
 	{
 		slug: 'rostov-na-donu',
@@ -81,6 +88,7 @@ export const offices: Office[] = [
 		street: '1-я Луговая улица, 12, микрорайон Заречная',
 		zip: '344002',
 		mapQuery: 'Ростов-на-Дону, 1-я Луговая улица, 12',
+		coords: { lat: 47.1997164, lon: 39.6990391 },
 	},
 	{
 		slug: 'krasnodar',
@@ -88,11 +96,21 @@ export const offices: Office[] = [
 		street: 'Уральская улица, 83А',
 		zip: '350059',
 		mapQuery: 'Краснодар, Уральская улица, 83А',
+		coords: { lat: 45.0354689, lon: 39.0600371 },
 	},
 ];
 
-/** URL iframe-виджета Яндекс.Карт по текстовому запросу офиса. */
+/** URL iframe-виджета Яндекс.Карт.
+ *  Если у офиса заданы coords — ставим метку-пин (pt=lon,lat) и центрируем по ней.
+ *  Иначе — карта по текстовому запросу (без точки, как запасной вариант). */
 export function officeMapSrc(office: Office): string {
+	if (office.coords) {
+		const { lat, lon } = office.coords;
+		return (
+			`https://yandex.ru/map-widget/v1/?ll=${lon},${lat}&z=17` +
+			`&pt=${lon},${lat},pm2rdm`
+		);
+	}
 	return (
 		'https://yandex.ru/map-widget/v1/?text=' +
 		encodeURIComponent(office.mapQuery) +
