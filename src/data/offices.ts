@@ -47,6 +47,7 @@ export const offices: Office[] = [
 		zip: '603006',
 		mapQuery: 'Нижний Новгород, улица Варварская, 32',
 		coords: { lat: 56.32849, lon: 44.00465 },
+		photo: '/img/offices/nizhny-novgorod.webp',
 		isHead: true,
 	},
 	{
@@ -57,6 +58,7 @@ export const offices: Office[] = [
 		zip: '141206',
 		mapQuery: 'Московская область, Пушкино, Акуловское шоссе, 50а',
 		coords: { lat: 56.0134823, lon: 37.8178207 },
+		photo: '/img/offices/moskva-pushkino.webp',
 	},
 	{
 		slug: 'sankt-peterburg',
@@ -65,6 +67,7 @@ export const offices: Office[] = [
 		zip: '192019',
 		mapQuery: 'Санкт-Петербург, Глухоозёрское шоссе, 4',
 		coords: { lat: 59.9106347, lon: 30.3760344 },
+		photo: '/img/offices/sankt-peterburg.webp',
 	},
 	{
 		slug: 'ekaterinburg',
@@ -73,6 +76,7 @@ export const offices: Office[] = [
 		zip: '620025',
 		mapQuery: 'Екатеринбург, улица Бахчиванджи, 2А',
 		coords: { lat: 56.7579598, lon: 60.7956856 },
+		photo: '/img/offices/ekaterinburg.webp',
 	},
 	{
 		slug: 'novosibirsk',
@@ -81,6 +85,7 @@ export const offices: Office[] = [
 		zip: '630041',
 		mapQuery: 'Новосибирск, 2-я Станционная улица, 40',
 		coords: { lat: 54.6509745, lon: 83.2909576 },
+		photo: '/img/offices/novosibirsk.webp',
 	},
 	{
 		slug: 'rostov-na-donu',
@@ -89,6 +94,7 @@ export const offices: Office[] = [
 		zip: '344002',
 		mapQuery: 'Ростов-на-Дону, 1-я Луговая улица, 12',
 		coords: { lat: 47.1997164, lon: 39.6990391 },
+		photo: '/img/offices/rostov-na-donu.webp',
 	},
 	{
 		slug: 'krasnodar',
@@ -97,6 +103,7 @@ export const offices: Office[] = [
 		zip: '350059',
 		mapQuery: 'Краснодар, Уральская улица, 83А',
 		coords: { lat: 45.0354689, lon: 39.0600371 },
+		photo: '/img/offices/krasnodar.webp',
 	},
 ];
 
