@@ -3,8 +3,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CtaSection from '../../components/CtaSection.astro';
 import { siteName, siteUrl, contacts, orgAddress, orgGeo, orgMapUrl } from '../../data/site';
+import { offices, officeMapSrc, officeFullAddress } from '../../data/offices';
 
-const localBusinessJsonLd = {
+const openingHours = [
+	{
+		'@type': 'OpeningHoursSpecification',
+		dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+		opens: '09:00',
+		closes: '18:00',
+	},
+];
+
+/* Ссылка на Яндекс.Карты (не виджет) для hasMap в schema.org. */
+const officeMapLink = (query: string) =>
+	'https://yandex.ru/maps/?text=' + encodeURIComponent(query);
+
+/* Головной офис (Нижний Новгород) — основной LocalBusiness с координатами. */
+const headOffice = offices.find((o) => o.isHead)!;
+const branchOffices = offices.filter((o) => !o.isHead);
+
+const headJsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'LocalBusiness',
 	'@id': `${siteUrl}/#localbusiness`,
@@ -12,22 +30,40 @@ const localBusinessJsonLd = {
 	legalName: contacts.company,
 	url: siteUrl,
 	logo: `${siteUrl}/img/logo.png`,
-	telephone: contacts.phone,
-	email: contacts.email,
+	telephone: headOffice.phone ?? contacts.phone,
+	email: headOffice.email ?? contacts.email,
 	taxID: contacts.inn,
 	priceRange: '₽₽',
 	address: { '@type': 'PostalAddress', ...orgAddress },
 	geo: { '@type': 'GeoCoordinates', latitude: orgGeo.latitude, longitude: orgGeo.longitude },
 	hasMap: orgMapUrl,
-	openingHoursSpecification: [
-		{
-			'@type': 'OpeningHoursSpecification',
-			dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-			opens: '09:00',
-			closes: '18:00',
-		},
-	],
+	openingHoursSpecification: openingHours,
 };
+
+/* Филиалы — отдельные LocalBusiness, связаны с головным через parentOrganization. */
+const branchJsonLd = branchOffices.map((o) => ({
+	'@context': 'https://schema.org',
+	'@type': 'LocalBusiness',
+	'@id': `${siteUrl}/kontakty/#${o.slug}`,
+	name: `${siteName} — ${o.city}`,
+	parentOrganization: { '@id': `${siteUrl}/#localbusiness` },
+	url: `${siteUrl}/kontakty/`,
+	telephone: o.phone ?? contacts.phone,
+	email: o.email ?? contacts.email,
+	priceRange: '₽₽',
+	address: {
+		'@type': 'PostalAddress',
+		streetAddress: o.street,
+		addressLocality: o.city,
+		...(o.region ? { addressRegion: o.region } : {}),
+		postalCode: o.zip,
+		addressCountry: 'RU',
+	},
+	hasMap: officeMapLink(o.mapQuery),
+	openingHoursSpecification: openingHours,
+}));
+
+const jsonLd = [headJsonLd, ...branchJsonLd];
 
 /* В email подмешиваем <wbr> после @ и перед .ru — браузер сможет
    перенести в логичном месте, а не посреди слова «gkmetallinvest». */
@@ -73,18 +109,12 @@ const requisites = [
 	{ k: 'ОГРН', v: '1165262052889' },
 	{ k: 'Юр. адрес', v: contacts.address },
 ];
-
-/* Координаты офиса для Яндекс.Карты: 603006, Нижний Новгород, Варварская 32. */
-const yMapsSrc =
-	'https://yandex.ru/map-widget/v1/?text=' +
-	encodeURIComponent('Нижний Новгород, ул. Варварская, 32') +
-	'&z=17&pt=44.00465,56.32849,pm2rdm';
 ---
 
 <BaseLayout
 	title="Контакты"
-	description="Контакты ГК Металлинвест: телефон +7 (831) 281-26-60, email zakaz@gkmetallinvest.ru, офис в Нижнем Новгороде на ул. Варварской, 32. Режим работы пн-пт 9:00-18:00."
-	jsonLd={localBusinessJsonLd}
+	description="Контакты ГК Металлинвест: телефон +7 (831) 281-26-60, email zakaz@gkmetallinvest.ru. Офисы и склады в 7 городах — Нижний Новгород, Москва (Пушкино), Санкт-Петербург, Екатеринбург, Новосибирск, Ростов-на-Дону, Краснодар. Режим работы пн-пт 9:00-18:00."
+	jsonLd={jsonLd}
 >
 	<div class="container page">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Контакты' }]} />
@@ -141,40 +171,68 @@ const yMapsSrc =
 			</aside>
 		</section>
 
-		<section class="map-section">
-			<div class="map-info">
-				<h2>Офис и склад</h2>
-				<p class="addr">
-					<strong>{contacts.address.replace('603006, ', '').replace(', помещ. П5, офис 417', '')}</strong>
-					<br/>
-					<span class="addr__zip">603006 · помещ. П5, офис 417</span>
-				</p>
-				<ul class="route">
-					<li>
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 6V4h12v2M6 18v2M18 18v2"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></svg>
-						<span>Станция метро «Горьковская» — 7 минут пешком</span>
-					</li>
-					<li>
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M6 11V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4"/></svg>
-						<span>Платная парковка на ул. Варварской и в БЦ</span>
-					</li>
-					<li>
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C7.58 2 4 5.58 4 10c0 6 8 12 8 12s8-6 8-12c0-4.42-3.58-8-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-						<span>Склад с отгрузками — адрес и проезд согласует менеджер при оформлении заказа</span>
-					</li>
-				</ul>
-			</div>
+		<section class="offices">
+			<header class="offices__head">
+				<h2>Офисы и склады</h2>
+				<p>Отгружаем со складов в {offices.length} городах. Выберите ближайший — адрес, карта и контакты ниже.</p>
+			</header>
 
-			<div class="map-frame" aria-label="Карта: ул. Варварская, 32, Нижний Новгород">
-				<iframe
-					src={yMapsSrc}
-					width="100%"
-					height="100%"
-					frameborder="0"
-					allowfullscreen
-					loading="lazy"
-					title="Офис ГК Металлинвест на Яндекс.Картах"
-				></iframe>
+			<div class="offices__grid">
+				{offices.map((o) => (
+					<article class="office" id={o.slug}>
+						<div class="office__info">
+							<div class="office__media">
+								{o.photo
+									? <img src={o.photo} alt={`Офис ГК Металлинвест в городе ${o.city}`} loading="lazy" width="360" height="220" />
+									: (
+										<div class="office__ph" aria-hidden="true">
+											<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+											<span>Фото офиса</span>
+										</div>
+									)
+								}
+							</div>
+
+							<div class="office__text">
+								<h3 class="office__city">
+									{o.city}
+									{o.isHead && <span class="office__badge">Головной офис</span>}
+								</h3>
+								<p class="office__addr">
+									<strong>{o.street}</strong>
+									<br/>
+									<span class="office__zip">{o.zip}{o.region ? ` · ${o.region}` : ''}</span>
+								</p>
+								<dl class="office__contacts">
+									<div>
+										<dt>
+											<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+										</dt>
+										<dd><a href={`tel:${o.phoneTel ?? contacts.phoneTel}`}>{o.phone ?? contacts.phone}</a></dd>
+									</div>
+									<div>
+										<dt>
+											<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+										</dt>
+										<dd><a href={`mailto:${o.email ?? contacts.email}`}>{o.email ?? contacts.email}</a></dd>
+									</div>
+								</dl>
+							</div>
+						</div>
+
+						<div class="office__map" aria-label={`Карта: ${officeFullAddress(o)}`}>
+							<iframe
+								src={officeMapSrc(o)}
+								width="100%"
+								height="100%"
+								frameborder="0"
+								allowfullscreen
+								loading="lazy"
+								title={`Офис ГК Металлинвест — ${o.city} на Яндекс.Картах`}
+							></iframe>
+						</div>
+					</article>
+				))}
 			</div>
 		</section>
 
@@ -310,62 +368,96 @@ const yMapsSrc =
 	.hours__off { color: var(--color-subtle); font-weight: 400; font-style: italic; font-family: var(--font-sans); }
 	.hours__note { margin: 0; font-size: 0.82rem; color: var(--color-muted); line-height: 1.45; }
 
-	/* Карта + описание проезда */
-	.map-section {
+	/* Офисы по городам */
+	.offices { margin-bottom: var(--space-8); }
+	.offices__head { margin-bottom: var(--space-5); }
+	.offices__head h2 { margin: 0 0 var(--space-2); font-size: 1.3rem; }
+	.offices__head p { margin: 0; color: var(--color-muted); font-size: 0.95rem; max-width: 70ch; }
+
+	.offices__grid {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 0;
-		margin-bottom: var(--space-8);
+		gap: var(--space-5);
+	}
+	@media (min-width: 1100px) {
+		.offices__grid { grid-template-columns: repeat(2, 1fr); }
+	}
+
+	.office {
+		display: grid;
+		grid-template-columns: 1fr;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
 		background: var(--color-surface);
 		overflow: hidden;
 		box-shadow: var(--shadow-xs);
 	}
-	@media (min-width: 900px) {
-		.map-section { grid-template-columns: 360px 1fr; }
+	.office__info { padding: var(--space-4) var(--space-5) var(--space-5); }
+
+	/* Место под фото офиса — заказчик заменит плейсхолдер картинкой */
+	.office__media {
+		margin-bottom: var(--space-4);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		background: var(--color-bg-elev);
+		aspect-ratio: 16 / 9;
 	}
-	.map-info { padding: var(--space-5); }
-	.map-info h2 {
+	.office__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+	.office__ph {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		color: var(--color-subtle);
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-md);
+	}
+	.office__ph span { font-size: 0.8rem; letter-spacing: 0.02em; }
+
+	.office__city {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0 0 var(--space-2);
+		font-size: 1.1rem;
+	}
+	.office__badge {
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-primary-600);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		padding: 0.15rem 0.5rem;
+		border-radius: var(--radius-sm);
+	}
+	.office__addr {
 		margin: 0 0 var(--space-3);
-		font-size: 1.15rem;
-	}
-	.addr {
-		margin: 0 0 var(--space-4);
 		color: var(--color-text);
-		font-size: 0.96rem;
+		font-size: 0.95rem;
 		line-height: 1.5;
 		max-width: none;
 	}
-	.addr__zip {
-		font-size: 0.85rem;
-		color: var(--color-muted);
-	}
-	.route {
-		margin: 0;
-		padding: 0;
-		list-style: none;
-		display: grid;
-		gap: 0.6rem;
-	}
-	.route li {
-		display: flex;
-		align-items: flex-start;
-		gap: 0.55rem;
-		font-size: 0.88rem;
-		color: var(--color-muted);
-		line-height: 1.45;
-	}
-	.route svg {
-		flex: 0 0 16px;
-		margin-top: 2px;
-		color: var(--color-primary-500);
-	}
-	.map-frame {
-		min-height: 360px;
+	.office__zip { font-size: 0.85rem; color: var(--color-muted); }
+
+	.office__contacts { margin: 0; display: grid; gap: 0.4rem; }
+	.office__contacts > div { display: flex; align-items: center; gap: 0.55rem; }
+	.office__contacts dt { display: inline-flex; color: var(--color-primary-500); flex: 0 0 auto; margin: 0; }
+	.office__contacts dd { margin: 0; font-size: 0.92rem; }
+	.office__contacts a { color: var(--color-text); text-decoration: none; font-weight: 500; }
+	.office__contacts a:hover { color: var(--color-primary-600); text-decoration: underline; }
+
+	.office__map {
+		min-height: 260px;
 		background: var(--color-bg-elev);
+		border-top: 1px solid var(--color-border);
 	}
-	.map-frame iframe { display: block; border: 0; min-height: 360px; }
+	.office__map iframe { display: block; border: 0; min-height: 260px; }
 
 	.reqs-section {
 		padding: var(--space-5);
