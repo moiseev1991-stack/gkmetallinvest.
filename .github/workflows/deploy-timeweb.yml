@@ -17,8 +17,9 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    # Жёсткий лимит: даже при сетевых проблемах джоба не висит часами.
-    timeout-minutes: 30
+    # Лимит-страховка. Первый полный залив тысяч файлов по FTP на Timeweb
+    # долгий; при повторе lftp пропускает уже залитое, так что хватает с запасом.
+    timeout-minutes: 55
     env:
       # Проброс секрета на уровень job, чтобы шаг деплоя можно было пропустить,
       # пока FTP-доступ ещё не добавлен в Settings → Secrets.
@@ -76,7 +77,7 @@ jobs:
           set net:reconnect-interval-base 5
           set ftp:ssl-allow no
           set ftp:passive-mode on
-          set mirror:parallel-transfer-count 4
+          set mirror:parallel-transfer-count 8
           set cmd:fail-exit yes
           mirror -R --verbose=1 --exclude-glob .git* ./dist/ "$FTP_SERVER_DIR"
           bye
