@@ -55,17 +55,21 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq lftp
 
-          ls_dir() {
-            echo "===== cls: $1 ====="
-            lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode on; set net:timeout 15; pwd; cls -l \"$1\"; bye" 2>&1 || echo "(failed listing $1)"
-            echo
-          }
-
-          echo "::group::FTP diagnostic listing"
-          ls_dir "./"
-          ls_dir "/"
-          ls_dir "/gkmetallinvest.ru"
-          ls_dir "/gkmetallinvest.ru/public_html"
-          ls_dir "/public_html"
-          ls_dir "$FTP_SERVER_DIR"
+          # Заливка по SFTP (SSH-аккаунт cv724723 не заперт в FTP-«песочнице»
+          # и видит реальный public_html). Один сеанс lftp: пробник логина+папки,
+          # удаление заглушки index.htm, затем зеркалирование dist/.
+          echo "::group::SFTP deploy"
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" -e "
+            set sftp:auto-confirm yes;
+            set net:timeout 20;
+            set net:max-retries 3;
+            set mirror:parallel-transfer-count 6;
+            set cmd:fail-exit yes;
+            pwd;
+            cls -l \"$FTP_SERVER_DIR\";
+            rm -f \"$FTP_SERVER_DIR/index.htm\";
+            mirror -R --verbose=1 --exclude-glob .git* ./dist/ \"$FTP_SERVER_DIR\";
+            echo '----- after deploy -----';
+            cls -l \"$FTP_SERVER_DIR\";
+            bye"
           echo "::endgroup::"
