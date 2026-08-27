@@ -43,24 +43,29 @@ jobs:
       # Заливаем через lftp: даёт таймауты (не виснет), параллельную загрузку
       # и понятный лог. Сначала быстрый пробник логина+папки — если доступ/путь
       # неверные, падаем за секунды, а не на многочасовом зависании.
-      - name: Deploy to Timeweb via FTP (lftp)
+      - name: Deploy to Timeweb via SFTP (SSH key)
         if: ${{ env.FTP_SERVER != '' }}
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -uo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq lftp
 
-          # Заливка по SFTP (SSH-аккаунт cv724723 не заперт в FTP-«песочнице»
-          # и видит реальный public_html). Один сеанс lftp: пробник логина+папки,
-          # удаление заглушки index.htm, затем зеркалирование dist/.
+          # Авторизация по SSH-ключу (пароль главного аккаунта неизвестен,
+          # доп-FTP-юзер заперт в «песочнице»). Приватный ключ кладём в файл
+          # с правами 600, lftp ходит по sftp через ssh с этим ключом.
+          KEYFILE="$(mktemp)"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEYFILE"
+          chmod 600 "$KEYFILE"
+
+          SSH_HOST="vh470.timeweb.ru"
+
           echo "::group::SFTP deploy"
-          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" -e "
-            set sftp:auto-confirm yes;
+          lftp "sftp://$FTP_USERNAME@$SSH_HOST" -e "
+            set sftp:connect-program \"ssh -a -x -i $KEYFILE -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null\";
             set net:timeout 20;
             set net:max-retries 3;
             set mirror:parallel-transfer-count 6;
@@ -73,3 +78,5 @@ jobs:
             cls -l \"$FTP_SERVER_DIR\";
             bye"
           echo "::endgroup::"
+
+          rm -f "$KEYFILE"
