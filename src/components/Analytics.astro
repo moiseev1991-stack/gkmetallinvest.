@@ -1,0 +1,55 @@
+---
+/* Счётчики и верификации, перенесены со старого сайта gkmetallinvest.ru.
+ * Мета-верификации Яндекс.Вебмастера рендерятся всегда (нужны для подтверждения
+ * прав на домен ещё до запуска). Сами счётчики (Метрика, GA4, Mail.ru) грузятся
+ * только на боевом сайте (когда siteNoindex=false), чтобы трафик с временных
+ * адресов Timeweb/Vercel/localhost не пачкал статистику. */
+import { siteNoindex } from '../data/site';
+---
+
+<meta name="yandex-verification" content="65446952578956f8" />
+<meta name="yandex-verification" content="e8e4fa95672572dc" />
+
+{!siteNoindex && (
+	<>
+		{/* Yandex.Metrika counter */}
+		<script is:inline type="text/javascript">
+			(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+			m[i].l=1*new Date();
+			for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+			k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+			(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+			ym(50858415, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true, ecommerce:"dataLayer" });
+		</script>
+		<noscript><div><img src="https://mc.yandex.ru/watch/50858415" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+		{/* /Yandex.Metrika counter */}
+
+		{/* Google Analytics 4 (перенесён на корректный gtag.js вместо старого analytics.js) */}
+		<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-J7LBVBD3ZR"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+			gtag('config', 'G-J7LBVBD3ZR');
+		</script>
+
+		{/* Rating Mail.ru counter */}
+		<script is:inline type="text/javascript">
+			var _tmr = window._tmr || (window._tmr = []);
+			_tmr.push({id: "3410107", type: "pageView", start: (new Date()).getTime()});
+			_tmr.push({id: "3601368", type: "pageView", start: (new Date()).getTime()});
+			(function (d, w, id) {
+				if (d.getElementById(id)) return;
+				var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
+				ts.src = "https://top-fwz1.mail.ru/js/code.js";
+				var f = function () { var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s); };
+				if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
+			})(document, window, "tmr-code");
+		</script>
+		<noscript><div>
+			<img src="https://top-fwz1.mail.ru/counter?id=3410107;js=na" style="position:absolute;left:-9999px;" alt="" />
+			<img src="https://top-fwz1.mail.ru/counter?id=3601368;js=na" style="position:absolute;left:-9999px;" alt="" />
+		</div></noscript>
+		{/* /Rating Mail.ru counter */}
+	</>
+)}

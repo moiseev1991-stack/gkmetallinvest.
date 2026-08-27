@@ -4,6 +4,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import MobileStickyBar from '../components/MobileStickyBar.astro';
 import CookieBanner from '../components/CookieBanner.astro';
+import Analytics from '../components/Analytics.astro';
 import { siteName, siteUrl, siteNoindex, siteOgImage } from '../data/site';
 
 interface Props {
@@ -98,7 +99,9 @@ const jsonLdItems = jsonLd
 		{jsonLdItems.map((item) => (
 			<script type="application/ld+json" set:html={JSON.stringify(item)} />
 		))}
-	</head>
+
+			<Analytics />
+		</head>
 	<body>
 		<a class="skip-link" href="#main">Перейти к содержимому</a>
 		<SiteHeader />
