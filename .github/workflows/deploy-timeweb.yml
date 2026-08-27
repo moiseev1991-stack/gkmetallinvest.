@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    # Жёсткий лимит: даже при сетевых проблемах джоба не висит часами.
+    timeout-minutes: 30
     env:
       # Проброс секрета на уровень job, чтобы шаг деплоя можно было пропустить,
       # пока FTP-доступ ещё не добавлен в Settings → Secrets.
@@ -37,16 +39,46 @@ jobs:
       - name: Build site
         run: npm run build
 
-      - name: Deploy to Timeweb via FTP
+      # Заливаем через lftp: даёт таймауты (не виснет), параллельную загрузку
+      # и понятный лог. Сначала быстрый пробник логина+папки — если доступ/путь
+      # неверные, падаем за секунды, а не на многочасовом зависании.
+      - name: Deploy to Timeweb via FTP (lftp)
         if: ${{ env.FTP_SERVER != '' }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          # Не удалять служебное на сервере (если что-то положено вручную)
-          exclude: |
-            **/.git*
-            **/.git*/**
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp
+
+          echo "::group::FTP probe (login + list target dir)"
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" <<EOF
+          set net:timeout 15
+          set net:max-retries 2
+          set net:reconnect-interval-base 5
+          set ftp:ssl-allow no
+          set ftp:passive-mode on
+          set cmd:fail-exit yes
+          debug 3
+          pwd
+          cls -l "$FTP_SERVER_DIR"
+          bye
+          EOF
+          echo "::endgroup::"
+
+          echo "::group::FTP mirror upload"
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" <<EOF
+          set net:timeout 20
+          set net:max-retries 3
+          set net:reconnect-interval-base 5
+          set ftp:ssl-allow no
+          set ftp:passive-mode on
+          set mirror:parallel-transfer-count 4
+          set cmd:fail-exit yes
+          mirror -R --verbose=1 --exclude-glob .git* ./dist/ "$FTP_SERVER_DIR"
+          bye
+          EOF
+          echo "::endgroup::"
