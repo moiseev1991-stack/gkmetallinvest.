@@ -65,14 +65,12 @@ jobs:
           # поэтому оборачиваем ssh в скрипт: все опции и ключ зашиты внутри,
           # а host/port lftp дописывает как "$@". printf, чтобы шебанг был
           # в начале файла без YAML-отступа.
+          # lftp не передаёт имя пользователя в connect-program, поэтому
+          # жёстко фиксируем его через -o User=… (иначе ssh идёт под локальным
+          # юзером runner и получает Permission denied).
           WRAP="$(mktemp)"
-          printf '#!/bin/sh\nexec ssh -a -x -v -i "%s" -o IdentitiesOnly=yes -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"\n' "$KEYFILE" > "$WRAP"
+          printf '#!/bin/sh\nexec ssh -a -x -i "%s" -o User=%s -o IdentitiesOnly=yes -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"\n' "$KEYFILE" "$FTP_USERNAME" > "$WRAP"
           chmod +x "$WRAP"
-
-          # Диагностика: показать, что ssh с ключом реально логинится.
-          echo "::group::ssh key self-test"
-          ssh -a -x -v -i "$KEYFILE" -o IdentitiesOnly=yes -o PreferredAuthentications=publickey -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$FTP_USERNAME@vh470.timeweb.ru" 'echo SSH_KEY_OK; whoami; pwd' 2>&1 | tail -40 || true
-          echo "::endgroup::"
 
           SSH_HOST="vh470.timeweb.ru"
 
