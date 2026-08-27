@@ -61,11 +61,19 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEYFILE"
           chmod 600 "$KEYFILE"
 
+          # lftp неверно разбивает connect-program со «своими» аргументами,
+          # поэтому оборачиваем ssh в скрипт: все опции и ключ зашиты внутри,
+          # а host/port lftp дописывает как "$@". printf, чтобы шебанг был
+          # в начале файла без YAML-отступа.
+          WRAP="$(mktemp)"
+          printf '#!/bin/sh\nexec ssh -a -x -i "%s" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"\n' "$KEYFILE" > "$WRAP"
+          chmod +x "$WRAP"
+
           SSH_HOST="vh470.timeweb.ru"
 
           echo "::group::SFTP deploy"
           lftp "sftp://$FTP_USERNAME@$SSH_HOST" -e "
-            set sftp:connect-program \"ssh -a -x -i $KEYFILE -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null\";
+            set sftp:connect-program $WRAP;
             set net:timeout 20;
             set net:max-retries 3;
             set mirror:parallel-transfer-count 6;
@@ -79,4 +87,4 @@ jobs:
             bye"
           echo "::endgroup::"
 
-          rm -f "$KEYFILE"
+          rm -f "$KEYFILE" "$WRAP"
