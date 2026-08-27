@@ -66,8 +66,13 @@ jobs:
           # а host/port lftp дописывает как "$@". printf, чтобы шебанг был
           # в начале файла без YAML-отступа.
           WRAP="$(mktemp)"
-          printf '#!/bin/sh\nexec ssh -a -x -i "%s" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"\n' "$KEYFILE" > "$WRAP"
+          printf '#!/bin/sh\nexec ssh -a -x -v -i "%s" -o IdentitiesOnly=yes -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"\n' "$KEYFILE" > "$WRAP"
           chmod +x "$WRAP"
+
+          # Диагностика: показать, что ssh с ключом реально логинится.
+          echo "::group::ssh key self-test"
+          ssh -a -x -v -i "$KEYFILE" -o IdentitiesOnly=yes -o PreferredAuthentications=publickey -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$FTP_USERNAME@vh470.timeweb.ru" 'echo SSH_KEY_OK; whoami; pwd' 2>&1 | tail -40 || true
+          echo "::endgroup::"
 
           SSH_HOST="vh470.timeweb.ru"
 
