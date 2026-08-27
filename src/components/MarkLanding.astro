@@ -61,14 +61,14 @@ const h1 = `${hubLabel} ${mark.aisi} (${mark.gost})`;
 
 /* Прочие хабы, где есть эта марка — для кросс-линков «то же AISI 304 в других форматах». */
 const HUB_LABELS: Record<string, { label: string; href: string }> = {
-	list: { label: 'Лист', href: '/list/' },
-	truba: { label: 'Труба', href: '/truba/' },
-	krug: { label: 'Круг', href: '/krug/' },
-	rulon: { label: 'Рулон', href: '/rulon/' },
-	polosa: { label: 'Полоса', href: '/polosa/' },
-	provoloka: { label: 'Проволока', href: '/provoloka/' },
+	list: { label: 'Лист', href: '/list-nerzhaveyushchiy/' },
+	truba: { label: 'Труба', href: '/truba-nerzhaveyushchaya/' },
+	krug: { label: 'Круг', href: '/krug-nerzhaveyushchiy/' },
+	rulon: { label: 'Рулон', href: '/rulon-nerzhaveyushchiy/' },
+	polosa: { label: 'Полоса', href: '/polosa-nerzhaveyushchaya/' },
+	provoloka: { label: 'Проволока', href: '/provoloka-nerzhaveyushchaya/' },
 	'detali-truboprovoda': { label: 'Фитинги', href: '/detali-truboprovoda/' },
-	'ugolok-shveller': { label: 'Уголок / швеллер', href: '/ugolok-shveller/' },
+	'ugolok-shveller': { label: 'Уголок / швеллер', href: '/ugolok-shveller-nerzhaveyushchiy/' },
 };
 const otherHubs = mark.hubs.filter((h) => h !== hub).map((h) => HUB_LABELS[h]).filter(Boolean);
 

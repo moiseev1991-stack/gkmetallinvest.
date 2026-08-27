@@ -4,6 +4,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { navGroups, navServicesAll } from '../../data/navigation';
 import { cities } from '../../data/cities';
 import { siteName } from '../../data/site';
+import { toHubPath } from '../../data/hub-paths';
 
 const sections = [
 	{
@@ -85,10 +86,10 @@ const hubsWithCities: Array<{ hub: string; label: string }> = [
 			<div class="sm-cities">
 				{hubsWithCities.map((h) => (
 					<div class="sm-cities__group">
-						<a class="sm-cities__hub" href={`/${h.hub}/`}>{h.label}</a>
+						<a class="sm-cities__hub" href={`/${toHubPath(h.hub)}/`}>{h.label}</a>
 						<ul>
 							{cities.map((c) => (
-								<li><a href={`/${h.hub}/v-${c.slug}/`}>в {c.loc}</a></li>
+								<li><a href={`/${toHubPath(h.hub)}/v-${c.slug}/`}>в {c.loc}</a></li>
 							))}
 						</ul>
 					</div>

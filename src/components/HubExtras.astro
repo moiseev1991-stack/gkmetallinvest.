@@ -19,7 +19,7 @@ interface Props {
 const { hubHref, hubLabel, hubLabelGenitive, grades = [], surfaces = [], } = Astro.props;
 const labelGen = hubLabelGenitive ?? hubLabel.toLowerCase();
 
-/* hubKey достаём из hubHref («/list/» → «list»), чтобы не менять 8 родителей. */
+/* hubKey достаём из hubHref («/list-nerzhaveyushchiy/» → «list»), чтобы не менять 8 родителей. */
 const hubKey = (hubHref.replace(/^\/|\/$/g, '') || null) as HubKey | null;
 
 /* Сопоставляем каждый grade c маркой, у которой есть посадочная страница

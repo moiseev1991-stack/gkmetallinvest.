@@ -2,6 +2,7 @@
 import pricelist from '../data/pricelist.json';
 import { getHubSkus } from '../data/pricelist-helpers';
 import { DEKOR_SURFACE_LABELS } from '../data/dekor-listy';
+import { toHubPath } from '../data/hub-paths';
 
 interface Props {
 	hub:
@@ -23,7 +24,7 @@ interface Props {
 	 *  (`hubPath="lenta-nerzhaveyushchaya"`), т.к. отдельных страниц у неё нет. */
 	hubPath?: string;
 	/** Алиасы grade для предварительной фильтрации — используется на марочных
-	 *  посадочных (/list/aisi-304/), чтобы в таблице сразу были только позиции
+	 *  посадочных (/list-nerzhaveyushchiy/aisi-304/), чтобы в таблице сразу были только позиции
 	 *  нужной марки. Сравнение case-insensitive по substring matching. */
 	initialGrade?: string[];
 	/** Фильтр по происхождению (лента): показать только импорт или только РФ. */
@@ -40,9 +41,10 @@ interface Props {
 
 const { hub, title = 'Прайс-лист', measure = 'размер', initialGrade, origin, variant, hubPath, sizeRangeFrom } = Astro.props;
 
-/* База ссылок на карточки товара. По умолчанию совпадает с hub, но фольга
-   (и на всякий случай лента) указывает реальный путь страниц каталога. */
-const hrefBase = hubPath ?? hub;
+/* База ссылок на карточки товара. По умолчанию — URL-слаг раздела из карты
+   hub→path (напр. hub "list" → "list-nerzhaveyushchiy"); фольга явным hubPath
+   ссылается на карточки ленты. */
+const hrefBase = hubPath ?? toHubPath(hub);
 
 /* Лента и фольга делят один набор данных и одинаковую логику поверхностей,
    плёнки, кроя. isLenta объединяет обе категории. */

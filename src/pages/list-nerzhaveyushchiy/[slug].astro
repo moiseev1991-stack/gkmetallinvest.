@@ -2,39 +2,40 @@
 import ProductDetail from '../../components/ProductDetail.astro';
 import MarkLanding from '../../components/MarkLanding.astro';
 import pricelist from '../../data/pricelist.json';
-import { marks } from '../../data/marks.ts';
+import { marks, markBySlug } from '../../data/marks.ts';
 
 export async function getStaticPaths() {
-	const skus = (pricelist.hubs as any).provoloka as any[];
+	const skus = (pricelist.hubs as any).list as any[];
 	const productPaths = skus.map((sku) => ({
 		params: { slug: sku.slug },
 		props: { kind: 'product', sku },
 	}));
 
 	const markPaths = marks
-		.filter((m) => m.hubs.includes('provoloka'))
+		.filter((m) => m.hubs.includes('list'))
 		.map((m) => ({ params: { slug: m.slug }, props: { kind: 'mark', mark: m } }));
 
 	return [...markPaths, ...productPaths];
 }
 
 const props = Astro.props as any;
+const mark = props.kind === 'mark' ? markBySlug[(props.mark as any).slug] : null;
 ---
 
 {props.kind === 'mark' ? (
 	<MarkLanding
 		mark={props.mark}
-		hub="provoloka"
-		hubLabel="Проволока нержавеющая"
-		hubLabelGenitive="проволоку нержавеющую"
-		hubHref="/provoloka/"
-		measure="диаметр"
+		hub="list"
+		hubLabel="Лист нержавеющий"
+		hubLabelGenitive="лист нержавеющий"
+		hubHref="/list-nerzhaveyushchiy/"
+		measure="толщина"
 	/>
 ) : (
 	<ProductDetail
 		sku={props.sku}
-		hubLabel="Проволока нержавеющая"
-		hubHref="/provoloka/"
-		measureLabel="диаметр"
+		hubLabel="Лист нержавеющий"
+		hubHref="/list-nerzhaveyushchiy/"
+		measureLabel="толщина"
 	/>
 )}

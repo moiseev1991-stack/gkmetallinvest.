@@ -53,7 +53,7 @@ export interface MarkInfo {
 	hubs: HubKey[];
 	/** Хаб-специфичный абзац про применение этой марки в указанном формате
 	 *  проката. Уникализирует марочные посадочные между хабами — иначе
-	 *  /list/aisi-304/ и /truba/aisi-304/ выглядят как дубли в поиске.
+	 *  /list-nerzhaveyushchiy/aisi-304/ и /truba-nerzhaveyushchaya/aisi-304/ выглядят как дубли в поиске.
 	 *  Заполнен пока только для хабов, по которым работали в спринте. */
 	hubContext?: Partial<Record<HubKey, string>>;
 }

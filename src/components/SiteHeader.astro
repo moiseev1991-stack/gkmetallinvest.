@@ -5,7 +5,7 @@ import Button from './ui/Button.astro';
 
 const path = Astro.url.pathname;
 
-/** href "/list/" активен на /list/, /list/aisi-304…/, /list/v-moskve/.
+/** href "/list-nerzhaveyushchiy/" активен на /list-nerzhaveyushchiy/, /list-nerzhaveyushchiy/aisi-304…/, /list-nerzhaveyushchiy/v-moskve/.
  *  href "/" активен только на главной. */
 const isActive = (href: string) => {
 	if (href === '/') return path === '/';

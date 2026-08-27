@@ -71,9 +71,9 @@ export const citiesRf = [
 /** Марочные посадочные по топ-5 — закрывают коммерческие запросы вида
  *  «AISI 304 лист купить». Само описание марок и алиасы — в data/marks.ts. */
 export const marksAisi = [
-	{ label: 'AISI 304', href: '/list/aisi-304/' },
-	{ label: 'AISI 430', href: '/list/aisi-430/' },
-	{ label: 'AISI 321 / 12Х18Н10Т', href: '/list/aisi-321/' },
-	{ label: 'AISI 316L', href: '/list/aisi-316l/' },
-	{ label: 'AISI 201', href: '/list/aisi-201/' },
+	{ label: 'AISI 304', href: '/list-nerzhaveyushchiy/aisi-304/' },
+	{ label: 'AISI 430', href: '/list-nerzhaveyushchiy/aisi-430/' },
+	{ label: 'AISI 321 / 12Х18Н10Т', href: '/list-nerzhaveyushchiy/aisi-321/' },
+	{ label: 'AISI 316L', href: '/list-nerzhaveyushchiy/aisi-316l/' },
+	{ label: 'AISI 201', href: '/list-nerzhaveyushchiy/aisi-201/' },
 ];

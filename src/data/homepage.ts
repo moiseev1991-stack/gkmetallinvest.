@@ -25,8 +25,8 @@ export const heroProducts: Array<{
 	alt?: string;
 	href: string;
 }> = [
-	{ title: 'Трубы ЭСВ', hint: 'AISI 304 / 321', image: '/img/catalog/truba.png', href: '/truba/' },
-	{ title: 'Рулоны', hint: '0.4–8 мм, 1000–1500', image: '/img/catalog/rulon.jpg', href: '/rulon/' },
+	{ title: 'Трубы ЭСВ', hint: 'AISI 304 / 321', image: '/img/catalog/truba.png', href: '/truba-nerzhaveyushchaya/' },
+	{ title: 'Рулоны', hint: '0.4–8 мм, 1000–1500', image: '/img/catalog/rulon.jpg', href: '/rulon-nerzhaveyushchiy/' },
 	{ title: 'Декоративные', hint: 'BA, 4N, DECO', image: '/img/catalog/dekorativnye.webp', href: '/dekorativnye-listy/' },
 ];
 
@@ -47,14 +47,14 @@ export const catalogCategories: Array<{
 	image: string | null;
 	alt?: string;
 }> = [
-	{ href: '/list/', title: 'Лист нержавеющий', description: 'Холоднокатаный, горячекатаный, рифленый, декоративный и перфорированный лист.', image: '/img/catalog/list.jpg' },
-	{ href: '/truba/', title: 'Труба нержавеющая', description: 'Круглая бесшовная, электросварная, прямоугольная и квадратная.', image: '/img/catalog/truba.png' },
-	{ href: '/krug/', title: 'Круг / Квадрат / Шестигранник', description: 'Сортовой нержавеющий прокат по маркам.', image: '/img/catalog/krug.jpg' },
-	{ href: '/polosa/', title: 'Полоса нержавеющая', description: 'Полоса нержавеющая по маркам.', image: '/img/catalog/polosa.jpg' },
-	{ href: '/ugolok-shveller/', title: 'Уголок / Швеллер', description: 'Уголок и швеллер по маркам.', image: '/img/catalog/ugolok-shveller.jpg' },
-	{ href: '/rulon/', title: 'Рулон нержавеющий', description: 'Рулонный прокат AISI 304, 316L, 321. Толщины 0,4–8 мм.', image: '/img/catalog/rulon.jpg' },
+	{ href: '/list-nerzhaveyushchiy/', title: 'Лист нержавеющий', description: 'Холоднокатаный, горячекатаный, рифленый, декоративный и перфорированный лист.', image: '/img/catalog/list.jpg' },
+	{ href: '/truba-nerzhaveyushchaya/', title: 'Труба нержавеющая', description: 'Круглая бесшовная, электросварная, прямоугольная и квадратная.', image: '/img/catalog/truba.png' },
+	{ href: '/krug-nerzhaveyushchiy/', title: 'Круг / Квадрат / Шестигранник', description: 'Сортовой нержавеющий прокат по маркам.', image: '/img/catalog/krug.jpg' },
+	{ href: '/polosa-nerzhaveyushchaya/', title: 'Полоса нержавеющая', description: 'Полоса нержавеющая по маркам.', image: '/img/catalog/polosa.jpg' },
+	{ href: '/ugolok-shveller-nerzhaveyushchiy/', title: 'Уголок / Швеллер', description: 'Уголок и швеллер по маркам.', image: '/img/catalog/ugolok-shveller.jpg' },
+	{ href: '/rulon-nerzhaveyushchiy/', title: 'Рулон нержавеющий', description: 'Рулонный прокат AISI 304, 316L, 321. Толщины 0,4–8 мм.', image: '/img/catalog/rulon.jpg' },
 	{ href: '/detali-truboprovoda/', title: 'Детали трубопровода', description: 'Фланцы, отводы, переходы, тройники, задвижки, клапаны.', image: '/img/catalog/detali-truboprovoda.jpg' },
-	{ href: '/provoloka/', title: 'Проволока нержавеющая', description: 'Проволока AISI 304, 316L, 12Х18Н10Т, Ø 0,1–6 мм.', image: '/img/catalog/provoloka.jpg' },
+	{ href: '/provoloka-nerzhaveyushchaya/', title: 'Проволока нержавеющая', description: 'Проволока AISI 304, 316L, 12Х18Н10Т, Ø 0,1–6 мм.', image: '/img/catalog/provoloka.jpg' },
 	{ href: '/lenta-nerzhaveyushchaya/', title: 'Лента нержавеющая', description: 'По маркам, толщинам и ширинам с шагом 5 мм.', image: '/img/catalog/lenta.jpg' },
 	{ href: '/folga-nerzhaveyushchaya/', title: 'Фольга нержавеющая', description: 'По маркам и толщинам без разбивки на ширины.', image: '/img/catalog/folga.avif' },
 	{ href: '/dekorativnye-listy/', title: 'Декоративные листы', description: 'BA, 4N, шлифовка, ткань — для интерьера и фасадов.', image: '/img/catalog/dekorativnye.webp' },
@@ -62,11 +62,11 @@ export const catalogCategories: Array<{
 
 /** Популярные направления */
 export const popularDirections = [
-	{ href: '/provoloka/', label: 'Нержавеющая проволока', note: '' },
+	{ href: '/provoloka-nerzhaveyushchaya/', label: 'Нержавеющая проволока', note: '' },
 	{ href: '/dekorativnye-listy/', label: 'Декоративные листы', note: '' },
-	{ href: '/list/', label: 'Лист AISI 304', note: '' },
-	{ href: '/truba/', label: 'Труба нержавеющая', note: '' },
-	{ href: '/rulon/', label: 'Рулон нержавеющий', note: '' },
+	{ href: '/list-nerzhaveyushchiy/', label: 'Лист AISI 304', note: '' },
+	{ href: '/truba-nerzhaveyushchaya/', label: 'Труба нержавеющая', note: '' },
+	{ href: '/rulon-nerzhaveyushchiy/', label: 'Рулон нержавеющий', note: '' },
 ];
 
 /**
@@ -108,11 +108,11 @@ export const homeServices: Array<{
 	icon: string | null;
 }> = [
 	{ href: '/uslugi/rezka-rulonov/', title: 'Продольная и поперечная резка рулонов', text: 'Резка рулона в лист и штрипс по заданным параметрам.', icon: null },
-	{ href: '/rulon/', title: 'Перемотка рулонов', text: 'Перемотка в нужный вес и ширину.', icon: null },
+	{ href: '/rulon-nerzhaveyushchiy/', title: 'Перемотка рулонов', text: 'Перемотка в нужный вес и ширину.', icon: null },
 	{ href: '/uslugi/perforaciya-listov/', title: 'Перфорация листов', text: 'Лазер и координатно-пробивной пресс, рисунок по эскизу.', icon: null },
 	{ href: '/uslugi/', title: 'Выравнивание плоскостности', text: 'Подготовка листового металла к дальнейшей обработке.', icon: null },
 	{ href: '/uslugi/', title: 'Резка сортового проката до 600 мм', text: 'Резка сортового проката на заданные длины.', icon: null },
-	{ href: '/truba/', title: 'Электросварные трубы под заказ', text: 'Изготовление ЭСВ труб по ТЗ.', icon: null },
+	{ href: '/truba-nerzhaveyushchaya/', title: 'Электросварные трубы под заказ', text: 'Изготовление ЭСВ труб по ТЗ.', icon: null },
 	{ href: '/uslugi/polirovka/', title: 'Шлифование и полировка листов', text: 'Подготовка поверхности под требования проекта.', icon: null },
 ];
 
@@ -192,7 +192,7 @@ export const additionalProducts: Array<{
 	image: string | null;
 }> = [
 	{
-		href: '/provoloka/',
+		href: '/provoloka-nerzhaveyushchaya/',
 		title: 'Проволока нержавеющая',
 		subtitle: 'Технологическая, пружинная и сварочная',
 		bullets: ['12Х18Н10Т, AISI 304/316L/321', 'EN 10270-3 (пружинная)', 'ER308L / ER316L (сварочная)'],

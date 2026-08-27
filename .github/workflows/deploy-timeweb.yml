@@ -1,0 +1,52 @@
+name: Deploy to Timeweb
+
+# Сборка статического Astro и заливка dist/ на Timeweb (Apache) по FTP.
+# Запускается на каждый push в main и вручную (workflow_dispatch).
+# Vercel продолжает деплоить параллельно — это два независимых хоста.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Не запускать два деплоя одновременно — второй ждёт/отменяет первый.
+concurrency:
+  group: deploy-timeweb
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      # Проброс секрета на уровень job, чтобы шаг деплоя можно было пропустить,
+      # пока FTP-доступ ещё не добавлен в Settings → Secrets.
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Deploy to Timeweb via FTP
+        if: ${{ env.FTP_SERVER != '' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          # Не удалять служебное на сервере (если что-то положено вручную)
+          exclude: |
+            **/.git*
+            **/.git*/**

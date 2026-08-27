@@ -32,8 +32,8 @@ export const navGroups: NavGroup[] = [
 		title: 'Листовой прокат',
 		hint: 'Лист, рулон, лента, фольга',
 		items: [
-			{ title: 'Лист нержавеющий', href: '/list/', meta: '0,4–120 мм · AISI 304/321/430' },
-			{ title: 'Рулон нержавеющий', href: '/rulon/', meta: '0,4–8 мм · ширина 500–1500' },
+			{ title: 'Лист нержавеющий', href: '/list-nerzhaveyushchiy/', meta: '0,4–120 мм · AISI 304/321/430' },
+			{ title: 'Рулон нержавеющий', href: '/rulon-nerzhaveyushchiy/', meta: '0,4–8 мм · ширина 500–1500' },
 			{ title: 'Декоративные листы', href: '/dekorativnye-listy/', meta: 'зеркало · 8K · DECO' },
 			{ title: 'Лента нержавеющая', href: '/lenta-nerzhaveyushchaya/', meta: 'штрипс · 0,15–0,8 мм · 200/400 мм' },
 			{ title: 'Фольга нержавеющая', href: '/folga-nerzhaveyushchaya/', meta: 'тонкая · 0,15 мм · 200/400 мм' },
@@ -43,7 +43,7 @@ export const navGroups: NavGroup[] = [
 		title: 'Трубный прокат',
 		hint: 'Труба и фитинги',
 		items: [
-			{ title: 'Труба нержавеющая', href: '/truba/', meta: 'бесшовная · ЭСВ · профильная' },
+			{ title: 'Труба нержавеющая', href: '/truba-nerzhaveyushchaya/', meta: 'бесшовная · ЭСВ · профильная' },
 			{ title: 'Детали трубопровода и ограждения', href: '/detali-truboprovoda/', meta: 'фланцы, отводы + стойки, поручни, стекло' },
 		],
 	},
@@ -51,10 +51,10 @@ export const navGroups: NavGroup[] = [
 		title: 'Сортовой прокат',
 		hint: 'Круг, полоса, профиль',
 		items: [
-			{ title: 'Круг / Квадрат / Шестигранник', href: '/krug/', meta: 'Ø 5–250 мм' },
-			{ title: 'Полоса нержавеющая', href: '/polosa/', meta: 'горяче- и холоднокатаная' },
-			{ title: 'Уголок / Швеллер', href: '/ugolok-shveller/', meta: 'все размеры' },
-			{ title: 'Проволока нержавеющая', href: '/provoloka/', meta: 'Ø 0,1–6 мм' },
+			{ title: 'Круг / Квадрат / Шестигранник', href: '/krug-nerzhaveyushchiy/', meta: 'Ø 5–250 мм' },
+			{ title: 'Полоса нержавеющая', href: '/polosa-nerzhaveyushchaya/', meta: 'горяче- и холоднокатаная' },
+			{ title: 'Уголок / Швеллер', href: '/ugolok-shveller-nerzhaveyushchiy/', meta: 'все размеры' },
+			{ title: 'Проволока нержавеющая', href: '/provoloka-nerzhaveyushchaya/', meta: 'Ø 0,1–6 мм' },
 		],
 	},
 	{

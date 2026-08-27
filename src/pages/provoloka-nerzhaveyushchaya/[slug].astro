@@ -5,14 +5,14 @@ import pricelist from '../../data/pricelist.json';
 import { marks } from '../../data/marks.ts';
 
 export async function getStaticPaths() {
-	const skus = (pricelist.hubs as any)['ugolok-shveller'] as any[];
+	const skus = (pricelist.hubs as any).provoloka as any[];
 	const productPaths = skus.map((sku) => ({
 		params: { slug: sku.slug },
 		props: { kind: 'product', sku },
 	}));
 
 	const markPaths = marks
-		.filter((m) => m.hubs.includes('ugolok-shveller'))
+		.filter((m) => m.hubs.includes('provoloka'))
 		.map((m) => ({ params: { slug: m.slug }, props: { kind: 'mark', mark: m } }));
 
 	return [...markPaths, ...productPaths];
@@ -24,17 +24,17 @@ const props = Astro.props as any;
 {props.kind === 'mark' ? (
 	<MarkLanding
 		mark={props.mark}
-		hub="ugolok-shveller"
-		hubLabel="Уголок и швеллер нержавеющий"
-		hubLabelGenitive="уголок и швеллер нержавеющие"
-		hubHref="/ugolok-shveller/"
-		measure="размер"
+		hub="provoloka"
+		hubLabel="Проволока нержавеющая"
+		hubLabelGenitive="проволоку нержавеющую"
+		hubHref="/provoloka-nerzhaveyushchaya/"
+		measure="диаметр"
 	/>
 ) : (
 	<ProductDetail
 		sku={props.sku}
-		hubLabel="Уголок / Швеллер нержавеющий"
-		hubHref="/ugolok-shveller/"
-		measureLabel="размер"
+		hubLabel="Проволока нержавеющая"
+		hubHref="/provoloka-nerzhaveyushchaya/"
+		measureLabel="диаметр"
 	/>
 )}

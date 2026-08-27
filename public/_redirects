@@ -1,21 +1,30 @@
 # Netlify-style redirects (legacy gkmetallinvest.ru → новый сайт)
 /all /postavka-nerzhaveyushchego-metalloprokata/ 301
-/list /list/ 301
-/catalog/truba /truba/ 301
-/catalog/krug/prutok /krug/ 301
+/list /list-nerzhaveyushchiy/ 301
+/catalog/truba /truba-nerzhaveyushchaya/ 301
+/catalog/krug/prutok /krug-nerzhaveyushchiy/ 301
 /catalog/lenta /lenta-nerzhaveyushchaya/ 301
 /lenta /lenta-nerzhaveyushchaya/ 301
 /lenta/ /lenta-nerzhaveyushchaya/ 301
 /folga /folga-nerzhaveyushchaya/ 301
 /folga/ /folga-nerzhaveyushchaya/ 301
-/rulon /rulon/ 301
+/rulon /rulon-nerzhaveyushchiy/ 301
 /listdeco /dekorativnye-listy/ 301
 /uslugi/perforation /uslugi/perforaciya-listov/ 301
-/list/v-perme/ /list/v-permi/ 301
-/truba/v-perme/ /truba/v-permi/ 301
-/krug/v-perme/ /krug/v-permi/ 301
-/rulon/v-perme/ /rulon/v-permi/ 301
-/polosa/v-perme/ /polosa/v-permi/ 301
-/provoloka/v-perme/ /provoloka/v-permi/ 301
-/ugolok-shveller/v-perme/ /ugolok-shveller/v-permi/ 301
+/list/v-perme/ /list-nerzhaveyushchiy/v-permi/ 301
+/truba/v-perme/ /truba-nerzhaveyushchaya/v-permi/ 301
+/krug/v-perme/ /krug-nerzhaveyushchiy/v-permi/ 301
+/rulon/v-perme/ /rulon-nerzhaveyushchiy/v-permi/ 301
+/polosa/v-perme/ /polosa-nerzhaveyushchaya/v-permi/ 301
+/provoloka/v-perme/ /provoloka-nerzhaveyushchaya/v-permi/ 301
+/ugolok-shveller/v-perme/ /ugolok-shveller-nerzhaveyushchiy/v-permi/ 301
 /detali-truboprovoda/v-perme/ /detali-truboprovoda/v-permi/ 301
+
+# --- Переименование слагов каталога под ключи (старый слаг → новый) -----------
+/list/* /list-nerzhaveyushchiy/:splat 301
+/krug/* /krug-nerzhaveyushchiy/:splat 301
+/truba/* /truba-nerzhaveyushchaya/:splat 301
+/provoloka/* /provoloka-nerzhaveyushchaya/:splat 301
+/rulon/* /rulon-nerzhaveyushchiy/:splat 301
+/polosa/* /polosa-nerzhaveyushchaya/:splat 301
+/ugolok-shveller/* /ugolok-shveller-nerzhaveyushchiy/:splat 301

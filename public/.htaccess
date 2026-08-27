@@ -5,14 +5,31 @@
 #  На Vercel этот файл игнорируется — активен только на Apache.
 # ============================================================================
 
-# --- Каталог: точные соответствия --------------------------------------------
-RedirectMatch 301 ^/list/?$                     /list/
-RedirectMatch 301 ^/rulon/?$                    /rulon/
-RedirectMatch 301 ^/provolokanerzh/?$           /provoloka/
+# --- Каталог: гео-фиксы Перми на новых слагах (должны идти ДО catch-all) ------
+RedirectMatch 301 ^/list/v-perme/?$             /list-nerzhaveyushchiy/v-permi/
+RedirectMatch 301 ^/truba/v-perme/?$            /truba-nerzhaveyushchaya/v-permi/
+RedirectMatch 301 ^/krug/v-perme/?$             /krug-nerzhaveyushchiy/v-permi/
+RedirectMatch 301 ^/rulon/v-perme/?$            /rulon-nerzhaveyushchiy/v-permi/
+RedirectMatch 301 ^/polosa/v-perme/?$           /polosa-nerzhaveyushchaya/v-permi/
+RedirectMatch 301 ^/provoloka/v-perme/?$        /provoloka-nerzhaveyushchaya/v-permi/
+RedirectMatch 301 ^/ugolok-shveller/v-perme/?$  /ugolok-shveller-nerzhaveyushchiy/v-permi/
+RedirectMatch 301 ^/detali-truboprovoda/v-perme/?$  /detali-truboprovoda/v-permi/
+
+# --- Каталог: переименование слагов под ключи (старый слаг → новый) -----------
+RedirectMatch 301 ^/list(/.*)?$                 /list-nerzhaveyushchiy$1
+RedirectMatch 301 ^/rulon(/.*)?$                /rulon-nerzhaveyushchiy$1
+RedirectMatch 301 ^/krug(/.*)?$                 /krug-nerzhaveyushchiy$1
+RedirectMatch 301 ^/truba(/.*)?$                /truba-nerzhaveyushchaya$1
+RedirectMatch 301 ^/polosa(/.*)?$               /polosa-nerzhaveyushchaya$1
+RedirectMatch 301 ^/provoloka(/.*)?$            /provoloka-nerzhaveyushchaya$1
+RedirectMatch 301 ^/ugolok-shveller(/.*)?$      /ugolok-shveller-nerzhaveyushchiy$1
+
+# --- Каталог: uCoz-пути -------------------------------------------------------
+RedirectMatch 301 ^/provolokanerzh/?$           /provoloka-nerzhaveyushchaya/
 RedirectMatch 301 ^/(lenta|catalog/lenta|cataloglent)/?$   /lenta-nerzhaveyushchaya/
 RedirectMatch 301 ^/folga/?$                    /folga-nerzhaveyushchaya/
-RedirectMatch 301 ^/catalog/truba/?$            /truba/
-RedirectMatch 301 ^/catalog/krug/prutok/?$      /krug/
+RedirectMatch 301 ^/catalog/truba/?$            /truba-nerzhaveyushchaya/
+RedirectMatch 301 ^/catalog/krug/prutok/?$      /krug-nerzhaveyushchiy/
 RedirectMatch 301 ^/(listdeco|ral/08u)/?$       /dekorativnye-listy/
 
 # --- Услуги ------------------------------------------------------------------
@@ -30,10 +47,7 @@ RedirectMatch 301 ^/vacancy/?$                   /kontakty/
 RedirectMatch 301 ^/(oborudovanie|vseoborudovanie|laser|lasertrub|gibka|gidroabraziv)/?$   /uslugi/
 
 # --- Старые uCoz-страницы pageXXXX.html --------------------------------------
-RedirectMatch 301 ^/page69390555\.html$          /truba/
+RedirectMatch 301 ^/page69390555\.html$          /truba-nerzhaveyushchaya/
 RedirectMatch 301 ^/page70855587\.html$          /uslugi/perforaciya-listov/
 RedirectMatch 301 ^/(page70854427|page70854587|page70854803|page70854999|page70855333)\.html$   /uslugi/
 RedirectMatch 301 ^/(page67050501|page69346493|page70855153|page70855255|page70855399|page70855439|page70855511)\.html$   /postavka-nerzhaveyushchego-metalloprokata/
-
-# --- Внутренние фиксы гео-слагов (Пермь) --------------------------------------
-RedirectMatch 301 ^/(list|truba|krug|rulon|polosa|provoloka|ugolok-shveller|detali-truboprovoda)/v-perme/?$   /$1/v-permi/

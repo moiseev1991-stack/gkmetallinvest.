@@ -5,14 +5,14 @@ import { getHubSkus } from '../../data/pricelist-helpers';
 import { marks } from '../../data/marks.ts';
 
 export async function getStaticPaths() {
-	const skus = getHubSkus('truba');
+	const skus = getHubSkus('rulon');
 	const productPaths = skus.map((sku) => ({
 		params: { slug: sku.slug },
 		props: { kind: 'product', sku },
 	}));
 
 	const markPaths = marks
-		.filter((m) => m.hubs.includes('truba'))
+		.filter((m) => m.hubs.includes('rulon'))
 		.map((m) => ({ params: { slug: m.slug }, props: { kind: 'mark', mark: m } }));
 
 	return [...markPaths, ...productPaths];
@@ -24,17 +24,17 @@ const props = Astro.props as any;
 {props.kind === 'mark' ? (
 	<MarkLanding
 		mark={props.mark}
-		hub="truba"
-		hubLabel="Труба нержавеющая"
-		hubLabelGenitive="трубу нержавеющую"
-		hubHref="/truba/"
-		measure="Ø × стенка"
+		hub="rulon"
+		hubLabel="Рулон нержавеющий"
+		hubLabelGenitive="рулон нержавеющий"
+		hubHref="/rulon-nerzhaveyushchiy/"
+		measure="толщина"
 	/>
 ) : (
 	<ProductDetail
 		sku={props.sku}
-		hubLabel="Труба нержавеющая"
-		hubHref="/truba/"
-		measureLabel="Ø × стенка"
+		hubLabel="Рулон нержавеющий"
+		hubHref="/rulon-nerzhaveyushchiy/"
+		measureLabel="толщина"
 	/>
 )}

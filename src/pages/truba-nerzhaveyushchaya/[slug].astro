@@ -1,18 +1,18 @@
 ---
 import ProductDetail from '../../components/ProductDetail.astro';
 import MarkLanding from '../../components/MarkLanding.astro';
-import pricelist from '../../data/pricelist.json';
+import { getHubSkus } from '../../data/pricelist-helpers';
 import { marks } from '../../data/marks.ts';
 
 export async function getStaticPaths() {
-	const skus = (pricelist.hubs as any).krug as any[];
+	const skus = getHubSkus('truba');
 	const productPaths = skus.map((sku) => ({
 		params: { slug: sku.slug },
 		props: { kind: 'product', sku },
 	}));
 
 	const markPaths = marks
-		.filter((m) => m.hubs.includes('krug'))
+		.filter((m) => m.hubs.includes('truba'))
 		.map((m) => ({ params: { slug: m.slug }, props: { kind: 'mark', mark: m } }));
 
 	return [...markPaths, ...productPaths];
@@ -24,17 +24,17 @@ const props = Astro.props as any;
 {props.kind === 'mark' ? (
 	<MarkLanding
 		mark={props.mark}
-		hub="krug"
-		hubLabel="Круг нержавеющий"
-		hubLabelGenitive="круг нержавеющий"
-		hubHref="/krug/"
-		measure="диаметр"
+		hub="truba"
+		hubLabel="Труба нержавеющая"
+		hubLabelGenitive="трубу нержавеющую"
+		hubHref="/truba-nerzhaveyushchaya/"
+		measure="Ø × стенка"
 	/>
 ) : (
 	<ProductDetail
 		sku={props.sku}
-		hubLabel="Круг / Квадрат / Шестигранник"
-		hubHref="/krug/"
-		measureLabel="диаметр"
+		hubLabel="Труба нержавеющая"
+		hubHref="/truba-nerzhaveyushchaya/"
+		measureLabel="Ø × стенка"
 	/>
 )}

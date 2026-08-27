@@ -24,7 +24,7 @@
 import pricelist from './pricelist.json';
 
 /** «0.6×1250» без третьего числа — поставщик отгружает мотком, а не листом
- *  в размер. Дубль-логика должна фильтровать /list/ так же, как getHubSkus,
+ *  в размер. Дубль-логика должна фильтровать /list-nerzhaveyushchiy/ так же, как getHubSkus,
  *  иначе канонической карточки в хабе может не оказаться. */
 export function isRulonLikeName(name) {
 	const s = String(name ?? '').replace(/[хХX]/g, 'x');
@@ -213,7 +213,7 @@ export function buildDupMap(skus) {
 export function getSitemapDupPaths() {
 	const dup = new Set();
 	/* Считаем по сырым массивам хабов: страницы карточек генерируются для всех
-	   позиций прайса (в т.ч. рулон-стайл, отфильтрованных из таблицы /list/),
+	   позиций прайса (в т.ч. рулон-стайл, отфильтрованных из таблицы /list-nerzhaveyushchiy/),
 	   и набор слагов здесь должен совпадать с тем, по которому считается
 	   noindex+canonical на страницах (seoSkuUniverse в pricelist-helpers). */
 	for (const [hub, arr] of Object.entries(pricelist.hubs ?? {})) {
