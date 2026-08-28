@@ -1,10 +1,16 @@
 ---
 import Field from './ui/Field.astro';
 import Button from './ui/Button.astro';
+import { offices, officeMapSrc, officeFullAddress } from '../data/offices';
 interface Props {
 	id?: string;
 }
 const { id = 'lead-form' } = Astro.props;
+
+// Города для переключателя офиса (карта + адрес меняются на клиенте).
+const mapsUrl = (query: string) =>
+	`https://yandex.ru/maps/?text=${encodeURIComponent(query)}`;
+const defaultOffice = offices[0];
 ---
 
 <section class="lead" id={id} aria-labelledby="lead-title">
@@ -19,6 +25,23 @@ const { id = 'lead-form' } = Astro.props;
 					Цены на металлопрокат меняются ежедневно — чтобы узнать точную стоимость по вашему проекту, оставьте
 					заявку.
 				</p>
+				<div class="lead__office">
+					<label class="lead__region-label" for="lead-region">Ваш город:</label>
+					<select id="lead-region" class="lead__region" aria-label="Выберите ближайший офис">
+						{offices.map((office, i) => (
+							<option
+								value={office.slug}
+								data-src={officeMapSrc(office)}
+								data-address={officeFullAddress(office)}
+								data-maps={mapsUrl(office.mapQuery)}
+								selected={i === 0}
+							>{office.city}</option>
+						))}
+					</select>
+					<p class="lead__address">
+						Ближайший офис: <span id="lead-address">{officeFullAddress(defaultOffice)}</span>
+					</p>
+				</div>
 				<form class="lead__form" method="post" action="#" data-static-form>
 					<Field label="Имя" name="name" required />
 					<Field label="Телефон" name="phone" type="tel" required />
@@ -54,17 +77,19 @@ const { id = 'lead-form' } = Astro.props;
 			</div>
 			<div class="lead__map" aria-label="Карта офиса ГК Металлинвест">
 				<iframe
-					src="https://yandex.ru/map-widget/v1/?text=%D0%9D%D0%B8%D0%B6%D0%BD%D0%B8%D0%B9%20%D0%9D%D0%BE%D0%B2%D0%B3%D0%BE%D1%80%D0%BE%D0%B4%2C%20%D1%83%D0%BB.%20%D0%92%D0%B0%D1%80%D0%B2%D0%B0%D1%80%D1%81%D0%BA%D0%B0%D1%8F%2C%2032&z=17"
+					id="lead-map-frame"
+					src={officeMapSrc(defaultOffice)}
 					width="100%"
 					height="100%"
 					frameborder="0"
 					allowfullscreen="true"
 					loading="lazy"
-					title="Карта: 603006, Нижний Новгород, ул. Варварская, 32"
+					title="Карта офиса ГК Металлинвест"
 				></iframe>
 				<a
+					id="lead-map-link"
 					class="lead__map-link"
-					href="https://yandex.ru/maps/-/CPSRJLLQ"
+					href={mapsUrl(defaultOffice.mapQuery)}
 					target="_blank"
 					rel="noopener"
 				>
@@ -74,6 +99,21 @@ const { id = 'lead-form' } = Astro.props;
 		</div>
 	</div>
 </section>
+
+<script>
+	// Переключение офиса: меняем карту, адрес и ссылку по выбранному городу.
+	const region = document.getElementById('lead-region') as HTMLSelectElement | null;
+	const frame = document.getElementById('lead-map-frame') as HTMLIFrameElement | null;
+	const address = document.getElementById('lead-address');
+	const mapLink = document.getElementById('lead-map-link') as HTMLAnchorElement | null;
+
+	region?.addEventListener('change', () => {
+		const opt = region.options[region.selectedIndex];
+		if (frame && opt.dataset.src) frame.src = opt.dataset.src;
+		if (address && opt.dataset.address) address.textContent = opt.dataset.address;
+		if (mapLink && opt.dataset.maps) mapLink.href = opt.dataset.maps;
+	});
+</script>
 
 <style>
 	.lead {
@@ -110,8 +150,48 @@ const { id = 'lead-form' } = Astro.props;
 		color: var(--color-accent);
 	}
 	.lead__sub {
-		margin: 0 0 var(--space-6);
+		margin: 0 0 var(--space-4);
 		font-size: 0.95rem;
+	}
+	.lead__office {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+		margin: 0 0 var(--space-6);
+	}
+	.lead__region-label {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+	.lead__region {
+		flex: 0 0 auto;
+		padding: 0.45rem 2rem 0.45rem 0.75rem;
+		font-size: 0.95rem;
+		color: var(--color-text);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md, 8px);
+		cursor: pointer;
+		appearance: none;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236c7686' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.7rem center;
+	}
+	.lead__region:focus-visible {
+		outline: 2px solid var(--color-primary-500, #2c63a8);
+		outline-offset: 1px;
+	}
+	.lead__address {
+		flex: 1 1 100%;
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-muted);
+	}
+	.lead__address span {
+		color: var(--color-text);
+		font-weight: 500;
 	}
 	.lead__consent {
 		display: flex;
