@@ -5,6 +5,17 @@
 #  На Vercel этот файл игнорируется — активен только на Apache.
 # ============================================================================
 
+# --- Канонический хост: техдомены (cv724723.tw1.ru, www и пр.) → основной -----
+#  Любой запрос с хостом ≠ gkmetallinvest.ru отправляем 301 на основной домен,
+#  чтобы поисковик не индексировал технические зеркала как дубли.
+#  /.well-known/ исключаем — на случай ACME-проверки сертификата.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/\.well-known/ [NC]
+  RewriteCond %{HTTP_HOST} !^gkmetallinvest\.ru$ [NC]
+  RewriteRule ^ https://gkmetallinvest.ru%{REQUEST_URI} [L,R=301]
+</IfModule>
+
 # --- Каталог: гео-фиксы Перми на новых слагах (должны идти ДО catch-all) ------
 RedirectMatch 301 ^/list/v-perme/?$             /list-nerzhaveyushchiy/v-permi/
 RedirectMatch 301 ^/truba/v-perme/?$            /truba-nerzhaveyushchaya/v-permi/

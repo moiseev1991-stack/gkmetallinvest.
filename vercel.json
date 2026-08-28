@@ -44,6 +44,12 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "gkmetallinvest.vercel.app" }],
+      "destination": "https://gkmetallinvest.ru/:path*",
+      "permanent": true
+    },
     { "source": "/policy", "destination": "/politika-konfidencialnosti/", "permanent": true },
     { "source": "/policy/", "destination": "/politika-konfidencialnosti/", "permanent": true },
     { "source": "/publicoffer", "destination": "/publichnaya-oferta/", "permanent": true },
