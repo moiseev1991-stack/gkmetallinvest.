@@ -35,7 +35,7 @@ const defaultOffice = offices[0];
 								data-address={officeFullAddress(office)}
 								data-maps={mapsUrl(office.mapQuery)}
 								selected={i === 0}
-							>{office.city}</option>
+							>{office.menuCity || office.city}</option>
 						))}
 					</select>
 					<p class="lead__address">
@@ -102,17 +102,50 @@ const defaultOffice = offices[0];
 
 <script>
 	// Переключение офиса: меняем карту, адрес и ссылку по выбранному городу.
-	const region = document.getElementById('lead-region') as HTMLSelectElement | null;
-	const frame = document.getElementById('lead-map-frame') as HTMLIFrameElement | null;
-	const address = document.getElementById('lead-address');
-	const mapLink = document.getElementById('lead-map-link') as HTMLAnchorElement | null;
+	// Синхронизировано с переключателем города в шапке через общий ключ
+	// localStorage 'mi_city' и событие 'mi:city' (выбрал в шапке → тут тоже сменилось).
+	{
+		const CITY_KEY = 'mi_city';
+		const region = document.getElementById('lead-region') as HTMLSelectElement | null;
+		const frame = document.getElementById('lead-map-frame') as HTMLIFrameElement | null;
+		const address = document.getElementById('lead-address');
+		const mapLink = document.getElementById('lead-map-link') as HTMLAnchorElement | null;
 
-	region?.addEventListener('change', () => {
-		const opt = region.options[region.selectedIndex];
-		if (frame && opt.dataset.src) frame.src = opt.dataset.src;
-		if (address && opt.dataset.address) address.textContent = opt.dataset.address;
-		if (mapLink && opt.dataset.maps) mapLink.href = opt.dataset.maps;
-	});
+		const applyOption = (opt: HTMLOptionElement | undefined) => {
+			if (!opt) return;
+			if (frame && opt.dataset.src) frame.src = opt.dataset.src;
+			if (address && opt.dataset.address) address.textContent = opt.dataset.address;
+			if (mapLink && opt.dataset.maps) mapLink.href = opt.dataset.maps;
+		};
+
+		const syncTo = (slug: string) => {
+			if (!region || region.value === slug) return;
+			const opt = Array.from(region.options).find((o) => o.value === slug);
+			if (opt) {
+				region.value = slug;
+				applyOption(opt);
+			}
+		};
+
+		if (region) {
+			// Восстанавливаем ранее выбранный город (тот же ключ, что и в шапке).
+			const saved = localStorage.getItem(CITY_KEY);
+			if (saved) syncTo(saved);
+
+			region.addEventListener('change', () => {
+				const opt = region.options[region.selectedIndex];
+				localStorage.setItem(CITY_KEY, region.value);
+				applyOption(opt);
+				document.dispatchEvent(new CustomEvent('mi:city', { detail: { slug: region.value } }));
+			});
+		}
+
+		// Город сменили в шапке — подхватываем карту/адрес здесь.
+		document.addEventListener('mi:city', (e) => {
+			const slug = (e as CustomEvent<{ slug: string }>).detail?.slug;
+			if (slug) syncTo(slug);
+		});
+	}
 </script>
 
 <style>

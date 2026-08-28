@@ -7,7 +7,7 @@ import Button from './ui/Button.astro';
 // Контакты офиса для переключателя: если у филиала пусто — берём общий из site.ts.
 const officeContacts = offices.map((o) => ({
 	slug: o.slug,
-	city: o.city,
+	city: o.menuCity || o.city,
 	phone: o.phone || contacts.phone,
 	phoneTel: o.phoneTel || contacts.phoneTel,
 	email: o.email || contacts.email,
@@ -224,6 +224,15 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 			}
 		};
 
+		const syncTo = (slug: string) => {
+			if (!citySel || citySel.value === slug) return;
+			const opt = Array.from(citySel.options).find((o) => o.value === slug);
+			if (opt) {
+				citySel.value = slug;
+				applyCity(opt);
+			}
+		};
+
 		if (citySel) {
 			const saved = localStorage.getItem(CITY_KEY);
 			if (saved) {
@@ -237,8 +246,16 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 				const opt = citySel.options[citySel.selectedIndex];
 				localStorage.setItem(CITY_KEY, citySel.value);
 				applyCity(opt);
+				// Сообщаем остальным переключателям на странице (форма заявки с картой).
+				document.dispatchEvent(new CustomEvent('mi:city', { detail: { slug: citySel.value } }));
 			});
 		}
+
+		// Другой переключатель (форма заявки) сменил город — подхватываем в шапке.
+		document.addEventListener('mi:city', (e) => {
+			const slug = (e as CustomEvent<{ slug: string }>).detail?.slug;
+			if (slug) syncTo(slug);
+		});
 	}
 
 	const toggle = document.getElementById('nav-toggle');
