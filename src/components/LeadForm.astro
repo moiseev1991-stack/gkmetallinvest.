@@ -42,7 +42,17 @@ const defaultOffice = offices[0];
 						Ближайший офис: <span id="lead-address">{officeFullAddress(defaultOffice)}</span>
 					</p>
 				</div>
-				<form class="lead__form" method="post" action="#" data-static-form>
+				<form class="lead__form" method="post" action="/send.php" data-lead-form>
+					<input
+						class="lead__hp"
+						type="text"
+						name="company_site"
+						tabindex="-1"
+						autocomplete="off"
+						aria-hidden="true"
+					/>
+					<input type="hidden" name="page" value="" />
+					<input type="hidden" name="city" value="" />
 					<Field label="Имя" name="name" required />
 					<Field label="Телефон" name="phone" type="tel" required />
 					<Field label="Email" name="email" type="email" required />
@@ -73,6 +83,7 @@ const defaultOffice = offices[0];
 						</span>
 					</label>
 					<Button type="submit">Отправить заявку</Button>
+					<p class="lead__status" data-lead-status hidden role="status" aria-live="polite"></p>
 				</form>
 			</div>
 			<div class="lead__map" aria-label="Карта офиса ГК Металлинвест">
@@ -146,6 +157,60 @@ const defaultOffice = offices[0];
 			if (slug) syncTo(slug);
 		});
 	}
+
+	// Отправка заявки на /send.php (PHP-обработчик на Timeweb) без перезагрузки.
+	document.querySelectorAll<HTMLFormElement>('form[data-lead-form]').forEach((form) => {
+		const status = form.querySelector<HTMLElement>('[data-lead-status]');
+		const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+		const setStatus = (text: string, kind: 'ok' | 'err' | '') => {
+			if (!status) return;
+			status.textContent = text;
+			status.hidden = !text;
+			status.classList.toggle('is-ok', kind === 'ok');
+			status.classList.toggle('is-err', kind === 'err');
+		};
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			if (!form.checkValidity()) {
+				form.reportValidity();
+				return;
+			}
+
+			// Подставляем страницу и выбранный город в скрытые поля.
+			const pageEl = form.querySelector<HTMLInputElement>('input[name="page"]');
+			if (pageEl) pageEl.value = location.pathname + location.search;
+			const cityEl = form.querySelector<HTMLInputElement>('input[name="city"]');
+			const region = document.getElementById('lead-region') as HTMLSelectElement | null;
+			if (cityEl && region) {
+				cityEl.value = region.options[region.selectedIndex]?.text || region.value;
+			}
+
+			const label = btn?.textContent || 'Отправить заявку';
+			if (btn) { btn.disabled = true; btn.textContent = 'Отправляем…'; }
+			setStatus('', '');
+
+			try {
+				const res = await fetch(form.action, {
+					method: 'POST',
+					body: new FormData(form),
+					headers: { Accept: 'application/json' },
+				});
+				const json = await res.json().catch(() => ({ ok: false }));
+				if (res.ok && json.ok) {
+					form.reset();
+					setStatus('Заявка отправлена! Менеджер свяжется с вами в течение 30 минут.', 'ok');
+				} else {
+					setStatus('Не удалось отправить. Позвоните нам или напишите на zakaz@gkmetallinvest.ru', 'err');
+				}
+			} catch {
+				setStatus('Ошибка сети. Попробуйте ещё раз или позвоните нам.', 'err');
+			} finally {
+				if (btn) { btn.disabled = false; btn.textContent = label; }
+			}
+		});
+	});
 </script>
 
 <style>
@@ -249,6 +314,32 @@ const defaultOffice = offices[0];
 	.lead__consent a:hover { text-decoration: underline; }
 	.lead__consent--optional { margin-top: calc(var(--space-2) * -1); }
 	.lead__consent--optional span { color: var(--color-subtle, #6c7686); }
+	/* Ханипот: убран из потока и от глаз/скринридеров, но доступен ботам. */
+	.lead__hp {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+		pointer-events: none;
+	}
+	.lead__status {
+		margin: var(--space-3) 0 0;
+		padding: 0.7rem 0.9rem;
+		border-radius: var(--radius-md, 8px);
+		font-size: 0.9rem;
+		line-height: 1.45;
+	}
+	.lead__status.is-ok {
+		color: #0f5132;
+		background: #d1e7dd;
+		border: 1px solid #badbcc;
+	}
+	.lead__status.is-err {
+		color: #842029;
+		background: #f8d7da;
+		border: 1px solid #f5c2c7;
+	}
 	.lead__map {
 		position: relative;
 		min-height: 360px;
