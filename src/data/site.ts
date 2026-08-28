@@ -9,7 +9,7 @@ export const siteUrl = 'https://gkmetallinvest.ru';
  *   2) убрать блок "headers" с X-Robots-Tag из vercel.json.
  * Этого достаточно — robots.txt и meta-теги переключатся автоматически.
  */
-export const siteNoindex = true;
+export const siteNoindex = false;
 
 /** Default Open Graph image — путь от корня сайта. */
 export const siteOgImage = '/img/logo.png';
