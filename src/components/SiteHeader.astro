@@ -1,7 +1,17 @@
 ---
 import { navGroups, navTop, navServicesAll } from '../data/navigation';
 import { siteName, contacts } from '../data/site';
+import { offices } from '../data/offices';
 import Button from './ui/Button.astro';
+
+// Контакты офиса для переключателя: если у филиала пусто — берём общий из site.ts.
+const officeContacts = offices.map((o) => ({
+	slug: o.slug,
+	city: o.city,
+	phone: o.phone || contacts.phone,
+	phoneTel: o.phoneTel || contacts.phoneTel,
+	email: o.email || contacts.email,
+}));
 
 const path = Astro.url.pathname;
 
@@ -23,12 +33,24 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 <header class="head">
 	<div class="head__strip">
 		<div class="container head__strip-inner">
-			<span class="head__location" aria-hidden="true">
-				<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+			<span class="head__location">
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 					<path d="M8 14s5-4.5 5-8a5 5 0 10-10 0c0 3.5 5 8 5 8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
 					<circle cx="8" cy="6" r="1.6" stroke="currentColor" stroke-width="1.4" />
 				</svg>
-				Нижний Новгород · доставка по РФ
+				<select id="head-city" class="head__city" aria-label="Ваш город">
+					{officeContacts.map((o, i) => (
+						<option
+							value={o.slug}
+							data-city={o.city}
+							data-phone={o.phone}
+							data-tel={o.phoneTel}
+							data-email={o.email}
+							selected={i === 0}
+						>{o.city}</option>
+					))}
+				</select>
+				<span class="head__location-suffix">· доставка по РФ</span>
 			</span>
 			<a class="head__strip-link head__strip-link--util" href="/kalkulyator-vesa/">
 				<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -44,8 +66,8 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 				</svg>
 				ГОСТы
 			</a>
-			<a class="head__strip-link" href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
-			<a class="head__strip-link" href={`mailto:${contacts.email}`}>{contacts.email}</a>
+			<a id="head-phone" class="head__strip-link" href={`tel:${contacts.phoneTel}`}>{contacts.phone}</a>
+			<a id="head-email" class="head__strip-link" href={`mailto:${contacts.email}`}>{contacts.email}</a>
 		</div>
 	</div>
 
@@ -58,7 +80,7 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 					<span class="head__logo-tag">нержавеющий металлопрокат</span>
 				</span>
 			</a>
-			<a class="head__mob-phone" href={`tel:${contacts.phoneTel}`} aria-label="Позвонить">
+			<a id="head-mob-phone" class="head__mob-phone" href={`tel:${contacts.phoneTel}`} aria-label="Позвонить">
 				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
 					<path d="M3.5 4.5c0 7 5 12 12 12l1.5-3-3.5-1.5-1 1c-2-1-3.5-2.5-4.5-4.5l1-1L7.5 4 4.5 5.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
 				</svg>
@@ -178,6 +200,47 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 </header>
 
 <script>
+	/* ---------- ПЕРЕКЛЮЧАТЕЛЬ ГОРОДА В ШАПКЕ ----------
+	   Меняет город + телефон + email во всей шапке и запоминает выбор
+	   (localStorage), поэтому на любой странице сайт помнит выбранный офис. */
+	{
+		const CITY_KEY = 'mi_city';
+		const citySel = document.getElementById('head-city') as HTMLSelectElement | null;
+		const phoneEl = document.getElementById('head-phone') as HTMLAnchorElement | null;
+		const emailEl = document.getElementById('head-email') as HTMLAnchorElement | null;
+		const mobPhoneEl = document.getElementById('head-mob-phone') as HTMLAnchorElement | null;
+
+		const applyCity = (opt: HTMLOptionElement | undefined) => {
+			if (!opt) return;
+			const { phone, tel, email } = opt.dataset;
+			if (phoneEl && phone && tel) {
+				phoneEl.textContent = phone;
+				phoneEl.href = 'tel:' + tel;
+			}
+			if (mobPhoneEl && tel) mobPhoneEl.href = 'tel:' + tel;
+			if (emailEl && email) {
+				emailEl.textContent = email;
+				emailEl.href = 'mailto:' + email;
+			}
+		};
+
+		if (citySel) {
+			const saved = localStorage.getItem(CITY_KEY);
+			if (saved) {
+				const opt = Array.from(citySel.options).find((o) => o.value === saved);
+				if (opt) {
+					citySel.value = saved;
+					applyCity(opt);
+				}
+			}
+			citySel.addEventListener('change', () => {
+				const opt = citySel.options[citySel.selectedIndex];
+				localStorage.setItem(CITY_KEY, citySel.value);
+				applyCity(opt);
+			});
+		}
+	}
+
 	const toggle = document.getElementById('nav-toggle');
 	const drawer = document.getElementById('nav-drawer');
 	const megaBtn = document.getElementById('mega-btn');
@@ -467,6 +530,35 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 	}
 	.head__location svg {
 		opacity: 0.75;
+		flex-shrink: 0;
+	}
+	.head__city {
+		appearance: none;
+		background: transparent;
+		border: 0;
+		color: var(--color-on-dark);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+		padding: 0 1.1rem 0 0.15rem;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8'%3E%3Cpath fill='%23ffffff' fill-opacity='0.7' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.15rem center;
+	}
+	.head__city:hover {
+		color: #fff;
+	}
+	.head__city:focus-visible {
+		outline: 2px solid var(--color-on-dark);
+		outline-offset: 2px;
+		border-radius: 3px;
+	}
+	.head__city option {
+		color: var(--color-text);
+		background: #fff;
+	}
+	.head__location-suffix {
+		white-space: nowrap;
 	}
 	.head__strip-link {
 		color: var(--color-on-dark);
