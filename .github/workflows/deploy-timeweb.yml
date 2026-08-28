@@ -82,11 +82,11 @@ jobs:
             set mirror:parallel-transfer-count 6;
             set cmd:fail-exit yes;
             pwd;
-            cls -l \"$FTP_SERVER_DIR\";
-            rm -f \"$FTP_SERVER_DIR/index.htm\";
-            mirror -R --verbose=1 --exclude-glob .git* ./dist/ \"$FTP_SERVER_DIR\";
+            cls -l $FTP_SERVER_DIR;
+            rm -f $FTP_SERVER_DIR/index.htm;
+            mirror -R --verbose=1 --exclude-glob .git* ./dist/ $FTP_SERVER_DIR;
             echo '----- after deploy -----';
-            cls -l \"$FTP_SERVER_DIR\";
+            cls -l $FTP_SERVER_DIR;
             bye"
           echo "::endgroup::"
 
