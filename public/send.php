@@ -12,6 +12,19 @@
 header('Content-Type: application/json; charset=utf-8');
 header('X-Robots-Tag: noindex');
 
+// Диагностика: ?debug=<ключ> включает вывод реальной ошибки (иначе тихо 500).
+$debug = (($_GET['debug'] ?? '') === 'clod2026diag');
+if ($debug) { ini_set('display_errors', '1'); error_reporting(E_ALL); }
+
+// Фатальный сбой отдаём как JSON, а не пустой 500 — чтобы фронт показал ошибку,
+// а в debug-режиме было видно причину (нет mbstring, отключён mail() и т.п.).
+register_shutdown_function(static function () use ($debug) {
+	$e = error_get_last();
+	if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+		echo json_encode(['ok' => false, 'error' => 'server', 'detail' => $debug ? $e['message'] : null]);
+	}
+});
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 	http_response_code(405);
 	echo json_encode(['ok' => false, 'error' => 'method']);
@@ -33,11 +46,13 @@ if (empty($_POST['consent_pd'])) {
 
 $clean = static function (string $key, int $max): string {
 	$v = isset($_POST[$key]) && is_string($_POST[$key]) ? trim($_POST[$key]) : '';
-	if (mb_strlen($v) > $max) {
-		$v = mb_substr($v, 0, $max);
+	$len = function_exists('mb_strlen') ? mb_strlen($v) : strlen($v);
+	if ($len > $max) {
+		$v = function_exists('mb_substr') ? mb_substr($v, 0, $max) : substr($v, 0, $max);
 	}
 	// Срезаем управляющие символы (защита от инъекции в заголовки/тело).
-	return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $v);
+	$out = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $v);
+	return $out ?? $v;
 };
 
 $name    = $clean('name', 150);
@@ -90,6 +105,13 @@ if ($replyTo !== '') {
 $headers .= 'MIME-Version: 1.0' . "\r\n";
 $headers .= 'Content-Type: text/plain; charset=UTF-8' . "\r\n";
 $headers .= 'Content-Transfer-Encoding: 8bit' . "\r\n";
+
+// На некоторых хостингах mail() отключён в disable_functions — тогда нужен SMTP.
+if (!function_exists('mail')) {
+	http_response_code(502);
+	echo json_encode(['ok' => false, 'error' => 'mail_disabled']);
+	exit;
+}
 
 $sent = @mail($recipients, $subject, $body, $headers, '-f' . $fromEmail);
 
