@@ -113,7 +113,7 @@ const requisites = [
 
 <BaseLayout
 	title="Контакты"
-	description="Контакты ГК Металлинвест: телефон +7 (831) 281-26-60, email zakaz@gkmetallinvest.ru. Офисы и склады в 7 городах — Нижний Новгород, Москва (Пушкино), Санкт-Петербург, Екатеринбург, Новосибирск, Ростов-на-Дону, Краснодар. Режим работы пн-пт 9:00-18:00."
+	description="Официальный сайт ООО «Металлинвест» (ГК Металлинвест), Нижний Новгород. Контакты: телефон +7 (831) 281-26-60, email zakaz@gkmetallinvest.ru. Офисы и склады в 7 городах — Нижний Новгород, Москва (Пушкино), Санкт-Петербург, Екатеринбург, Новосибирск, Ростов-на-Дону, Краснодар. Режим работы пн-пт 9:00-18:00."
 	jsonLd={jsonLd}
 >
 	<div class="container page">
@@ -238,6 +238,11 @@ const requisites = [
 
 		<section class="reqs-section">
 			<h2>Реквизиты для договора</h2>
+			<p class="reqs-brand">
+				Вы на официальном сайте компании <strong>ООО «Металлинвест»</strong> (ГК Металлинвест) —
+				поставщика нержавеющего металлопроката в Нижнем Новгороде. Ниже — данные организации
+				для договора.
+			</p>
 			<dl class="reqs">
 				{requisites.map((r) => (
 					<>
@@ -467,9 +472,17 @@ const requisites = [
 		margin-bottom: var(--space-8);
 	}
 	.reqs-section h2 {
-		margin: 0 0 var(--space-4);
+		margin: 0 0 var(--space-3);
 		font-size: 1.15rem;
 	}
+	.reqs-brand {
+		margin: 0 0 var(--space-4);
+		max-width: 70ch;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--color-muted);
+	}
+	.reqs-brand strong { color: var(--color-text); }
 	.reqs {
 		display: grid;
 		grid-template-columns: max-content 1fr;
