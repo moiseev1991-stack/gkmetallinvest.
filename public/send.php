@@ -25,6 +25,12 @@ register_shutdown_function(static function () use ($debug) {
 	}
 });
 
+// Ping: проверка, что задеплоена именно эта версия обработчика (письмо НЕ отправляется).
+if (($_GET['ping'] ?? '') === 'clod2026') {
+	echo json_encode(['ok' => true, 'ver' => 'send-v3-debugcc']);
+	exit;
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 	http_response_code(405);
 	echo json_encode(['ok' => false, 'error' => 'method']);
@@ -73,6 +79,12 @@ if ($name === '' || $phone === '') {
 $replyTo = filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : '';
 
 $recipients = 'corp-metalinvest01265@yandex.ru, ev18011@yandex.ru';
+
+// В debug-режиме письмо уходит ТОЛЬКО на адрес из формы (проверка механизма
+// без писем в рабочие ящики сотрудников). Продакшн-форма шлёт на оба ящика.
+if ($debug && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+	$recipients = $email;
+}
 
 $subject = '=?UTF-8?B?' . base64_encode('Заявка с сайта — ' . $name) . '?=';
 
