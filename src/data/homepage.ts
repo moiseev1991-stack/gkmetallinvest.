@@ -17,7 +17,7 @@ export const heroBullets = [
 	'Доставка по всей России',
 ];
 
-/** Hero — три фото товаров (трубы AISI / рулоны / декоративные листы) */
+/** Hero — три фото товаров (фольга / рулоны / листы) */
 export const heroProducts: Array<{
 	title: string;
 	hint: string;
@@ -25,9 +25,9 @@ export const heroProducts: Array<{
 	alt?: string;
 	href: string;
 }> = [
-	{ title: 'Трубы ЭСВ', hint: 'AISI 304 / 321', image: '/img/catalog/truba.png', href: '/truba-nerzhaveyushchaya/' },
+	{ title: 'Фольга нержавеющая', hint: '0,05–0,15 мм', image: '/img/catalog/folga.avif', href: '/folga-nerzhaveyushchaya/' },
 	{ title: 'Рулоны', hint: '0.4–8 мм, 1000–1500', image: '/img/catalog/rulon.jpg', href: '/rulon-nerzhaveyushchiy/' },
-	{ title: 'Декоративные', hint: 'BA, 4N, DECO', image: '/img/catalog/dekorativnye.webp', href: '/dekorativnye-listy/' },
+	{ title: 'Лист нержавеющий', hint: 'ХК · ГК · рифлёный', image: '/img/catalog/list.jpg', href: '/list-nerzhaveyushchiy/' },
 ];
 
 /** Производственные возможности — с иконкой и нумерацией */
