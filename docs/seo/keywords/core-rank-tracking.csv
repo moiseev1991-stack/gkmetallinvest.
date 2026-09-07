@@ -10,6 +10,11 @@
 металлопрокат нержавеющий,Москва,2242,commercial,/,B
 нержавеющий прокат,Москва,1479,commercial,/,B
 пищевая нержавейка,Москва,6560,commercial,/,B
+нержавейка оптом,Москва,488,commercial,/,B
+нержавеющая сталь цена за кг,Москва,441,commercial,/,B
+нержавейка цена за тонну,Москва,110,commercial,/,B
+нержавеющая сталь цена за тонну,Москва,56,commercial,/,B
+поставка нержавеющего металлопроката,Москва,74,commercial,/postavka-nerzhaveyushchego-metalloprokata/,B
 лист нержавейки,Москва,28325,commercial,/list-nerzhaveyushchiy/,A
 нержавейка лист,Москва,28967,commercial,/list-nerzhaveyushchiy/,A
 лист нержавеющий,Москва,17223,commercial,/list-nerzhaveyushchiy/,A
@@ -19,6 +24,8 @@
 купить лист нержавеющий,Москва,3255,commercial,/list-nerzhaveyushchiy/,B
 лист нержавеющий зеркальный,Москва,525,commercial,/list-nerzhaveyushchiy/,B
 лист нержавеющий шлифованный,Москва,347,commercial,/list-nerzhaveyushchiy/,B
+лист нержавеющий матовый,Москва,423,commercial,/list-nerzhaveyushchiy/,B
+лист нержавеющий горячекатаный,Москва,216,commercial,/list-nerzhaveyushchiy/,B
 нержавеющая труба,Москва,70503,commercial,/truba-nerzhaveyushchaya/,A
 труба нержавеющая,Москва,64367,commercial,/truba-nerzhaveyushchaya/,A
 нержавейка труба,Москва,66181,commercial,/truba-nerzhaveyushchaya/,A
@@ -28,12 +35,17 @@
 бесшовная нержавеющая труба,Москва,4210,commercial,/truba-nerzhaveyushchaya/,B
 нержавеющая профильная труба,Москва,2741,commercial,/truba-nerzhaveyushchaya/,B
 труба квадратная нержавеющая,Москва,728,commercial,/truba-nerzhaveyushchaya/,B
+профильная нержавеющая труба,Москва,2656,commercial,/truba-nerzhaveyushchaya/,B
+труба профильная нержавеющая,Москва,2524,commercial,/truba-nerzhaveyushchaya/,B
 круг нержавеющий,Москва,3556,commercial,/krug-nerzhaveyushchiy/,A
 нержавеющий круг,Москва,3631,commercial,/krug-nerzhaveyushchiy/,A
 пруток нержавеющий,Москва,3235,commercial,/krug-nerzhaveyushchiy/,B
 нержавеющий пруток,Москва,3351,commercial,/krug-nerzhaveyushchiy/,B
 квадрат нержавеющий,Москва,1012,commercial,/krug-nerzhaveyushchiy/,B
 шестигранник нержавеющий,Москва,1540,commercial,/krug-nerzhaveyushchiy/,B
+нержавеющий квадрат,Москва,809,commercial,/krug-nerzhaveyushchiy/,B
+квадрат нержавеющий купить,Москва,172,commercial,/krug-nerzhaveyushchiy/,B
+шестигранник нержавеющий купить,Москва,110,commercial,/krug-nerzhaveyushchiy/,B
 рулон нержавеющий,Москва,888,commercial,/rulon-nerzhaveyushchiy/,A
 рулон нержавейки,Москва,334,commercial,/rulon-nerzhaveyushchiy/,B
 рулонная нержавеющая сталь,Москва,195,commercial,/rulon-nerzhaveyushchiy/,B
@@ -85,6 +97,15 @@ aisi 304 труба,Москва,7031,commercial,/truba-nerzhaveyushchaya/aisi-3
 aisi 304 лист,Москва,4026,commercial,/list-nerzhaveyushchiy/aisi-304/,B
 12х18н10т лист,Москва,3686,commercial,/list-nerzhaveyushchiy/aisi-321/,B
 12х18н10т круг,Москва,2209,commercial,/krug-nerzhaveyushchiy/aisi-321/,B
+aisi 316 труба,Москва,1054,commercial,/truba-nerzhaveyushchaya/aisi-316l/,B
+08х18н10 труба,Москва,1144,commercial,/truba-nerzhaveyushchaya/aisi-304/,B
+aisi 321 труба,Москва,821,commercial,/truba-nerzhaveyushchaya/aisi-321/,B
+лист нержавеющий aisi 430,Москва,602,commercial,/list-nerzhaveyushchiy/aisi-430/,B
+aisi 316 лист,Москва,386,commercial,/list-nerzhaveyushchiy/aisi-316l/,B
+проволока нержавеющая 12х18н10т,Москва,356,commercial,/provoloka-nerzhaveyushchaya/aisi-321/,B
+полоса нержавеющая aisi 304,Москва,238,commercial,/polosa-nerzhaveyushchaya/aisi-304/,B
+aisi 316l круг,Москва,161,commercial,/krug-nerzhaveyushchiy/aisi-316l/,B
+круг нержавеющий aisi 304,Москва,161,commercial,/krug-nerzhaveyushchiy/aisi-304/,B
 полировка нержавейки,Москва,1797,service,/uslugi/polirovka/,B
 полировка нержавеющей стали,Москва,1244,service,/uslugi/polirovka/,B
 шлифовка нержавейки,Москва,585,service,/uslugi/shlifovanie/,B
