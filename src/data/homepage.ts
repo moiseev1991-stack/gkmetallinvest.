@@ -116,26 +116,28 @@ export const homeServices: Array<{
 	{ href: '/uslugi/polirovka/', title: 'Шлифование и полировка листов', text: 'Подготовка поверхности под требования проекта.', icon: null },
 ];
 
-/** Отгрузки — слайдер с видео реальных отгрузок */
+/** Отгрузки — слайдер с видео реальных отгрузок.
+ *  Подписи сверены с содержимым роликов по раскадровке (2026-09-14):
+ *  прежние были придуманы наугад и не совпадали с тем, что в кадре. */
 export const shipments: Array<{
 	title: string;
 	video: string;
 	poster?: string;
 }> = [
-	{ title: 'Лист нержавеющий', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.webp' },
-	{ title: 'Отгрузка с маркировкой', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.webp' },
-	{ title: 'Погрузка манипулятором', video: '/slaider/video (2).mp4' },
-	{ title: 'Рулон в упаковке', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.webp' },
-	{ title: 'Загрузка в фуру', video: '/slaider/video (4).mp4' },
-	{ title: 'Палета на отгрузке', video: '/slaider/video (5).mp4' },
-	{ title: 'Подготовка к доставке', video: '/slaider/video (6).mp4' },
-	{ title: 'Профильная труба', video: '/slaider/video (7).mp4' },
-	{ title: 'Закрепление стропами', video: '/slaider/video (8).mp4' },
-	{ title: 'Контроль упаковки', video: '/slaider/video (9).mp4' },
-	{ title: 'Резка под размер', video: '/slaider/video (10).mp4' },
-	{ title: 'Отгрузка профиля', video: '/slaider/video (11).mp4' },
-	{ title: 'Складская площадка', video: '/slaider/video (12).mp4' },
-	{ title: 'Экспедирование', video: '/slaider/video (13).mp4' },
+	{ title: 'Бухты ленты в кузове', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.webp' },
+	{ title: 'Профильная труба в фуру', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.webp' },
+	{ title: 'Бухта ленты на поддоне', video: '/slaider/video (2).mp4' },
+	{ title: 'Рифлёный лист на стропах', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.webp' },
+	{ title: 'Бухты ленты погрузчиком', video: '/slaider/video (4).mp4' },
+	{ title: 'Ночная погрузка листа', video: '/slaider/video (5).mp4' },
+	{ title: 'Погрузка на длинномер', video: '/slaider/video (6).mp4' },
+	{ title: 'Отгрузка прутка краном', video: '/slaider/video (7).mp4' },
+	{ title: 'Погрузка труб краном', video: '/slaider/video (8).mp4' },
+	{ title: 'Погрузка толстого листа', video: '/slaider/video (9).mp4' },
+	{ title: 'Погрузка рулона в фуру', video: '/slaider/video (10).mp4' },
+	{ title: 'Лист с защитной плёнкой', video: '/slaider/video (11).mp4' },
+	{ title: 'Маркировка упаковки', video: '/slaider/video (12).mp4' },
+	{ title: 'Рулон в упаковке', video: '/slaider/video (13).mp4' },
 ];
 
 /** Преимущества — слот под иконку */
