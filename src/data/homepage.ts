@@ -124,20 +124,20 @@ export const shipments: Array<{
 	video: string;
 	poster?: string;
 }> = [
-	{ title: 'Бухты ленты в кузове', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.webp' },
-	{ title: 'Профильная труба в фуру', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.webp' },
-	{ title: 'Бухта ленты на поддоне', video: '/slaider/video (2).mp4' },
-	{ title: 'Рифлёный лист на стропах', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.webp' },
-	{ title: 'Бухты ленты погрузчиком', video: '/slaider/video (4).mp4' },
-	{ title: 'Ночная погрузка листа', video: '/slaider/video (5).mp4' },
-	{ title: 'Погрузка на длинномер', video: '/slaider/video (6).mp4' },
-	{ title: 'Отгрузка прутка краном', video: '/slaider/video (7).mp4' },
-	{ title: 'Погрузка труб краном', video: '/slaider/video (8).mp4' },
-	{ title: 'Погрузка толстого листа', video: '/slaider/video (9).mp4' },
-	{ title: 'Погрузка рулона в фуру', video: '/slaider/video (10).mp4' },
-	{ title: 'Лист с защитной плёнкой', video: '/slaider/video (11).mp4' },
-	{ title: 'Маркировка упаковки', video: '/slaider/video (12).mp4' },
-	{ title: 'Рулон в упаковке', video: '/slaider/video (13).mp4' },
+	{ title: 'Упакованная лента в бухтах', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.webp' },
+	{ title: 'Отгрузка профильной трубы', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.webp' },
+	{ title: 'Бухта нержавеющей ленты', video: '/slaider/video (2).mp4' },
+	{ title: 'Отгрузка рифлёного листа', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.webp' },
+	{ title: 'Погрузка ленты в бухтах', video: '/slaider/video (4).mp4' },
+	{ title: 'Отгрузка листа в ночную смену', video: '/slaider/video (5).mp4' },
+	{ title: 'Отгрузка на полуприцеп', video: '/slaider/video (6).mp4' },
+	{ title: 'Отгрузка длинномерного проката', video: '/slaider/video (7).mp4' },
+	{ title: 'Отгрузка труб со склада', video: '/slaider/video (8).mp4' },
+	{ title: 'Отгрузка толстого листа', video: '/slaider/video (9).mp4' },
+	{ title: 'Отгрузка рулонной стали', video: '/slaider/video (10).mp4' },
+	{ title: 'Проверка поверхности листа', video: '/slaider/video (11).mp4' },
+	{ title: 'Фирменная маркировка груза', video: '/slaider/video (12).mp4' },
+	{ title: 'Упаковка рулона к перевозке', video: '/slaider/video (13).mp4' },
 ];
 
 /** Преимущества — слот под иконку */
