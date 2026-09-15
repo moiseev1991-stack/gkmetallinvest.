@@ -694,7 +694,7 @@ const fmtPrice = (p: number | null | undefined) =>
 	p == null ? null : new Intl.NumberFormat('ru-RU').format(p);
 const priceLine = sku.price
 	? `от ${fmtPrice(sku.price)} ₽/${sku.unit}`
-	: 'цена по запросу';
+	: 'по запросу'; // в шаблонах ниже уже стоит «Цена …» — иначе «Цена цена по запросу»
 // ostatok приходит в исходных единицах (часто в кг для тонн — даёт значения
 // типа «314060 т», что выглядит абсурдно в description). Поэтому показываем
 // «в наличии» / «под заказ» без числа — это надёжнее в SERP.
