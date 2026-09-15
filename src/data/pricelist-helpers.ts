@@ -341,10 +341,16 @@ function pieceNameForSeo(sku: any): string {
    отфильтрованы из таблицы хаба (рулон-стайл). Если считать SEO-раскладку
    только по getHubSkus, такие карточки остаются без различителя и снова
    получают одинаковые заголовки. Поэтому объединяем: нормализованные записи в
-   приоритете, сырые — добираем по слагу. */
+   приоритете, сырые — добираем по слагу.
+   Лента: карточки /lenta-nerzhaveyushchaya/[slug] строятся из ленты И тонкой
+   фольги 0,05–0,15 мм (у обеих sku.hub = 'lenta'), а getHubSkus('lenta') отдаёт
+   только ≥0,15. Без фольги в выборке 144 тонкие карточки оставались без
+   различителя (поверхность, ширина) и получали одинаковые title/description —
+   Яндекс.Вебмастер, «Одинаковые заголовки», 2026-09-15. */
 function seoSkuUniverse(hub: string): any[] {
 	const bySlug = new Map<string, any>();
-	for (const sku of getHubSkus(hub)) bySlug.set(sku.slug, sku);
+	const base = hub === 'lenta' ? [...getHubSkus('lenta'), ...getHubSkus('folga')] : getHubSkus(hub);
+	for (const sku of base) if (!bySlug.has(sku.slug)) bySlug.set(sku.slug, sku);
 	const raw = ((pricelist as any).hubs?.[hub] ?? []) as any[];
 	for (const sku of raw) if (!bySlug.has(sku.slug)) bySlug.set(sku.slug, sku);
 	return [...bySlug.values()];
