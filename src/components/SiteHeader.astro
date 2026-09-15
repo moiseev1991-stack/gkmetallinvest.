@@ -210,14 +210,36 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		const emailEl = document.getElementById('head-email') as HTMLAnchorElement | null;
 		const mobPhoneEl = document.getElementById('head-mob-phone') as HTMLAnchorElement | null;
 
+		/* Общий номер (как у головного офиса — первый пункт списка) шапка не
+		   перезаписывает: его на лету подменяет коллтрекинг Roistat (SEO-сценарий),
+		   и повторная запись вернула бы основной номер. Телефон трогаем, только если
+		   у филиала свой номер; при возврате к общему восстанавливаем то, что стояло
+		   до подстановки (в том числе уже подменённый номер). */
+		const defaultTel = citySel?.options[0]?.dataset.tel;
+		let basePhone: { text: string; href: string; mobHref: string } | null = null;
+
 		const applyCity = (opt: HTMLOptionElement | undefined) => {
 			if (!opt) return;
 			const { phone, tel, email } = opt.dataset;
 			if (phoneEl && phone && tel) {
-				phoneEl.textContent = phone;
-				phoneEl.href = 'tel:' + tel;
+				if (tel !== defaultTel) {
+					if (!basePhone) {
+						basePhone = {
+							text: phoneEl.textContent ?? '',
+							href: phoneEl.getAttribute('href') ?? '',
+							mobHref: mobPhoneEl?.getAttribute('href') ?? '',
+						};
+					}
+					phoneEl.textContent = phone;
+					phoneEl.href = 'tel:' + tel;
+					if (mobPhoneEl) mobPhoneEl.href = 'tel:' + tel;
+				} else if (basePhone) {
+					phoneEl.textContent = basePhone.text;
+					phoneEl.setAttribute('href', basePhone.href);
+					if (mobPhoneEl) mobPhoneEl.setAttribute('href', basePhone.mobHref);
+					basePhone = null;
+				}
 			}
-			if (mobPhoneEl && tel) mobPhoneEl.href = 'tel:' + tel;
 			if (emailEl && email) {
 				emailEl.textContent = email;
 				emailEl.href = 'mailto:' + email;
