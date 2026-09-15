@@ -216,7 +216,9 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		   у филиала свой номер; при возврате к общему восстанавливаем то, что стояло
 		   до подстановки (в том числе уже подменённый номер). */
 		const defaultTel = citySel?.options[0]?.dataset.tel;
+		const defaultEmail = citySel?.options[0]?.dataset.email;
 		let basePhone: { text: string; href: string; mobHref: string } | null = null;
+		let baseEmail: { text: string; href: string } | null = null;
 
 		const applyCity = (opt: HTMLOptionElement | undefined) => {
 			if (!opt) return;
@@ -240,9 +242,20 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 					basePhone = null;
 				}
 			}
+			/* Email — по той же схеме, что телефон: общий адрес подменяет email-трекинг
+			   Roistat (zakaz+<визит>@…), поэтому переписываем только адрес филиала. */
 			if (emailEl && email) {
-				emailEl.textContent = email;
-				emailEl.href = 'mailto:' + email;
+				if (email !== defaultEmail) {
+					if (baseEmail === null) {
+						baseEmail = { text: emailEl.textContent ?? '', href: emailEl.getAttribute('href') ?? '' };
+					}
+					emailEl.textContent = email;
+					emailEl.href = 'mailto:' + email;
+				} else if (baseEmail) {
+					emailEl.textContent = baseEmail.text;
+					emailEl.setAttribute('href', baseEmail.href);
+					baseEmail = null;
+				}
 			}
 		};
 
