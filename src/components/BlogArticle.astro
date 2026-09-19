@@ -83,8 +83,10 @@ const {
 
 const base = siteUrl.replace(/\/$/, '');
 const url = `${base}/blog/${slug}/`;
-const coverWebp = `/img/blog/${slug}.webp`;
-const coverPng = `/img/blog/${slug}.png`;
+// ?v= — картинки кешируются на год; при перегенерации обложек увеличить версию
+const COVER_VER = 2;
+const coverWebp = `/img/blog/${slug}.webp?v=${COVER_VER}`;
+const coverPng = `/img/blog/${slug}.png?v=${COVER_VER}`;
 
 const fmt = (iso: string) =>
 	new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
