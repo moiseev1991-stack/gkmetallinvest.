@@ -1,0 +1,360 @@
+---
+/**
+ * Шаблон статьи блога, рассчитанный на поиск и нейросети (Алиса/Нейро, ChatGPT,
+ * Perplexity, обзоры Google):
+ *   1. «Короткий ответ» сразу под H1 — прямой ответ на вопрос из заголовка
+ *      и ключевые цифры списком. Нейросети цитируют именно такие блоки.
+ *   2. Дальше — разделы с таблицами (контент статьи приходит через <slot />).
+ *   3. FAQ, источники и ссылки в каталог.
+ * Микроразметка: Article (автор, издатель, даты, язык, растровая обложка) +
+ * FAQPage; BreadcrumbList выводит компонент Breadcrumbs.
+ * Обложка: /img/blog/<slug>.webp на странице и .png для og:image и Article.image
+ * (SVG соцсети и поисковики в этих полях не принимают) — scripts/make-blog-cover.mjs.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import CtaSection from './CtaSection.astro';
+import { siteUrl, siteName } from '../data/site';
+
+interface Section {
+	id: string;
+	anchor: string;
+	summary: string;
+}
+interface Faq {
+	q: string;
+	a: string;
+}
+interface LinkItem {
+	label: string;
+	href: string;
+}
+interface Source {
+	label: string;
+	href?: string;
+}
+interface Props {
+	slug: string;
+	/** SEO title без суффикса «— ГК Металлинвест» (его добавляет BaseLayout); ≤ 51 знака. */
+	title: string;
+	description: string;
+	h1: string;
+	/** Короткая подпись над H1: «Справочник», «Разбор», «Инструкция». */
+	eyebrow: string;
+	datePublished: string;
+	dateModified: string;
+	readingMin: number;
+	/** Прямой ответ на вопрос из заголовка (HTML, 2–4 предложения). */
+	answer: string;
+	/** Ключевые факты с цифрами (HTML), 3–6 пунктов. */
+	keyFacts?: string[];
+	coverAlt: string;
+	sections: Section[];
+	faq: Faq[];
+	related: LinkItem[];
+	sources: Source[];
+	/** Темы статьи для schema.org about. */
+	about?: string[];
+	cta?: { title: string; text?: string };
+}
+
+const {
+	slug,
+	title,
+	description,
+	h1,
+	eyebrow,
+	datePublished,
+	dateModified,
+	readingMin,
+	answer,
+	keyFacts = [],
+	coverAlt,
+	sections,
+	faq,
+	related,
+	sources,
+	about = [],
+	cta = {
+		title: 'Нужна нержавейка под вашу задачу?',
+		text: 'Подберём марку и сортамент, пришлём КП с сертификатом завода-изготовителя.',
+	},
+} = Astro.props;
+
+const base = siteUrl.replace(/\/$/, '');
+const url = `${base}/blog/${slug}/`;
+const coverWebp = `/img/blog/${slug}.webp`;
+const coverPng = `/img/blog/${slug}.png`;
+
+const fmt = (iso: string) =>
+	new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+		.format(new Date(`${iso}T00:00:00Z`))
+		.replace(' г.', '');
+
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: h1,
+	description,
+	image: [`${base}${coverPng}`],
+	inLanguage: 'ru-RU',
+	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	url,
+	datePublished,
+	dateModified,
+	articleSection: eyebrow,
+	...(about.length ? { about: about.map((name) => ({ '@type': 'Thing', name })) } : {}),
+	author: { '@type': 'Organization', name: siteName, url: siteUrl },
+	publisher: {
+		'@type': 'Organization',
+		name: siteName,
+		url: siteUrl,
+		logo: { '@type': 'ImageObject', url: `${base}/img/logo.png` },
+	},
+};
+
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: faq.map((f) => ({
+		'@type': 'Question',
+		name: f.q,
+		acceptedAnswer: { '@type': 'Answer', text: f.a },
+	})),
+};
+---
+
+<BaseLayout title={title} description={description} image={coverPng} type="article" jsonLd={faq.length ? [articleJsonLd, faqJsonLd] : articleJsonLd}>
+	<div class="container ba">
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Блог', href: '/blog/' }, { label: h1 }]} />
+
+		<header class="ba-hero">
+			<span class="ba-eyebrow">{eyebrow}</span>
+			<h1 class="ba-h1">{h1}</h1>
+			<div class="ba-meta">
+				<span>Опубликовано <time datetime={datePublished}>{fmt(datePublished)}</time></span>
+				{dateModified !== datePublished && (
+					<>
+						<span aria-hidden="true">·</span>
+						<span>обновлено <time datetime={dateModified}>{fmt(dateModified)}</time></span>
+					</>
+				)}
+				<span aria-hidden="true">·</span>
+				<span>чтение {readingMin} мин</span>
+			</div>
+		</header>
+
+		<section class="ba-answer" aria-labelledby="ba-answer-title">
+			<h2 id="ba-answer-title" class="ba-answer__title">Короткий ответ</h2>
+			<p class="ba-answer__text" set:html={answer} />
+			{keyFacts.length > 0 && (
+				<ul class="ba-answer__facts">
+					{keyFacts.map((f) => <li set:html={f} />)}
+				</ul>
+			)}
+		</section>
+
+		<figure class="ba-cover">
+			<img src={coverWebp} alt={coverAlt} width="1200" height="630" loading="eager" fetchpriority="high" />
+		</figure>
+
+		<nav class="ba-toc" aria-label="Содержание">
+			<div class="ba-toc__title">В статье</div>
+			<ol>
+				{sections.map((s) => (
+					<li>
+						<a href={`#${s.id}`}>
+							<strong>{s.anchor}</strong>
+							<span>{s.summary}</span>
+						</a>
+					</li>
+				))}
+			</ol>
+		</nav>
+
+		<article class="ba-body">
+			<slot />
+
+			{faq.length > 0 && (
+				<section class="ba-faq" id="faq">
+					<h2>Частые вопросы</h2>
+					<div class="ba-faq__list">
+						{faq.map((f) => (
+							<details class="ba-faq__item">
+								<summary>{f.q}</summary>
+								<p>{f.a}</p>
+							</details>
+						))}
+					</div>
+				</section>
+			)}
+
+			{sources.length > 0 && (
+				<section class="ba-sources">
+					<h2>Источники</h2>
+					<ul>
+						{sources.map((s) => (
+							<li>{s.href ? <a href={s.href} rel="nofollow noopener" target="_blank">{s.label}</a> : s.label}</li>
+						))}
+					</ul>
+				</section>
+			)}
+
+			{related.length > 0 && (
+				<aside class="ba-related">
+					<h2>Смотрите также</h2>
+					<ul>
+						{related.map((r) => <li><a href={r.href}>{r.label}</a></li>)}
+					</ul>
+				</aside>
+			)}
+		</article>
+	</div>
+
+	<CtaSection title={cta.title} text={cta.text} />
+</BaseLayout>
+
+<style is:global>
+	.ba { padding-block: var(--space-8); min-width: 0; }
+	.ba-hero { max-width: 75ch; margin-bottom: var(--space-5); }
+	.ba-eyebrow {
+		display: inline-block;
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-pill);
+		margin-bottom: var(--space-3);
+	}
+	.ba-h1 {
+		font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 var(--space-2);
+	}
+	.ba-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; color: var(--color-muted); }
+
+	.ba-answer {
+		max-width: 75ch;
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-left: 4px solid var(--color-primary-500);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-6);
+	}
+	.ba-answer__title {
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-primary-600);
+		margin: 0 0 var(--space-2);
+	}
+	.ba-answer__text { font-size: 1.08rem; line-height: 1.6; margin: 0; color: var(--color-text); }
+	.ba-answer__facts { margin: var(--space-3) 0 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; line-height: 1.5; }
+
+	.ba-cover {
+		margin: 0 0 var(--space-7);
+		max-width: 80ch;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+	}
+	.ba-cover img { width: 100%; height: auto; display: block; aspect-ratio: 1200 / 630; }
+
+	.ba-toc {
+		max-width: 80ch;
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-7);
+	}
+	.ba-toc__title {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-bottom: var(--space-3);
+	}
+	.ba-toc ol {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+		gap: var(--space-2);
+	}
+	.ba-toc a {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		height: 100%;
+		padding: 0.7rem 0.9rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		color: var(--color-text);
+	}
+	.ba-toc a:hover { border-color: var(--color-primary-500); background: var(--color-primary-50); }
+	.ba-toc strong { font-size: 0.9rem; color: var(--color-primary-600); }
+	.ba-toc span { font-size: 0.82rem; color: var(--color-muted); line-height: 1.35; }
+
+	.ba-body { max-width: 75ch; display: grid; gap: var(--space-7); min-width: 0; }
+	.ba-body section { scroll-margin-top: calc(var(--header-h, 64px) + 1rem); min-width: 0; }
+	.ba-body h2 { font-size: 1.35rem; line-height: 1.3; margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+	.ba-body h3 { font-size: 1.1rem; margin: var(--space-4) 0 var(--space-2); }
+	.ba-body p,
+	.ba-body ul,
+	.ba-body ol { font-size: 1rem; line-height: 1.65; margin: 0 0 var(--space-3); }
+	.ba-body ul,
+	.ba-body ol { padding-left: 1.3rem; }
+	.ba-body li { margin-bottom: 0.4rem; line-height: 1.6; }
+	.ba-body a { color: var(--color-primary-600); text-decoration: underline; text-underline-offset: 2px; }
+	.ba-body a:hover { color: var(--color-primary); }
+	.ba-note {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		font-size: 0.95rem;
+	}
+
+	.ba-table { overflow-x: auto; margin: 0 0 var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+	.ba-table table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 0.92rem; }
+	.ba-table caption { caption-side: top; text-align: left; font-weight: 600; padding: 0.6rem 0.8rem; background: var(--color-bg-elev); }
+	.ba-table th,
+	.ba-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+	.ba-table thead th { background: var(--color-primary-50); color: var(--color-primary-600); font-weight: 600; white-space: nowrap; }
+	.ba-table tbody tr:last-child td { border-bottom: none; }
+	.ba-table td.num,
+	.ba-table th.num { text-align: right; white-space: nowrap; }
+
+	.ba-faq__list { display: grid; gap: 0.6rem; }
+	.ba-faq__item {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+	}
+	.ba-faq__item[open] { border-color: var(--color-primary-100); background: var(--color-primary-50); }
+	.ba-faq__item summary { font-weight: 600; cursor: pointer; }
+	.ba-faq__item p { margin: var(--space-2) 0 0; color: var(--color-text); line-height: 1.6; }
+
+	.ba-sources ul,
+	.ba-related ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; }
+	.ba-sources li { font-size: 0.9rem; color: var(--color-muted); }
+	.ba-related {
+		background: var(--color-bg-elev);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+	}
+	.ba-related h2,
+	.ba-sources h2 { font-size: 1.05rem; }
+</style>
