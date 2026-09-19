@@ -79,11 +79,15 @@ const aisiNumber = mark.aisi.replace(/^AISI\s*/, '');
 const faq = [
 	{
 		q: `${mark.aisi} и ${mark.gost} — это одна и та же марка?`,
-		a: `Да, это аналоги: ${mark.aisi} — американская номенклатура (AISI/ASTM), ${mark.gost} — российская (ГОСТ 5632). Состав и свойства практически одинаковы; различие в долях процента в пределах допусков. В спецификации можно указывать любой из вариантов.`,
+		a: mark.gostNote
+			? `Не совсем. ${mark.gostNote}`
+			: `Да, это аналоги: ${mark.aisi} — американская номенклатура (AISI/ASTM), ${mark.gost} — российская (ГОСТ 5632). Диапазоны состава по стандартам немного различаются, но сталь по назначению одна; в спецификации указывайте тот стандарт, по которому нужен сертификат.`,
 	},
 	{
 		q: `Какой AISI-аналог у ${mark.gost}?`,
-		a: `${mark.gost} по российскому ГОСТ 5632 соответствует ${mark.aisi} по американскому стандарту AISI/ASTM. Европейский аналог — ${mark.analogues.find((a) => a.system.startsWith('EN'))?.code ?? 'см. таблицу ниже'}. Это одна и та же сталь под разными обозначениями.`,
+		a: mark.gostNote
+			? `Ближайший AISI-аналог ${mark.gost} — ${mark.aisi}, европейский — ${mark.analogues.find((a) => a.system.startsWith('EN'))?.code ?? 'см. таблицу ниже'}. ${mark.gostNote}`
+			: `${mark.gost} по российскому ГОСТ 5632 соответствует ${mark.aisi} по американскому стандарту AISI/ASTM. Европейский аналог — ${mark.analogues.find((a) => a.system.startsWith('EN'))?.code ?? 'см. таблицу ниже'}.`,
 	},
 	{
 		q: `Какие ГОСТы регламентируют ${hubLabelGenitive.toLowerCase()} ${mark.aisi}?`,
@@ -198,7 +202,7 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 			<h2>Характеристики и химический состав {mark.aisi} ({mark.gost})</h2>
 			<p>{mark.properties}</p>
 			<div class="mark__composition">
-				<div class="mark__composition-label">Химический состав по {mark.standards[0]?.code ?? 'ГОСТ 5632'}:</div>
+				<div class="mark__composition-label">Химический состав по {mark.compositionStd}:</div>
 				<div class="mark__composition-value">{mark.composition}</div>
 			</div>
 		</section>
@@ -218,7 +222,7 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 
 		<section class="mark__block">
 			<h2>Аналоги марки {mark.aisi} в международных стандартах</h2>
-			<p>{mark.aisi} ({mark.gost}) обозначается по-разному в разных системах. Все обозначения ниже относятся к одной и той же стали — состав и механические свойства совпадают в пределах допусков. В технической документации можно указывать любой из вариантов.</p>
+			<p>{mark.aisi} ({mark.gost}) обозначается по-разному в разных системах. Ниже — соответствующие марки других стандартов; диапазоны состава у них немного различаются, поэтому в заказе указывайте стандарт, по которому нужен сертификат.{mark.gostNote && <> {mark.gostNote}</>}</p>
 			<table class="mark__analogues">
 				<thead>
 					<tr>
