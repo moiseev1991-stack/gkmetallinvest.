@@ -217,11 +217,14 @@ const websiteJsonLd = {
 									aria-hidden={isClone ? 'true' : undefined}
 								>
 									<div class="ship-card__media">
+										{/* preload="none": 28 clips on the page (14 + clones) used to
+										    fetch metadata on load and stall weaker machines. The poster
+										    carries the card until hover starts the download. */}
 										<video
 											class="ship-card__video"
-											src={`${s.video}#t=0.5`}
+											src={s.video}
 											poster={s.poster}
-											preload="metadata"
+											preload="none"
 											muted
 											playsinline
 											aria-label={s.title}
@@ -757,19 +760,50 @@ const websiteJsonLd = {
 			// (or tap on touch), pause + rewind on mouseleave. Click on the video opens
 			// the same modal that the "Смотреть видео" button does.
 			const videos = Array.from(track.querySelectorAll<HTMLVideoElement>('.ship-card__video'));
+
+			// Hover-play is for mice only, and only when the visitor has not asked for
+			// less motion or for data saving: the clips are several MB each and start
+			// downloading on play(), which is what made the slider stutter on slower
+			// machines. Touch devices fire a synthetic mouseenter on tap — skip those.
+			const mq = (q: string) => (window.matchMedia ? window.matchMedia(q).matches : false);
+			const conn = (navigator as any).connection;
+			const cheapData = !conn || (!conn.saveData && !/(^|-)2g$/.test(conn.effectiveType || ''));
+			const hoverPlay = mq('(hover: hover) and (pointer: fine)') && !mq('(prefers-reduced-motion: reduce)') && cheapData;
+
+			// One clip at a time, and only after the cursor has rested on a card for a
+			// moment: passing the mouse across the row no longer kicks off a dozen
+			// parallel downloads.
+			let hoverTimer: number | undefined;
+			let current: HTMLVideoElement | null = null;
+			const stop = (v: HTMLVideoElement) => {
+				if (!v.paused) v.pause();
+				if (current === v) current = null;
+			};
+
 			videos.forEach((v) => {
 				v.muted = true;
 				v.loop = true;
 				v.setAttribute('playsinline', '');
 				const card = v.closest('.ship-card') as HTMLElement | null;
 				const target = card ?? v;
-				target.addEventListener('mouseenter', () => {
-					v.play().catch(() => {});
-				});
-				target.addEventListener('mouseleave', () => {
-					v.pause();
-					try { v.currentTime = 0.5; } catch {}
-				});
+
+				if (hoverPlay) {
+					target.addEventListener('mouseenter', () => {
+						window.clearTimeout(hoverTimer);
+						hoverTimer = window.setTimeout(() => {
+							if (current && current !== v) stop(current);
+							current = v;
+							v.play().catch(() => {});
+						}, 160);
+					});
+					// Pause where it is — no rewind. Seeking back on every mouseleave
+					// made the frame flicker while the clip was still loading.
+					target.addEventListener('mouseleave', () => {
+						window.clearTimeout(hoverTimer);
+						stop(v);
+					});
+				}
+
 				v.style.cursor = 'pointer';
 				v.addEventListener('click', () => {
 					const btn = card?.querySelector<HTMLButtonElement>('[data-ship-open]');
@@ -1274,6 +1308,7 @@ const websiteJsonLd = {
 		gap: var(--space-4);
 		overflow-x: auto;
 		overflow-y: hidden;
+		overscroll-behavior-x: contain;
 		scroll-padding: var(--space-4);
 		padding: var(--space-2) var(--space-1) var(--space-4);
 		scroll-behavior: smooth;
@@ -1292,6 +1327,12 @@ const websiteJsonLd = {
 	@media (min-width: 1200px) {
 		.ship-slider__track { grid-auto-columns: calc((100% - var(--space-4) * 4) / 5); }
 	}
+	@media (prefers-reduced-motion: reduce) {
+		.ship-slider__track { scroll-behavior: auto; }
+		.ship-card,
+		.ship-card__btn,
+		.ship-slider__btn { transition: none; }
+	}
 	.ship-card {
 		scroll-snap-align: center;
 		position: relative;
@@ -1301,11 +1342,15 @@ const websiteJsonLd = {
 		overflow: hidden;
 		background: #0a1f3d;
 		box-shadow: 0 12px 28px -10px rgba(10, 31, 61, 0.3), 0 4px 10px -4px rgba(10, 31, 61, 0.2);
-		transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+		transition: box-shadow var(--dur-base) var(--ease-out);
 	}
-	.ship-card:hover {
-		box-shadow: 0 20px 40px -12px rgba(10, 31, 61, 0.4), 0 8px 16px -6px rgba(10, 31, 61, 0.25);
-		transform: translateY(-4px);
+	/* Card must not move on hover: the old translateY(-4px) pulled it out from
+	   under the cursor near the bottom edge, hover dropped, the card came back,
+	   the cursor was inside again — an endless jitter loop. Shadow only. */
+	@media (hover: hover) and (pointer: fine) {
+		.ship-card:hover {
+			box-shadow: 0 20px 40px -12px rgba(10, 31, 61, 0.4), 0 8px 16px -6px rgba(10, 31, 61, 0.25);
+		}
 	}
 	.ship-card__media {
 		position: relative;

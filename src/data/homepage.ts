@@ -118,26 +118,28 @@ export const homeServices: Array<{
 
 /** Отгрузки — слайдер с видео реальных отгрузок.
  *  Подписи сверены с содержимым роликов по раскадровке (2026-09-14):
- *  прежние были придуманы наугад и не совпадали с тем, что в кадре. */
+ *  прежние были придуманы наугад и не совпадали с тем, что в кадре.
+ *  poster есть у каждого ролика (2026-09-22): без него карточка до загрузки
+ *  видео оставалась чёрной, а при наведении картинка менялась рывком. */
 export const shipments: Array<{
 	title: string;
 	video: string;
 	poster?: string;
 }> = [
-	{ title: 'Упакованная лента в бухтах', video: '/slaider/video.mp4', poster: '/slaider/videoframe_1477.webp' },
-	{ title: 'Отгрузка профильной трубы', video: '/slaider/video (1).mp4', poster: '/slaider/videoframe_1591.webp' },
-	{ title: 'Бухта нержавеющей ленты', video: '/slaider/video (2).mp4' },
-	{ title: 'Отгрузка рифлёного листа', video: '/slaider/video (3).mp4', poster: '/slaider/videoframe_1876.webp' },
-	{ title: 'Погрузка ленты в бухтах', video: '/slaider/video (4).mp4' },
-	{ title: 'Отгрузка листа в ночную смену', video: '/slaider/video (5).mp4' },
-	{ title: 'Отгрузка на полуприцеп', video: '/slaider/video (6).mp4' },
-	{ title: 'Отгрузка длинномерного проката', video: '/slaider/video (7).mp4' },
-	{ title: 'Отгрузка труб со склада', video: '/slaider/video (8).mp4' },
-	{ title: 'Отгрузка толстого листа', video: '/slaider/video (9).mp4' },
-	{ title: 'Отгрузка рулонной стали', video: '/slaider/video (10).mp4' },
-	{ title: 'Проверка поверхности листа', video: '/slaider/video (11).mp4' },
-	{ title: 'Фирменная маркировка груза', video: '/slaider/video (12).mp4' },
-	{ title: 'Упаковка рулона к перевозке', video: '/slaider/video (13).mp4' },
+	{ title: 'Упакованная лента в бухтах', video: '/slaider/video.mp4', poster: '/slaider/video.webp' },
+	{ title: 'Отгрузка профильной трубы', video: '/slaider/video (1).mp4', poster: '/slaider/video (1).webp' },
+	{ title: 'Бухта нержавеющей ленты', video: '/slaider/video (2).mp4', poster: '/slaider/video (2).webp' },
+	{ title: 'Отгрузка рифлёного листа', video: '/slaider/video (3).mp4', poster: '/slaider/video (3).webp' },
+	{ title: 'Погрузка ленты в бухтах', video: '/slaider/video (4).mp4', poster: '/slaider/video (4).webp' },
+	{ title: 'Отгрузка листа в ночную смену', video: '/slaider/video (5).mp4', poster: '/slaider/video (5).webp' },
+	{ title: 'Отгрузка на полуприцеп', video: '/slaider/video (6).mp4', poster: '/slaider/video (6).webp' },
+	{ title: 'Отгрузка длинномерного проката', video: '/slaider/video (7).mp4', poster: '/slaider/video (7).webp' },
+	{ title: 'Отгрузка труб со склада', video: '/slaider/video (8).mp4', poster: '/slaider/video (8).webp' },
+	{ title: 'Отгрузка толстого листа', video: '/slaider/video (9).mp4', poster: '/slaider/video (9).webp' },
+	{ title: 'Отгрузка рулонной стали', video: '/slaider/video (10).mp4', poster: '/slaider/video (10).webp' },
+	{ title: 'Проверка поверхности листа', video: '/slaider/video (11).mp4', poster: '/slaider/video (11).webp' },
+	{ title: 'Фирменная маркировка груза', video: '/slaider/video (12).mp4', poster: '/slaider/video (12).webp' },
+	{ title: 'Упаковка рулона к перевозке', video: '/slaider/video (13).mp4', poster: '/slaider/video (13).webp' },
 ];
 
 /** Преимущества — слот под иконку */
