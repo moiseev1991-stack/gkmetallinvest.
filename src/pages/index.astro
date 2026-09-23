@@ -209,42 +209,34 @@ const websiteJsonLd = {
 				</button>
 				<div class="ship-slider__track" data-ship-track>
 					{
-						[...shipments, ...shipments].map((s, i) => {
-							const isClone = i >= shipments.length;
-							return (
-								<article
-									class="ship-card"
-									aria-hidden={isClone ? 'true' : undefined}
-								>
-									<div class="ship-card__media">
-										{/* preload="none": 28 clips on the page (14 + clones) used to
-										    fetch metadata on load and stall weaker machines. The poster
-										    carries the card until hover starts the download. */}
-										<video
-											class="ship-card__video"
-											src={s.video}
-											poster={s.poster}
-											preload="none"
-											muted
-											playsinline
-											aria-label={s.title}
-										/>
-										<button
-											type="button"
-											class="ship-card__btn"
-											data-ship-open={s.video}
-											data-ship-title={s.title}
-											aria-label={`Смотреть видео: ${s.title}`}
-											tabindex={isClone ? -1 : undefined}
-										>
-											<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" /></svg>
-											<span>Смотреть видео</span>
-										</button>
-									</div>
-									<h3 class="ship-card__caption">{s.title}</h3>
-								</article>
-							);
-						})
+						shipments.map((s) => (
+							<article class="ship-card" data-ship-card data-ship-clip={s.video}>
+								<div class="ship-card__media">
+									{/* The cards are plain images. Keeping a <video> in each one made
+									    the browser juggle a dozen decoders and the picture blinked on
+									    weaker machines; a single shared player (see the script) moves
+									    into whichever card the cursor rests on. */}
+									<img
+										class="ship-card__img"
+										src={s.poster}
+										alt={s.title}
+										loading="lazy"
+										decoding="async"
+									/>
+									<button
+										type="button"
+										class="ship-card__btn"
+										data-ship-open={s.video}
+										data-ship-title={s.title}
+										aria-label={`Смотреть видео: ${s.title}`}
+									>
+										<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" /></svg>
+										<span>Смотреть видео</span>
+									</button>
+								</div>
+								<h3 class="ship-card__caption">{s.title}</h3>
+							</article>
+						))
 					}
 				</div>
 				<button type="button" class="ship-slider__btn ship-slider__btn--next" data-ship-next aria-label="Вперёд">
@@ -688,14 +680,14 @@ const websiteJsonLd = {
 		if (e.key === 'Escape' && shipModal && !shipModal.hasAttribute('hidden')) closeShipModal();
 	});
 
-	// Shipments slider — infinite auto-rotating carousel.
-	// Track is rendered with shipments duplicated 2x; we silently teleport scroll
-	// position back by half whenever it crosses the midpoint (and forward when it goes negative).
+	// Shipments slider — a finite strip of 14 cards; the arrows fade out at the ends.
+	// It used to render the cards twice and teleport the scroll position back by half
+	// at the seam, which showed up as the strip suddenly jumping mid-scroll.
 	const slider = document.querySelector('[data-ship-slider]') as HTMLElement | null;
 	if (slider) {
 		const track = slider.querySelector('[data-ship-track]') as HTMLElement | null;
-		const prev = slider.querySelector('[data-ship-prev]') as HTMLElement | null;
-		const next = slider.querySelector('[data-ship-next]') as HTMLElement | null;
+		const prev = slider.querySelector('[data-ship-prev]') as HTMLButtonElement | null;
+		const next = slider.querySelector('[data-ship-next]') as HTMLButtonElement | null;
 
 		if (track) {
 			const cardStep = () => {
@@ -706,109 +698,131 @@ const websiteJsonLd = {
 				return first.getBoundingClientRect().width + gap;
 			};
 
-			let isTeleporting = false;
-			const half = () => track.scrollWidth / 2;
-			const normalize = () => {
-				if (isTeleporting) return;
-				const h = half();
-				if (h <= 0) return;
-				if (track.scrollLeft >= h) {
-					isTeleporting = true;
-					const prevBehavior = track.style.scrollBehavior;
-					track.style.scrollBehavior = 'auto';
-					track.scrollLeft -= h;
-					track.style.scrollBehavior = prevBehavior;
-					requestAnimationFrame(() => { isTeleporting = false; });
-				} else if (track.scrollLeft <= 0) {
-					isTeleporting = true;
-					const prevBehavior = track.style.scrollBehavior;
-					track.style.scrollBehavior = 'auto';
-					track.scrollLeft += h;
-					track.style.scrollBehavior = prevBehavior;
-					requestAnimationFrame(() => { isTeleporting = false; });
-				}
-			};
-
-			let scrollDebounce: number | undefined;
-			track.addEventListener('scroll', () => {
-				window.clearTimeout(scrollDebounce);
-				scrollDebounce = window.setTimeout(normalize, 60);
-			});
-
-			// Start somewhere in the middle so prev/next both have room
-			const initOffset = () => {
-				const h = half();
-				if (h > 0 && track.scrollLeft === 0) {
-					track.style.scrollBehavior = 'auto';
-					track.scrollLeft = 0;
-					track.style.scrollBehavior = '';
-				}
-			};
-			window.addEventListener('load', initOffset);
-			initOffset();
-
-			prev?.addEventListener('click', () => {
-				normalize();
-				track.scrollBy({ left: -cardStep(), behavior: 'smooth' });
-			});
-			next?.addEventListener('click', () => {
-				normalize();
-				track.scrollBy({ left: cardStep(), behavior: 'smooth' });
-			});
-
-			// Hover/click-to-play: inline videos stay paused on load; play on mouseenter
-			// (or tap on touch), pause + rewind on mouseleave. Click on the video opens
-			// the same modal that the "Смотреть видео" button does.
-			const videos = Array.from(track.querySelectorAll<HTMLVideoElement>('.ship-card__video'));
-
-			// Hover-play is for mice only, and only when the visitor has not asked for
-			// less motion or for data saving: the clips are several MB each and start
-			// downloading on play(), which is what made the slider stutter on slower
-			// machines. Touch devices fire a synthetic mouseenter on tap — skip those.
 			const mq = (q: string) => (window.matchMedia ? window.matchMedia(q).matches : false);
+
+			const syncArrows = () => {
+				const max = track.scrollWidth - track.clientWidth;
+				if (prev) prev.disabled = track.scrollLeft <= 1;
+				if (next) next.disabled = track.scrollLeft >= max - 1;
+			};
+			track.addEventListener('scroll', syncArrows, { passive: true });
+			window.addEventListener('resize', syncArrows);
+			window.addEventListener('load', syncArrows);
+			syncArrows();
+
+			// The arrows animate the strip themselves instead of relying on
+			// scrollBy({ behavior: 'smooth' }), which older Safari ignores for
+			// containers. If frames never arrive (a window that isn't being painted),
+			// the fallback below lands the strip on its target anyway.
+			let animId = 0;
+			const scrollToX = (target: number) => {
+				const max = track.scrollWidth - track.clientWidth;
+				const to = Math.max(0, Math.min(max, target));
+				const from = track.scrollLeft;
+				const dist = to - from;
+				animId++;
+				if (!dist) return;
+				const land = () => {
+					track.scrollLeft = to;
+					syncArrows();
+				};
+				if (mq('(prefers-reduced-motion: reduce)')) {
+					land();
+					return;
+				}
+				const id = animId;
+				const startedAt = performance.now();
+				const duration = 320;
+				let painting = false;
+				const step = (now: number) => {
+					if (id !== animId) return; // another click took over
+					painting = true;
+					const t = Math.min(1, (now - startedAt) / duration);
+					track.scrollLeft = from + dist * (1 - Math.pow(1 - t, 3));
+					if (t < 1) requestAnimationFrame(step);
+					else syncArrows();
+				};
+				requestAnimationFrame(step);
+				window.setTimeout(() => {
+					if (!painting && id === animId) land();
+				}, 150);
+			};
+
+			prev?.addEventListener('click', () => scrollToX(track.scrollLeft - cardStep()));
+			next?.addEventListener('click', () => scrollToX(track.scrollLeft + cardStep()));
+
+			// Hover playback runs on a single shared <video> that moves into the card
+			// under the cursor, so the page never holds more than one clip. Mice only,
+			// and not when the visitor asked for less motion or for data saving:
+			// the clips are several MB each and start downloading on play().
 			const conn = (navigator as any).connection;
 			const cheapData = !conn || (!conn.saveData && !/(^|-)2g$/.test(conn.effectiveType || ''));
 			const hoverPlay = mq('(hover: hover) and (pointer: fine)') && !mq('(prefers-reduced-motion: reduce)') && cheapData;
 
-			// One clip at a time, and only after the cursor has rested on a card for a
-			// moment: passing the mouse across the row no longer kicks off a dozen
-			// parallel downloads.
+			let player: HTMLVideoElement | null = null;
+			let activeCard: HTMLElement | null = null;
 			let hoverTimer: number | undefined;
-			let current: HTMLVideoElement | null = null;
-			const stop = (v: HTMLVideoElement) => {
-				if (!v.paused) v.pause();
-				if (current === v) current = null;
+
+			const stopPlayback = () => {
+				if (!player) return;
+				player.pause();
+				player.removeAttribute('src');
+				player.load(); // hands the decoder back instead of keeping it parked
+				player.remove();
+				activeCard = null;
 			};
 
-			videos.forEach((v) => {
-				v.muted = true;
-				v.loop = true;
-				v.setAttribute('playsinline', '');
-				const card = v.closest('.ship-card') as HTMLElement | null;
-				const target = card ?? v;
+			const playIn = (card: HTMLElement) => {
+				const src = card.dataset.shipClip;
+				if (!src) return;
+				stopPlayback();
+				if (!player) {
+					player = document.createElement('video');
+					player.className = 'ship-card__video';
+					player.muted = true;
+					player.loop = true;
+					player.setAttribute('playsinline', '');
+					player.setAttribute('aria-hidden', 'true');
+					player.tabIndex = -1;
+				}
+				player.src = src;
+				(card.querySelector('.ship-card__media') || card).appendChild(player);
+				activeCard = card;
+				player.play().catch(() => {});
+			};
 
+			const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-ship-card]'));
+			cards.forEach((card) => {
 				if (hoverPlay) {
-					target.addEventListener('mouseenter', () => {
+					// Start only once the cursor has rested on a card: sweeping the mouse
+					// across the row no longer starts and drops clips one after another.
+					card.addEventListener('mouseenter', () => {
 						window.clearTimeout(hoverTimer);
-						hoverTimer = window.setTimeout(() => {
-							if (current && current !== v) stop(current);
-							current = v;
-							v.play().catch(() => {});
-						}, 160);
+						hoverTimer = window.setTimeout(() => playIn(card), 160);
 					});
-					// Pause where it is — no rewind. Seeking back on every mouseleave
-					// made the frame flicker while the clip was still loading.
-					target.addEventListener('mouseleave', () => {
+					card.addEventListener('mouseleave', () => {
 						window.clearTimeout(hoverTimer);
-						stop(v);
+						if (activeCard === card) stopPlayback();
 					});
 				}
-
-				v.style.cursor = 'pointer';
-				v.addEventListener('click', () => {
-					const btn = card?.querySelector<HTMLButtonElement>('[data-ship-open]');
-					btn?.click();
+				// Anywhere on the card opens the modal, same as the button does.
+				card.addEventListener('click', (e) => {
+					window.clearTimeout(hoverTimer);
+					stopPlayback();
+					if ((e.target as HTMLElement).closest('[data-ship-open]')) return;
+					card.querySelector<HTMLButtonElement>('[data-ship-open]')?.click();
 				});
+			});
+
+			slider.addEventListener('mouseleave', () => {
+				window.clearTimeout(hoverTimer);
+				stopPlayback();
+			});
+			document.addEventListener('visibilitychange', () => {
+				if (document.hidden) {
+					window.clearTimeout(hoverTimer);
+					stopPlayback();
+				}
 			});
 		}
 	}
@@ -1292,6 +1306,16 @@ const websiteJsonLd = {
 		background: var(--color-primary-50);
 		transform: translateY(-50%) scale(1.05);
 	}
+	.ship-slider__btn[disabled] {
+		opacity: 0.3;
+		cursor: default;
+		box-shadow: none;
+	}
+	.ship-slider__btn[disabled]:hover {
+		border-color: var(--color-border);
+		background: var(--color-surface);
+		transform: translateY(-50%);
+	}
 	.ship-slider__btn--prev { left: -8px; }
 	.ship-slider__btn--next { right: -8px; }
 	@media (min-width: 1280px) {
@@ -1311,7 +1335,8 @@ const websiteJsonLd = {
 		overscroll-behavior-x: contain;
 		scroll-padding: var(--space-4);
 		padding: var(--space-2) var(--space-1) var(--space-4);
-		scroll-behavior: smooth;
+		/* Прокрутку стрелками анимирует скрипт — scroll-behavior здесь не задаём,
+		   иначе браузер анимировал бы поверх и две анимации спорили бы за ленту. */
 		scrollbar-width: none;
 		-ms-overflow-style: none;
 	}
@@ -1328,7 +1353,6 @@ const websiteJsonLd = {
 		.ship-slider__track { grid-auto-columns: calc((100% - var(--space-4) * 4) / 5); }
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.ship-slider__track { scroll-behavior: auto; }
 		.ship-card,
 		.ship-card__btn,
 		.ship-slider__btn { transition: none; }
@@ -1356,18 +1380,33 @@ const websiteJsonLd = {
 		position: relative;
 		width: 100%;
 		height: 100%;
+		cursor: pointer;
 	}
-	.ship-card__video {
+	.ship-card__img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		display: block;
 		background: #0a1f3d;
 	}
+	/* The shared player the script moves between cards; it covers the still and
+	   sits under the gradient, caption and button. */
+	.ship-card__video {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		background: #0a1f3d;
+		pointer-events: none;
+	}
 	.ship-card__media::after {
 		content: '';
 		position: absolute;
 		inset: 0;
+		z-index: 1;
 		background: linear-gradient(180deg, rgba(10, 31, 61, 0) 55%, rgba(10, 31, 61, 0.55) 100%);
 		pointer-events: none;
 	}

@@ -13,6 +13,26 @@ import { siteNoindex } from '../data/site';
 
 {!siteNoindex && (
 	<>
+		{/* Коллтрекинг подменяет номер и почту уже в браузере: до подмены посетитель
+		   видит исходные контакты, поэтому соединение с Roistat открываем заранее,
+		   а его счётчик ставим перед остальными. */}
+		<link rel="preconnect" href="https://cloud.roistat.com" crossorigin />
+		<link rel="dns-prefetch" href="//cloud.roistat.com" />
+		<link rel="dns-prefetch" href="//cllctr.roistat.com" />
+
+		{/* Roistat: сквозная аналитика + коллтрекинг. Счётчик определяет источник визита
+		   (cookie roistat_visit), а сценарий «seo» в кабинете подменяет основной номер
+		   78312812660 на номер Roistat у посетителей из поисковых систем. */}
+		<script is:inline>
+			(function(w, d, s, h, id) {
+				w.roistatProjectId = id; w.roistatHost = h; w.roistatPage = d.location.href; w.roistatReferrer = d.referrer;
+				var p = d.location.protocol == "https:" ? "https://" : "http://";
+				var u = /^.*roistat_visit=[^;]+(.*)?$/.test(d.cookie) ? "/dist/module.js" : "/api/site/1.0/"+id+"/init?referrer="+encodeURIComponent(d.location.href);
+				var js = d.createElement(s); js.charset="UTF-8"; js.async = 1; js.src = p+h+u; var js2 = d.getElementsByTagName(s)[0]; js2.parentNode.insertBefore(js, js2);
+			})(window, document, 'script', 'cloud.roistat.com', '7c94ad5c79698cb0f3a7d09bc3123e8c');
+		</script>
+		{/* /Roistat */}
+
 		{/* Yandex.Metrika counter */}
 		<script is:inline type="text/javascript">
 			(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -64,18 +84,5 @@ import { siteNoindex } from '../data/site';
 			<img src="https://top-fwz1.mail.ru/counter?id=3601368;js=na" style="position:absolute;left:-9999px;" alt="" />
 		</div></noscript>
 		{/* /Rating Mail.ru counter */}
-
-		{/* Roistat: сквозная аналитика + коллтрекинг. Счётчик определяет источник визита
-		   (cookie roistat_visit), а сценарий «seo» в кабинете подменяет основной номер
-		   78312812660 на номер Roistat у посетителей из поисковых систем. */}
-		<script is:inline>
-			(function(w, d, s, h, id) {
-				w.roistatProjectId = id; w.roistatHost = h; w.roistatPage = d.location.href; w.roistatReferrer = d.referrer;
-				var p = d.location.protocol == "https:" ? "https://" : "http://";
-				var u = /^.*roistat_visit=[^;]+(.*)?$/.test(d.cookie) ? "/dist/module.js" : "/api/site/1.0/"+id+"/init?referrer="+encodeURIComponent(d.location.href);
-				var js = d.createElement(s); js.charset="UTF-8"; js.async = 1; js.src = p+h+u; var js2 = d.getElementsByTagName(s)[0]; js2.parentNode.insertBefore(js, js2);
-			})(window, document, 'script', 'cloud.roistat.com', '7c94ad5c79698cb0f3a7d09bc3123e8c');
-		</script>
-		{/* /Roistat */}
 	</>
 )}
