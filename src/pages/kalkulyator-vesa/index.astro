@@ -10,11 +10,11 @@ const description = 'Онлайн-расчёт веса нержавеющего
 const faq = [
 	{
 		q: 'Какая плотность у нержавейки разных марок?',
-		a: 'Аустенитные стали (AISI 304, 316L, 321, 12Х18Н10Т, 201) — 7,9 г/см³. Ферритные (AISI 430, 410, 439) — 7,7 г/см³. Мартенситные (AISI 420, 440) — 7,7 г/см³. Двухфазные (дуплекс) — 7,8 г/см³. Эти значения мы и используем в калькуляторе.',
+		a: 'Хромоникелевые аустенитные стали (AISI 304, 321, 12Х18Н10Т) — 7,9 г/см³, с молибденом (AISI 316, 316L, 316Ti) — 8,0 г/см³, хромомарганцевая AISI 201 — 7,8 г/см³. Ферритные (AISI 430, 410, 439) — 7,7 г/см³. Мартенситные — 7,68–7,76 г/см³ (20Х13 — 7,76, 40Х13 — 7,68). Дуплекс 2205 — 7,8 г/см³. В калькуляторе плотность берётся по выбранной марке.',
 	},
 	{
 		q: 'Какова плотность 12Х18Н10Т / AISI 321?',
-		a: 'Плотность 12Х18Н10Т (AISI 321) — 7,9 г/см³, или 7900 кг/м³. Такая же плотность у AISI 304 (08Х18Н10), 316L, 316Ti и других аустенитных нержавеющих сталей с содержанием никеля 8–14 %. Для сравнения: ферритные марки (AISI 430, 410) — 7,7 г/см³, мартенситные (20Х13, 40Х13) — 7,7 г/см³, дуплексные двухфазные — 7,8 г/см³. При выборе марки в калькуляторе выше плотность подставляется автоматически.',
+		a: 'Плотность 12Х18Н10Т (AISI 321) — 7,9 г/см³, или 7900 кг/м³. Такая же плотность у AISI 304 (08Х18Н10) и других хромоникелевых аустенитных сталей; у марок с молибденом (AISI 316L, 316Ti) — 8,0 г/см³. Для сравнения: ферритные марки (AISI 430, 410) — 7,7 г/см³, мартенситные (20Х13, 40Х13) — 7,7 г/см³, дуплексные двухфазные — 7,8 г/см³. При выборе марки в калькуляторе выше плотность подставляется автоматически.',
 	},
 	{
 		q: 'Откуда берётся вес квадратного метра листа?',
@@ -38,7 +38,7 @@ const faq = [
 	},
 	{
 		q: 'Подходит ли для углеродистой и оцинкованной стали?',
-		a: 'Калькулятор настроен на нержавейку. Для углеродистой стали плотность 7,85 г/см³, для оцинкованной — 7,85 г/см³ + ~0,03 кг/м² на цинк. Если нужен расчёт под чёрный металл — отметьте в поле «Другая плотность», вес пересчитается.',
+		a: 'Да. В списке «Металл» выберите «Чёрная сталь» и марку — Ст3, 09Г2С, сталь 20, 45, 40Х и другие. Для них калькулятор берёт 7,85 г/см³, как в сортаментах ГОСТ. Для оцинкованного листа добавьте массу цинка: при покрытии 140–275 г/м² (сумма на обе стороны) это 0,14–0,28 кг на квадратный метр. В том же списке есть алюминий, медь, латунь, бронза и титан.',
 	},
 ];
 
@@ -60,7 +60,7 @@ const howToJsonLd = {
 	step: [
 		{ '@type': 'HowToStep', name: 'Выбрать вид проката', text: 'Лист, рулон, труба, круг, квадрат, шестигранник, проволока, полоса или уголок.' },
 		{ '@type': 'HowToStep', name: 'Ввести размеры', text: 'Толщину, диаметр, ширину, длину или другие параметры в миллиметрах.' },
-		{ '@type': 'HowToStep', name: 'Выбрать марку стали', text: 'AISI 304, 316L, 321, 430, дуплекс — плотность подставляется автоматически.' },
+		{ '@type': 'HowToStep', name: 'Выбрать металл и марку', text: 'Нержавейка, чёрная сталь, алюминий, медь, латунь, бронза или титан, затем марка из списка — плотность подставляется автоматически.' },
 		{ '@type': 'HowToStep', name: 'Получить результат', text: 'Калькулятор покажет вес единицы (кг/м или кг/м²) и общий вес заданного количества.' },
 	],
 };
@@ -80,12 +80,193 @@ const shapes = [
 ];
 
 const densityRows = [
-	{ group: 'Аустенитные', marks: 'AISI 304, 304L, 316L, 316Ti, 321, 12Х18Н10Т, 201, 904L', density: '7,9', tone: 'austenitic' },
+	{ group: 'Аустенитные', marks: 'AISI 304, 304L, 321, 12Х18Н10Т, 08Х18Н10', density: '7,9', tone: 'austenitic' },
+	{ group: 'Аустенитные с Mo', marks: 'AISI 316, 316L, 316Ti, 904L', density: '8,0', tone: 'austenitic' },
 	{ group: 'Ферритные', marks: 'AISI 430, 410S, 439, 12Х17', density: '7,7', tone: 'ferritic' },
 	{ group: 'Мартенситные', marks: 'AISI 420, 440, 20Х13, 30Х13, 40Х13', density: '7,7', tone: 'martensitic' },
 	{ group: 'Двухфазные', marks: 'Дуплекс, супердуплекс', density: '7,8', tone: 'duplex' },
 	{ group: 'Жаропрочные', marks: 'AISI 310S, 20Х23Н18', density: '7,9', tone: 'heat' },
 ];
+
+/* Металлы и марки для калькулятора: сначала выбирают металл, потом марку
+   из списка — плотность подставляется сама. Снабженцы знают марку
+   («14Х17Н2»), а не её класс («мартенситная»), поэтому группы вроде
+   «аустенитные / ферритные» в выборе не используются.
+   Плотность нержавейки — те же значения, что в статье
+   /blog/plotnost-nerzhaveyushchey-stali/. Для чёрной стали — 7,85 г/см³:
+   по ней считают теоретическую массу в сортаментах ГОСТ.
+   [марка, аналог или пояснение, плотность г/см³] */
+type GradeRow = [string, string, number];
+type Metal = { key: string; label: string; def: string; groups: { label?: string; grades: GradeRow[] }[] };
+
+const metals: Metal[] = [
+	{
+		key: 'nerzh',
+		label: 'Нержавеющая сталь',
+		def: '12Х18Н10Т',
+		groups: [
+			{
+				label: 'Российские марки (ГОСТ)',
+				grades: [
+					['03Х17Н14М3', 'AISI 316L', 8.0],
+					['03Х18Н11', 'AISI 304L', 7.9],
+					['03Х22Н5АМ3', 'дуплекс 2205', 7.8],
+					['06ХН28МДТ', '≈ AISI 904L', 8.0],
+					['08Х13', 'AISI 410S', 7.7],
+					['08Х17Н13М2', 'AISI 316', 8.0],
+					['08Х17Т', 'AISI 439', 7.7],
+					['08Х18Н10', 'AISI 304', 7.9],
+					['08Х18Н10Т', 'AISI 321', 7.9],
+					['08Х18Н12Б', 'AISI 347', 7.9],
+					['10Х17Н13М2Т', 'AISI 316Ti', 8.0],
+					['12Х13', 'AISI 410', 7.7],
+					['12Х15Г9НД', 'AISI 201', 7.8],
+					['12Х17', 'AISI 430', 7.7],
+					['12Х18Н10Т', 'AISI 321', 7.9],
+					['12Х18Н9', 'AISI 302', 7.9],
+					['14Х17Н2', 'AISI 431', 7.75],
+					['15Х25Т', 'AISI 446', 7.6],
+					['20Х13', 'AISI 420', 7.76],
+					['20Х23Н13', 'AISI 309S', 7.9],
+					['20Х23Н18', 'AISI 310S', 7.9],
+					['30Х13', '', 7.7],
+					['40Х13', '', 7.68],
+					['95Х18', '≈ AISI 440', 7.75],
+				],
+			},
+			{
+				label: 'Зарубежные марки (AISI)',
+				grades: [
+					['AISI 201', '12Х15Г9НД', 7.8],
+					['AISI 302', '12Х18Н9', 7.9],
+					['AISI 304', '08Х18Н10', 7.9],
+					['AISI 304L', '03Х18Н11', 7.9],
+					['AISI 309S', '20Х23Н13', 7.9],
+					['AISI 310S', '20Х23Н18', 7.9],
+					['AISI 316', '08Х17Н13М2', 8.0],
+					['AISI 316L', '03Х17Н14М3', 8.0],
+					['AISI 316Ti', '10Х17Н13М2Т', 8.0],
+					['AISI 321', '12Х18Н10Т', 7.9],
+					['AISI 347', '08Х18Н12Б', 7.9],
+					['AISI 410', '12Х13', 7.7],
+					['AISI 410S', '08Х13', 7.7],
+					['AISI 420', '20Х13', 7.76],
+					['AISI 430', '12Х17', 7.7],
+					['AISI 431', '14Х17Н2', 7.75],
+					['AISI 439', '08Х17Т', 7.7],
+					['AISI 440', '≈ 95Х18', 7.75],
+					['AISI 446', '15Х25Т', 7.6],
+					['AISI 904L', '≈ 06ХН28МДТ', 8.0],
+					['Duplex 2205', '03Х22Н5АМ3', 7.8],
+				],
+			},
+		],
+	},
+	{
+		key: 'chern',
+		label: 'Чёрная сталь',
+		def: 'Ст3',
+		groups: [{ grades: [
+			['Ст3', 'Ст3сп, Ст3пс', 7.85],
+			['Сталь 20', '', 7.85],
+			['Сталь 45', '', 7.85],
+			['09Г2С', '', 7.85],
+			['Сталь 10', '', 7.85],
+			['Сталь 35', '', 7.85],
+			['08пс', '', 7.85],
+			['10ХСНД', '', 7.85],
+			['15ХСНД', '', 7.85],
+			['17Г1С', '', 7.85],
+			['40Х', '', 7.85],
+			['30ХГСА', '', 7.85],
+			['65Г', '', 7.85],
+			['У8А', '', 7.85],
+			['ШХ15', '', 7.85],
+		] }],
+	},
+	{
+		key: 'al',
+		label: 'Алюминий',
+		def: 'АМг3',
+		groups: [{ grades: [
+			['АМг3', '5754', 2.67],
+			['АД31', '6063', 2.71],
+			['Д16', '2024', 2.78],
+			['АМг2', '', 2.68],
+			['АМг5', '', 2.65],
+			['АМг6', '', 2.64],
+			['АД0', '1050A', 2.71],
+			['АД1', '', 2.71],
+			['АМц', '3003', 2.73],
+			['В95', '', 2.85],
+			['АК6', '', 2.75],
+		] }],
+	},
+	{
+		key: 'cu',
+		label: 'Медь',
+		def: 'М1',
+		groups: [{ grades: [
+			['М1', '', 8.94],
+			['М2', '', 8.94],
+			['М3', '', 8.94],
+			['М0', '', 8.94],
+		] }],
+	},
+	{
+		key: 'latun',
+		label: 'Латунь',
+		def: 'Л63',
+		groups: [{ grades: [
+			['Л63', '', 8.44],
+			['ЛС59-1', '', 8.45],
+			['Л68', '', 8.6],
+			['Л90', '', 8.78],
+		] }],
+	},
+	{
+		key: 'bronza',
+		label: 'Бронза',
+		def: 'БрАЖ9-4',
+		groups: [{ grades: [
+			['БрАЖ9-4', '', 7.5],
+			['БрАМц9-2', '', 7.6],
+			['БрОЦС5-5-5', '', 8.8],
+			['БрОФ6,5-0,15', '', 8.8],
+			['БрБ2', '', 8.2],
+			['БрКМц3-1', '', 8.4],
+		] }],
+	},
+	{
+		key: 'titan',
+		label: 'Титан',
+		def: 'ВТ1-0',
+		groups: [{ grades: [
+			['ВТ1-0', '', 4.5],
+			['ВТ1-00', '', 4.5],
+			['ОТ4', '', 4.55],
+			['ОТ4-1', '', 4.55],
+			['ВТ6', '', 4.43],
+			['ВТ20', '', 4.45],
+		] }],
+	},
+	{ key: 'nikel', label: 'Никель', def: 'НП2', groups: [{ grades: [['НП2', '', 8.9]] }] },
+	{ key: 'cink', label: 'Цинк', def: 'Ц0', groups: [{ grades: [['Ц0', '', 7.13]] }] },
+	{ key: 'svinec', label: 'Свинец', def: 'С1', groups: [{ grades: [['С1', '', 11.34]] }] },
+];
+
+/* Уникальных марок: у нержавейки ГОСТ и AISI — пары одних и тех же сталей,
+   поэтому считаем только российский список. */
+const gradeCount = metals.reduce((n, m) => n + m.groups[0].grades.length, 0);
+const plural = (n: number, one: string, few: string, many: string) => {
+	const d = n % 10, dd = n % 100;
+	if (d === 1 && dd !== 11) return one;
+	if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return few;
+	return many;
+};
+const rhoText = (r: number) => r.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+const gradeText = (g: GradeRow) => (g[1] ? `${g[0]} — ${g[1]}` : g[0]);
+const defRho = metals[0].groups.flatMap((g) => g.grades).find((g) => g[0] === metals[0].def)![2];
 
 const hubs = [
 	{ href: '/list-nerzhaveyushchiy/', label: 'Лист' },
@@ -114,12 +295,12 @@ const hubs = [
 			<h1 class="calc__h1">Калькулятор веса <span class="calc__h1-accent">нержавеющего металлопроката</span></h1>
 			<p class="calc__lead">
 				Считает вес листа, трубы, круга, проволоки, полосы, уголка и других видов нержавейки
-				по размерам и марке стали. Плотность подставляется автоматически — от 7,7 до 7,9 г/см³.
-				Удельный вес нержавеющей стали в расчётах — это та же плотность, выраженная в килограммах на кубический метр.
+				по размерам и марке. Выберите металл и марку из списка — плотность подставится сама.
+				Кроме нержавейки, считает чёрную сталь, алюминий, медь, латунь, бронзу и титан.
 			</p>
 			<ul class="calc__perks">
 				<li><strong>9</strong> видов проката</li>
-				<li><strong>4</strong> группы марок + своя плотность</li>
+				<li><strong>{metals.length}</strong> {plural(metals.length, 'металл', 'металла', 'металлов')}, <strong>{gradeCount}</strong> {plural(gradeCount, 'марка', 'марки', 'марок')}</li>
 				<li><strong>1 сек</strong> от ввода до результата</li>
 				<li><strong>±0,5%</strong> от теоретического веса ГОСТ</li>
 			</ul>
@@ -212,50 +393,39 @@ const hubs = [
 
 					<div class="calc__step calc__step--mt">
 						<div class="calc__step-num">2</div>
-						<div class="calc__step-title">Марка стали</div>
+						<div class="calc__step-title">Металл и марка</div>
 					</div>
-					<div class="calc__grades" role="radiogroup" aria-label="Группа марок">
-						<button type="button" class="calc__grade calc__grade--active" data-calc-grade-btn="austenitic" data-tone="austenitic" role="radio" aria-checked="true">
-							<span class="calc__grade-dot" aria-hidden="true"></span>
-							<span class="calc__grade-text">
-								<strong>Аустенитные</strong>
-								<small>304 · 316L · 321 · 201 — 7,9</small>
-							</span>
-						</button>
-						<button type="button" class="calc__grade" data-calc-grade-btn="ferritic" data-tone="ferritic" role="radio" aria-checked="false">
-							<span class="calc__grade-dot" aria-hidden="true"></span>
-							<span class="calc__grade-text">
-								<strong>Ферритные</strong>
-								<small>430 · 410S · 439 — 7,7</small>
-							</span>
-						</button>
-						<button type="button" class="calc__grade" data-calc-grade-btn="martensitic" data-tone="martensitic" role="radio" aria-checked="false">
-							<span class="calc__grade-dot" aria-hidden="true"></span>
-							<span class="calc__grade-text">
-								<strong>Мартенситные</strong>
-								<small>420 · 440 · 20Х13 — 7,7</small>
-							</span>
-						</button>
-						<button type="button" class="calc__grade" data-calc-grade-btn="duplex" data-tone="duplex" role="radio" aria-checked="false">
-							<span class="calc__grade-dot" aria-hidden="true"></span>
-							<span class="calc__grade-text">
-								<strong>Дуплекс</strong>
-								<small>двухфазные — 7,8</small>
-							</span>
-						</button>
-						<button type="button" class="calc__grade" data-calc-grade-btn="custom" data-tone="custom" role="radio" aria-checked="false">
-							<span class="calc__grade-dot" aria-hidden="true"></span>
-							<span class="calc__grade-text">
-								<strong>Другая</strong>
-								<small>ввести плотность</small>
-							</span>
-						</button>
+					<div class="calc__material">
+						<div class="calc__field">
+							<label class="calc__label" for="calc-metal">Металл</label>
+							<select class="calc__input calc__select" id="calc-metal" data-calc-metal>
+								{metals.map((m, i) => <option value={m.key} selected={i === 0}>{m.label}</option>)}
+							</select>
+						</div>
+						<div class="calc__field">
+							<label class="calc__label" for={`calc-grade-${metals[0].key}`} data-calc-grade-label>Марка</label>
+							{metals.map((m, i) => (
+								<select class="calc__input calc__select" id={`calc-grade-${m.key}`} data-calc-grade={m.key} hidden={i !== 0}>
+									{m.groups.map((g) =>
+										g.label ? (
+											<optgroup label={g.label}>
+												{g.grades.map((gr) => (
+													<option value={gr[0]} data-rho={gr[2]} selected={gr[0] === m.def}>{gradeText(gr)}</option>
+												))}
+											</optgroup>
+										) : (
+											g.grades.map((gr) => (
+												<option value={gr[0]} data-rho={gr[2]} selected={gr[0] === m.def}>{gradeText(gr)}</option>
+											))
+										)
+									)}
+								</select>
+							))}
+						</div>
 					</div>
-
-					<div class="calc__field calc__field--inline" data-calc-density-row hidden>
-						<label class="calc__label" for="calc-density">Плотность, г/см³</label>
-						<input class="calc__input" id="calc-density" type="number" inputmode="decimal" step="0.01" data-calc-density value="7.9" />
-					</div>
+					<p class="calc__rho-note">
+						Плотность <strong data-calc-rho>{rhoText(defRho)} г/см³</strong> — подставляется по марке
+					</p>
 
 					<div class="calc__step calc__step--mt">
 						<div class="calc__step-num">3</div>
@@ -392,15 +562,21 @@ const hubs = [
 
 							{/* 6. Шестигранник — шестигранная призма в диметрии: S (под ключ), L. */}
 							<svg class="calc__schema-svg" data-shape-svg="shestigrannik" viewBox="0 0 300 180" fill="none">
-								<polygon points="70,40 110,40 130,90 110,140 70,140 50,90" fill="url(#cvHatch)" stroke="rgba(255,255,255,0.92)" stroke-width="1.6" stroke-linejoin="round" />
-								<polygon points="70,40 90,28 230,28 210,40 110,40" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.92)" stroke-width="1.6" stroke-linejoin="round" />
-								<polygon points="110,40 230,28 250,78 210,140 110,140 130,90" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.92)" stroke-width="1.6" stroke-linejoin="round" />
-								<line x1="50" y1="90" x2="130" y2="90" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3 3" />
-								<line x1="36" y1="40" x2="36" y2="140" stroke="var(--color-accent-100)" stroke-width="1.2" marker-start="url(#cvArr)" marker-end="url(#cvArr)" />
-								<text x="20" y="92" fill="var(--color-accent-100)" font-family="Inter,sans-serif" font-size="14" font-weight="700">S</text>
-								<text x="4" y="108" fill="rgba(255,255,255,0.6)" font-family="Inter,sans-serif" font-size="10">«под ключ»</text>
-								<line x1="70" y1="158" x2="210" y2="158" stroke="var(--color-accent-100)" stroke-width="1.2" marker-start="url(#cvArr)" marker-end="url(#cvArr)" />
-								<text x="140" y="174" fill="var(--color-accent-100)" font-family="Inter,sans-serif" font-size="13" text-anchor="middle" font-weight="600">L — длина</text>
+								{/* Шестигранная призма в том же ракурсе, что и круглая труба: торец
+								    сжат по горизонтали (22 из 58 px), грани «под ключ» сверху и снизу,
+								    тело уходит вправо. S — расстояние между параллельными гранями. */}
+								<polygon points="95,36 245,36 256,86 106,86" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.92)" stroke-width="1.6" stroke-linejoin="round" />
+								<polygon points="106,86 256,86 245,136 95,136" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.92)" stroke-width="1.6" stroke-linejoin="round" />
+								<polygon points="106,86 95,36 73,36 62,86 73,136 95,136" fill="url(#cvHatch)" stroke="rgba(255,255,255,0.92)" stroke-width="1.6" stroke-linejoin="round" />
+								<line x1="84" y1="36" x2="84" y2="136" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3 3" />
+								<line x1="46" y1="36" x2="70" y2="36" stroke="rgba(255,255,255,0.35)" stroke-width="1" />
+								<line x1="46" y1="136" x2="70" y2="136" stroke="rgba(255,255,255,0.35)" stroke-width="1" />
+								<line x1="50" y1="36" x2="50" y2="136" stroke="var(--color-accent-100)" stroke-width="1.2" marker-start="url(#cvArr)" marker-end="url(#cvArr)" />
+								<text x="40" y="84" fill="var(--color-accent-100)" font-family="Inter,sans-serif" font-size="14" font-weight="700" text-anchor="end">S</text>
+								<text x="40" y="99" fill="rgba(255,255,255,0.6)" font-family="Inter,sans-serif" font-size="10" text-anchor="end">под</text>
+								<text x="40" y="111" fill="rgba(255,255,255,0.6)" font-family="Inter,sans-serif" font-size="10" text-anchor="end">ключ</text>
+								<line x1="84" y1="158" x2="234" y2="158" stroke="var(--color-accent-100)" stroke-width="1.2" marker-start="url(#cvArr)" marker-end="url(#cvArr)" />
+								<text x="159" y="174" fill="var(--color-accent-100)" font-family="Inter,sans-serif" font-size="13" text-anchor="middle" font-weight="600">L — длина</text>
 							</svg>
 
 							{/* 7. Полоса — длинный плоский параллелепипед: L, b, t. */}
@@ -569,13 +745,6 @@ const hubs = [
 <script>
 	type Shape = 'list' | 'krug' | 'kvadrat' | 'shestigrannik' | 'truba' | 'truba-pryam' | 'provoloka' | 'polosa' | 'ugolok';
 
-	const DENSITIES: Record<string, number> = {
-		austenitic: 7.9,
-		ferritic: 7.7,
-		martensitic: 7.7,
-		duplex: 7.8,
-	};
-
 	const SHAPE_LABEL: Record<Shape, string> = {
 		list: 'Лист',
 		krug: 'Круг',
@@ -586,14 +755,6 @@ const hubs = [
 		provoloka: 'Проволока',
 		polosa: 'Полоса',
 		ugolok: 'Уголок',
-	};
-
-	const GRADE_LABEL: Record<string, string> = {
-		austenitic: 'Аустенитная',
-		ferritic: 'Ферритная',
-		martensitic: 'Мартенситная',
-		duplex: 'Дуплекс',
-		custom: 'Своя плотность',
 	};
 
 	/* Какие поля показываем под каждый вид проката. По умолчанию значение в мм;
@@ -654,8 +815,10 @@ const hubs = [
 	};
 
 	const root = document.querySelector('[data-calc-root]');
-	const densityRow = root?.querySelector('[data-calc-density-row]') as HTMLElement | null;
-	const densityInput = root?.querySelector('[data-calc-density]') as HTMLInputElement | null;
+	const metalSel = root?.querySelector('[data-calc-metal]') as HTMLSelectElement | null;
+	const gradeSels = Array.from(root?.querySelectorAll<HTMLSelectElement>('[data-calc-grade]') ?? []);
+	const gradeLabel = root?.querySelector('[data-calc-grade-label]') as HTMLLabelElement | null;
+	const rhoNote = root?.querySelector('[data-calc-rho]') as HTMLElement | null;
 	const dimsEl = root?.querySelector('[data-calc-dims]') as HTMLElement | null;
 	const qtyInput = root?.querySelector('[data-calc-qty]') as HTMLInputElement | null;
 	const qtyHint = root?.querySelector('[data-calc-qty-hint]') as HTMLElement | null;
@@ -680,7 +843,6 @@ const hubs = [
 	};
 
 	let currentShape: Shape = 'list';
-	let currentGrade = 'austenitic';
 	/* Какое поле редактировалось последним: количество или масса.
 	   Определяет направление пересчёта — другое поле обновляется автоматически. */
 	let lastEdited: 'qty' | 'mass' = 'qty';
@@ -689,9 +851,28 @@ const hubs = [
 		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
 		const fmtVol = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 4 });
 
+		const fmtRho = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+
+		/* У каждого металла свой список марок; видим только список выбранного. */
+		const activeGradeSel = () => gradeSels.find((sel) => sel.dataset.calcGrade === metalSel?.value) ?? gradeSels[0];
+
 		function getDensity(): number {
-			if (currentGrade === 'custom') return parseFloat(densityInput?.value || '7.9') || 7.9;
-			return DENSITIES[currentGrade] ?? 7.9;
+			const opt = activeGradeSel()?.selectedOptions[0];
+			return parseFloat(opt?.dataset.rho || '') || 7.9;
+		}
+
+		function gradeName(): string {
+			const metal = metalSel?.selectedOptions[0]?.textContent ?? '';
+			const grade = activeGradeSel()?.value ?? '';
+			return grade ? `${metal}, ${grade}` : metal;
+		}
+
+		/* Вызываем и при загрузке: после «Назад» браузер может восстановить
+		   в списке «Металл» не нержавейку, а видимым остался бы её список марок. */
+		function syncMetal() {
+			const active = activeGradeSel();
+			gradeSels.forEach((sel) => { sel.hidden = sel !== active; });
+			if (gradeLabel && active) gradeLabel.htmlFor = active.id;
 		}
 
 		function renderDims() {
@@ -827,7 +1008,8 @@ const hubs = [
 				totalSubEl!.textContent = '';
 			}
 
-			if (densityDisplay) densityDisplay.textContent = `${rho.toString().replace('.', ',')} г/см³`;
+			if (densityDisplay) densityDisplay.textContent = `${fmtRho.format(rho)} г/см³`;
+			if (rhoNote) rhoNote.textContent = `${fmtRho.format(rho)} г/см³`;
 			if (volumeEl) {
 				const volTotalMm3 = volMm3 * qty;
 				if (volTotalMm3 > 0) {
@@ -873,29 +1055,13 @@ const hubs = [
 			});
 		});
 
-		/* Кнопки-плитки групп марок */
-		root.querySelectorAll('[data-calc-grade-btn]').forEach((btn) => {
-			btn.addEventListener('click', () => {
-				const k = (btn as HTMLElement).dataset.calcGradeBtn as string;
-				if (!k) return;
-				currentGrade = k;
-				root!.querySelectorAll('[data-calc-grade-btn]').forEach((b) => {
-					const active = (b as HTMLElement).dataset.calcGradeBtn === k;
-					b.classList.toggle('calc__grade--active', active);
-					b.setAttribute('aria-checked', active ? 'true' : 'false');
-				});
-				if (densityRow) densityRow.hidden = k !== 'custom';
-				if (k !== 'custom' && densityInput) {
-					densityInput.value = String(DENSITIES[k] ?? 7.9);
-				}
-				/* Подкрашиваем виджет в тон группы — через data-tone на корне */
-				(root as HTMLElement).dataset.gradeTone = k;
-				lastEdited = 'qty';
-				recalc();
-			});
+		/* Металл → марка: плотность берём из выбранной марки */
+		metalSel?.addEventListener('change', () => {
+			syncMetal();
+			lastEdited = 'qty';
+			recalc();
 		});
-
-		densityInput?.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		gradeSels.forEach((sel) => sel.addEventListener('change', () => { lastEdited = 'qty'; recalc(); }));
 		qtyInput.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
 		massInput?.addEventListener('input', () => { lastEdited = 'mass'; recalc(); });
 		/* Смена единицы массы: пересчитываем поле к новой единице,
@@ -918,7 +1084,7 @@ const hubs = [
 
 		copyBtn?.addEventListener('click', async () => {
 			const shape = SHAPE_LABEL[currentShape];
-			const grade = GRADE_LABEL[currentGrade];
+			const grade = gradeName();
 			const rho = getDensity();
 			const unit = calcUnitWeight();
 			const qty = parseFloat(qtyInput.value) || 0;
@@ -931,7 +1097,7 @@ const hubs = [
 				})
 				.join('; ');
 			const text =
-				`${shape} (${grade}, ρ=${rho} г/см³)\n` +
+				`${shape} (${grade}, ρ=${fmtRho.format(rho)} г/см³)\n` +
 				`${dims}\n` +
 				`Вес 1 ед.: ${fmt.format(unit)} кг\n` +
 				`Кол-во: ${qty} ${UNIT_LABELS[FIELDS[currentShape].unit]}\n` +
@@ -948,6 +1114,7 @@ const hubs = [
 			}
 		});
 
+		syncMetal();
 		renderDims();
 		recalc();
 	}
@@ -1108,72 +1275,38 @@ const hubs = [
 		line-height: 1.15;
 	}
 
-	/* ---------- Grades grid ---------- */
-	.calc__grades {
+	/* ---------- Металл и марка ---------- */
+	.calc__material {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-		gap: 0.5rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+		gap: 0.6rem;
 	}
-	.calc__grade {
-		appearance: none;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		padding: 0.7rem 0.85rem;
-		cursor: pointer;
-		text-align: left;
-		color: var(--color-text);
-		transition: all var(--dur-fast) var(--ease-out);
-		font: inherit;
+	@media (max-width: 560px) {
+		.calc__material { grid-template-columns: minmax(0, 1fr); }
 	}
-	.calc__grade:hover { border-color: var(--color-primary-400); transform: translateY(-1px); }
-	.calc__grade--active {
-		border-color: var(--color-primary-500);
-		background: var(--color-primary-50);
-		box-shadow: 0 0 0 3px rgba(28, 75, 128, 0.08);
+	.calc__rho-note {
+		margin: 0.55rem 0 0;
+		font-size: 0.85rem;
+		color: var(--color-muted);
 	}
-	.calc__grade-dot {
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		flex-shrink: 0;
-		border: 2px solid transparent;
-		background: var(--color-border-strong);
-		transition: all var(--dur-fast) var(--ease-out);
-	}
-	.calc__grade[data-tone="austenitic"] .calc__grade-dot { background: #4f9c7a; }
-	.calc__grade[data-tone="ferritic"] .calc__grade-dot { background: #6c7d92; }
-	.calc__grade[data-tone="martensitic"] .calc__grade-dot { background: #8b7250; }
-	.calc__grade[data-tone="duplex"] .calc__grade-dot { background: #b76a3b; }
-	.calc__grade[data-tone="custom"] .calc__grade-dot {
-		background: linear-gradient(135deg, #4f9c7a, #6c7d92, #8b7250, #b76a3b);
-	}
-	.calc__grade--active .calc__grade-dot {
-		box-shadow: 0 0 0 3px var(--color-primary-100);
-	}
-	.calc__grade-text { display: flex; flex-direction: column; min-width: 0; gap: 0.05rem; }
-	.calc__grade-text strong { font-size: 0.9rem; line-height: 1.2; color: var(--color-text); font-weight: 600; }
-	.calc__grade-text small { font-size: 0.76rem; color: var(--color-muted); line-height: 1.25; }
+	.calc__rho-note strong { color: var(--color-text); font-weight: 600; }
 
 	/* ---------- Fields ---------- */
-	.calc__field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
-	.calc__field--inline {
-		grid-column: 1 / -1;
-		max-width: 260px;
-		margin-top: var(--space-3);
-	}
+	.calc__field,
+	.calc__dims :global(.calc__field) { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
 	.calc__field--qty { margin-top: var(--space-4); max-width: 280px; }
-	.calc__label {
+	.calc__label,
+	.calc__dims :global(.calc__label) {
 		font-size: 0.74rem;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--color-subtle);
 	}
-	.calc__input {
+	/* Поля размеров создаёт скрипт — у них нет атрибута data-astro-cid, и
+	   scoped-стили на них не действовали. Отсюда :global внутри .calc__dims. */
+	.calc__input,
+	.calc__dims :global(.calc__input) {
 		font: inherit;
 		font-size: 0.95rem;
 		padding: 0.65rem 0.8rem;
@@ -1190,17 +1323,32 @@ const hubs = [
 		appearance: none;
 		-webkit-appearance: none;
 	}
-	.calc__input:focus {
+	.calc__input:focus,
+	.calc__dims :global(.calc__input:focus) {
 		border-color: var(--color-primary-500);
 		box-shadow: 0 0 0 3px var(--color-primary-100);
 		background: #fff;
 	}
+	/* Выпадающие списки: appearance: none у .calc__input убирает стрелку,
+	   рисуем свою. Правила стоят после .calc__input, чтобы фон не перебивался. */
+	.calc__select {
+		cursor: pointer;
+		padding-right: 2.3rem;
+		background: var(--color-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236b7a8f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 0.85rem center / 12px 8px;
+	}
+	.calc__select:focus {
+		background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236b7a8f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 0.85rem center / 12px 8px;
+	}
+	.calc__select[hidden] { display: none; }
 
 	.calc__dims {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 		gap: 0.6rem;
 	}
+	/* Подписи бывают в одну и в две строки («Размер под ключ…») — прижимаем
+	   поля к низу, чтобы сами инпуты стояли в одну линию. */
+	.calc__dims :global(.calc__field) { justify-content: flex-end; }
 
 	/* ---------- Quantity stepper ---------- */
 	.calc__qty-wrap {
