@@ -11,6 +11,7 @@ import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import Button from './ui/Button.astro';
 import { siteName, siteUrl, contacts } from '../data/site';
+import servicePanels from '../data/service-panels.json';
 
 interface SpecRow {
 	label: string;
@@ -38,8 +39,10 @@ interface Props {
 	 *  стоит сразу под H1, чтобы его брали нейросети и быстрые ответы поиска. */
 	answer?: string;
 	facts?: string[]; // 3–4 коротких факта под ответом
-	/** Обложка-превью 1200×630: /img/services/<cover>.webp на странице и .png
-	 *  в og:image (scripts/make-blog-cover.mjs, раздел SERVICE_COVERS). */
+	/** Слаг услуги: превью 1200×630 /img/services/<cover>.png идёт в og:image
+	 *  (scripts/make-blog-cover.mjs, SERVICE_COVERS), а список справа в первом
+	 *  экране берётся из src/data/service-panels.json — те же строки, что на
+	 *  превью. Есть список — первый экран тёмный, в стиле превью. */
 	cover?: string;
 	coverAlt?: string;
 	specs: SpecRow[]; // спецификация / характеристики
@@ -83,6 +86,8 @@ const path = Astro.url.pathname;
 const COVER_VER = 1;
 const coverWebp = cover ? `/img/services/${cover}.webp?v=${COVER_VER}` : undefined;
 const coverPng = cover ? `/img/services/${cover}.png?v=${COVER_VER}` : undefined;
+type Panel = { head: string; items: { k: string; v: string; hi?: boolean }[] };
+const panel: Panel | undefined = cover ? (servicePanels as Record<string, Panel>)[cover] : undefined;
 const fullUrl = `${siteUrl.replace(/\/$/, '')}${path}`;
 
 const serviceJsonLd = {
@@ -125,39 +130,70 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 	<div class="container svc-page">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, { label: h1 }]} />
 
-		<header class={`svc-page__hero${cover ? ' svc-page__hero--with-cover' : heroImage ? ' svc-page__hero--with-image' : ''}`}>
-			<div class="svc-page__hero-text">
-				<span class="svc-page__tag">{tagline}</span>
-				<h1>{h1}</h1>
-				{answer ? (
-					<section class="svc-answer" aria-labelledby="svc-answer-title">
-						<h2 id="svc-answer-title" class="svc-answer__title">Коротко об услуге</h2>
-						<p class="svc-answer__text" set:html={answer} />
-						{facts.length > 0 && (
-							<ul class="svc-answer__facts">
-								{facts.map((f) => <li>{f}</li>)}
-							</ul>
-						)}
-					</section>
-				) : (
-					<p class="svc-page__lead" set:html={intro} />
+		{panel ? (
+			<header class="svc-hero">
+				<div class="svc-hero__text">
+					<span class="svc-hero__tag">{tagline}</span>
+					<h1 class="svc-hero__h1">{h1}</h1>
+					{answer && (
+						<section class="svc-hero__answer" aria-labelledby="svc-answer-title">
+							<h2 id="svc-answer-title" class="svc-hero__answer-title">Коротко об услуге</h2>
+							<p class="svc-hero__answer-text" set:html={answer} />
+							{facts.length > 0 && (
+								<ul class="svc-hero__facts">
+									{facts.map((f) => <li>{f}</li>)}
+								</ul>
+							)}
+						</section>
+					)}
+					<div class="svc-page__cta">
+						<Button href="/zapros-kp/#lead-form" variant="accent" size="lg">Отправить чертёж на расчёт</Button>
+						<Button href={`tel:${contacts.phoneTel}`} variant="on-dark" size="lg">{contacts.phone}</Button>
+					</div>
+				</div>
+				<aside class="svc-hero__panel" aria-labelledby="svc-panel-head">
+					<div id="svc-panel-head" class="svc-hero__panel-head">{panel.head}</div>
+					<dl class="svc-hero__rows">
+						{panel.items.map((it) => (
+							<div class={`svc-hero__row${it.hi ? ' svc-hero__row--hi' : ''}`}>
+								<dt>{it.k}</dt>
+								<dd>{it.v}</dd>
+							</div>
+						))}
+					</dl>
+				</aside>
+			</header>
+		) : (
+			<header class={`svc-page__hero${heroImage ? ' svc-page__hero--with-image' : ''}`}>
+				<div class="svc-page__hero-text">
+					<span class="svc-page__tag">{tagline}</span>
+					<h1>{h1}</h1>
+					{answer ? (
+						<section class="svc-answer" aria-labelledby="svc-answer-title">
+							<h2 id="svc-answer-title" class="svc-answer__title">Коротко об услуге</h2>
+							<p class="svc-answer__text" set:html={answer} />
+							{facts.length > 0 && (
+								<ul class="svc-answer__facts">
+									{facts.map((f) => <li>{f}</li>)}
+								</ul>
+							)}
+						</section>
+					) : (
+						<p class="svc-page__lead" set:html={intro} />
+					)}
+					{/* Первый экран: сразу два способа обратиться — отправить чертёж или позвонить. */}
+					<div class="svc-page__cta">
+						<Button href="/zapros-kp/#lead-form" variant="accent" size="lg">Отправить чертёж на расчёт</Button>
+						<Button href={`tel:${contacts.phoneTel}`} variant="secondary" size="lg">{contacts.phone}</Button>
+					</div>
+				</div>
+				{heroImage && (
+					<div class="svc-page__hero-media">
+						<img src={heroImage} alt={heroImageAlt || h1} width="440" height="430" loading="eager" />
+					</div>
 				)}
-				{/* Первый экран: сразу два способа обратиться — отправить чертёж или позвонить. */}
-				<div class="svc-page__cta">
-					<Button href="/zapros-kp/#lead-form" variant="accent" size="lg">Отправить чертёж на расчёт</Button>
-					<Button href={`tel:${contacts.phoneTel}`} variant="secondary" size="lg">{contacts.phone}</Button>
-				</div>
-			</div>
-			{cover ? (
-				<figure class="svc-page__cover">
-					<img src={coverWebp} alt={coverAlt || h1} width="1200" height="630" loading="eager" fetchpriority="high" />
-				</figure>
-			) : heroImage && (
-				<div class="svc-page__hero-media">
-					<img src={heroImage} alt={heroImageAlt || h1} width="440" height="430" loading="eager" />
-				</div>
-			)}
-		</header>
+			</header>
+		)}
 		{answer && <div class="svc-page__intro" set:html={intro} />}
 
 		<section class="svc-page__block">
@@ -256,25 +292,114 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 <style>
 	.svc-page { padding-block: var(--space-8); min-width: 0; }
 	.svc-page__hero { margin-bottom: var(--space-8); max-width: 80ch; }
-	/* Шапка с обложкой: слева H1, короткий ответ и кнопки, справа превью. */
-	.svc-page__hero--with-cover {
-		max-width: none;
+	/* Тёмный первый экран в стиле превью услуги: слева H1, короткий ответ и
+	   кнопки, справа список из service-panels.json. Цвета — как на превью
+	   (scripts/make-blog-cover.mjs), чтобы страница и превью были одним целым. */
+	.svc-hero {
+		position: relative;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(280px, 480px);
+		grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
 		gap: var(--space-7);
-		align-items: start;
-		margin-bottom: var(--space-6);
-	}
-	.svc-page__cover {
-		margin: 0;
-		border-radius: var(--radius-lg);
+		align-items: center;
+		padding: clamp(1.5rem, 4vw, 3.25rem);
+		margin-bottom: var(--space-7);
+		border-radius: 22px;
 		overflow: hidden;
-		border: 1px solid var(--color-border);
+		color: #e7eef7;
+		background:
+			radial-gradient(55% 70% at 90% 0%, rgba(196, 101, 27, 0.26), transparent 60%),
+			linear-gradient(135deg, #1c4b80 0%, #11304f 50%, #0a1f3d 100%);
 		box-shadow: var(--shadow-md);
 	}
-	.svc-page__cover img { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 630; }
+	.svc-hero::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			linear-gradient(rgba(108, 125, 146, 0.12) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(108, 125, 146, 0.12) 1px, transparent 1px);
+		background-size: 60px 60px;
+		pointer-events: none;
+	}
+	.svc-hero::after {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto 0;
+		height: 5px;
+		background: #c4651b;
+	}
+	.svc-hero > * { position: relative; z-index: 1; min-width: 0; }
+	.svc-hero__tag {
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #f2a25c;
+	}
+	.svc-hero__h1 {
+		color: #fff;
+		margin: 0.6rem 0 0;
+		font-size: clamp(1.9rem, 4vw, 3rem);
+		line-height: 1.1;
+	}
+	.svc-hero__answer {
+		margin-top: var(--space-5);
+		padding-left: var(--space-4);
+		border-left: 3px solid #c4651b;
+	}
+	.svc-hero__answer-title {
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #a5b1c4;
+		margin: 0 0 0.45rem;
+	}
+	.svc-hero__answer-text { margin: 0; font-size: 1.05rem; line-height: 1.6; color: #dbe4ef; }
+	.svc-hero__answer-text :global(strong) { color: #fff; }
+	.svc-hero__facts {
+		list-style: none;
+		margin: var(--space-3) 0 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.1rem;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: #fff;
+	}
+	.svc-hero__facts li::before { content: '✓'; margin-right: 0.4rem; color: #f2a25c; }
+	.svc-hero__panel {
+		background: rgba(10, 31, 61, 0.55);
+		border: 1px solid rgba(108, 125, 146, 0.45);
+		border-radius: 18px;
+		padding: var(--space-5);
+	}
+	.svc-hero__panel-head {
+		color: #f2a25c;
+		font-weight: 700;
+		font-size: 1.05rem;
+		padding-bottom: var(--space-3);
+		margin-bottom: var(--space-4);
+		border-bottom: 1px solid rgba(108, 125, 146, 0.4);
+	}
+	.svc-hero__rows { margin: 0; display: grid; gap: 0.6rem; }
+	.svc-hero__row {
+		padding: 0.75rem 1rem;
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(108, 125, 146, 0.35);
+	}
+	.svc-hero__row--hi { background: rgba(255, 255, 255, 0.12); border-color: #c4651b; }
+	.svc-hero__row dt {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #a5b1c4;
+	}
+	.svc-hero__row dd { margin: 0.2rem 0 0; font-size: 1.05rem; font-weight: 700; color: #fff; }
 	@media (max-width: 900px) {
-		.svc-page__hero--with-cover { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+		.svc-hero { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
 	}
 
 	/* Короткий ответ — как в статьях блога: его берут нейросети и быстрые ответы. */
