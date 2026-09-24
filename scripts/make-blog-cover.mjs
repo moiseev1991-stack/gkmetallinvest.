@@ -3,8 +3,13 @@
  * Обложки статей блога 1200×630 с инфографикой: PNG (og:image, Article.image) + WebP (на странице).
  * SVG-обложки соцсети и поисковики в og:image / schema.org не принимают — поэтому растр.
  *
- *   node scripts/make-blog-cover.mjs            — все обложки из COVERS
+ *   node scripts/make-blog-cover.mjs            — все обложки (блог и услуги)
  *   node scripts/make-blog-cover.mjs <slug>     — одна
+ *
+ * COVERS → public/img/blog/, SERVICE_COVERS → public/img/services/ (превью
+ * страниц услуг: og:image и картинка в шапке, см. ServicePage.astro).
+ * На обложках услуг — только то, что подтвердил клиент (свой цех, цена
+ * цинкования), без характеристик оборудования.
  *
  * Слева — метка, заголовок (перенос строк «|» руками), подпись; справа — панель-инфографика.
  * Цифры в инфографике берём только из текста статьи.
@@ -204,6 +209,99 @@ const COVERS = {
 	},
 };
 
+const SERVICE_COVERS = {
+	'lazernaya-rezka': {
+		tag: 'УСЛУГА',
+		title: 'Лазерная резка|нержавейки|и металла',
+		sub: 'Детали по чертежу',
+		panel: {
+			type: 'rows', head: 'Как заказать',
+			items: [
+				{ k: 'ГДЕ РЕЖЕМ', v: 'Собственный цех', hi: true },
+				{ k: 'МЕТАЛЛ', v: 'Нержавейка со своего склада' },
+				{ k: 'ЧЕРТЁЖ', v: 'DXF, DWG, STEP, PDF, эскиз' },
+				{ k: 'СТОИМОСТЬ', v: 'Считаем по чертежу' },
+				{ k: 'ДОСТАВКА', v: 'По всей России' },
+			],
+		},
+	},
+	'gidroabrazivnaya-rezka': {
+		tag: 'УСЛУГА',
+		title: 'Гидроабразивная|резка металла',
+		sub: 'Холодный рез без нагрева кромки',
+		panel: {
+			type: 'rows', head: 'Как заказать',
+			items: [
+				{ k: 'СПОСОБ', v: 'Вода с абразивом, без нагрева', hi: true },
+				{ k: 'КРОМКА', v: 'Без окалины и зоны нагрева' },
+				{ k: 'МЕТАЛЛ', v: 'Нержавейка со своего склада' },
+				{ k: 'ЧЕРТЁЖ', v: 'DXF, DWG, STEP, PDF, эскиз' },
+				{ k: 'ГДЕ РЕЖЕМ', v: 'Собственный цех' },
+			],
+		},
+	},
+	'travlenie-i-passivaciya': {
+		tag: 'УСЛУГА',
+		title: 'Травление|и пассивация|нержавейки',
+		sub: 'После сварки и резки',
+		panel: {
+			type: 'rows', head: 'Что даёт обработка',
+			items: [
+				{ k: 'ТРАВЛЕНИЕ', v: 'Снимает окалину и побежалость' },
+				{ k: 'ПАССИВАЦИЯ', v: 'Восстанавливает защитный слой', hi: true },
+				{ k: 'ОБРАБАТЫВАЕМ', v: 'Швы, ёмкости, трубы, детали' },
+				{ k: 'ДЛЯ', v: 'Пищевых и химических линий' },
+				{ k: 'ГДЕ', v: 'Собственный цех' },
+			],
+		},
+	},
+	'elektrohimicheskaya-polirovka': {
+		tag: 'УСЛУГА',
+		title: 'Электрохимическая|полировка|нержавейки',
+		sub: 'ЭХП и электроплазменная',
+		panel: {
+			type: 'rows', head: 'Что даёт полировка',
+			items: [
+				{ k: 'ПОВЕРХНОСТЬ', v: 'Гладкая, чистая, блестящая', hi: true },
+				{ k: 'ЗАЩИТА', v: 'Пассивный слой хрома' },
+				{ k: 'ДЛЯ', v: 'Пищевых и фарм. производств' },
+				{ k: 'ОБРАБАТЫВАЕМ', v: 'Ёмкости, трубы, детали, швы' },
+				{ k: 'ГДЕ', v: 'Собственный цех' },
+			],
+		},
+	},
+	'ploskoe-i-krugloe-shlifovanie': {
+		tag: 'УСЛУГА',
+		title: 'Плоское|и круглое|шлифование',
+		sub: 'Детали в размер по чертежу',
+		panel: {
+			type: 'rows', head: 'Что шлифуем',
+			items: [
+				{ k: 'ПЛОСКОЕ (ПРОДОЛЬНОЕ)', v: 'Плиты, пластины, планки' },
+				{ k: 'КРУГЛОЕ', v: 'Валы, оси, штоки, втулки' },
+				{ k: 'ПОСЛЕ', v: 'Закалки и хромирования', hi: true },
+				{ k: 'ИСХОДНЫЕ ДАННЫЕ', v: 'Чертёж с допусками' },
+				{ k: 'ГДЕ', v: 'Собственный цех' },
+			],
+		},
+	},
+	'galvanicheskie-pokrytiya': {
+		tag: 'УСЛУГА',
+		title: 'Гальванические|покрытия',
+		sub: 'Собственный цех',
+		panel: {
+			type: 'rows', head: 'Покрытия',
+			items: [
+				{ k: 'ЦИНКОВАНИЕ', v: 'от 39 ₽/кг', hi: true },
+				{ k: 'НИКЕЛЬ И ТВЁРДЫЙ ХРОМ', v: 'Защита, износ, внешний вид' },
+				{ k: 'АНОДИРОВАНИЕ', v: 'Алюминий и титан' },
+				{ k: 'СЕРЕБРО, ЗОЛОТО, ОЛОВО', v: 'Контакты и пайка' },
+				{ k: 'ОКСИДИРОВАНИЕ, ФОСФАТ, МЕДЬ', v: 'Защита и подслой' },
+			],
+		},
+	},
+};
+
 const FONT = "Arial, 'DejaVu Sans', sans-serif";
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const T = (x, y, s, size, fill, extra = '') =>
@@ -337,12 +435,14 @@ ${panels[c.panel.type](c.panel)}
 </svg>`;
 }
 
-const out = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'img', 'blog');
+const imgRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'img');
 const only = process.argv[2];
-for (const [slug, c] of Object.entries(COVERS)) {
-	if (only && only !== slug) continue;
-	const img = sharp(Buffer.from(svg(c)), { density: 96 }).resize(1200, 630);
-	await img.clone().png({ compressionLevel: 9, palette: true, quality: 90 }).toFile(join(out, `${slug}.png`));
-	await img.clone().webp({ quality: 86 }).toFile(join(out, `${slug}.webp`));
-	console.log(`ok: ${slug}`);
+for (const [dir, set] of [['blog', COVERS], ['services', SERVICE_COVERS]]) {
+	for (const [slug, c] of Object.entries(set)) {
+		if (only && only !== slug) continue;
+		const img = sharp(Buffer.from(svg(c)), { density: 96 }).resize(1200, 630);
+		await img.clone().png({ compressionLevel: 9, palette: true, quality: 90 }).toFile(join(imgRoot, dir, `${slug}.png`));
+		await img.clone().webp({ quality: 86 }).toFile(join(imgRoot, dir, `${slug}.webp`));
+		console.log(`ok: ${dir}/${slug}`);
+	}
 }
