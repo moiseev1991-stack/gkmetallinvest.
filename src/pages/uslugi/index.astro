@@ -15,6 +15,30 @@ interface Service {
 
 const services: Service[] = [
 	{
+		href: '/uslugi/lazernaya-rezka/',
+		title: 'Лазерная резка',
+		tagline: 'Детали по чертежу',
+		desc: 'Режем нержавеющий лист и другие металлы на лазере в собственном цехе: детали, развёртки под гибку, фланцы, панели. Металл — со своего склада.',
+		specs: ['Собственный цех', 'DXF, DWG, STEP', 'Металл со склада'],
+		related: [
+			{ label: 'Лист нержавеющий', href: '/list-nerzhaveyushchiy/' },
+			{ label: 'Декоративные листы', href: '/dekorativnye-listy/' },
+		],
+		icon: 'cut',
+	},
+	{
+		href: '/uslugi/gidroabrazivnaya-rezka/',
+		title: 'Гидроабразивная резка',
+		tagline: 'Холодный рез',
+		desc: 'Режем металл струёй воды с абразивом — без нагрева и зоны термического влияния. Для толстого листа и деталей под сварку и мехобработку.',
+		specs: ['Собственный цех', 'Без нагрева кромки', 'Толстый лист'],
+		related: [
+			{ label: 'Лист нержавеющий', href: '/list-nerzhaveyushchiy/' },
+			{ label: 'Лазерная резка', href: '/uslugi/lazernaya-rezka/' },
+		],
+		icon: 'cut',
+	},
+	{
 		href: '/uslugi/rezka-rulonov/',
 		title: 'Продольная и поперечная резка рулонов',
 		tagline: 'Рулон → лист или штрипс',
@@ -61,6 +85,54 @@ const services: Service[] = [
 			{ label: 'Рулон нержавеющий', href: '/rulon-nerzhaveyushchiy/' },
 		],
 		icon: 'grind',
+	},
+	{
+		href: '/uslugi/travlenie-i-passivaciya/',
+		title: 'Травление и пассивация',
+		tagline: 'После сварки',
+		desc: 'Снимаем окалину и цвета побежалости со сварных швов, восстанавливаем защитный слой нержавейки. Конструкции, ёмкости, трубы, детали.',
+		specs: ['Собственный цех', 'Сварные швы', 'Пищевое оборудование'],
+		related: [
+			{ label: 'Труба нержавеющая', href: '/truba-nerzhaveyushchaya/' },
+			{ label: 'Детали трубопровода', href: '/detali-truboprovoda/' },
+		],
+		icon: 'polish',
+	},
+	{
+		href: '/uslugi/elektrohimicheskaya-polirovka/',
+		title: 'Электрохимическая полировка',
+		tagline: 'ЭХП и электроплазменная',
+		desc: 'Электрополировка нержавейки для пищевого, фармацевтического и медицинского оборудования: гладкая чистая поверхность и пассивный слой.',
+		specs: ['Собственный цех', 'ЭХП', 'Электроплазменная'],
+		related: [
+			{ label: 'Полировка', href: '/uslugi/polirovka/' },
+			{ label: 'Труба нержавеющая', href: '/truba-nerzhaveyushchaya/' },
+		],
+		icon: 'polish',
+	},
+	{
+		href: '/uslugi/ploskoe-i-krugloe-shlifovanie/',
+		title: 'Плоское и круглое шлифование',
+		tagline: 'Детали в размер',
+		desc: 'Плоская (продольная) и круглая шлифовка деталей по чертежу: плиты, пластины, валы, штоки. После закалки и хромирования.',
+		specs: ['Собственный цех', 'Плоское и круглое', 'По чертежу'],
+		related: [
+			{ label: 'Круг нержавеющий', href: '/krug-nerzhaveyushchiy/' },
+			{ label: 'Гальванические покрытия', href: '/uslugi/galvanicheskie-pokrytiya/' },
+		],
+		icon: 'grind',
+	},
+	{
+		href: '/uslugi/galvanicheskie-pokrytiya/',
+		title: 'Гальванические покрытия',
+		tagline: 'Цинкование от 39 ₽/кг',
+		desc: 'Цинкование, никелирование, твёрдое хромирование, анодирование алюминия и титана, оксидирование, меднение, оловянирование, серебрение.',
+		specs: ['Собственный цех', 'Цинк от 39 ₽/кг', 'Под расчёт'],
+		related: [
+			{ label: 'Плоское и круглое шлифование', href: '/uslugi/ploskoe-i-krugloe-shlifovanie/' },
+			{ label: 'Травление и пассивация', href: '/uslugi/travlenie-i-passivaciya/' },
+		],
+		icon: 'film',
 	},
 	{
 		href: '/uslugi/nanesenie-plenki/',

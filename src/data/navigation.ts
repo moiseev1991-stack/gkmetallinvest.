@@ -80,9 +80,15 @@ export const navTop = [
 
 export const navServices = [
 	{ label: 'Все услуги', href: '/uslugi/' },
+	{ label: 'Лазерная резка', href: '/uslugi/lazernaya-rezka/' },
+	{ label: 'Гидроабразивная резка', href: '/uslugi/gidroabrazivnaya-rezka/' },
 	{ label: 'Резка рулонов', href: '/uslugi/rezka-rulonov/' },
 	{ label: 'Перфорация листов', href: '/uslugi/perforaciya-listov/' },
 	{ label: 'Полировка и шлифование', href: '/uslugi/polirovka/' },
+	{ label: 'Электрохимическая полировка', href: '/uslugi/elektrohimicheskaya-polirovka/' },
+	{ label: 'Травление и пассивация', href: '/uslugi/travlenie-i-passivaciya/' },
+	{ label: 'Плоское и круглое шлифование', href: '/uslugi/ploskoe-i-krugloe-shlifovanie/' },
+	{ label: 'Гальванические покрытия', href: '/uslugi/galvanicheskie-pokrytiya/' },
 ];
 
 export const navCalculators = [

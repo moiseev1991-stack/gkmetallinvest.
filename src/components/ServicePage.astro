@@ -34,11 +34,13 @@ interface Props {
 	heroImage?: string; // фото по теме услуги — рендерится справа от текста в hero
 	heroImageAlt?: string; // alt для фото (по умолчанию = h1)
 	specs: SpecRow[]; // спецификация / характеристики
+	specsTitle?: string; // заголовок блока specs, по умолчанию «Технические параметры»
 	process: StepRow[]; // 4-6 шагов
 	materials: string[]; // марки и материалы, с которыми работаем
 	applications: string[]; // области применения
 	limitations?: string[]; // ограничения / что не делаем
 	relatedHubs: { label: string; href: string }[]; // связанные товарные хабы
+	relatedTitle?: string; // заголовок блока relatedHubs, по умолчанию «Связанные товарные категории»
 	faq: FaqRow[];
 	pricingNote?: string; // абзац про ценообразование
 }
@@ -51,11 +53,13 @@ const {
 	heroImage,
 	heroImageAlt,
 	specs,
+	specsTitle = 'Технические параметры',
 	process,
 	materials,
 	applications,
 	limitations,
 	relatedHubs,
+	relatedTitle = 'Связанные товарные категории',
 	faq,
 	pricingNote,
 } = Astro.props;
@@ -116,7 +120,7 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 		</header>
 
 		<section class="svc-page__block">
-			<h2>Технические параметры</h2>
+			<h2>{specsTitle}</h2>
 			<dl class="svc-page__specs">
 				{specs.map((s) => (
 					<div class="svc-page__spec-row">
@@ -176,7 +180,7 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 		)}
 
 		<section class="svc-page__block">
-			<h2>Связанные товарные категории</h2>
+			<h2>{relatedTitle}</h2>
 			<ul class="svc-page__related">
 				{relatedHubs.map((r) => (
 					<li><a class="svc-page__related-link" href={r.href}>{r.label} →</a></li>

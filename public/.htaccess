@@ -55,7 +55,9 @@ RedirectMatch 301 ^/alyuminiy/?$                 /
 RedirectMatch 301 ^/vacancy/?$                   /kontakty/
 
 # --- Оборудование и услуги, которых нет на новом сайте → раздел «Услуги» -------
-RedirectMatch 301 ^/(oborudovanie|vseoborudovanie|laser|lasertrub|gibka|gidroabraziv)/?$   /uslugi/
+RedirectMatch 301 ^/(oborudovanie|vseoborudovanie|gibka)/?$   /uslugi/
+RedirectMatch 301 ^/(laser|lasertrub)/?$         /uslugi/lazernaya-rezka/
+RedirectMatch 301 ^/gidroabraziv/?$              /uslugi/gidroabrazivnaya-rezka/
 
 # --- Старые uCoz-страницы pageXXXX.html --------------------------------------
 RedirectMatch 301 ^/page69390555\.html$          /truba-nerzhaveyushchaya/
