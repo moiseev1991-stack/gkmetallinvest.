@@ -441,7 +441,7 @@ const hubs = [
 							<button type="button" class="calc__qty-step" data-calc-qty-minus aria-label="Меньше">−</button>
 							<input class="calc__input calc__qty-input" id="calc-qty" type="number" inputmode="decimal" step="any" data-calc-qty value="1" min="0.01" />
 							<button type="button" class="calc__qty-step" data-calc-qty-plus aria-label="Больше">+</button>
-							<span class="calc__qty-unit" data-calc-qty-hint>шт</span>
+							<select class="calc__mass-unit-sel" data-calc-qty-mode aria-label="В чём считать количество"></select>
 						</div>
 					</div>
 
@@ -635,8 +635,12 @@ const hubs = [
 						</div>
 
 						<div class="calc__result-row">
-							<span>Вес 1 единицы</span>
+							<span data-calc-unit-label>Вес 1 листа</span>
 							<strong data-calc-unit-weight>—</strong>
+						</div>
+						<div class="calc__result-row">
+							<span data-calc-extent-label>Площадь</span>
+							<strong data-calc-extent>—</strong>
 						</div>
 
 						<div class="calc__result-total">
@@ -762,57 +766,74 @@ const hubs = [
 	   на профильной трубе — неудобно, естественнее «6 м»). Внутри все формулы
 	   работают в мм, getDim сам конвертирует. */
 	type FieldUnit = 'mm' | 'm';
-	const FIELDS: Record<Shape, { unit: 'pcs' | 'meter' | 'sheet'; fields: { key: string; label: string; def?: number; valueUnit?: FieldUnit }[] }> = {
-		list: { unit: 'sheet', fields: [
+	const FIELDS: Record<Shape, { fields: { key: string; label: string; def?: number; valueUnit?: FieldUnit }[] }> = {
+		list: { fields: [
 			{ key: 'thickness', label: 'Толщина, мм', def: 1 },
 			{ key: 'width', label: 'Ширина, мм', def: 1000 },
 			{ key: 'length', label: 'Длина, мм', def: 2000 },
 		]},
-		polosa: { unit: 'pcs', fields: [
+		polosa: { fields: [
 			{ key: 'thickness', label: 'Толщина, мм', def: 4 },
 			{ key: 'width', label: 'Ширина, мм', def: 40 },
-			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина хлыста, м', def: 6, valueUnit: 'm' },
 		]},
-		krug: { unit: 'meter', fields: [
+		krug: { fields: [
 			{ key: 'diameter', label: 'Диаметр, мм', def: 20 },
-			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина хлыста, м', def: 6, valueUnit: 'm' },
 		]},
-		kvadrat: { unit: 'meter', fields: [
+		kvadrat: { fields: [
 			{ key: 'side', label: 'Сторона, мм', def: 20 },
-			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина хлыста, м', def: 6, valueUnit: 'm' },
 		]},
-		shestigrannik: { unit: 'meter', fields: [
+		shestigrannik: { fields: [
 			{ key: 'side', label: 'Размер «под ключ» (через грани), мм', def: 22 },
-			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина хлыста, м', def: 6, valueUnit: 'm' },
 		]},
-		truba: { unit: 'meter', fields: [
+		truba: { fields: [
 			{ key: 'diameter', label: 'Наружный диаметр, мм', def: 50 },
 			{ key: 'wall', label: 'Стенка, мм', def: 2 },
-			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина хлыста, м', def: 6, valueUnit: 'm' },
 		]},
-		'truba-pryam': { unit: 'meter', fields: [
+		'truba-pryam': { fields: [
 			{ key: 'side_a', label: 'Сторона A, мм', def: 40 },
 			{ key: 'side_b', label: 'Сторона B, мм', def: 20 },
 			{ key: 'wall', label: 'Стенка, мм', def: 2 },
-			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина хлыста, м', def: 6, valueUnit: 'm' },
 		]},
-		provoloka: { unit: 'meter', fields: [
+		provoloka: { fields: [
 			{ key: 'diameter', label: 'Диаметр, мм', def: 1 },
-			{ key: 'length', label: 'Длина, м', def: 1, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина куска, м', def: 1, valueUnit: 'm' },
 		]},
-		ugolok: { unit: 'meter', fields: [
+		ugolok: { fields: [
 			{ key: 'side_a', label: 'Полка A, мм', def: 50 },
 			{ key: 'side_b', label: 'Полка B, мм', def: 50 },
 			{ key: 'thickness', label: 'Толщина, мм', def: 5 },
-			{ key: 'length', label: 'Длина, м', def: 6, valueUnit: 'm' },
+			{ key: 'length', label: 'Длина хлыста, м', def: 6, valueUnit: 'm' },
 		]},
 	};
 
-	const UNIT_LABELS: Record<'pcs' | 'meter' | 'sheet', string> = {
-		pcs: 'шт',
-		meter: 'м',
-		sheet: 'лист',
+	type QtyMode = 'sheet' | 'm2' | 'm' | 'pcs';
+	/* Лист считают листами или квадратными метрами, длинномер — метрами или
+	   штуками (хлыстами) заданной длины. Единицу выбирают рядом с количеством;
+	   первая в списке — по умолчанию. */
+	const LONG: QtyMode[] = ['m', 'pcs'];
+	const MODES: Record<Shape, QtyMode[]> = {
+		list: ['sheet', 'm2'],
+		polosa: LONG,
+		krug: LONG,
+		kvadrat: LONG,
+		shestigrannik: LONG,
+		truba: LONG,
+		'truba-pryam': LONG,
+		provoloka: LONG,
+		ugolok: LONG,
 	};
+	const MODE_LABEL: Record<QtyMode, string> = { sheet: 'лист', m2: 'м²', m: 'м', pcs: 'шт' };
+	const MODE_HINT: Record<QtyMode, string> = { sheet: 'листов', m2: 'квадратных метров', m: 'метров', pcs: 'штук' };
+	const MODE_UNIT_WEIGHT: Record<QtyMode, string> = { sheet: 'Вес 1 листа', m2: 'Вес 1 м²', m: 'Вес 1 м', pcs: 'Вес 1 шт' };
+	/* В режиме «на метр» / «на м²» длина (и ширина листа) не нужны — вес
+	   считается на 1 м или 1 м², поля прячем. */
+	const HIDDEN_IN: Partial<Record<QtyMode, string[]>> = { m2: ['width', 'length'], m: ['length'] };
 
 	const root = document.querySelector('[data-calc-root]');
 	const metalSel = root?.querySelector('[data-calc-metal]') as HTMLSelectElement | null;
@@ -821,7 +842,10 @@ const hubs = [
 	const rhoNote = root?.querySelector('[data-calc-rho]') as HTMLElement | null;
 	const dimsEl = root?.querySelector('[data-calc-dims]') as HTMLElement | null;
 	const qtyInput = root?.querySelector('[data-calc-qty]') as HTMLInputElement | null;
-	const qtyHint = root?.querySelector('[data-calc-qty-hint]') as HTMLElement | null;
+	const qtyModeSel = root?.querySelector('[data-calc-qty-mode]') as HTMLSelectElement | null;
+	const unitLabelEl = root?.querySelector('[data-calc-unit-label]') as HTMLElement | null;
+	const extentLabelEl = root?.querySelector('[data-calc-extent-label]') as HTMLElement | null;
+	const extentEl = root?.querySelector('[data-calc-extent]') as HTMLElement | null;
 	const massInput = root?.querySelector('[data-calc-mass]') as HTMLInputElement | null;
 	const massUnitSel = root?.querySelector('[data-calc-mass-unit]') as HTMLSelectElement | null;
 	const massHintUnit = root?.querySelector('[data-calc-mass-hint-unit]') as HTMLElement | null;
@@ -836,20 +860,16 @@ const hubs = [
 	const copyBtn = root?.querySelector('[data-calc-copy]') as HTMLButtonElement | null;
 	const copyText = root?.querySelector('[data-calc-copy-text]') as HTMLElement | null;
 
-	const UNIT_HINT: Record<'pcs' | 'meter' | 'sheet', string> = {
-		pcs: 'штук',
-		meter: 'метров',
-		sheet: 'листов',
-	};
-
 	let currentShape: Shape = 'list';
+	let currentMode: QtyMode = 'sheet';
 	/* Какое поле редактировалось последним: количество или масса.
 	   Определяет направление пересчёта — другое поле обновляется автоматически. */
 	let lastEdited: 'qty' | 'mass' = 'qty';
 
-	if (root && dimsEl && qtyInput && qtyHint && unitWeightEl && totalEl) {
+	if (root && dimsEl && qtyInput && unitWeightEl && totalEl) {
 		const fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
 		const fmtVol = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 4 });
+		const fmtExt = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
 
 		const fmtRho = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
 
@@ -881,6 +901,7 @@ const hubs = [
 			cfg.fields.forEach((f) => {
 				const wrap = document.createElement('div');
 				wrap.className = 'calc__field';
+				wrap.dataset.field = f.key;
 				const lbl = document.createElement('label');
 				lbl.className = 'calc__label';
 				lbl.setAttribute('for', `calc-${f.key}`);
@@ -901,17 +922,47 @@ const hubs = [
 				wrap.appendChild(inp);
 				dimsEl!.appendChild(wrap);
 			});
-			qtyHint!.textContent = UNIT_LABELS[cfg.unit];
-			if (massHintUnit) massHintUnit.textContent = UNIT_HINT[cfg.unit];
+			const modes = MODES[currentShape];
+			currentMode = modes[0];
+			if (qtyModeSel) {
+				qtyModeSel.innerHTML = modes.map((m) => `<option value="${m}">${MODE_LABEL[m]}</option>`).join('');
+				qtyModeSel.value = currentMode;
+			}
+			applyMode();
 		}
 
-		function getDim(key: string): number {
+		function applyMode() {
+			const hide = HIDDEN_IN[currentMode] ?? [];
+			dimsEl!.querySelectorAll<HTMLElement>('[data-field]').forEach((w) => {
+				w.hidden = hide.includes(w.dataset.field ?? '');
+			});
+			if (massHintUnit) massHintUnit.textContent = MODE_HINT[currentMode];
+			if (unitLabelEl) unitLabelEl.textContent = MODE_UNIT_WEIGHT[currentMode];
+			if (extentLabelEl) extentLabelEl.textContent = currentShape === 'list' ? 'Площадь' : 'Метраж';
+		}
+
+		/* Значение поля в мм — даже если поле сейчас спрятано. */
+		function rawDim(key: string): number {
 			const el = dimsEl!.querySelector(`[data-dim="${key}"]`) as HTMLInputElement | null;
 			if (!el) return 0;
 			const raw = parseFloat(el.value) || 0;
 			/* Формулы геометрии работают в мм; поля с valueUnit="m" пользователь
 			   вводит в метрах — приводим к мм. */
 			return el.dataset.valueUnit === 'm' ? raw * 1000 : raw;
+		}
+
+		function getDim(key: string): number {
+			/* Спрятанное поле — режим «на 1 м» / «на 1 м²»: берём 1000 мм. */
+			const wrap = dimsEl!.querySelector(`[data-field="${key}"]`) as HTMLElement | null;
+			if (wrap?.hidden) return 1000;
+			return rawDim(key);
+		}
+
+		/* Сколько метров (у листа — м²) в одной единице количества. */
+		function extentPerUnit(mode: QtyMode): number {
+			if (mode === 'sheet') return (rawDim('width') * rawDim('length')) / 1e6;
+			if (mode === 'pcs') return rawDim('length') / 1000;
+			return 1;
 		}
 
 		function calcVolumeMm3(): number {
@@ -994,6 +1045,10 @@ const hubs = [
 			const volMm3 = calcVolumeMm3();
 
 			unitWeightEl!.textContent = unitW > 0 ? `${fmt.format(unitW)} кг` : '—';
+			if (extentEl) {
+				const ext = qty * extentPerUnit(currentMode);
+				extentEl.textContent = ext > 0 ? `${fmtExt.format(ext)} ${currentShape === 'list' ? 'м²' : 'м'}` : '—';
+			}
 
 			if (total > 0) {
 				if (total >= 1000) {
@@ -1063,6 +1118,19 @@ const hubs = [
 		});
 		gradeSels.forEach((sel) => sel.addEventListener('change', () => { lastEdited = 'qty'; recalc(); }));
 		qtyInput.addEventListener('input', () => { lastEdited = 'qty'; recalc(); });
+		/* Смена единицы (лист ⇄ м², м ⇄ шт): переводим количество в новую
+		   единицу, чтобы общий вес не менялся. */
+		qtyModeSel?.addEventListener('change', () => {
+			const next = qtyModeSel.value as QtyMode;
+			const qty = parseFloat(qtyInput.value) || 0;
+			const from = extentPerUnit(currentMode);
+			const to = extentPerUnit(next);
+			currentMode = next;
+			applyMode();
+			if (qty > 0 && from > 0 && to > 0) qtyInput.value = String(+((qty * from) / to).toFixed(3));
+			lastEdited = 'qty';
+			recalc();
+		});
 		massInput?.addEventListener('input', () => { lastEdited = 'mass'; recalc(); });
 		/* Смена единицы массы: пересчитываем поле к новой единице,
 		   ведущим оставляем количество. */
@@ -1090,6 +1158,7 @@ const hubs = [
 			const qty = parseFloat(qtyInput.value) || 0;
 			const total = unit * qty;
 			const dims = Array.from(dimsEl!.querySelectorAll('[data-dim]'))
+				.filter((el) => !(el.closest('[data-field]') as HTMLElement | null)?.hidden)
 				.map((el) => {
 					const inp = el as HTMLInputElement;
 					const lbl = dimsEl!.querySelector(`label[for="${inp.id}"]`);
@@ -1100,7 +1169,8 @@ const hubs = [
 				`${shape} (${grade}, ρ=${fmtRho.format(rho)} г/см³)\n` +
 				`${dims}\n` +
 				`Вес 1 ед.: ${fmt.format(unit)} кг\n` +
-				`Кол-во: ${qty} ${UNIT_LABELS[FIELDS[currentShape].unit]}\n` +
+				`Кол-во: ${qty} ${MODE_LABEL[currentMode]}` +
+				`${extentEl && extentEl.textContent !== '—' ? ` (${extentEl.textContent})` : ''}\n` +
 				`Общий вес: ${total >= 1000 ? fmt.format(total / 1000) + ' т (' + fmt.format(total) + ' кг)' : fmt.format(total) + ' кг'}`;
 			try {
 				await navigator.clipboard.writeText(text);
@@ -1349,6 +1419,7 @@ const hubs = [
 	/* Подписи бывают в одну и в две строки («Размер под ключ…») — прижимаем
 	   поля к низу, чтобы сами инпуты стояли в одну линию. */
 	.calc__dims :global(.calc__field) { justify-content: flex-end; }
+	.calc__dims :global(.calc__field[hidden]) { display: none; }
 
 	/* ---------- Quantity stepper ---------- */
 	.calc__qty-wrap {
@@ -1385,15 +1456,6 @@ const hubs = [
 		box-shadow: none !important;
 	}
 	.calc__qty-input:focus { background: transparent !important; }
-	.calc__qty-unit {
-		padding: 0 0.85rem;
-		display: grid;
-		place-items: center;
-		font-size: 0.85rem;
-		color: var(--color-muted);
-		border-left: 1px solid var(--color-border);
-		background: var(--color-bg-elev);
-	}
 
 	/* ---------- Mass input (обратный пересчёт) ---------- */
 	.calc__field--mass { margin-top: var(--space-3); max-width: 280px; }
