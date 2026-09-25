@@ -15,16 +15,17 @@
   RewriteCond %{HTTP_HOST} !^gkmetallinvest\.ru$ [NC]
   RewriteRule ^ https://gkmetallinvest.ru%{REQUEST_URI} [L,R=301]
 
-  # --- http → https: пока только проверочный адрес /https-probe/ ------------
+  # --- http → https -----------------------------------------------------------
   #  Timeweb снимает HTTPS на nginx и сообщает Apache об https заголовком
   #  X-HTTPS: 1 (справка Timeweb «Типовые перенаправления»). Ошибись условие —
-  #  вся https-версия уйдёт в бесконечный редирект, поэтому сначала проверяем
-  #  на одном несуществующем адресе и только потом включаем для всего сайта.
+  #  вся https-версия уйдёт в бесконечный редирект; условие проверено на живом
+  #  сайте 2026-09-26 (http → 301, https → без редиректа).
   #  Три признака https через «И»: редирект только если нет ни одного.
+  RewriteCond %{REQUEST_URI} !^/\.well-known/ [NC]
   RewriteCond %{HTTP:X-HTTPS} !1
   RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
   RewriteCond %{HTTPS} !on
-  RewriteRule ^https-probe/?$ https://gkmetallinvest.ru%{REQUEST_URI} [L,R=301]
+  RewriteRule ^ https://gkmetallinvest.ru%{REQUEST_URI} [L,R=301]
 </IfModule>
 
 # --- Каталог: гео-фиксы Перми на новых слагах (должны идти ДО catch-all) ------
