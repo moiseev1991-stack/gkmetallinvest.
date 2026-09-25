@@ -91,3 +91,14 @@ jobs:
           echo "::endgroup::"
 
           rm -f "$KEYFILE" "$WRAP"
+
+      # IndexNow: сообщаем Яндексу и Bing о страницах, изменённых в этом пуше,
+      # чтобы переобошли сразу. Для сравнения нужен только прошлый коммит —
+      # тянем его одного (--depth=1), историю целиком не качаем.
+      # Сбой здесь деплой не валит: сайт уже залит.
+      - name: Notify search engines (IndexNow)
+        if: ${{ env.FTP_SERVER != '' && github.event_name == 'push' }}
+        continue-on-error: true
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.event.before }}" || true
+          node scripts/indexnow.mjs --git "${{ github.event.before }}" "${{ github.sha }}"

@@ -10,7 +10,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from './Breadcrumbs.astro';
 import CtaSection from './CtaSection.astro';
 import Button from './ui/Button.astro';
-import { siteName, siteUrl, contacts } from '../data/site';
+import { siteName, siteUrl, contacts, orgAddress } from '../data/site';
+import { offices, officesLocList } from '../data/offices';
 import servicePanels from '../data/service-panels.json';
 
 interface SpecRow {
@@ -94,6 +95,10 @@ const coverPng = cover ? `/img/services/${cover}.png?v=${COVER_VER}` : undefined
 type Panel = { head: string; items: { k: string; v: string; hi?: boolean }[] };
 const panel: Panel | undefined = cover ? (servicePanels as Record<string, Panel>)[cover] : undefined;
 const fullUrl = `${siteUrl.replace(/\/$/, '')}${path}`;
+/* География — в первом экране рядом с коротким ответом: нейросетям и поиску
+   задают вопросы с городом («цинкование в Москве»), а без города в тексте
+   страница в такие ответы не попадает. Список городов — из data/offices.ts. */
+const geoText = `Офисы — в ${officesLocList()}. Отправляем по всей России.`;
 
 const serviceJsonLd = {
 	'@context': 'https://schema.org',
@@ -103,16 +108,17 @@ const serviceJsonLd = {
 	url: fullUrl,
 	serviceType: tagline,
 	...(coverPng ? { image: `${siteUrl.replace(/\/$/, '')}${coverPng}` } : {}),
-	areaServed: { '@type': 'Country', name: 'Россия' },
+	areaServed: [
+		{ '@type': 'Country', name: 'Россия' },
+		...offices.map((o) => ({ '@type': 'City', name: o.area ?? o.city })),
+	],
 	provider: {
 		'@type': 'Organization',
 		name: siteName,
+		url: siteUrl,
 		telephone: contacts.phone,
-		address: {
-			'@type': 'PostalAddress',
-			addressLocality: 'Нижний Новгород',
-			addressCountry: 'RU',
-		},
+		email: contacts.email,
+		address: { '@type': 'PostalAddress', ...orgAddress },
 	},
 };
 
@@ -144,6 +150,7 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 						<section class="svc-hero__answer" aria-labelledby="svc-answer-title">
 							<h2 id="svc-answer-title" class="svc-hero__answer-title">Коротко об услуге</h2>
 							<p class="svc-hero__answer-text" set:html={answer} />
+							<p class="svc-hero__answer-geo">{geoText}</p>
 							{facts.length > 0 && (
 								<ul class="svc-hero__facts">
 									{facts.map((f) => <li>{f}</li>)}
@@ -177,6 +184,7 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 						<section class="svc-answer" aria-labelledby="svc-answer-title">
 							<h2 id="svc-answer-title" class="svc-answer__title">Коротко об услуге</h2>
 							<p class="svc-answer__text" set:html={answer} />
+							<p class="svc-answer__geo">{geoText}</p>
 							{facts.length > 0 && (
 								<ul class="svc-answer__facts">
 									{facts.map((f) => <li>{f}</li>)}
@@ -184,7 +192,10 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 							)}
 						</section>
 					) : (
-						<p class="svc-page__lead" set:html={intro} />
+						<>
+							<p class="svc-page__lead" set:html={intro} />
+							<p class="svc-page__geo">{geoText}</p>
+						</>
 					)}
 					{/* Первый экран: сразу два способа обратиться — отправить чертёж или позвонить. */}
 					<div class="svc-page__cta">
@@ -361,6 +372,7 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 	}
 	.svc-hero__answer-text { margin: 0; font-size: 1.05rem; line-height: 1.6; color: #dbe4ef; }
 	.svc-hero__answer-text :global(strong) { color: #fff; }
+	.svc-hero__answer-geo { margin: 0.6rem 0 0; font-size: 0.92rem; line-height: 1.5; color: #9fb0c4; }
 	.svc-hero__facts {
 		list-style: none;
 		margin: var(--space-3) 0 0;
@@ -424,6 +436,8 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 		margin: 0 0 var(--space-2);
 	}
 	.svc-answer__text { font-size: 1.05rem; line-height: 1.6; margin: 0; color: var(--color-text); }
+	.svc-answer__geo,
+	.svc-page__geo { margin: 0.6rem 0 0; font-size: 0.92rem; line-height: 1.5; color: var(--color-muted); }
 	.svc-answer__facts {
 		list-style: none;
 		margin: var(--space-3) 0 0;

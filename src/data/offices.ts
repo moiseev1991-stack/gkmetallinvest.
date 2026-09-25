@@ -21,6 +21,10 @@ export interface Office {
 	menuCity?: string;
 	/** Регион — показываем, если город не самоочевиден (напр. Пушкино → Московская обл.) */
 	region?: string;
+	/** Город в предложном падеже — для фраз «офисы в …» (короткий ответ услуг, llms.txt) */
+	loc: string;
+	/** Город обслуживания для areaServed в JSON-LD, если это не сам city (Пушкино → Москва) */
+	area?: string;
 	/** Улица + дом + офис — то, что видит пользователь */
 	street: string;
 	/** Почтовый индекс */
@@ -44,6 +48,7 @@ export interface Office {
 export const offices: Office[] = [
 	{
 		slug: 'nizhny-novgorod',
+		loc: 'Нижнем Новгороде',
 		city: 'Нижний Новгород',
 		region: 'Нижегородская область',
 		street: 'ул. Варварская, д. 32, помещение П7, офис 518',
@@ -55,6 +60,8 @@ export const offices: Office[] = [
 	},
 	{
 		slug: 'moskva-pushkino',
+		loc: 'Москве (Пушкино)',
+		area: 'Москва',
 		city: 'Пушкино',
 		menuCity: 'Москва (Московская обл., Пушкино)',
 		region: 'Московская область',
@@ -66,6 +73,7 @@ export const offices: Office[] = [
 	},
 	{
 		slug: 'sankt-peterburg',
+		loc: 'Санкт-Петербурге',
 		city: 'Санкт-Петербург',
 		street: 'Глухоозёрское шоссе, д. 4',
 		zip: '192019',
@@ -75,6 +83,7 @@ export const offices: Office[] = [
 	},
 	{
 		slug: 'ekaterinburg',
+		loc: 'Екатеринбурге',
 		city: 'Екатеринбург',
 		street: 'ул. Бахчиванджи, 2А/21',
 		zip: '620025',
@@ -84,6 +93,7 @@ export const offices: Office[] = [
 	},
 	{
 		slug: 'novosibirsk',
+		loc: 'Новосибирске',
 		city: 'Новосибирск',
 		street: '2-я Станционная улица, 40Е',
 		zip: '630041',
@@ -93,6 +103,7 @@ export const offices: Office[] = [
 	},
 	{
 		slug: 'rostov-na-donu',
+		loc: 'Ростове-на-Дону',
 		city: 'Ростов-на-Дону',
 		street: '1-я Луговая улица, 12, микрорайон Заречная',
 		zip: '344002',
@@ -102,6 +113,7 @@ export const offices: Office[] = [
 	},
 	{
 		slug: 'krasnodar',
+		loc: 'Краснодаре',
 		city: 'Краснодар',
 		street: 'Уральская улица, 83А',
 		zip: '350059',
@@ -127,6 +139,13 @@ export function officeMapSrc(office: Office): string {
 		encodeURIComponent(office.mapQuery) +
 		'&z=16'
 	);
+}
+
+/** «Нижнем Новгороде, Москве (Пушкино), … и Краснодаре» — список городов
+ *  с офисами для фразы «офисы — в …». Головной офис идёт первым. */
+export function officesLocList(): string {
+	const locs = offices.map((o) => o.loc);
+	return locs.length > 1 ? `${locs.slice(0, -1).join(', ')} и ${locs[locs.length - 1]}` : locs.join('');
 }
 
 /** Полный адрес одной строкой: индекс + город + улица. */
