@@ -9,13 +9,15 @@ import ServicePage from '../../../components/ServicePage.astro';
    анодирования, которое клиент указал сам) не давал — не пишем. */
 
 const specs = [
-	{ label: 'Цинкование — от 39 ₽/кг', value: 'Бесцветное, хроматированное, чёрное — защита стали от коррозии' },
-	{ label: 'Кадмирование', value: 'Бесцветное и хроматированное, фосфатированное, с оксидированием' },
-	{ label: 'Никелирование', value: 'Гальваническое блестящее и химическое — защита и декоративный вид' },
-	{ label: 'Твёрдое хромирование', value: 'Износостойкий слой для штоков, валов, осей' },
-	{ label: 'Анодирование алюминия', value: 'Бесцветное и чёрное, с наполнением; твёрдое 20–40 и 40–60 мкм; хромовое; эматалирование' },
-	{ label: 'Анодирование титана', value: 'Цветное (аноцвет)' },
-	{ label: 'Оксидирование', value: 'Химическое оксидирование стали с промасливанием; электропроводное оксидирование алюминия' },
+	{ label: 'Цинкование — от 39 ₽/кг', value: 'Бесцветное, хроматированное, чёрное — защита стали от коррозии', href: '/uslugi/galvanicheskie-pokrytiya/cinkovanie/' },
+	{ label: 'Кадмирование', value: 'Бесцветное и хроматированное, фосфатированное, с оксидированием', href: '/uslugi/galvanicheskie-pokrytiya/kadmirovanie/' },
+	{ label: 'Гальваническое никелирование', value: 'Блестящий никель — защита и декоративный вид', href: '/uslugi/galvanicheskie-pokrytiya/nikelirovanie/' },
+	{ label: 'Химическое никелирование', value: 'Равномерный слой на деталях сложной формы', href: '/uslugi/galvanicheskie-pokrytiya/himicheskoe-nikelirovanie/' },
+	{ label: 'Твёрдое хромирование', value: 'Износостойкий слой для штоков, валов, осей', href: '/uslugi/galvanicheskie-pokrytiya/tverdoe-hromirovanie/' },
+	{ label: 'Анодирование алюминия', value: 'Бесцветное и чёрное, с наполнением; твёрдое 20–40 и 40–60 мкм; хромовое; эматалирование', href: '/uslugi/galvanicheskie-pokrytiya/anodirovanie/' },
+	{ label: 'Анодирование титана', value: 'Цветное (аноцвет)', href: '/uslugi/galvanicheskie-pokrytiya/anodirovanie-titana/' },
+	{ label: 'Хроматирование алюминия', value: 'Электропроводное химическое оксидирование', href: '/uslugi/galvanicheskie-pokrytiya/hromatirovanie-alyuminiya/' },
+	{ label: 'Оксидирование стали', value: 'Химическое оксидирование с промасливанием (воронение)' },
 	{ label: 'Фосфатирование', value: 'С оксидированием — защита и основа под окраску' },
 	{ label: 'Меднение', value: 'Подслой и электропроводящее покрытие' },
 	{ label: 'Оловянирование', value: 'Олово и олово-висмут (матовое) — под пайку и электрический контакт' },
@@ -91,8 +93,16 @@ const pricingNote = `<strong>Цинкование — от 39 ₽ за кило�
 		'Цена «от 39 ₽/кг» — для цинкования; остальные покрытия — по расчёту',
 	]}
 	pricingNote={pricingNote}
-	relatedTitle="Смежные услуги"
+	relatedTitle="Покрытия подробно и смежные услуги"
 	relatedHubs={[
+		{ label: 'Анодирование алюминия', href: '/uslugi/galvanicheskie-pokrytiya/anodirovanie/' },
+		{ label: 'Цинкование — от 39 ₽/кг', href: '/uslugi/galvanicheskie-pokrytiya/cinkovanie/' },
+		{ label: 'Твёрдое хромирование', href: '/uslugi/galvanicheskie-pokrytiya/tverdoe-hromirovanie/' },
+		{ label: 'Гальваническое никелирование', href: '/uslugi/galvanicheskie-pokrytiya/nikelirovanie/' },
+		{ label: 'Анодирование титана', href: '/uslugi/galvanicheskie-pokrytiya/anodirovanie-titana/' },
+		{ label: 'Кадмирование', href: '/uslugi/galvanicheskie-pokrytiya/kadmirovanie/' },
+		{ label: 'Хроматирование алюминия', href: '/uslugi/galvanicheskie-pokrytiya/hromatirovanie-alyuminiya/' },
+		{ label: 'Химическое никелирование', href: '/uslugi/galvanicheskie-pokrytiya/himicheskoe-nikelirovanie/' },
 		{ label: 'Плоское и круглое шлифование', href: '/uslugi/ploskoe-i-krugloe-shlifovanie/' },
 		{ label: 'Травление и пассивация', href: '/uslugi/travlenie-i-passivaciya/' },
 		{ label: 'Электрохимическая полировка', href: '/uslugi/elektrohimicheskaya-polirovka/' },

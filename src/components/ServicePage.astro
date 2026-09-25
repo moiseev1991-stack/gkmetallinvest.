@@ -16,6 +16,7 @@ import servicePanels from '../data/service-panels.json';
 interface SpecRow {
 	label: string;
 	value: string;
+	href?: string; // подпись строки — ссылка на подробную страницу
 }
 interface StepRow {
 	n: number;
@@ -53,6 +54,9 @@ interface Props {
 	limitations?: string[]; // ограничения / что не делаем
 	relatedHubs: { label: string; href: string }[]; // связанные товарные хабы
 	relatedTitle?: string; // заголовок блока relatedHubs, по умолчанию «Связанные товарные категории»
+	/** Раздел-родитель для вложенных страниц (гальваника внутри «Гальванических
+	 *  покрытий») — промежуточное звено в хлебных крошках. */
+	parent?: { label: string; href: string };
 	faq: FaqRow[];
 	pricingNote?: string; // абзац про ценообразование
 }
@@ -76,6 +80,7 @@ const {
 	limitations,
 	relatedHubs,
 	relatedTitle = 'Связанные товарные категории',
+	parent,
 	faq,
 	pricingNote,
 } = Astro.props;
@@ -128,7 +133,7 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 
 <BaseLayout title={title} description={description} image={coverPng} jsonLd={jsonLd}>
 	<div class="container svc-page">
-		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, { label: h1 }]} />
+		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Услуги', href: '/uslugi/' }, ...(parent ? [parent] : []), { label: h1 }]} />
 
 		{panel ? (
 			<header class="svc-hero">
@@ -201,7 +206,7 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 			<dl class="svc-page__specs">
 				{specs.map((s) => (
 					<div class="svc-page__spec-row">
-						<dt>{s.label}</dt>
+						<dt>{s.href ? <a class="svc-page__spec-link" href={s.href}>{s.label} →</a> : s.label}</dt>
 						<dd>{s.value}</dd>
 					</div>
 				))}
@@ -539,6 +544,8 @@ const jsonLd = faqJsonLd ? [serviceJsonLd, faqJsonLd] : serviceJsonLd;
 		letter-spacing: 0.05em;
 		color: var(--color-subtle);
 	}
+	.svc-page__spec-link { color: var(--color-primary-500); text-decoration: none; }
+	.svc-page__spec-link:hover { text-decoration: underline; }
 	.svc-page__spec-row dd {
 		font-variant-numeric: tabular-nums;
 		margin: 0;
