@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+/* Страница-заглушка: текста пока нет — закрыта от индекса, убрана из подвала, карты сайта и sitemap (astro.config.mjs STUB_PAGES). Вернуть, когда клиент пришлёт сканы сертификатов. */
 ---
 
-<BaseLayout title="Сертификаты и документы" description="Сертификаты качества и документы на металлопрокат — по запросу.">
+<BaseLayout noindex title="Сертификаты и документы" description="Сертификаты качества и документы на металлопрокат — по запросу.">
 	<div class="container page">
 		<Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Сертификаты' }]} />
 		<h1>Сертификаты и документы</h1>

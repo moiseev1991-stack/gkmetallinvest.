@@ -6,6 +6,9 @@ import { getSitemapDupPaths } from './src/data/sku-seo.mjs';
 /* Слаги реальных дублей (одна и та же позиция с другой партии). Считаются той
    же логикой, что noindex+canonical на карточках, — см. src/data/sku-seo.mjs. */
 const dupPaths = getSitemapDupPaths();
+/* Страницы-заглушки без текста — не в sitemap (и noindex на самих страницах).
+   Вернуть, когда клиент пришлёт текст оферты и сканы сертификатов. */
+const STUB_PAGES = new Set(['/publichnaya-oferta/', '/sertifikaty/']);
 
 // https://astro.build/config
 export default defineConfig({
@@ -25,6 +28,7 @@ export default defineConfig({
 			   это уже не заглушки, разделы наполнены (30 и 16 страниц). */
 			filter: (page) => {
 				const path = new URL(page).pathname;
+				if (STUB_PAGES.has(path)) return false;
 				const segments = path.split('/').filter(Boolean);
 				if (segments.length === 2) return !dupPaths.has(segments.join('/'));
 				return true;

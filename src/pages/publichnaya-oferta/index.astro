@@ -1,9 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+/* Страница-заглушка: текста пока нет — закрыта от индекса, убрана из подвала, карты сайта и sitemap (astro.config.mjs STUB_PAGES). Вернуть, когда клиент пришлёт текст оферты. /publicoffer пока ведёт на «Доставку и оплату» (.htaccess). */
 ---
 
 <BaseLayout
+	noindex
 	title="Публичная оферта"
 	description="Публичная оферта ГК Металлинвест: условия поставки нержавеющего металлопроката, порядок оформления заказа, оплаты и доставки по России."
 >

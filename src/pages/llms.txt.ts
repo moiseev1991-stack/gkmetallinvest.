@@ -70,7 +70,6 @@ const body = [
 		{ title: 'О компании', href: '/o-kompanii/' },
 		{ title: 'Доставка и оплата', href: '/dostavka-i-oplata/' },
 		{ title: 'Поставка нержавеющего металлопроката', href: '/postavka-nerzhaveyushchego-metalloprokata/' },
-		{ title: 'Сертификаты и документы', href: '/sertifikaty/' },
 		{ title: 'Справочник по нержавеющей стали', href: '/spravochnik/' },
 		{ title: 'Справочник ГОСТов', href: '/gost/' },
 		{ title: 'Контакты и адреса офисов', href: '/kontakty/' },

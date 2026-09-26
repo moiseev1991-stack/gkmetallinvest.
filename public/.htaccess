@@ -74,7 +74,9 @@ RedirectMatch 301 ^/alyuminiy/?$                 https://gkmetallinvest.ru/
 RedirectMatch 301 ^/vacancy/?$                   https://gkmetallinvest.ru/kontakty/
 RedirectMatch 301 ^/contacts/?$                  https://gkmetallinvest.ru/kontakty/
 RedirectMatch 301 ^/policy/?$                    https://gkmetallinvest.ru/politika-konfidencialnosti/
-RedirectMatch 301 ^/publicoffer/?$               https://gkmetallinvest.ru/publichnaya-oferta/
+# /publicoffer — временно (302) на «Доставку и оплату», пока /publichnaya-oferta/ заглушка без текста;
+# когда текст появится — вернуть 301 на https://gkmetallinvest.ru/publichnaya-oferta/
+RedirectMatch 302 ^/publicoffer/?$               https://gkmetallinvest.ru/dostavka-i-oplata/
 
 # --- Оборудование и услуги, которых нет на новом сайте → раздел «Услуги» -------
 RedirectMatch 301 ^/(oborudovanie|vseoborudovanie|gibka)/?$   https://gkmetallinvest.ru/uslugi/
