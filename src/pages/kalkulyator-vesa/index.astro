@@ -4,8 +4,8 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CtaSection from '../../components/CtaSection.astro';
 import { siteUrl, siteName } from '../../data/site';
 
-const title = 'Калькулятор веса нержавеющего металлопроката — лист, труба, круг';
-const description = 'Онлайн-расчёт веса нержавеющего металлопроката: лист, труба, круг, квадрат, шестигранник, проволока, полоса, уголок. Плотность по маркам AISI / ГОСТ.';
+const title = 'Калькулятор веса нержавейки: лист, труба, круг и таблицы веса';
+const description = 'Онлайн-расчёт веса нержавейки: лист, труба, круг, квадрат, полоса, уголок. Готовые таблицы веса листа 1250×2500, трубы и круга AISI 304. Плотность по маркам.';
 
 const faq = [
 	{
@@ -27,6 +27,10 @@ const faq = [
 	{
 		q: 'Что такое удельный вес нержавейки и чем отличается от плотности?',
 		a: 'В инженерной практике металлопроката «удельный вес» обычно означает то же, что плотность — 7,7–7,9 г/см³ для нержавейки, то есть массу единицы объёма. Строго по физике плотность измеряется в кг/м³ (масса/объём), а удельный вес — в Н/м³ (вес/объём), и они отличаются на множитель g = 9,81 м/с². На практике в прайсах и ГОСТах под «удельным весом стали» подразумевается именно плотность в кг/м³. Калькулятор использует плотность в г/см³ для пересчёта объёма в килограммы.',
+	},
+	{
+		q: 'Сколько весит лист нержавейки 1250×2500?',
+		a: 'Лист AISI 304 размером 1250×2500 мм (3,125 м²): 1 мм — 24,7 кг, 2 мм — 49,4 кг, 3 мм — 74,1 кг, 4 мм — 98,8 кг, 5 мм — 123,4 кг. Один квадратный метр листа 1 мм весит 7,9 кг. Полная таблица по толщинам и форматам 1000×2000 и 1500×3000 — на этой странице ниже калькулятора.',
 	},
 	{
 		q: 'Как рассчитать вес трубы?',
@@ -78,6 +82,24 @@ const shapes = [
 	{ key: 'provoloka', label: 'Проволока', hubHref: '/provoloka-nerzhaveyushchaya/' },
 	{ key: 'ugolok', label: 'Уголок', hubHref: '/ugolok-shveller-nerzhaveyushchiy/' },
 ];
+
+/* Готовые таблицы веса — для тех, кто ищет «вес листа нержавейки 2 мм»,
+   «вес трубы 57×3» и т.п. и не хочет вводить размеры. Считаются здесь же по
+   тем же формулам, что калькулятор; плотность AISI 304 / 08Х18Н10 — 7,9 г/см³. */
+const RHO_304 = 7.9;
+const fmtKg = (v: number) => v.toLocaleString('ru-RU', { minimumFractionDigits: v < 10 ? 2 : 1, maximumFractionDigits: v < 10 ? 2 : 1 });
+const sheetRows = [0.5, 0.8, 1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].map((t) => {
+	const m2 = t * RHO_304; // кг/м²: толщина, мм × плотность, г/см³
+	return { t: String(t).replace('.', ','), m2: fmtKg(m2), s1: fmtKg(m2 * 2), s2: fmtKg(m2 * 3.125), s3: fmtKg(m2 * 4.5) };
+});
+const pipeRows = ([[12, 1], [16, 1], [20, 1.5], [25, 1.5], [25, 2], [32, 2], [38, 2], [42, 2], [50, 2], [57, 3], [76, 3], [89, 3], [108, 4], [159, 4.5]] as const).map(([d, w]) => {
+	const kgm = (Math.PI * (d - w) * w * RHO_304) / 1000; // кг/м
+	return { size: `${d} × ${String(w).replace('.', ',')}`, kgm: fmtKg(kgm), l6: fmtKg(kgm * 6), perT: Math.round(1000 / kgm).toLocaleString('ru-RU') };
+});
+const krugRows = [6, 8, 10, 12, 14, 16, 20, 25, 30, 40, 50, 60, 80, 100].map((d) => {
+	const kgm = (Math.PI * d * d * RHO_304) / 4000; // кг/м
+	return { d, kgm: fmtKg(kgm), l6: fmtKg(kgm * 6) };
+});
 
 const densityRows = [
 	{ group: 'Аустенитные', marks: 'AISI 304, 304L, 321, 12Х18Н10Т, 08Х18Н10', density: '7,9', tone: 'austenitic' },
@@ -692,6 +714,41 @@ const hubs = [
 						<div class="calc__density-val">{r.density} <span>г/см³</span></div>
 					</div>
 				))}
+			</div>
+		</section>
+
+		<section class="calc__block" id="tablicy">
+			<h2 class="calc__h2">Вес листа нержавейки: таблица</h2>
+			<p class="calc__hub-lead">AISI 304 / 08Х18Н10, плотность 7,9 г/см³. Для AISI 316L (8,0 г/см³) прибавьте 1,3 %, для AISI 430 (7,7 г/см³) — отнимите 2,5 %.</p>
+			<div class="calc__wtable">
+				<table>
+					<thead><tr><th>Толщина, мм</th><th>1 м², кг</th><th>Лист 1000×2000, кг</th><th>Лист 1250×2500, кг</th><th>Лист 1500×3000, кг</th></tr></thead>
+					<tbody>
+						{sheetRows.map((r) => <tr><td>{r.t}</td><td>{r.m2}</td><td>{r.s1}</td><td>{r.s2}</td><td>{r.s3}</td></tr>)}
+					</tbody>
+				</table>
+			</div>
+
+			<h2 class="calc__h2">Вес трубы нержавеющей: таблица</h2>
+			<p class="calc__hub-lead">Круглая труба AISI 304, формула π × (D − S) × S × ρ. Точный размер — в калькуляторе выше.</p>
+			<div class="calc__wtable">
+				<table>
+					<thead><tr><th>Размер D × S, мм</th><th>1 м, кг</th><th>Хлыст 6 м, кг</th><th>Метров в 1 т</th></tr></thead>
+					<tbody>
+						{pipeRows.map((r) => <tr><td>{r.size}</td><td>{r.kgm}</td><td>{r.l6}</td><td>{r.perT}</td></tr>)}
+					</tbody>
+				</table>
+			</div>
+
+			<h2 class="calc__h2">Вес круга нержавеющего: таблица</h2>
+			<p class="calc__hub-lead">Круг (пруток) AISI 304, формула π × d² / 4 × ρ.</p>
+			<div class="calc__wtable">
+				<table>
+					<thead><tr><th>Диаметр, мм</th><th>1 м, кг</th><th>Пруток 6 м, кг</th></tr></thead>
+					<tbody>
+						{krugRows.map((r) => <tr><td>{r.d}</td><td>{r.kgm}</td><td>{r.l6}</td></tr>)}
+					</tbody>
+				</table>
 			</div>
 		</section>
 
@@ -1678,6 +1735,13 @@ const hubs = [
 
 	/* ---------- Section heads ---------- */
 	.calc__block { margin-bottom: var(--space-10); }
+	.calc__wtable { max-width: 900px; overflow-x: auto; margin: 0 0 var(--space-8); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+	.calc__wtable table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+	.calc__wtable th, .calc__wtable td { padding: 0.55rem 0.9rem; text-align: right; border-bottom: 1px solid var(--color-border); white-space: nowrap; }
+	.calc__wtable th:first-child, .calc__wtable td:first-child { text-align: left; }
+	.calc__wtable thead th { background: var(--color-surface); font-weight: 600; font-size: 0.85rem; color: var(--color-muted); }
+	.calc__wtable tbody tr:last-child td { border-bottom: 0; }
+	.calc__wtable tbody tr:hover td { background: var(--color-surface); }
 	.calc__h2 {
 		font-size: 1.5rem;
 		margin-bottom: var(--space-4);
