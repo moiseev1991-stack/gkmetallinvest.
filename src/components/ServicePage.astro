@@ -89,7 +89,7 @@ const {
 const path = Astro.url.pathname;
 /* Сменили картинку под тем же именем — поднять версию, иначе браузеры и
    CDN ещё год будут показывать старую. */
-const COVER_VER = 1;
+const COVER_VER = 2;
 const coverWebp = cover ? `/img/services/${cover}.webp?v=${COVER_VER}` : undefined;
 const coverPng = cover ? `/img/services/${cover}.png?v=${COVER_VER}` : undefined;
 type Panel = { head: string; items: { k: string; v: string; hi?: boolean }[] };
