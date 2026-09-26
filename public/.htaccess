@@ -72,6 +72,9 @@ RedirectMatch 301 ^/nerjaveykaizkitaya/?$       https://gkmetallinvest.ru/postav
 RedirectMatch 301 ^/all/?$                       https://gkmetallinvest.ru/karta-sayta/
 RedirectMatch 301 ^/alyuminiy/?$                 https://gkmetallinvest.ru/
 RedirectMatch 301 ^/vacancy/?$                   https://gkmetallinvest.ru/kontakty/
+RedirectMatch 301 ^/contacts/?$                  https://gkmetallinvest.ru/kontakty/
+RedirectMatch 301 ^/policy/?$                    https://gkmetallinvest.ru/politika-konfidencialnosti/
+RedirectMatch 301 ^/publicoffer/?$               https://gkmetallinvest.ru/publichnaya-oferta/
 
 # --- Оборудование и услуги, которых нет на новом сайте → раздел «Услуги» -------
 RedirectMatch 301 ^/(oborudovanie|vseoborudovanie|gibka)/?$   https://gkmetallinvest.ru/uslugi/

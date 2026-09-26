@@ -12,24 +12,14 @@
 header('Content-Type: application/json; charset=utf-8');
 header('X-Robots-Tag: noindex');
 
-// Диагностика: ?debug=<ключ> включает вывод реальной ошибки (иначе тихо 500).
-$debug = (($_GET['debug'] ?? '') === 'clod2026diag');
-if ($debug) { ini_set('display_errors', '1'); error_reporting(E_ALL); }
-
-// Фатальный сбой отдаём как JSON, а не пустой 500 — чтобы фронт показал ошибку,
-// а в debug-режиме было видно причину (нет mbstring, отключён mail() и т.п.).
-register_shutdown_function(static function () use ($debug) {
+// Фатальный сбой отдаём как JSON, а не пустой 500 — чтобы фронт показал ошибку.
+// Текст ошибки наружу не выводим.
+register_shutdown_function(static function () {
 	$e = error_get_last();
 	if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
-		echo json_encode(['ok' => false, 'error' => 'server', 'detail' => $debug ? $e['message'] : null]);
+		echo json_encode(['ok' => false, 'error' => 'server']);
 	}
 });
-
-// Ping: проверка, что задеплоена именно эта версия обработчика (письмо НЕ отправляется).
-if (($_GET['ping'] ?? '') === 'clod2026') {
-	echo json_encode(['ok' => true, 'ver' => 'send-v3-debugcc']);
-	exit;
-}
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 	http_response_code(405);
@@ -79,12 +69,6 @@ if ($name === '' || $phone === '') {
 $replyTo = filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : '';
 
 $recipients = 'corp-metalinvest01265@yandex.ru, ev18011@yandex.ru';
-
-// В debug-режиме письмо уходит ТОЛЬКО на адрес из формы (проверка механизма
-// без писем в рабочие ящики сотрудников). Продакшн-форма шлёт на оба ящика.
-if ($debug && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-	$recipients = $email;
-}
 
 $subject = '=?UTF-8?B?' . base64_encode('Заявка с сайта — ' . $name) . '?=';
 
