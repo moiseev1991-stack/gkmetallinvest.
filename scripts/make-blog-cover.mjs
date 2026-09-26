@@ -339,6 +339,11 @@ const COVERS = {
 };
 
 const SERVICE_COVERS = {
+	'polirovka': {
+		tag: 'УСЛУГА',
+		title: 'Полировка|нержавейки|до зеркала',
+		sub: 'Сатин 4N, зеркало BA и 8K',
+	},
 	'lazernaya-rezka': {
 		tag: 'УСЛУГА',
 		title: 'Лазерная резка|нержавейки|и металла',
