@@ -74,11 +74,6 @@ jobs:
 
           SSH_HOST="vh470.timeweb.ru"
 
-          # prai.20 — прайсы поставщиков, когда-то залитые вручную в корень сайта;
-          # nginx отдавал их любому посетителю. Переносим папку на уровень выше
-          # корня сайта (вне доступа из интернета, файлы целы). После заливки,
-          # с отключённым cmd:fail-exit: когда папки уже нет, mv просто
-          # ничего не делает и деплой не валит.
           echo "::group::SFTP deploy"
           lftp "sftp://$FTP_USERNAME@$SSH_HOST" -e "
             set sftp:connect-program $WRAP;
@@ -92,8 +87,6 @@ jobs:
             mirror -R --verbose=1 --exclude-glob .git* ./dist/ $FTP_SERVER_DIR;
             echo '----- after deploy -----';
             cls -l $FTP_SERVER_DIR;
-            set cmd:fail-exit no;
-            mv $FTP_SERVER_DIR/prai.20 $FTP_SERVER_DIR/../prai.20-private;
             bye"
           echo "::endgroup::"
 
