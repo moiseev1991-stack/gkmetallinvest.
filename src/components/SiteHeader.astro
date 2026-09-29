@@ -949,25 +949,31 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		gap: var(--space-5) var(--space-6);
 	}
 	.mega__group { min-width: 0; }
+	/* Заголовок раздела — крупнее пунктов, с плашкой и оранжевой чертой, чтобы читался как раздел */
 	.mega__group-head {
 		display: flex;
 		flex-direction: column;
 		gap: 0.15rem;
-		padding-bottom: var(--space-2);
+		padding: 0.5rem 0.75rem;
 		margin-bottom: var(--space-3);
-		border-bottom: 1px solid var(--color-border);
+		background: var(--color-primary-50);
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 	}
 	.mega__group-title {
-		font-size: 0.72rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		font-size: 1rem;
+		font-weight: 800;
+		line-height: 1.25;
 		color: var(--color-primary-600);
 	}
 	.mega__group-hint {
 		font-size: 0.78rem;
-		color: var(--color-subtle);
+		color: var(--color-muted);
 		font-weight: 400;
+	}
+	@media (max-width: 1023px) {
+		.mega__group-title { font-size: 1.15rem; }
+		.mega__group-hint { font-size: 0.85rem; }
 	}
 	.mega__group-list {
 		margin: 0;
@@ -1051,12 +1057,20 @@ const inServices = isActive('/uslugi/') || serviceHrefs.some((h) => isActive(h))
 		align-items: center;
 		gap: var(--space-3) var(--space-5);
 	}
+	/* «Услуги» — как заголовки разделов каталога */
 	.mega__svc-title {
-		font-weight: 700;
-		font-size: 0.72rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		flex-basis: 100%;
+		font-weight: 800;
+		font-size: 1rem;
+		line-height: 1.25;
 		color: var(--color-primary-600);
+		padding: 0.5rem 0.75rem;
+		background: var(--color-primary-50);
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+	@media (max-width: 1023px) {
+		.mega__svc-title { font-size: 1.15rem; }
 	}
 	.mega__svc ul {
 		margin: 0;
