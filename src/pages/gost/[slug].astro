@@ -4,6 +4,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CtaSection from '../../components/CtaSection.astro';
 import { gosts, gostCategories, gostSlug, gostYear } from '../../data/gosts';
 import { siteUrl, siteName } from '../../data/site';
+import { gostContent } from '../../data/gost-content';
 
 export async function getStaticPaths() {
 	return gosts.map((g) => ({
@@ -15,7 +16,7 @@ export async function getStaticPaths() {
 const { gost } = Astro.props;
 
 const cat = gostCategories.find((c) => c.value === gost.cat)!;
-const year = gostYear(gost.num);
+const year = gost.year ?? gostYear(gost.num);
 
 // Связанные ГОСТы — той же категории, до 6 шт, в т.ч. core-приоритет первыми.
 const related = gosts
@@ -48,11 +49,14 @@ const HUB_LABELS: Record<string, string> = {
 
 const hubLabel = gost.hub ? HUB_LABELS[gost.hub] : null;
 
+// Развёрнутый текст — только у части стандартов (src/data/gost-content.ts).
+const content = gostContent[gost.num];
+
 // SEO-метаданные
 const title = `ГОСТ ${gost.num} — ${gost.title.replace(/\s*\(.+?\)\s*$/, '').trim()}`;
-const titleShort = title.length > 68 ? `ГОСТ ${gost.num} — ${cat.label}` : title;
+const titleShort = content?.seoTitle ?? (title.length > 68 ? `ГОСТ ${gost.num} — ${cat.label}` : title);
 const description = `ГОСТ ${gost.num}: ${gost.title} Скачать PDF стандарта, категория «${cat.label}», год введения${year ? ` ${year}` : ''}. Справочник ГОСТов на gkmetallinvest.ru.`;
-const descrTrim = description.length > 160 ? description.slice(0, 157) + '…' : description;
+const descrTrim = content?.seoDescription ?? (description.length > 160 ? description.slice(0, 157) + '…' : description);
 
 const url = `${siteUrl.replace(/\/$/, '')}/gost/${gostSlug(gost.num)}/`;
 
@@ -69,7 +73,20 @@ const jsonLd = {
 		url: siteUrl,
 	},
 	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+	...(content?.dateModified ? { dateModified: content.dateModified } : {}),
 };
+
+const faqJsonLd = content?.faq?.length
+	? {
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			mainEntity: content.faq.map((f) => ({
+				'@type': 'Question',
+				name: f.q,
+				acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') },
+			})),
+		}
+	: null;
 
 const breadcrumbsJsonLd = {
 	'@context': 'https://schema.org',
@@ -82,7 +99,7 @@ const breadcrumbsJsonLd = {
 };
 ---
 
-<BaseLayout title={titleShort} description={descrTrim} jsonLd={[jsonLd, breadcrumbsJsonLd]}>
+<BaseLayout title={titleShort} description={descrTrim} jsonLd={faqJsonLd ? [jsonLd, breadcrumbsJsonLd, faqJsonLd] : [jsonLd, breadcrumbsJsonLd]}>
 	<div class="container gost-page">
 		<Breadcrumbs items={[
 			{ label: 'Главная', href: '/' },
@@ -135,7 +152,17 @@ const breadcrumbsJsonLd = {
 						<dt>Категория</dt>
 						<dd>{cat.label}</dd>
 						<dt>Статус</dt>
-						<dd>действующий</dd>
+						<dd>
+							{gost.replacedBy
+								? <>заменён <a href={`/gost/${gostSlug(gost.replacedBy)}/`}>ГОСТ {gost.replacedBy}</a></>
+								: 'действующий'}
+						</dd>
+						{gost.replaces && (
+							<>
+								<dt>Заменил</dt>
+								<dd><a href={`/gost/${gostSlug(gost.replaces)}/`}>ГОСТ {gost.replaces}</a></dd>
+							</>
+						)}
 					</dl>
 
 					<div class="gost-page__actions">
@@ -159,6 +186,34 @@ const breadcrumbsJsonLd = {
 						)}
 					</div>
 				</header>
+
+				{gost.replacedBy && (
+					<p class="gost-page__replaced">
+						Стандарт заменён. Действующая редакция —
+						<a href={`/gost/${gostSlug(gost.replacedBy)}/`}><strong>ГОСТ {gost.replacedBy}</strong></a>.
+					</p>
+				)}
+
+				{content && <div class="gost-page__lead" set:html={content.lead} />}
+
+				{content && content.sections.map((sec) => (
+					<section class="gost-page__block gost-page__text" id={sec.id}>
+						<h2>{sec.h2}</h2>
+						<Fragment set:html={sec.html} />
+					</section>
+				))}
+
+				{content?.faq?.length ? (
+					<section class="gost-page__block gost-page__text" id="faq">
+						<h2>Частые вопросы</h2>
+						{content.faq.map((f) => (
+							<details class="gost-page__faq">
+								<summary>{f.q}</summary>
+								<p set:html={f.a} />
+							</details>
+						))}
+					</section>
+				) : null}
 
 				<section class="gost-page__block">
 					<h2>О документе</h2>
@@ -228,6 +283,17 @@ const breadcrumbsJsonLd = {
 						Смотреть все ГОСТы в категории «{cat.label}» →
 					</a>
 				</section>
+
+				{content?.sources?.length ? (
+					<section class="gost-page__block gost-page__sources">
+						<h2>Источники</h2>
+						<ol>
+							{content.sources.map((src) => (
+								<li>{src.href ? <a href={src.href} target="_blank" rel="noopener nofollow">{src.label}</a> : src.label}</li>
+							))}
+						</ol>
+					</section>
+				) : null}
 
 				<section class="gost-page__legal">
 					<p>
@@ -381,6 +447,39 @@ const breadcrumbsJsonLd = {
 	.gost-page__block h2 { font-size: 1.25rem; margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
 	.gost-page__block p { color: var(--color-text); line-height: 1.65; max-width: 75ch; margin: 0 0 var(--space-3); }
 	.gost-page__block a { color: var(--color-primary-600); }
+
+	/* Развёрнутый текст стандарта (gost-content.ts) */
+	.gost-page__main { min-width: 0; }
+	.gost-page__replaced {
+		margin: 0 0 var(--space-5);
+		padding: var(--space-3) var(--space-4);
+		background: #fff6ec;
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+	.gost-page__lead {
+		margin: 0 0 var(--space-6);
+		padding: var(--space-4) var(--space-5);
+		background: var(--color-primary-50);
+		border: 1px solid var(--color-primary-100);
+		border-radius: var(--radius-md);
+		line-height: 1.65;
+		max-width: 80ch;
+	}
+	.gost-page__lead :global(p) { margin: 0 0 var(--space-2); }
+	.gost-page__lead :global(p:last-child) { margin-bottom: 0; }
+	.gost-page__text :global(h3) { font-size: 1.05rem; margin: var(--space-4) 0 var(--space-2); }
+	.gost-page__text :global(ul), .gost-page__text :global(ol) { line-height: 1.65; max-width: 75ch; padding-left: 1.25rem; margin: 0 0 var(--space-3); }
+	.gost-page__text :global(li) { margin-bottom: 0.3rem; }
+	.gost-page__text :global(.gost-table) { overflow-x: auto; margin: 0 0 var(--space-4); -webkit-overflow-scrolling: touch; }
+	.gost-page__text :global(table) { border-collapse: collapse; width: 100%; font-size: 0.92rem; min-width: 480px; }
+	.gost-page__text :global(caption) { text-align: left; font-weight: 600; padding-bottom: var(--space-2); color: var(--color-muted); }
+	.gost-page__text :global(th), .gost-page__text :global(td) { padding: 0.5rem 0.65rem; border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+	.gost-page__text :global(th) { background: var(--color-primary-50); font-weight: 700; }
+	.gost-page__faq { border-bottom: 1px solid var(--color-border); padding: var(--space-3) 0; }
+	.gost-page__faq summary { cursor: pointer; font-weight: 600; }
+	.gost-page__faq p { margin: var(--space-2) 0 0; }
+	.gost-page__sources ol { font-size: 0.88rem; color: var(--color-muted); line-height: 1.55; padding-left: 1.25rem; }
 
 	.gost-page__pdf-cta {
 		display: flex;
