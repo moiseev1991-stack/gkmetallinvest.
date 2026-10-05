@@ -113,7 +113,10 @@ export const gosts: GostItem[] = [
 	{ num: '3836-83', title: 'Сталь электротехническая нелегированная тонколистовая и ленты (технические условия)', cat: 'kachestvennyy', pdf: '/gost/pdf/3836-83.pdf', hub: '/list-nerzhaveyushchiy/' },
 	{ num: '4405-75', title: 'Сталь полосовая горячекатаная и кованная инструментальная (сортамент)', cat: 'kachestvennyy', pdf: '/gost/pdf/4405-75.pdf', hub: '/polosa-nerzhaveyushchaya/' },
 	{ num: '4543-71', title: 'Прокат из легированной конструкционной стали (технические условия)', cat: 'kachestvennyy', pdf: '/gost/pdf/4543-71.pdf', hub: '/krug-nerzhaveyushchiy/' },
-	{ num: '5632-72', title: 'Стали высоколегированные и сплавы коррозионно-стойкие, жаростойкие и жаропрочные (марки)', cat: 'kachestvennyy', pdf: '/gost/pdf/5632-72.pdf', hub: '/list-nerzhaveyushchiy/', priority: 'core' },
+	/* 5632-72 заменён ГОСТ 5632-2014 (введён 01.01.2015); карточку старой редакции
+	   оставляем: её ищут по номеру, со страницы ведём на действующую. */
+	{ num: '5632-2014', title: 'Нержавеющие стали и сплавы коррозионно-стойкие, жаростойкие и жаропрочные (марки)', cat: 'kachestvennyy', hub: '/list-nerzhaveyushchiy/', priority: 'core', replaces: '5632-72', year: 2015 },
+	{ num: '5632-72', title: 'Стали высоколегированные и сплавы коррозионно-стойкие, жаростойкие и жаропрочные (марки)', cat: 'kachestvennyy', pdf: '/gost/pdf/5632-72.pdf', hub: '/list-nerzhaveyushchiy/', priority: 'core', replacedBy: '5632-2014' },
 	/* Действующие ТУ на сортовой нержавеющий прокат (пришёл на смену 5949-75):
 	   по нему идут круг, квадрат и шестигранник в каталоге. */
 	{ num: '5949-2018', title: 'Металлопродукция из сталей нержавеющих и сплавов на железоникелевой основе коррозионно-стойких, жаростойких и жаропрочных (технические условия)', cat: 'kachestvennyy', pdf: '/gost/pdf/5949-2018.pdf', hub: '/krug-nerzhaveyushchiy/', priority: 'core' },
@@ -213,7 +216,9 @@ export const gosts: GostItem[] = [
 	{ num: '8733-74', title: 'Трубы стальные бесшовные холоднодеформированные и теплодеформированные (технические требования)', cat: 'trubnyy', pdf: '/gost/pdf/8733-74.pdf', hub: '/truba-nerzhaveyushchaya/' },
 	{ num: '8734-75', title: 'Трубы стальные бесшовные холоднодеформированные (сортамент)', cat: 'trubnyy', pdf: '/gost/pdf/8734-75.pdf', hub: '/truba-nerzhaveyushchaya/' },
 	{ num: '9940-81', title: 'Трубы бесшовные горячедеформированные из коррозионно-стойкой стали (технические условия)', cat: 'trubnyy', pdf: '/gost/pdf/9940-81.pdf', hub: '/truba-nerzhaveyushchaya/', priority: 'core' },
-	{ num: '9941-81', title: 'Трубы бесшовные холодно- и теплодеформированные из коррозионностойкой стали (технические условия)', cat: 'trubnyy', pdf: '/gost/pdf/9941-81.pdf', hub: '/truba-nerzhaveyushchaya/', priority: 'core' },
+	/* 9941-81 заменён ГОСТ 9941-2022 (введён 01.08.2023). */
+	{ num: '9941-2022', title: 'Трубы бесшовные холодно- и теплодеформированные из коррозионностойкой стали (технические условия)', cat: 'trubnyy', hub: '/truba-nerzhaveyushchaya/', priority: 'core', replaces: '9941-81', year: 2023 },
+	{ num: '9941-81', title: 'Трубы бесшовные холодно- и теплодеформированные из коррозионностойкой стали (технические условия)', cat: 'trubnyy', pdf: '/gost/pdf/9941-81.pdf', hub: '/truba-nerzhaveyushchaya/', priority: 'core', replacedBy: '9941-2022' },
 
 	// 6. ЦВЕТНЫЕ МЕТАЛЛЫ — 33 документа
 	{ num: '1066-90', title: 'Проволока латунная (технические условия)', cat: 'tsvetnye', pdf: '/gost/pdf/1066-90.pdf' },
