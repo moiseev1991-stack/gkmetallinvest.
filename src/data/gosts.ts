@@ -149,7 +149,9 @@ export const gosts: GostItem[] = [
 	{ num: '9045-93', title: 'Прокат тонколистовой холоднокатаный из низкоуглеродистой качественной стали для холодной штамповки (технические условия)', cat: 'listovoy', pdf: '/gost/pdf/9045-93.pdf', hub: '/list-nerzhaveyushchiy/' },
 
 	// 3. СОРТОВОЙ ПРОКАТ — 20 документов
-	{ num: '103-76', title: 'Полоса стальная горячекатаная (сортамент)', cat: 'sortovoy', pdf: '/gost/pdf/103-76.pdf', hub: '/polosa-nerzhaveyushchaya/' },
+	/* 103-76 заменён ГОСТ 103-2006 (введён 01.07.2009). */
+	{ num: '103-2006', title: 'Полоса стальная горячекатаная (сортамент)', cat: 'sortovoy', hub: '/polosa-nerzhaveyushchaya/', replaces: '103-76', year: 2009 },
+	{ num: '103-76', title: 'Полоса стальная горячекатаная (сортамент)', cat: 'sortovoy', pdf: '/gost/pdf/103-76.pdf', hub: '/polosa-nerzhaveyushchaya/', replacedBy: '103-2006' },
 	{ num: '10884-94', title: 'Сталь арматурная термомеханически упрочненная для железобетонных конструкций (технические условия)', cat: 'sortovoy', pdf: '/gost/pdf/10884-94.pdf', hub: '/kalkulyator-armatury/' },
 	{ num: '1133-71', title: 'Сталь кованная круглая и квадратная (сортамент)', cat: 'sortovoy', pdf: '/gost/pdf/1133-71.pdf', hub: '/krug-nerzhaveyushchiy/' },
 	{ num: '11474-76', title: 'Профили стальные гнутые (технические условия)', cat: 'sortovoy', pdf: '/gost/pdf/11474-76.pdf' },
