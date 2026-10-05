@@ -33,7 +33,7 @@ export const navGroups: NavGroup[] = [
 		hint: 'Лист, рулон, лента, фольга',
 		items: [
 			{ title: 'Лист нержавеющий', href: '/list-nerzhaveyushchiy/', meta: '0,4–120 мм · AISI 304/321/430' },
-			{ title: 'Рулон нержавеющий', href: '/rulon-nerzhaveyushchiy/', meta: '0,4–8 мм · ширина 500–1500' },
+			{ title: 'Рулон нержавеющий', href: '/rulon-nerzhaveyushchiy/', meta: '0,4–6 мм · ширина 1000–1500' },
 			{ title: 'Декоративные листы', href: '/dekorativnye-listy/', meta: 'зеркало · 8K · DECO' },
 			{ title: 'Лента нержавеющая', href: '/lenta-nerzhaveyushchaya/', meta: 'штрипс · 0,15–0,8 мм · 200/400 мм' },
 			{ title: 'Фольга нержавеющая', href: '/folga-nerzhaveyushchaya/', meta: 'тонкая · 0,15 мм · 200/400 мм' },
@@ -52,9 +52,9 @@ export const navGroups: NavGroup[] = [
 		hint: 'Круг, полоса, профиль',
 		items: [
 			{ title: 'Круг / Квадрат / Шестигранник', href: '/krug-nerzhaveyushchiy/', meta: 'Ø 5–250 мм' },
-			{ title: 'Полоса нержавеющая', href: '/polosa-nerzhaveyushchaya/', meta: 'горяче- и холоднокатаная' },
-			{ title: 'Уголок / Швеллер', href: '/ugolok-shveller-nerzhaveyushchiy/', meta: 'все размеры' },
-			{ title: 'Проволока нержавеющая', href: '/provoloka-nerzhaveyushchaya/', meta: 'Ø 0,1–6 мм' },
+			{ title: 'Полоса нержавеющая', href: '/polosa-nerzhaveyushchaya/', meta: 'AISI 304 · 3–10 мм · ширина 20–100' },
+			{ title: 'Уголок / Швеллер', href: '/ugolok-shveller-nerzhaveyushchiy/', meta: 'уголок 20×3…100×10 · гнутый швеллер' },
+			{ title: 'Проволока нержавеющая', href: '/provoloka-nerzhaveyushchaya/', meta: 'Ø 0,1–12 мм' },
 		],
 	},
 	{
