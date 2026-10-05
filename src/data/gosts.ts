@@ -129,7 +129,9 @@ export const gosts: GostItem[] = [
 	{ num: '1577-93', title: 'Прокат толстолистовой и широкополосный из конструкционной качественной стали (технические условия)', cat: 'listovoy', pdf: '/gost/pdf/1577-93.pdf', hub: '/list-nerzhaveyushchiy/' },
 	{ num: '16523-97', title: 'Прокат тонколистовой из углеродистой стали качественной и обыкновенного качества общего назначения (технические условия)', cat: 'listovoy', pdf: '/gost/pdf/16523-97.pdf', hub: '/list-nerzhaveyushchiy/' },
 	{ num: '19281-89', title: 'Прокат из стали повышенной прочности (общие технические условия)', cat: 'listovoy', pdf: '/gost/pdf/19281-89.pdf', hub: '/list-nerzhaveyushchiy/' },
-	{ num: '19903-74', title: 'Прокат листовой горячекатаный (сортамент)', cat: 'listovoy', pdf: '/gost/pdf/19903-74.pdf', hub: '/list-nerzhaveyushchiy/', priority: 'core' },
+	/* 19903-74 заменён ГОСТ 19903-2015 (введён 01.09.2016). */
+	{ num: '19903-2015', title: 'Прокат листовой горячекатаный (сортамент)', cat: 'listovoy', hub: '/list-nerzhaveyushchiy/', priority: 'core', replaces: '19903-74', year: 2016 },
+	{ num: '19903-74', title: 'Прокат листовой горячекатаный (сортамент)', cat: 'listovoy', pdf: '/gost/pdf/19903-74.pdf', hub: '/list-nerzhaveyushchiy/', priority: 'core', replacedBy: '19903-2015' },
 	{ num: '19904-90', title: 'Прокат листовой холоднокатаный (сортамент)', cat: 'listovoy', pdf: '/gost/pdf/19904-90.pdf', hub: '/list-nerzhaveyushchiy/', priority: 'core' },
 	{ num: '24045-94', title: 'Профили стальные листовые гнутые с трапециевидными гофрами для строительства (технические условия)', cat: 'listovoy', pdf: '/gost/pdf/24045-94.pdf' },
 	{ num: '30246-94', title: 'Прокат тонколистовой рулонный с защитно-декоративным покрытием для строительных конструкций (технические условия)', cat: 'listovoy', pdf: '/gost/pdf/30246-94.pdf', hub: '/rulon-nerzhaveyushchiy/' },

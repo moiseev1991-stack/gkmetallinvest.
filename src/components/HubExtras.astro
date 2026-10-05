@@ -15,8 +15,10 @@ interface Props {
 	hubLabelGenitive?: string;
 	grades?: string[];
 	surfaces?: string[];
+	/** Статьи и справочники по теме раздела — ссылки с хаба на блог и ГОСТы. */
+	articles?: { href: string; label: string }[];
 }
-const { hubHref, hubLabel, hubLabelGenitive, grades = [], surfaces = [], } = Astro.props;
+const { hubHref, hubLabel, hubLabelGenitive, grades = [], surfaces = [], articles = [], } = Astro.props;
 const labelGen = hubLabelGenitive ?? hubLabel.toLowerCase();
 
 /* hubKey достаём из hubHref («/list-nerzhaveyushchiy/» → «list»), чтобы не менять 8 родителей. */
@@ -71,6 +73,17 @@ function findMark(grade: string) {
 		<h2>Поверхности и переделы</h2>
 		<ul class="hex-chip-grid">
 			{surfaces.map((s) => <li><span class="hex-chip hex-chip--accent">{s}</span></li>)}
+		</ul>
+	</section>
+)}
+
+{articles.length > 0 && (
+	<section class="hex-block">
+		<h2>Статьи и справочники по теме</h2>
+		<ul class="hex-article-grid">
+			{articles.map((a) => (
+				<li><a class="hex-article" href={a.href}>{a.label}</a></li>
+			))}
 		</ul>
 	</section>
 )}
@@ -134,6 +147,36 @@ function findMark(grade: string) {
 		background: var(--color-primary-50);
 		border-color: var(--color-primary-100);
 		color: var(--color-primary-600);
+	}
+
+	.hex-article-grid {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: var(--space-2);
+		padding: 0;
+		margin: var(--space-3) 0 0;
+	}
+	.hex-article {
+		display: block;
+		height: 100%;
+		padding: var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-left: 3px solid var(--color-accent);
+		border-radius: var(--radius-md);
+		color: var(--color-text);
+		font-weight: 600;
+		line-height: 1.35;
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background var(--dur-fast) var(--ease-out);
+	}
+	.hex-article:hover {
+		border-color: var(--color-primary-500);
+		background: var(--color-primary-50);
+		color: var(--color-primary-600);
+		text-decoration: none;
 	}
 
 	.hex-city-grid {
