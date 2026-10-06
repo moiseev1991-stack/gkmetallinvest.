@@ -175,11 +175,11 @@ export const gosts: GostItem[] = [
 
 	// 4. ТРУБОПРОВОДНАЯ АРМАТУРА — 17 документов
 	{ num: '1215-79', title: 'Отливки из ковкого чугуна (общие технические условия)', cat: 'armatura', pdf: '/gost/pdf/1215-79.pdf' },
-	{ num: '12815-80', title: 'Фланцы арматуры, соединительных частей и трубопроводов на Ру от 0,1 до 20 МПа', cat: 'armatura', pdf: '/gost/pdf/12815-80.pdf', hub: '/kalkulyator-flantsa/' },
-	{ num: '12816-80', title: 'Фланцы арматуры, соединительных частей и трубопроводов на Ру от 0,1 до 20 МПа (общие технические условия)', cat: 'armatura', pdf: '/gost/pdf/12816-80.pdf', hub: '/kalkulyator-flantsa/' },
-	{ num: '12820-80', title: 'Фланцы стальные плоские приварные на Ру от 0,1 до 2,5 МПа (конструкция и размеры)', cat: 'armatura', pdf: '/gost/pdf/12820-80.pdf', hub: '/kalkulyator-flantsa/', priority: 'core' },
-	{ num: '12821-80', title: 'Фланцы стальные приварные встык на Ру от 0,1 до 20,0 МПа (конструкция и размеры)', cat: 'armatura', pdf: '/gost/pdf/12821-80.pdf', hub: '/kalkulyator-flantsa/', priority: 'core' },
-	{ num: '17375-2001', title: 'Отводы крутоизогнутые типа 3D (R = 1.5DN) (конструкция)', cat: 'armatura', pdf: '/gost/pdf/17375-2001.pdf', hub: '/kalkulyator-otvoda/', priority: 'core' },
+	{ num: '12815-80', title: 'Фланцы арматуры, соединительных частей и трубопроводов на Ру от 0,1 до 20 МПа', cat: 'armatura', pdf: '/gost/pdf/12815-80.pdf', hub: '/kalkulyator-flantsa/', replacedBy: '33259-2015' },
+	{ num: '12816-80', title: 'Фланцы арматуры, соединительных частей и трубопроводов на Ру от 0,1 до 20 МПа (общие технические условия)', cat: 'armatura', pdf: '/gost/pdf/12816-80.pdf', hub: '/kalkulyator-flantsa/', replacedBy: '33259-2015' },
+	{ num: '12820-80', title: 'Фланцы стальные плоские приварные на Ру от 0,1 до 2,5 МПа (конструкция и размеры)', cat: 'armatura', pdf: '/gost/pdf/12820-80.pdf', hub: '/kalkulyator-flantsa/', priority: 'core', replacedBy: '33259-2015' },
+	{ num: '12821-80', title: 'Фланцы стальные приварные встык на Ру от 0,1 до 20,0 МПа (конструкция и размеры)', cat: 'armatura', pdf: '/gost/pdf/12821-80.pdf', hub: '/kalkulyator-flantsa/', priority: 'core', replacedBy: '33259-2015' },
+	{ num: '17375-2001', title: 'Отводы крутоизогнутые типа 3D (R = 1.5DN) (конструкция)', cat: 'armatura', hub: '/kalkulyator-otvoda/', priority: 'core' },
 	/* Комплект к 17375: тройники, переходы и заглушки той же серии — по ним
 	   разбираются обозначения карточек в /detali-truboprovoda/. PDF пока не
 	   приложены (в открытых зеркалах нашлись только карточки документов). */
@@ -221,7 +221,7 @@ export const gosts: GostItem[] = [
 	{ num: '8734-75', title: 'Трубы стальные бесшовные холоднодеформированные (сортамент)', cat: 'trubnyy', pdf: '/gost/pdf/8734-75.pdf', hub: '/truba-nerzhaveyushchaya/' },
 	{ num: '9940-81', title: 'Трубы бесшовные горячедеформированные из коррозионно-стойкой стали (технические условия)', cat: 'trubnyy', pdf: '/gost/pdf/9940-81.pdf', hub: '/truba-nerzhaveyushchaya/', priority: 'core' },
 	/* 9941-81 заменён ГОСТ 9941-2022 (введён 01.08.2023). */
-	{ num: '9941-2022', title: 'Трубы бесшовные холодно- и теплодеформированные из коррозионностойкой стали (технические условия)', cat: 'trubnyy', hub: '/truba-nerzhaveyushchaya/', priority: 'core', replaces: '9941-81', year: 2023 },
+	{ num: '9941-2022', title: 'Трубы бесшовные холоднодеформированные из коррозионностойких высоколегированных сталей (технические условия)', cat: 'trubnyy', hub: '/truba-nerzhaveyushchaya/', priority: 'core', replaces: '9941-81', year: 2023 },
 	{ num: '9941-81', title: 'Трубы бесшовные холодно- и теплодеформированные из коррозионностойкой стали (технические условия)', cat: 'trubnyy', pdf: '/gost/pdf/9941-81.pdf', hub: '/truba-nerzhaveyushchaya/', priority: 'core', replacedBy: '9941-2022' },
 
 	// 6. ЦВЕТНЫЕ МЕТАЛЛЫ — 33 документа
