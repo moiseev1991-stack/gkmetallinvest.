@@ -241,6 +241,13 @@ const TYPE_LABEL: Record<MarkInfo['type'], string> = {
 			</table>
 		</section>
 
+		{mark.article && (
+			<section class="mark__block">
+				<h2>Подробный разбор марки {mark.aisi}</h2>
+				<p>Состав, ГОСТ, аналоги, сварка и сравнение с соседними марками: <a href={mark.article.href}>{mark.article.label}</a>.</p>
+			</section>
+		)}
+
 		<section class="mark__block">
 			<h2>Стандарты и ГОСТы для {mark.aisi}</h2>
 			<p>{mark.gost} ({mark.aisi}) регламентируется следующими стандартами в зависимости от вида проката. На каждую партию даём сертификат завода со ссылкой на актуальный ГОСТ.</p>

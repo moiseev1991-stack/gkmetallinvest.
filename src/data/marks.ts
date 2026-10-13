@@ -61,11 +61,14 @@ export interface MarkInfo {
 	 *  /list-nerzhaveyushchiy/aisi-304/ и /truba-nerzhaveyushchaya/aisi-304/ выглядят как дубли в поиске.
 	 *  Заполнен пока только для хабов, по которым работали в спринте. */
 	hubContext?: Partial<Record<HubKey, string>>;
+	/** Подробная статья о марке в блоге — ссылка со страницы марки. */
+	article?: { href: string; label: string };
 }
 
 export const marks: MarkInfo[] = [
 	{
 		slug: 'aisi-304',
+		article: { href: '/blog/stal-08h18n10/', label: 'Сталь 08Х18Н10: ГОСТ, состав, аналог AISI 304 и свойства' },
 		label: 'AISI 304 (08Х18Н10)',
 		aisi: 'AISI 304',
 		gost: '08Х18Н10',
@@ -127,6 +130,7 @@ export const marks: MarkInfo[] = [
 	},
 	{
 		slug: 'aisi-316l',
+		article: { href: '/blog/aisi-316-i-316l/', label: 'AISI 316 и 316L: аналог по ГОСТ, состав, отличия' },
 		label: 'AISI 316L (03Х17Н14М3)',
 		aisi: 'AISI 316L',
 		gost: '03Х17Н14М3',
@@ -186,6 +190,7 @@ export const marks: MarkInfo[] = [
 	},
 	{
 		slug: 'aisi-321',
+		article: { href: '/blog/stal-12h18n10t/', label: 'Сталь 12Х18Н10Т: ГОСТ, состав и аналоги' },
 		label: 'AISI 321 / 12Х18Н10Т',
 		aisi: 'AISI 321',
 		gost: '12Х18Н10Т',
@@ -251,6 +256,7 @@ export const marks: MarkInfo[] = [
 	},
 	{
 		slug: 'aisi-430',
+		article: { href: '/blog/aisi-430-harakteristiki/', label: 'AISI 430: характеристики и применение' },
 		label: 'AISI 430 (12Х17)',
 		aisi: 'AISI 430',
 		gost: '12Х17',
@@ -300,6 +306,7 @@ export const marks: MarkInfo[] = [
 	},
 	{
 		slug: 'aisi-201',
+		article: { href: '/blog/aisi-201-harakteristiki/', label: 'AISI 201: характеристики и применение' },
 		label: 'AISI 201 (12Х15Г9НД)',
 		aisi: 'AISI 201',
 		gost: '12Х15Г9НД',
@@ -612,6 +619,7 @@ export const marks: MarkInfo[] = [
 	},
 	{
 		slug: 'aisi-420',
+		article: { href: '/blog/martensitnaya-stal-20h13-40h13/', label: 'Мартенситные стали 20Х13 и 40Х13' },
 		label: 'AISI 420 (30Х13)',
 		aisi: 'AISI 420',
 		gost: '30Х13',

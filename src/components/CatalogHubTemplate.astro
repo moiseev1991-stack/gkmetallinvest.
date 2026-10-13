@@ -34,8 +34,10 @@ interface Props {
 		| 'folga';
 	/** FAQ-блок: вопросы/ответы. Если передан — рендерится секция + FAQPage JSON-LD. */
 	faq?: { q: string; a: string }[];
+	/** Дополнительная микроразметка (например, Product с диапазоном цен). */
+	extraJsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
-const { title, description, h1, intro, breadcrumbs, noindex, image, hubHref, hubLabel, hubKey, faq } = Astro.props;
+const { title, description, h1, intro, breadcrumbs, noindex, image, hubHref, hubLabel, hubKey, faq, extraJsonLd } = Astro.props;
 
 const faqJsonLd = faq && faq.length
 	? {
@@ -48,6 +50,7 @@ const faqJsonLd = faq && faq.length
 			})),
 	  }
 	: null;
+const jsonLdAll = [faqJsonLd, ...(Array.isArray(extraJsonLd) ? extraJsonLd : extraJsonLd ? [extraJsonLd] : [])].filter(Boolean) as Record<string, unknown>[];
 ---
 
 <BaseLayout
@@ -55,7 +58,7 @@ const faqJsonLd = faq && faq.length
 	description={description}
 	noindex={noindex}
 	image={image}
-	jsonLd={faqJsonLd ?? undefined}
+	jsonLd={jsonLdAll.length ? jsonLdAll : undefined}
 >
 	<div class="container hub">
 		<Breadcrumbs items={breadcrumbs} />
