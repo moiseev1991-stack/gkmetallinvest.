@@ -40,6 +40,16 @@ jobs:
       - name: Build site
         run: npm run build
 
+      # Настройки отправки заявок (SMTP mail.ru, Roistat) — из секретов репозитория,
+      # в git их нет. Без секрета SMTP_PASS шаг ничего не создаёт.
+      - name: Write send-config.php from secrets
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          LEAD_TO: ${{ secrets.LEAD_TO }}
+          ROISTAT_WEBHOOK: ${{ secrets.ROISTAT_WEBHOOK }}
+        run: node scripts/write-send-config.mjs
+
       # Заливаем через lftp: даёт таймауты (не виснет), параллельную загрузку
       # и понятный лог. Сначала быстрый пробник логина+папки — если доступ/путь
       # неверные, падаем за секунды, а не на многочасовом зависании.

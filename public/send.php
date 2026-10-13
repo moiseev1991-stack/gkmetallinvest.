@@ -5,9 +5,14 @@
  * отправляет письмо на общую почту компании (та же, что в шапке сайта)
  * и при необходимости прикладывает файл клиента. Возвращает JSON.
  *
- * ВАЖНО: SPF домена разрешает отправку только через mail.ru, поэтому если
- * письма будут попадать в спам — переключить отправку на SMTP smtp.mail.ru
- * (ящик zakaz@gkmetallinvest.ru). Пока используем стандартный mail().
+ * Отправка: через SMTP ящика zakaz@gkmetallinvest.ru (mail.ru) с авторизацией —
+ * SPF домена разрешает рассылку только через mail.ru, поэтому обычный mail() с
+ * хостинга попадает в спам или отбрасывается. Логин и пароль SMTP лежат на
+ * сервере в файле send-config.php рядом с этим скриптом (в репозитории его нет,
+ * образец — docs/send-config.example.php). Без этого файла работает запасной mail().
+ *
+ * Roistat: номер визита (cookie roistat_visit) добавляется в письмо, а при
+ * наличии roistat_webhook в конфиге заявка уходит в Roistat Webhook-интеграцией.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -65,6 +70,22 @@ if ($name === '' || $phone === '') {
 	echo json_encode(['ok' => false, 'error' => 'required']);
 	exit;
 }
+
+// ---- Серверные настройки (SMTP, Roistat). Файла может не быть — тогда запасной режим. ----
+$cfg = [];
+$cfgFile = __DIR__ . '/send-config.php';
+if (is_file($cfgFile)) {
+	$loaded = @include $cfgFile;
+	if (is_array($loaded)) {
+		$cfg = $loaded;
+	}
+}
+
+// Номер визита Roistat кладёт счётчик в cookie roistat_visit; cookie приходит от клиента — валидируем.
+$roistatVisit = isset($_COOKIE['roistat_visit']) && is_string($_COOKIE['roistat_visit'])
+	&& preg_match('/^[A-Za-z0-9_-]{1,64}$/', $_COOKIE['roistat_visit'])
+	? $_COOKIE['roistat_visit']
+	: '';
 
 // ---- Вложение (необязательно): один файл до 5 МБ, только безопасные форматы. ----
 const ATTACH_MAX_BYTES = 5 * 1024 * 1024;
@@ -185,7 +206,7 @@ if (isset($_FILES['attachment']) && is_array($_FILES['attachment'])) {
 $replyTo = filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : '';
 
 // Та же почта, что в шапке сайта (contacts.email в src/data/site.ts).
-$recipients = 'zakaz@gkmetallinvest.ru';
+$recipients = (isset($cfg['to']) && is_string($cfg['to']) && $cfg['to'] !== '') ? $cfg['to'] : 'zakaz@gkmetallinvest.ru';
 
 $subject = '=?UTF-8?B?' . base64_encode('Заявка с сайта — ' . $name) . '?=';
 
@@ -209,6 +230,7 @@ $bodyLines = [
 	str_repeat('-', 40),
 	'Согласие на рекламу: ' . $marketing,
 	'Страница:            ' . ($page !== '' ? $page : '—'),
+	'Визит Roistat:       ' . ($roistatVisit !== '' ? $roistatVisit : 'nocookie'),
 	'Дата/время:          ' . date('Y-m-d H:i:s'),
 	'IP:                  ' . ($_SERVER['REMOTE_ADDR'] ?? '—'),
 ];
@@ -246,18 +268,142 @@ if ($attachment) {
 	$body = $text;
 }
 
-// На некоторых хостингах mail() отключён в disable_functions — тогда нужен SMTP.
-if (!function_exists('mail')) {
-	http_response_code(502);
-	echo json_encode(['ok' => false, 'error' => 'mail_disabled']);
-	exit;
+$smtpUser = isset($cfg['smtp_user']) && is_string($cfg['smtp_user']) ? $cfg['smtp_user'] : '';
+$useSmtp = $smtpUser !== '' && !empty($cfg['smtp_pass']) && !empty($cfg['smtp_host']);
+
+if ($useSmtp) {
+	// По SMTP отправитель обязан совпадать с логином ящика.
+	$smtpFrom = $smtpUser;
+	$smtpHeaders = 'Date: ' . date('r') . "\r\n"
+		. 'To: ' . $recipients . "\r\n"
+		. 'Subject: ' . $subject . "\r\n"
+		. str_replace('<' . $fromEmail . '>', '<' . $smtpFrom . '>', $headers);
+	$sent = lead_smtp_send($cfg, $smtpFrom, $recipients, $smtpHeaders . "\r\n" . $body);
+} else {
+	// Запасной путь: на некоторых хостингах mail() отключён — тогда нужен SMTP.
+	if (!function_exists('mail')) {
+		http_response_code(502);
+		echo json_encode(['ok' => false, 'error' => 'mail_disabled']);
+		exit;
+	}
+	$sent = @mail($recipients, $subject, $body, $headers, '-f' . $fromEmail);
 }
 
-$sent = @mail($recipients, $subject, $body, $headers, '-f' . $fromEmail);
+// Roistat: заявка с номером визита (необязательно, ошибки не влияют на ответ клиенту).
+if (!empty($cfg['roistat_webhook']) && is_string($cfg['roistat_webhook'])) {
+	lead_roistat_send($cfg['roistat_webhook'], [
+		'title' => 'Заявка с сайта gkmetallinvest.ru',
+		'name' => $name,
+		'phone' => $phone,
+		'email' => $email !== '' ? $email : null,
+		'comment' => $message !== '' ? $message : null,
+		'roistat_visit' => $roistatVisit !== '' ? $roistatVisit : 'nocookie',
+		'fields' => ['page' => $page, 'city' => $city, 'attachment' => $attachment ? $attachment['name'] : null],
+	]);
+}
 
 if ($sent) {
 	echo json_encode(['ok' => true]);
 } else {
 	http_response_code(502);
 	echo json_encode(['ok' => false, 'error' => 'send']);
+}
+
+/**
+ * Минимальный SMTP-клиент: implicit TLS (ssl, порт 465), STARTTLS (tls, 587)
+ * или без шифрования (none — только для локальных проверок). AUTH LOGIN.
+ */
+function lead_smtp_send(array $cfg, string $from, string $to, string $message): bool
+{
+	$host = (string) $cfg['smtp_host'];
+	$port = (int) ($cfg['smtp_port'] ?? 465);
+	$secure = (string) ($cfg['smtp_secure'] ?? 'ssl');
+	$remote = ($secure === 'ssl' ? 'ssl://' : 'tcp://') . $host . ':' . $port;
+
+	$fp = @stream_socket_client($remote, $errno, $errstr, 15, STREAM_CLIENT_CONNECT);
+	if (!$fp) {
+		error_log('send.php smtp connect: ' . $errno . ' ' . $errstr);
+		return false;
+	}
+	stream_set_timeout($fp, 20);
+
+	$read = static function () use ($fp): array {
+		$code = 0;
+		$text = '';
+		while (($line = fgets($fp, 1024)) !== false) {
+			$text .= $line;
+			$code = (int) substr($line, 0, 3);
+			if (strlen($line) < 4 || $line[3] !== '-') {
+				break;
+			}
+		}
+		return [$code, $text];
+	};
+	$cmd = static function (string $c, array $okCodes) use ($fp, $read): bool {
+		fwrite($fp, $c . "\r\n");
+		[$code] = $read();
+		return in_array($code, $okCodes, true);
+	};
+
+	try {
+		[$code] = $read();
+		if ($code !== 220) {
+			return false;
+		}
+		$ehlo = 'gkmetallinvest.ru';
+		if (!$cmd('EHLO ' . $ehlo, [250])) {
+			return false;
+		}
+		if ($secure === 'tls') {
+			if (!$cmd('STARTTLS', [220]) || !@stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+				return false;
+			}
+			if (!$cmd('EHLO ' . $ehlo, [250])) {
+				return false;
+			}
+		}
+		if (!$cmd('AUTH LOGIN', [334])
+			|| !$cmd(base64_encode((string) $cfg['smtp_user']), [334])
+			|| !$cmd(base64_encode((string) $cfg['smtp_pass']), [235])) {
+			error_log('send.php smtp auth failed');
+			return false;
+		}
+		if (!$cmd('MAIL FROM:<' . $from . '>', [250])) {
+			return false;
+		}
+		foreach (array_filter(array_map('trim', explode(',', $to))) as $rcpt) {
+			if (!$cmd('RCPT TO:<' . $rcpt . '>', [250, 251])) {
+				return false;
+			}
+		}
+		if (!$cmd('DATA', [354])) {
+			return false;
+		}
+		// Нормализуем переводы строк и экранируем точку в начале строки (dot-stuffing).
+		$msg = preg_replace('/\r\n|\r|\n/', "\r\n", $message);
+		$msg = preg_replace('/^\./m', '..', (string) $msg);
+		fwrite($fp, $msg . "\r\n.\r\n");
+		[$code] = $read();
+		$ok = $code === 250;
+		@fwrite($fp, "QUIT\r\n");
+		return $ok;
+	} finally {
+		@fclose($fp);
+	}
+}
+
+/** Отправка заявки в Roistat (Webhook-интеграция): POST JSON, таймаут 6 с, ошибки молча игнорируем. */
+function lead_roistat_send(string $url, array $payload): void
+{
+	if (strpos($url, 'https://') !== 0) {
+		return;
+	}
+	$ctx = stream_context_create(['http' => [
+		'method' => 'POST',
+		'header' => "Content-Type: application/json\r\n",
+		'content' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+		'timeout' => 6,
+		'ignore_errors' => true,
+	]]);
+	@file_get_contents($url, false, $ctx);
 }

@@ -42,3 +42,6 @@ tim/
 # scraper cache (HTML dumps from mc.ru) and pricelist backups
 scripts/scrape-mc/.cache/
 src/data/pricelist.backup-*.json
+
+# Серверные настройки отправки заявок (пароль SMTP)
+public/send-config.php
