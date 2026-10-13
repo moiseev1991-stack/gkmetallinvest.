@@ -42,7 +42,7 @@ const defaultOffice = offices[0];
 						Ближайший офис: <span id="lead-address">{officeFullAddress(defaultOffice)}</span>
 					</p>
 				</div>
-				<form class="lead__form" method="post" action="/send.php" data-lead-form>
+				<form class="lead__form" method="post" action="/send.php" enctype="multipart/form-data" data-lead-form>
 					<input
 						class="lead__hp"
 						type="text"
@@ -63,6 +63,18 @@ const defaultOffice = offices[0];
 						placeholder="Вид товара, марка стали, размеры, количество, дополнительные требования"
 						required
 					/>
+					<div class="lead__file">
+						<label class="lead__file-label" for="lead-attachment">Прикрепить файл <span>(необязательно)</span></label>
+						<input
+							id="lead-attachment"
+							class="lead__file-input"
+							type="file"
+							name="attachment"
+							accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png"
+							data-lead-file
+						/>
+						<p class="lead__file-hint">Спецификация, чертёж или список: PDF, TXT, Word, Excel, JPG, PNG, до 5 МБ.</p>
+					</div>
 					<label class="lead__consent">
 						<input type="checkbox" name="consent_pd" required />
 						<span>
@@ -171,10 +183,39 @@ const defaultOffice = offices[0];
 			status.classList.toggle('is-err', kind === 'err');
 		};
 
+		// Вложение: до 5 МБ и только разрешённые форматы (сервер проверяет ещё раз).
+		const MAX_FILE = 5 * 1024 * 1024;
+		const ALLOWED = ['pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png'];
+		const fileInput = form.querySelector<HTMLInputElement>('input[data-lead-file]');
+		const fileProblem = (): string => {
+			const f = fileInput?.files?.[0];
+			if (!f) return '';
+			const ext = (f.name.split('.').pop() || '').toLowerCase();
+			if (!ALLOWED.includes(ext)) return 'Этот формат файла не принимаем. Приложите PDF, TXT, Word, Excel, JPG или PNG.';
+			if (f.size > MAX_FILE) return 'Файл больше 5 МБ. Приложите файл меньшего размера или отправьте его на zakaz@gkmetallinvest.ru';
+			return '';
+		};
+		fileInput?.addEventListener('change', () => {
+			const problem = fileProblem();
+			if (problem && fileInput) fileInput.value = '';
+			setStatus(problem, problem ? 'err' : '');
+		});
+
+		const SERVER_ERRORS: Record<string, string> = {
+			file_size: 'Файл больше 5 МБ. Приложите файл меньшего размера или отправьте его на zakaz@gkmetallinvest.ru',
+			file_type: 'Этот формат файла не принимаем. Приложите PDF, TXT, Word, Excel, JPG или PNG.',
+			file: 'Не удалось принять файл. Попробуйте другой файл или отправьте заявку без него.',
+		};
+
 		form.addEventListener('submit', async (e) => {
 			e.preventDefault();
 			if (!form.checkValidity()) {
 				form.reportValidity();
+				return;
+			}
+			const problem = fileProblem();
+			if (problem) {
+				setStatus(problem, 'err');
 				return;
 			}
 
@@ -202,7 +243,11 @@ const defaultOffice = offices[0];
 					form.reset();
 					setStatus('Заявка отправлена! Менеджер свяжется с вами в течение 30 минут.', 'ok');
 				} else {
-					setStatus('Не удалось отправить. Позвоните нам или напишите на zakaz@gkmetallinvest.ru', 'err');
+					setStatus(
+						SERVER_ERRORS[json.error as string] ||
+							'Не удалось отправить. Позвоните нам или напишите на zakaz@gkmetallinvest.ru',
+						'err',
+					);
 				}
 			} catch {
 				setStatus('Ошибка сети. Попробуйте ещё раз или позвоните нам.', 'err');
@@ -291,6 +336,27 @@ const defaultOffice = offices[0];
 		color: var(--color-text);
 		font-weight: 500;
 	}
+	.lead__file { margin: 0 0 var(--space-4); }
+	.lead__file-label {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 600;
+		margin-bottom: var(--space-2);
+		color: var(--color-text);
+	}
+	.lead__file-label span { font-weight: 400; color: var(--color-muted); }
+	.lead__file-input {
+		width: 100%;
+		padding: 0.5rem 0.6rem;
+		font: inherit;
+		font-size: 0.9rem;
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		cursor: pointer;
+	}
+	.lead__file-input:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+	.lead__file-hint { margin: var(--space-2) 0 0; font-size: 0.78rem; color: var(--color-subtle, #6c7686); max-width: none; }
 	.lead__consent {
 		display: flex;
 		align-items: flex-start;
