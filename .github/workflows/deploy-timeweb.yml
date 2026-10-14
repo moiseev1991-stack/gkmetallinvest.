@@ -8,6 +8,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      full:
+        description: 'Залить все файлы заново (игнорировать манифест прошлого деплоя)'
+        type: boolean
+        default: false
 
 # Не запускать два деплоя одновременно — второй ждёт/отменяет первый.
 concurrency:
@@ -59,6 +64,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          FULL_DEPLOY: ${{ github.event.inputs.full }}
         run: |
           set -uo pipefail
           sudo apt-get update -qq
@@ -84,6 +90,28 @@ jobs:
 
           SSH_HOST="vh470.timeweb.ru"
 
+          # Инкрементальный деплой: на сервере лежит .deploy-manifest.json (хэши файлов
+          # прошлого успешного деплоя). Заливаем только то, что изменилось. Нет манифеста,
+          # он битый или запуск вручную с галочкой «full» — заливаем всё, как раньше.
+          echo "::group::Diff against previous deploy"
+          rm -f prev-manifest.json
+          if [ "${FULL_DEPLOY:-false}" != "true" ]; then
+            lftp "sftp://$FTP_USERNAME@$SSH_HOST" -e "
+              set sftp:connect-program $WRAP;
+              set net:timeout 20;
+              set net:max-retries 3;
+              get $FTP_SERVER_DIR/.deploy-manifest.json -o prev-manifest.json;
+              bye" || echo "прошлого манифеста нет — будет полная заливка"
+          else
+            echo "запуск с full=true — полная заливка"
+          fi
+          PREV=-
+          if [ -s prev-manifest.json ]; then PREV=prev-manifest.json; fi
+          node scripts/deploy-diff.mjs dist "$PREV" changed new-manifest.json
+          echo "::endgroup::"
+
+          # Манифест кладём в самом конце: если заливка оборвётся, останется старый,
+          # и следующий деплой повторит недостающее.
           echo "::group::SFTP deploy"
           lftp "sftp://$FTP_USERNAME@$SSH_HOST" -e "
             set sftp:connect-program $WRAP;
@@ -94,7 +122,8 @@ jobs:
             pwd;
             cls -l $FTP_SERVER_DIR;
             rm -f $FTP_SERVER_DIR/index.htm;
-            mirror -R --verbose=1 --exclude-glob .git* ./dist/ $FTP_SERVER_DIR;
+            mirror -R --verbose=1 --exclude-glob .git* ./changed/ $FTP_SERVER_DIR;
+            put new-manifest.json -o $FTP_SERVER_DIR/.deploy-manifest.json;
             echo '----- after deploy -----';
             cls -l $FTP_SERVER_DIR;
             bye"
