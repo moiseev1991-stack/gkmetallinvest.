@@ -55,7 +55,7 @@ const defaultOffice = offices[0];
 					<input type="hidden" name="city" value="" />
 					<Field label="Имя" name="name" required />
 					<Field label="Телефон" name="phone" type="tel" required />
-					<Field label="Email" name="email" type="email" required />
+					<Field label="Email (необязательно)" name="email" type="email" />
 					<Field
 						label="Описание заказа"
 						name="message"
@@ -111,7 +111,33 @@ const defaultOffice = offices[0];
 					)}
 					<Button type="submit">Отправить заявку</Button>
 					<p class="lead__status" data-lead-status hidden role="status" aria-live="polite"></p>
+					<script is:inline>
+						// Пока основной скрипт формы не загрузился, кнопка неактивна: иначе браузер отправил бы форму
+						// обычным способом, мимо проверок и капчи. Основной скрипт снимает блокировку при запуске.
+						(function () {
+							var f = document.currentScript && document.currentScript.closest('form');
+							var b = f && f.querySelector('button[type="submit"]');
+							if (!b) return;
+							b.disabled = true;
+							b.setAttribute('data-lead-wait', '1');
+							setTimeout(function () {
+								var s = f.querySelector('[data-lead-status]');
+								if (b.hasAttribute('data-lead-wait') && s) {
+									s.textContent = 'Форма ещё загружается. Если кнопка не нажимается, обновите страницу или напишите на zakaz@gkmetallinvest.ru';
+									s.hidden = false;
+									s.className = 'lead__status is-err';
+								}
+							}, 20000);
+						})();
+					</script>
 				</form>
+				<dialog class="lead-modal" data-lead-modal aria-labelledby="lead-modal-title">
+					<div class="lead-modal__box">
+						<h3 id="lead-modal-title" class="lead-modal__title">Спасибо!</h3>
+						<p class="lead-modal__text">Ваше сообщение отправлено. Менеджер свяжется с вами в течение 30 минут.</p>
+						<button type="button" class="lead-modal__close" data-lead-modal-close>Закрыть</button>
+					</div>
+				</dialog>
 			</div>
 			<div class="lead__map" aria-label="Карта офиса ГК Металлинвест">
 				<iframe
@@ -198,6 +224,30 @@ const defaultOffice = offices[0];
 			status.classList.toggle('is-err', kind === 'err');
 		};
 
+		// Скрипт загрузился и обработчик ниже подключён: снимаем блокировку кнопки (её ставит встроенный скрипт формы).
+		if (btn?.hasAttribute('data-lead-wait')) {
+			btn.disabled = false;
+			btn.removeAttribute('data-lead-wait');
+			setStatus('', '');
+		}
+
+		// Всплывающее окно «Спасибо» поверх формы после успешной отправки.
+		const modal = form.parentElement?.querySelector<HTMLDialogElement>('dialog[data-lead-modal]') ?? null;
+		const showThanks = (): boolean => {
+			if (!modal || typeof modal.showModal !== 'function') return false;
+			try {
+				if (!modal.open) modal.showModal();
+				return true;
+			} catch {
+				return false;
+			}
+		};
+		modal?.querySelector('[data-lead-modal-close]')?.addEventListener('click', () => modal.close());
+		modal?.addEventListener('click', (e) => {
+			// клик по затемнению вокруг окна закрывает его
+			if (e.target === modal) modal.close();
+		});
+
 		// Вложение: до 5 МБ и только разрешённые форматы (сервер проверяет ещё раз).
 		const MAX_FILE = 5 * 1024 * 1024;
 		const ALLOWED = ['pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png'];
@@ -236,13 +286,21 @@ const defaultOffice = offices[0];
 			'Не удалось пройти проверку «я не робот». Попробуйте ещё раз или напишите на zakaz@gkmetallinvest.ru';
 		let captchaLoading: Promise<void> | null = null;
 
-		const addScript = (src: string): Promise<boolean> =>
+		// Скрипт капчи грузим с таймаутом: если google.com/Яндекс недоступен или завис, форма не должна висеть.
+		const addScript = (src: string, timeoutMs = 10000): Promise<boolean> =>
 			new Promise<boolean>((resolve) => {
 				const s = document.createElement('script');
+				const t = setTimeout(() => resolve(false), timeoutMs);
 				s.src = src;
 				s.async = true;
-				s.onload = () => resolve(true);
-				s.onerror = () => resolve(false);
+				s.onload = () => {
+					clearTimeout(t);
+					resolve(true);
+				};
+				s.onerror = () => {
+					clearTimeout(t);
+					resolve(false);
+				};
 				document.head.appendChild(s);
 			});
 
@@ -422,7 +480,8 @@ const defaultOffice = offices[0];
 				const json = await res.json().catch(() => ({ ok: false }));
 				if (res.ok && json.ok) {
 					form.reset();
-					setStatus('Заявка отправлена! Менеджер свяжется с вами в течение 30 минут.', 'ok');
+					if (showThanks()) setStatus('', '');
+					else setStatus('Заявка отправлена! Менеджер свяжется с вами в течение 30 минут.', 'ok');
 				} else {
 					setStatus(
 						SERVER_ERRORS[json.error as string] ||
@@ -574,6 +633,38 @@ const defaultOffice = offices[0];
 		height: 1px;
 		opacity: 0;
 		pointer-events: none;
+	}
+	.lead-modal {
+		border: none;
+		border-radius: var(--radius-lg);
+		padding: 0;
+		max-width: min(28rem, calc(100vw - 2rem));
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+	}
+	.lead-modal::backdrop {
+		background: rgba(15, 23, 42, 0.55);
+	}
+	.lead-modal__box {
+		padding: 2rem 1.75rem;
+		text-align: center;
+	}
+	.lead-modal__title {
+		margin: 0 0 0.75rem;
+		font-size: 1.5rem;
+	}
+	.lead-modal__text {
+		margin: 0 0 1.5rem;
+		line-height: 1.5;
+	}
+	.lead-modal__close {
+		padding: 0.65rem 1.75rem;
+		border: 0;
+		border-radius: var(--radius-sm);
+		background: var(--color-accent);
+		color: #fff;
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
 	}
 	.lead__captcha-note {
 		margin: 0;
