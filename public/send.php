@@ -15,8 +15,44 @@
  * наличии roistat_webhook в конфиге заявка уходит в Roistat Webhook-интеграцией.
  */
 
-header('Content-Type: application/json; charset=utf-8');
+// Форма шлёт заявку через fetch (Accept: application/json) и получает JSON. Если же браузер перешёл
+// на /send.php обычной отправкой формы (JavaScript не успел загрузиться или отключён), показываем
+// понятную HTML-страницу вместо голого JSON.
+$accept = (string) ($_SERVER['HTTP_ACCEPT'] ?? '');
+$wantsHtml = ($_SERVER['HTTP_SEC_FETCH_DEST'] ?? '') === 'document'
+	|| (strpos($accept, 'application/json') === false && strpos($accept, 'text/html') !== false);
+
+header('Content-Type: ' . ($wantsHtml ? 'text/html' : 'application/json') . '; charset=utf-8');
 header('X-Robots-Tag: noindex');
+
+if ($wantsHtml) {
+	ob_start(static function (string $buf): string {
+		$d = json_decode($buf, true);
+		if (!is_array($d)) {
+			return $buf;
+		}
+		$msgs = [
+			'consent' => 'Отметьте согласие на обработку персональных данных и отправьте заявку ещё раз.',
+			'required' => 'Заполните имя и телефон и отправьте заявку ещё раз.',
+			'file_size' => 'Файл слишком большой (до 5 МБ). Приложите файл меньше или отправьте его на zakaz@gkmetallinvest.ru.',
+			'file_type' => 'Этот формат файла не принимаем. Приложите PDF, TXT, Word, Excel, JPG или PNG.',
+			'captcha' => 'Проверка «я не робот» не пройдена. Вернитесь на сайт и отправьте заявку ещё раз.',
+		];
+		$ok = !empty($d['ok']);
+		$title = $ok ? 'Заявка отправлена' : 'Заявка не отправлена';
+		$text = $ok
+			? 'Менеджер свяжется с вами в течение 30 минут.'
+			: ($msgs[$d['error'] ?? ''] ?? 'Не удалось отправить заявку. Напишите на zakaz@gkmetallinvest.ru или позвоните нам.');
+		return '<!doctype html><html lang="ru"><head><meta charset="utf-8">'
+			. '<meta name="viewport" content="width=device-width, initial-scale=1">'
+			. '<meta name="robots" content="noindex"><title>' . $title . '</title>'
+			. '<style>body{font:16px/1.5 system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1rem;color:#1a1a1a}'
+			. 'h1{font-size:1.5rem}a{color:#1d4ed8}</style></head><body>'
+			. '<h1>' . $title . '</h1><p>' . htmlspecialchars($text, ENT_QUOTES, 'UTF-8') . '</p>'
+			. '<p><a href="javascript:history.back()">← Вернуться к форме</a> · <a href="/">На главную</a></p>'
+			. '</body></html>';
+	});
+}
 
 // Фатальный сбой отдаём как JSON, а не пустой 500 — чтобы фронт показал ошибку.
 // Текст ошибки наружу не выводим.
@@ -30,6 +66,13 @@ register_shutdown_function(static function () {
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 	http_response_code(405);
 	echo json_encode(['ok' => false, 'error' => 'method']);
+	exit;
+}
+
+// Тело запроса больше post_max_size: PHP отбрасывает $_POST и $_FILES целиком (обычно из-за крупного файла).
+if (empty($_POST) && empty($_FILES) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+	http_response_code(413);
+	echo json_encode(['ok' => false, 'error' => 'file_size']);
 	exit;
 }
 
