@@ -207,6 +207,34 @@ const defaultOffice = offices[0];
 			file: 'Не удалось принять файл. Попробуйте другой файл или отправьте заявку без него.',
 		};
 
+		// Фото сжимаем в браузере (до 2400 px, JPEG): письмо легче, загрузка быстрее и реже обрывается.
+		const COMPRESS_FROM = 700 * 1024;
+		const compressImage = async (file: File): Promise<File> => {
+			const ext = (file.name.split('.').pop() || '').toLowerCase();
+			if (!['jpg', 'jpeg', 'png'].includes(ext) || file.size <= COMPRESS_FROM) return file;
+			try {
+				const bmp = await createImageBitmap(file);
+				const k = Math.min(1, 2400 / Math.max(bmp.width, bmp.height));
+				const w = Math.max(1, Math.round(bmp.width * k));
+				const h = Math.max(1, Math.round(bmp.height * k));
+				const canvas = document.createElement('canvas');
+				canvas.width = w;
+				canvas.height = h;
+				const ctx = canvas.getContext('2d');
+				if (!ctx) return file;
+				ctx.fillStyle = '#fff';
+				ctx.fillRect(0, 0, w, h);
+				ctx.drawImage(bmp, 0, 0, w, h);
+				bmp.close?.();
+				const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/jpeg', 0.85));
+				if (!blob || blob.size >= file.size) return file;
+				const base = file.name.replace(/\.[^.]+$/, '') || 'foto';
+				return new File([blob], base + '.jpg', { type: 'image/jpeg' });
+			} catch {
+				return file;
+			}
+		};
+
 		form.addEventListener('submit', async (e) => {
 			e.preventDefault();
 			if (!form.checkValidity()) {
@@ -232,11 +260,19 @@ const defaultOffice = offices[0];
 			if (btn) { btn.disabled = true; btn.textContent = 'Отправляем…'; }
 			setStatus('', '');
 
+			const ctrl = new AbortController();
+			const timer = setTimeout(() => ctrl.abort(), 60000);
 			try {
+				const fd = new FormData(form);
+				const picked = fd.get('attachment');
+				if (picked instanceof File && picked.size > 0) {
+					fd.set('attachment', await compressImage(picked));
+				}
 				const res = await fetch(form.action, {
 					method: 'POST',
-					body: new FormData(form),
+					body: fd,
 					headers: { Accept: 'application/json' },
+					signal: ctrl.signal,
 				});
 				const json = await res.json().catch(() => ({ ok: false }));
 				if (res.ok && json.ok) {
@@ -250,8 +286,12 @@ const defaultOffice = offices[0];
 					);
 				}
 			} catch {
-				setStatus('Ошибка сети. Попробуйте ещё раз или позвоните нам.', 'err');
+				setStatus(
+					'Сервер сейчас отвечает медленно. Данные в форме сохранены: нажмите «Отправить» ещё раз или напишите на zakaz@gkmetallinvest.ru',
+					'err',
+				);
 			} finally {
+				clearTimeout(timer);
 				if (btn) { btn.disabled = false; btn.textContent = label; }
 			}
 		});
