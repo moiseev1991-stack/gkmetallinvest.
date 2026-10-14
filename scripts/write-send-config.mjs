@@ -9,6 +9,7 @@
  *   SMTP_USER        — логин ящика (по умолчанию zakaz@gkmetallinvest.ru)
  *   LEAD_TO          — кому слать заявки (по умолчанию zakaz@gkmetallinvest.ru)
  *   ROISTAT_WEBHOOK  — URL Webhook-интеграции Roistat (необязательно)
+ *   RECAPTCHA_SECRET_KEY (+ RECAPTCHA_SITEKEY в сборке) — Google reCAPTCHA v3 (необязательно)
  *   SMARTCAPTCHA_SERVER_KEY (+ SMARTCAPTCHA_SITEKEY в сборке) — Yandex SmartCaptcha (необязательно)
  * Без SMTP_PASS файл не создаётся, send.php работает в запасном режиме mail().
  */
@@ -33,11 +34,22 @@ const q = (s) => "'" + String(s).split(BACKSLASH).join(BACKSLASH + BACKSLASH).sp
 const user = env('SMTP_USER', 'zakaz@gkmetallinvest.ru');
 const to = env('LEAD_TO', 'zakaz@gkmetallinvest.ru');
 const hook = env('ROISTAT_WEBHOOK');
-// Капча включается только когда есть оба ключа: серверный (секрет) и клиентский (он же уходит в сборку
-// сайта как PUBLIC_SMARTCAPTCHA_SITEKEY). Иначе форма без виджета упёрлась бы в серверную проверку.
-const captchaSecret = env('SMARTCAPTCHA_SERVER_KEY');
-const captchaSitekey = env('PUBLIC_SMARTCAPTCHA_SITEKEY');
-const captchaOn = captchaSecret !== '' && captchaSitekey !== '';
+// Капча включается только когда есть оба ключа провайдера: серверный (секрет) и клиентский (он же уходит
+// в сборку сайта как PUBLIC_*_SITEKEY). Иначе форма без виджета упёрлась бы в серверную проверку.
+// Приоритет у Google reCAPTCHA v3, запасной вариант: Яндекс SmartCaptcha.
+const rcSecret = env('RECAPTCHA_SECRET_KEY');
+const rcSitekey = env('PUBLIC_RECAPTCHA_SITEKEY');
+const ycSecret = env('SMARTCAPTCHA_SERVER_KEY');
+const ycSitekey = env('PUBLIC_SMARTCAPTCHA_SITEKEY');
+let captchaProvider = '';
+let captchaSecret = '';
+if (rcSecret !== '' && rcSitekey !== '') {
+	captchaProvider = 'google';
+	captchaSecret = rcSecret;
+} else if (ycSecret !== '' && ycSitekey !== '') {
+	captchaProvider = 'yandex';
+	captchaSecret = ycSecret;
+}
 
 const php = `<?php
 // Создан при деплое из секретов GitHub Actions (scripts/write-send-config.mjs). Не редактировать вручную.
@@ -49,9 +61,10 @@ return [
 	'smtp_pass' => ${q(pass)},
 	'to' => ${q(to)},
 	'roistat_webhook' => ${q(hook)},
-	'captcha_secret' => ${q(captchaOn ? captchaSecret : '')},
+	'captcha_provider' => ${q(captchaProvider)},
+	'captcha_secret' => ${q(captchaSecret)},
 ];
 `;
 
 writeFileSync('dist/send-config.php', php, { mode: 0o600 });
-console.log('write-send-config: dist/send-config.php создан (SMTP ' + user + ', Roistat ' + (hook ? 'вкл' : 'выкл') + ', капча ' + (captchaOn ? 'вкл' : 'выкл') + ')');
+console.log('write-send-config: dist/send-config.php создан (SMTP ' + user + ', Roistat ' + (hook ? 'вкл' : 'выкл') + ', капча ' + (captchaProvider || 'выкл') + ')');

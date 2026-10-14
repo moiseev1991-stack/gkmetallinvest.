@@ -95,6 +95,20 @@ const defaultOffice = offices[0];
 						</span>
 					</label>
 					<div id={`${id}-captcha`} data-lead-captcha></div>
+					{(import.meta.env.PUBLIC_RECAPTCHA_SITEKEY || import.meta.env.PUBLIC_SMARTCAPTCHA_SITEKEY) && (
+						<p class="lead__captcha-note">
+							{import.meta.env.PUBLIC_RECAPTCHA_SITEKEY ? (
+								<>
+									Форма защищена reCAPTCHA: действуют
+									<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Политика конфиденциальности</a>
+									и
+									<a href="https://policies.google.com/terms" target="_blank" rel="noopener">Условия использования</a> Google.
+								</>
+							) : (
+								<>Форма защищена Яндекс SmartCaptcha.</>
+							)}
+						</p>
+					)}
 					<Button type="submit">Отправить заявку</Button>
 					<p class="lead__status" data-lead-status hidden role="status" aria-live="polite"></p>
 				</form>
@@ -209,82 +223,121 @@ const defaultOffice = offices[0];
 			captcha: 'Проверка «я не робот» не пройдена. Обновите страницу и попробуйте ещё раз или напишите на zakaz@gkmetallinvest.ru',
 		};
 
-		// Яндекс SmartCaptcha (невидимая). Включается, если при сборке задан PUBLIC_SMARTCAPTCHA_SITEKEY;
-		// сервер при этом требует токен (send-config.php: captcha_secret). Без ключа всё как раньше.
-		const CAPTCHA_KEY = (import.meta.env.PUBLIC_SMARTCAPTCHA_SITEKEY as string | undefined) || '';
+		// Капча (невидимая). Провайдер выбирается ключом, заданным при сборке:
+		//   PUBLIC_RECAPTCHA_SITEKEY    — Google reCAPTCHA v3 (приоритет);
+		//   PUBLIC_SMARTCAPTCHA_SITEKEY — Яндекс SmartCaptcha.
+		// Сервер при этом требует токен (send-config.php: captcha_provider/captcha_secret).
+		// Без ключей капчи нет и форма работает как раньше.
+		const RC_KEY = (import.meta.env.PUBLIC_RECAPTCHA_SITEKEY as string | undefined) || '';
+		const YC_KEY = (import.meta.env.PUBLIC_SMARTCAPTCHA_SITEKEY as string | undefined) || '';
+		const CAPTCHA: '' | 'google' | 'yandex' = RC_KEY ? 'google' : YC_KEY ? 'yandex' : '';
 		const captchaBox = form.querySelector<HTMLElement>('[data-lead-captcha]');
 		const CAPTCHA_FAIL =
 			'Не удалось пройти проверку «я не робот». Попробуйте ещё раз или напишите на zakaz@gkmetallinvest.ru';
-		let captchaId: number | null = null;
-		let captchaWait: ((token: string) => void) | null = null;
 		let captchaLoading: Promise<void> | null = null;
-		const loadCaptcha = (): Promise<void> => {
-			if (!CAPTCHA_KEY || !captchaBox) return Promise.resolve();
-			if (captchaLoading) return captchaLoading;
-			captchaLoading = new Promise<void>((resolve) => {
-				const w = window as any;
-				const init = () => {
-					try {
-						if (w.smartCaptcha && captchaId === null) {
-							captchaId = w.smartCaptcha.render(captchaBox.id, {
-								sitekey: CAPTCHA_KEY,
-								invisible: true,
-								hl: 'ru',
-								callback: (token: string) => {
-									captchaWait?.(token);
-								},
-							});
-						}
-					} catch {
-						// Виджет не поднялся: заявка уйдёт без токена, форма покажет понятную ошибку.
-					}
-					resolve();
-				};
-				if (w.smartCaptcha) {
-					init();
-					return;
-				}
+
+		const addScript = (src: string): Promise<boolean> =>
+			new Promise<boolean>((resolve) => {
 				const s = document.createElement('script');
-				s.src = 'https://smartcaptcha.cloud.yandex.ru/captcha.js';
+				s.src = src;
 				s.async = true;
-				s.onload = init;
-				s.onerror = () => resolve();
+				s.onload = () => resolve(true);
+				s.onerror = () => resolve(false);
 				document.head.appendChild(s);
 			});
-			return captchaLoading;
-		};
-		if (CAPTCHA_KEY) {
-			// Подгружаем заранее, как только человек начал заполнять форму.
-			form.addEventListener('focusin', () => void loadCaptcha(), { once: true });
-		}
-		const getCaptchaToken = async (): Promise<string> => {
-			await loadCaptcha();
+
+		// Яндекс SmartCaptcha: виджет рисуется один раз, токен берётся через execute().
+		let ycId: number | null = null;
+		let ycWait: ((token: string) => void) | null = null;
+		const loadYandex = async (): Promise<void> => {
 			const w = window as any;
-			if (captchaId === null || !w.smartCaptcha) return '';
+			if (!w.smartCaptcha) await addScript('https://smartcaptcha.cloud.yandex.ru/captcha.js');
+			try {
+				if (w.smartCaptcha && ycId === null && captchaBox) {
+					ycId = w.smartCaptcha.render(captchaBox.id, {
+						sitekey: YC_KEY,
+						invisible: true,
+						hl: 'ru',
+						callback: (token: string) => {
+							ycWait?.(token);
+						},
+					});
+				}
+			} catch {
+				// виджет не поднялся: заявка уйдёт без токена, форма покажет понятную ошибку
+			}
+		};
+		const yandexToken = (): Promise<string> => {
+			const w = window as any;
+			if (ycId === null || !w.smartCaptcha) return Promise.resolve('');
 			return new Promise<string>((resolve) => {
 				const t = setTimeout(() => {
-					captchaWait = null;
+					ycWait = null;
 					resolve('');
 				}, 60000);
-				captchaWait = (token) => {
+				ycWait = (token) => {
 					clearTimeout(t);
-					captchaWait = null;
+					ycWait = null;
 					resolve(token);
 				};
 				try {
-					w.smartCaptcha.execute(captchaId);
+					w.smartCaptcha.execute(ycId);
 				} catch {
 					clearTimeout(t);
-					captchaWait = null;
+					ycWait = null;
 					resolve('');
 				}
 			});
 		};
+
+		// Google reCAPTCHA v3: токен живёт 2 минуты, поэтому запрашиваем его в момент отправки.
+		const loadGoogle = async (): Promise<void> => {
+			const w = window as any;
+			if (w.grecaptcha?.execute) return;
+			const q = '/recaptcha/api.js?render=' + encodeURIComponent(RC_KEY);
+			// google.com, а при недоступности — зеркало recaptcha.net
+			if (!(await addScript('https://www.google.com' + q))) await addScript('https://www.recaptcha.net' + q);
+		};
+		const googleToken = (): Promise<string> => {
+			const g = (window as any).grecaptcha;
+			if (!g || !g.ready) return Promise.resolve('');
+			return new Promise<string>((resolve) => {
+				const t = setTimeout(() => resolve(''), 15000);
+				g.ready(() => {
+					g.execute(RC_KEY, { action: 'lead' }).then(
+						(token: string) => {
+							clearTimeout(t);
+							resolve(token);
+						},
+						() => {
+							clearTimeout(t);
+							resolve('');
+						},
+					);
+				});
+			});
+		};
+
+		const loadCaptcha = (): Promise<void> => {
+			if (!CAPTCHA) return Promise.resolve();
+			if (!captchaLoading) captchaLoading = CAPTCHA === 'google' ? loadGoogle() : loadYandex();
+			return captchaLoading;
+		};
+		if (CAPTCHA) {
+			// Подгружаем заранее, как только человек начал заполнять форму.
+			form.addEventListener('focusin', () => void loadCaptcha(), { once: true });
+		}
+		const getCaptchaToken = async (): Promise<{ field: string; token: string }> => {
+			await loadCaptcha();
+			return CAPTCHA === 'google'
+				? { field: 'g-recaptcha-response', token: await googleToken() }
+				: { field: 'smart-token', token: await yandexToken() };
+		};
 		const resetCaptcha = () => {
 			const w = window as any;
-			if (captchaId === null || !w.smartCaptcha) return;
+			if (CAPTCHA !== 'yandex' || ycId === null || !w.smartCaptcha) return;
 			try {
-				w.smartCaptcha.reset(captchaId);
+				w.smartCaptcha.reset(ycId);
 			} catch {
 				// не критично: токен одноразовый, следующая отправка создаст новый
 			}
@@ -351,13 +404,13 @@ const defaultOffice = offices[0];
 				if (picked instanceof File && picked.size > 0) {
 					fd.set('attachment', await compressImage(picked));
 				}
-				if (CAPTCHA_KEY) {
-					const token = await getCaptchaToken();
+				if (CAPTCHA) {
+					const { field, token } = await getCaptchaToken();
 					if (!token) {
 						setStatus(CAPTCHA_FAIL, 'err');
 						return;
 					}
-					fd.set('smart-token', token);
+					fd.set(field, token);
 				}
 				timer = setTimeout(() => ctrl.abort(), 90000);
 				const res = await fetch(form.action, {
@@ -384,7 +437,7 @@ const defaultOffice = offices[0];
 				);
 			} finally {
 				clearTimeout(timer);
-				if (CAPTCHA_KEY) resetCaptcha();
+				if (CAPTCHA) resetCaptcha();
 				if (btn) { btn.disabled = false; btn.textContent = label; }
 			}
 		});
@@ -521,6 +574,21 @@ const defaultOffice = offices[0];
 		height: 1px;
 		opacity: 0;
 		pointer-events: none;
+	}
+	.lead__captcha-note {
+		margin: 0;
+		font-size: var(--text-xs, 0.75rem);
+		line-height: 1.4;
+		color: var(--color-text-muted, #6b7280);
+	}
+	.lead__captcha-note a {
+		margin: 0 0.25em;
+		color: inherit;
+		text-decoration: underline;
+	}
+	/* Плашка reCAPTCHA v3 скрыта: вместо неё текст выше (так разрешает Google). */
+	:global(.grecaptcha-badge) {
+		visibility: hidden;
 	}
 	.lead__status {
 		margin: var(--space-3) 0 0;

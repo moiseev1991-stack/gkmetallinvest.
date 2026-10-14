@@ -97,13 +97,16 @@ $fail = static function (string $code, int $status = 422): void {
 	exit;
 };
 
-// ---- Капча Yandex SmartCaptcha: включается, когда в send-config.php есть captcha_secret. ----
+// ---- Капча: включается, когда в send-config.php есть captcha_secret (Google reCAPTCHA v3 или Яндекс SmartCaptcha). ----
 if (!empty($cfg['captcha_secret']) && is_string($cfg['captcha_secret'])) {
-	$captchaToken = isset($_POST['smart-token']) && is_string($_POST['smart-token']) ? trim($_POST['smart-token']) : '';
+	$captchaProvider = (isset($cfg['captcha_provider']) && $cfg['captcha_provider'] === 'google') ? 'google' : 'yandex';
+	$captchaField = $captchaProvider === 'google' ? 'g-recaptcha-response' : 'smart-token';
+	$captchaToken = isset($_POST[$captchaField]) && is_string($_POST[$captchaField]) ? trim($_POST[$captchaField]) : '';
 	if ($captchaToken === '' || strlen($captchaToken) > 4096) {
 		$fail('captcha');
 	}
-	if (!lead_captcha_ok($cfg['captcha_secret'], $captchaToken, (string) ($_SERVER['REMOTE_ADDR'] ?? ''))) {
+	$minScore = isset($cfg['captcha_min_score']) && is_numeric($cfg['captcha_min_score']) ? (float) $cfg['captcha_min_score'] : 0.3;
+	if (!lead_captcha_ok($captchaProvider, $cfg['captcha_secret'], $captchaToken, (string) ($_SERVER['REMOTE_ADDR'] ?? ''), $minScore)) {
 		$fail('captcha');
 	}
 }
@@ -404,17 +407,71 @@ function lead_smtp_send(array $cfg, string $from, string $to, string $message): 
 }
 
 /**
- * Проверка токена Yandex SmartCaptcha на сервере. true — человек; false — робот или неверный токен.
+ * Проверка токена капчи на сервере. true — человек; false — робот или неверный токен.
+ * Провайдеры: 'google' (reCAPTCHA v3, порог score $minScore) и 'yandex' (SmartCaptcha).
  * Если сервис капчи недоступен или у нас неверный серверный ключ, считаем проверку
- * пройденной (так советует документация Яндекса): лучше принять заявку, чем потерять клиента.
+ * пройденной (так советуют документации): лучше принять заявку, чем потерять клиента.
  */
-function lead_captcha_ok(string $secret, string $token, string $ip): bool
+function lead_captcha_ok(string $provider, string $secret, string $token, string $ip, float $minScore = 0.3): bool
 {
-	$url = 'https://smartcaptcha.cloud.yandex.ru/validate';
-	$post = http_build_query(['secret' => $secret, 'token' => $token, 'ip' => $ip]);
+	if ($provider === 'google') {
+		// google.com, а при недоступности — зеркало recaptcha.net
+		$urls = ['https://www.google.com/recaptcha/api/siteverify', 'https://www.recaptcha.net/recaptcha/api/siteverify'];
+		$post = http_build_query(['secret' => $secret, 'response' => $token, 'remoteip' => $ip]);
+	} else {
+		$urls = ['https://smartcaptcha.cloud.yandex.ru/validate'];
+		$post = http_build_query(['secret' => $secret, 'token' => $token, 'ip' => $ip]);
+	}
+
 	$body = false;
 	$code = 0;
+	foreach ($urls as $url) {
+		[$body, $code] = lead_http_post($url, $post);
+		// Сбой сервиса (нет ответа, 5xx, 429) — пробуем следующий адрес, потом не теряем заявку.
+		if (is_string($body) && $code !== 0 && $code < 500 && $code !== 429) {
+			break;
+		}
+	}
+	if (!is_string($body) || $code === 0 || $code >= 500 || $code === 429) {
+		error_log('send.php captcha: сервис недоступен, код ' . $code);
+		return true;
+	}
+	$data = json_decode($body, true);
+	if (!is_array($data)) {
+		return true;
+	}
 
+	if ($provider === 'google') {
+		if (!empty($data['success'])) {
+			// Действие должно совпасть с тем, что запросила форма, и оценка не ниже порога.
+			if (isset($data['action']) && $data['action'] !== 'lead') {
+				return false;
+			}
+			return !isset($data['score']) || (float) $data['score'] >= $minScore;
+		}
+		$errors = isset($data['error-codes']) && is_array($data['error-codes']) ? $data['error-codes'] : [];
+		// Неверный серверный ключ — наша ошибка настройки, а не бот: заявку принимаем и пишем в лог.
+		if (array_intersect($errors, ['missing-input-secret', 'invalid-input-secret'])) {
+			error_log('send.php captcha: ошибка ключа — ' . implode(',', $errors));
+			return true;
+		}
+		return false;
+	}
+
+	if (($data['status'] ?? '') === 'ok') {
+		return true;
+	}
+	$msg = (string) ($data['message'] ?? '');
+	if ($msg !== '' && preg_match('/secret|authentication|key/i', $msg)) {
+		error_log('send.php captcha: ошибка ключа — ' . $msg);
+		return true;
+	}
+	return false;
+}
+
+/** POST x-www-form-urlencoded: возвращает [тело|false, HTTP-код]. curl, а если его нет — потоки PHP. */
+function lead_http_post(string $url, string $post): array
+{
 	if (function_exists('curl_init')) {
 		$ch = curl_init($url);
 		curl_setopt_array($ch, [
@@ -427,40 +484,21 @@ function lead_captcha_ok(string $secret, string $token, string $ip): bool
 		$body = curl_exec($ch);
 		$code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
-	} else {
-		$ctx = stream_context_create(['http' => [
-			'method' => 'POST',
-			'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-			'content' => $post,
-			'timeout' => 8,
-			'ignore_errors' => true,
-		]]);
-		$body = @file_get_contents($url, false, $ctx);
-		if (isset($http_response_header[0]) && preg_match('#^HTTP/\S+\s+(\d{3})#', $http_response_header[0], $m)) {
-			$code = (int) $m[1];
-		}
+		return [$body, $code];
 	}
-
-	// Сбой сервиса (нет ответа, 5xx, 429) — не теряем заявку.
-	if (!is_string($body) || $code === 0 || $code >= 500 || $code === 429) {
-		error_log('send.php captcha: сервис недоступен, код ' . $code);
-		return true;
+	$ctx = stream_context_create(['http' => [
+		'method' => 'POST',
+		'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+		'content' => $post,
+		'timeout' => 8,
+		'ignore_errors' => true,
+	]]);
+	$body = @file_get_contents($url, false, $ctx);
+	$code = 0;
+	if (isset($http_response_header[0]) && preg_match('#^HTTP/\S+\s+(\d{3})#', $http_response_header[0], $m)) {
+		$code = (int) $m[1];
 	}
-	$data = json_decode($body, true);
-	if (!is_array($data)) {
-		return true;
-	}
-	$status = (string) ($data['status'] ?? '');
-	if ($status === 'ok') {
-		return true;
-	}
-	// Неверный серверный ключ — это наша ошибка настройки, а не бот: заявку принимаем и пишем в лог.
-	$msg = (string) ($data['message'] ?? '');
-	if ($msg !== '' && preg_match('/secret|authentication|key/i', $msg)) {
-		error_log('send.php captcha: ошибка ключа — ' . $msg);
-		return true;
-	}
-	return false;
+	return [$body, $code];
 }
 
 /** Отправка заявки в Roistat (Webhook-интеграция): POST JSON, таймаут 6 с, ошибки молча игнорируем. */

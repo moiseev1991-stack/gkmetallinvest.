@@ -28,8 +28,11 @@ return [
 	// Пока не указан — заявка только письмом, номер визита Roistat в нём есть.
 	'roistat_webhook' => '',
 
-	// Yandex SmartCaptcha: серверный ключ. Пусто — капча на сервере выключена.
-	// При деплое его пишет scripts/write-send-config.mjs из секретов GitHub
-	// SMARTCAPTCHA_SERVER_KEY и SMARTCAPTCHA_SITEKEY (клиентский ключ идёт в сборку формы).
-	'captcha_secret' => '',
+	// Капча: Google reCAPTCHA v3 ('google') или Яндекс SmartCaptcha ('yandex'). Пусто — выключена.
+	// При деплое эти поля пишет scripts/write-send-config.mjs из секретов GitHub
+	// RECAPTCHA_SECRET_KEY + RECAPTCHA_SITEKEY (или SMARTCAPTCHA_SERVER_KEY + SMARTCAPTCHA_SITEKEY);
+	// клиентский ключ при этом идёт в сборку формы.
+	'captcha_provider' => '',
+	'captcha_secret'   => '',
+	// 'captcha_min_score' => 0.3,   // порог оценки reCAPTCHA v3 (0..1); ниже — считается роботом
 ];

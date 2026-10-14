@@ -42,9 +42,10 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      # Клиентский ключ SmartCaptcha публичный (виден в коде страницы); без него форма собирается без капчи.
+      # Клиентские ключи капчи публичные (видны в коде страницы); без них форма собирается без капчи.
       - name: Build site
         env:
+          PUBLIC_RECAPTCHA_SITEKEY: ${{ secrets.RECAPTCHA_SITEKEY }}
           PUBLIC_SMARTCAPTCHA_SITEKEY: ${{ secrets.SMARTCAPTCHA_SITEKEY }}
         run: npm run build
 
@@ -56,6 +57,8 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           LEAD_TO: ${{ secrets.LEAD_TO }}
           ROISTAT_WEBHOOK: ${{ secrets.ROISTAT_WEBHOOK }}
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+          PUBLIC_RECAPTCHA_SITEKEY: ${{ secrets.RECAPTCHA_SITEKEY }}
           SMARTCAPTCHA_SERVER_KEY: ${{ secrets.SMARTCAPTCHA_SERVER_KEY }}
           PUBLIC_SMARTCAPTCHA_SITEKEY: ${{ secrets.SMARTCAPTCHA_SITEKEY }}
         run: node scripts/write-send-config.mjs
