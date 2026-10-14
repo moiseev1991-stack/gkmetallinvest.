@@ -211,6 +211,16 @@ const defaultOffice = offices[0];
 		});
 	}
 
+	// Roistat («Заявки с форм сайта») перехватывает отправку формы и после передачи лида у себя вызывает
+	// HTMLFormElement.prototype.submit: браузер уходит на /send.php мимо нашей отправки, валидации и капчи
+	// (человек видит голый ответ сервера, а наш fetch обрывается). Для нашей формы такой вызов гасим:
+	// заявку отправляет только обработчик ниже.
+	const nativeFormSubmit = HTMLFormElement.prototype.submit;
+	HTMLFormElement.prototype.submit = function (this: HTMLFormElement) {
+		if (this.hasAttribute('data-lead-form')) return;
+		return nativeFormSubmit.call(this);
+	};
+
 	// Отправка заявки на /send.php (PHP-обработчик на Timeweb) без перезагрузки.
 	document.querySelectorAll<HTMLFormElement>('form[data-lead-form]').forEach((form) => {
 		const status = form.querySelector<HTMLElement>('[data-lead-status]');
