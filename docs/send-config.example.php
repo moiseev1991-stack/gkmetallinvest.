@@ -27,4 +27,9 @@ return [
 	// Roistat: URL Webhook-интеграции (Roistat → Интеграции → Добавить → Webhook).
 	// Пока не указан — заявка только письмом, номер визита Roistat в нём есть.
 	'roistat_webhook' => '',
+
+	// Yandex SmartCaptcha: серверный ключ. Пусто — капча на сервере выключена.
+	// При деплое его пишет scripts/write-send-config.mjs из секретов GitHub
+	// SMARTCAPTCHA_SERVER_KEY и SMARTCAPTCHA_SITEKEY (клиентский ключ идёт в сборку формы).
+	'captcha_secret' => '',
 ];

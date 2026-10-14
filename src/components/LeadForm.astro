@@ -94,6 +94,7 @@ const defaultOffice = offices[0];
 							в письме или письмом на zakaz@gkmetallinvest.ru.
 						</span>
 					</label>
+					<div id={`${id}-captcha`} data-lead-captcha></div>
 					<Button type="submit">Отправить заявку</Button>
 					<p class="lead__status" data-lead-status hidden role="status" aria-live="polite"></p>
 				</form>
@@ -205,6 +206,88 @@ const defaultOffice = offices[0];
 			file_size: 'Файл больше 5 МБ. Приложите файл меньшего размера или отправьте его на zakaz@gkmetallinvest.ru',
 			file_type: 'Этот формат файла не принимаем. Приложите PDF, TXT, Word, Excel, JPG или PNG.',
 			file: 'Не удалось принять файл. Попробуйте другой файл или отправьте заявку без него.',
+			captcha: 'Проверка «я не робот» не пройдена. Обновите страницу и попробуйте ещё раз или напишите на zakaz@gkmetallinvest.ru',
+		};
+
+		// Яндекс SmartCaptcha (невидимая). Включается, если при сборке задан PUBLIC_SMARTCAPTCHA_SITEKEY;
+		// сервер при этом требует токен (send-config.php: captcha_secret). Без ключа всё как раньше.
+		const CAPTCHA_KEY = (import.meta.env.PUBLIC_SMARTCAPTCHA_SITEKEY as string | undefined) || '';
+		const captchaBox = form.querySelector<HTMLElement>('[data-lead-captcha]');
+		const CAPTCHA_FAIL =
+			'Не удалось пройти проверку «я не робот». Попробуйте ещё раз или напишите на zakaz@gkmetallinvest.ru';
+		let captchaId: number | null = null;
+		let captchaWait: ((token: string) => void) | null = null;
+		let captchaLoading: Promise<void> | null = null;
+		const loadCaptcha = (): Promise<void> => {
+			if (!CAPTCHA_KEY || !captchaBox) return Promise.resolve();
+			if (captchaLoading) return captchaLoading;
+			captchaLoading = new Promise<void>((resolve) => {
+				const w = window as any;
+				const init = () => {
+					try {
+						if (w.smartCaptcha && captchaId === null) {
+							captchaId = w.smartCaptcha.render(captchaBox.id, {
+								sitekey: CAPTCHA_KEY,
+								invisible: true,
+								hl: 'ru',
+								callback: (token: string) => {
+									captchaWait?.(token);
+								},
+							});
+						}
+					} catch {
+						// Виджет не поднялся: заявка уйдёт без токена, форма покажет понятную ошибку.
+					}
+					resolve();
+				};
+				if (w.smartCaptcha) {
+					init();
+					return;
+				}
+				const s = document.createElement('script');
+				s.src = 'https://smartcaptcha.cloud.yandex.ru/captcha.js';
+				s.async = true;
+				s.onload = init;
+				s.onerror = () => resolve();
+				document.head.appendChild(s);
+			});
+			return captchaLoading;
+		};
+		if (CAPTCHA_KEY) {
+			// Подгружаем заранее, как только человек начал заполнять форму.
+			form.addEventListener('focusin', () => void loadCaptcha(), { once: true });
+		}
+		const getCaptchaToken = async (): Promise<string> => {
+			await loadCaptcha();
+			const w = window as any;
+			if (captchaId === null || !w.smartCaptcha) return '';
+			return new Promise<string>((resolve) => {
+				const t = setTimeout(() => {
+					captchaWait = null;
+					resolve('');
+				}, 60000);
+				captchaWait = (token) => {
+					clearTimeout(t);
+					captchaWait = null;
+					resolve(token);
+				};
+				try {
+					w.smartCaptcha.execute(captchaId);
+				} catch {
+					clearTimeout(t);
+					captchaWait = null;
+					resolve('');
+				}
+			});
+		};
+		const resetCaptcha = () => {
+			const w = window as any;
+			if (captchaId === null || !w.smartCaptcha) return;
+			try {
+				w.smartCaptcha.reset(captchaId);
+			} catch {
+				// не критично: токен одноразовый, следующая отправка создаст новый
+			}
 		};
 
 		// Фото сжимаем в браузере (до 2400 px, JPEG): письмо легче, загрузка быстрее и реже обрывается.
@@ -261,13 +344,22 @@ const defaultOffice = offices[0];
 			setStatus('', '');
 
 			const ctrl = new AbortController();
-			const timer = setTimeout(() => ctrl.abort(), 90000);
+			let timer: ReturnType<typeof setTimeout> | undefined;
 			try {
 				const fd = new FormData(form);
 				const picked = fd.get('attachment');
 				if (picked instanceof File && picked.size > 0) {
 					fd.set('attachment', await compressImage(picked));
 				}
+				if (CAPTCHA_KEY) {
+					const token = await getCaptchaToken();
+					if (!token) {
+						setStatus(CAPTCHA_FAIL, 'err');
+						return;
+					}
+					fd.set('smart-token', token);
+				}
+				timer = setTimeout(() => ctrl.abort(), 90000);
 				const res = await fetch(form.action, {
 					method: 'POST',
 					body: fd,
@@ -292,6 +384,7 @@ const defaultOffice = offices[0];
 				);
 			} finally {
 				clearTimeout(timer);
+				if (CAPTCHA_KEY) resetCaptcha();
 				if (btn) { btn.disabled = false; btn.textContent = label; }
 			}
 		});

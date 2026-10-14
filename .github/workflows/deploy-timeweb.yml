@@ -42,7 +42,10 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      # Клиентский ключ SmartCaptcha публичный (виден в коде страницы); без него форма собирается без капчи.
       - name: Build site
+        env:
+          PUBLIC_SMARTCAPTCHA_SITEKEY: ${{ secrets.SMARTCAPTCHA_SITEKEY }}
         run: npm run build
 
       # Настройки отправки заявок (SMTP mail.ru, Roistat) — из секретов репозитория,
@@ -53,6 +56,8 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           LEAD_TO: ${{ secrets.LEAD_TO }}
           ROISTAT_WEBHOOK: ${{ secrets.ROISTAT_WEBHOOK }}
+          SMARTCAPTCHA_SERVER_KEY: ${{ secrets.SMARTCAPTCHA_SERVER_KEY }}
+          PUBLIC_SMARTCAPTCHA_SITEKEY: ${{ secrets.SMARTCAPTCHA_SITEKEY }}
         run: node scripts/write-send-config.mjs
 
       # Заливаем через lftp: даёт таймауты (не виснет), параллельную загрузку

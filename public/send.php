@@ -97,6 +97,17 @@ $fail = static function (string $code, int $status = 422): void {
 	exit;
 };
 
+// ---- Капча Yandex SmartCaptcha: включается, когда в send-config.php есть captcha_secret. ----
+if (!empty($cfg['captcha_secret']) && is_string($cfg['captcha_secret'])) {
+	$captchaToken = isset($_POST['smart-token']) && is_string($_POST['smart-token']) ? trim($_POST['smart-token']) : '';
+	if ($captchaToken === '' || strlen($captchaToken) > 4096) {
+		$fail('captcha');
+	}
+	if (!lead_captcha_ok($cfg['captcha_secret'], $captchaToken, (string) ($_SERVER['REMOTE_ADDR'] ?? ''))) {
+		$fail('captcha');
+	}
+}
+
 if (isset($_FILES['attachment']) && is_array($_FILES['attachment'])) {
 	$f = $_FILES['attachment'];
 	$err = (int) ($f['error'] ?? UPLOAD_ERR_NO_FILE);
@@ -390,6 +401,66 @@ function lead_smtp_send(array $cfg, string $from, string $to, string $message): 
 	} finally {
 		@fclose($fp);
 	}
+}
+
+/**
+ * Проверка токена Yandex SmartCaptcha на сервере. true — человек; false — робот или неверный токен.
+ * Если сервис капчи недоступен или у нас неверный серверный ключ, считаем проверку
+ * пройденной (так советует документация Яндекса): лучше принять заявку, чем потерять клиента.
+ */
+function lead_captcha_ok(string $secret, string $token, string $ip): bool
+{
+	$url = 'https://smartcaptcha.cloud.yandex.ru/validate';
+	$post = http_build_query(['secret' => $secret, 'token' => $token, 'ip' => $ip]);
+	$body = false;
+	$code = 0;
+
+	if (function_exists('curl_init')) {
+		$ch = curl_init($url);
+		curl_setopt_array($ch, [
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => $post,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_CONNECTTIMEOUT => 4,
+			CURLOPT_TIMEOUT => 8,
+		]);
+		$body = curl_exec($ch);
+		$code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+	} else {
+		$ctx = stream_context_create(['http' => [
+			'method' => 'POST',
+			'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+			'content' => $post,
+			'timeout' => 8,
+			'ignore_errors' => true,
+		]]);
+		$body = @file_get_contents($url, false, $ctx);
+		if (isset($http_response_header[0]) && preg_match('#^HTTP/\S+\s+(\d{3})#', $http_response_header[0], $m)) {
+			$code = (int) $m[1];
+		}
+	}
+
+	// Сбой сервиса (нет ответа, 5xx, 429) — не теряем заявку.
+	if (!is_string($body) || $code === 0 || $code >= 500 || $code === 429) {
+		error_log('send.php captcha: сервис недоступен, код ' . $code);
+		return true;
+	}
+	$data = json_decode($body, true);
+	if (!is_array($data)) {
+		return true;
+	}
+	$status = (string) ($data['status'] ?? '');
+	if ($status === 'ok') {
+		return true;
+	}
+	// Неверный серверный ключ — это наша ошибка настройки, а не бот: заявку принимаем и пишем в лог.
+	$msg = (string) ($data['message'] ?? '');
+	if ($msg !== '' && preg_match('/secret|authentication|key/i', $msg)) {
+		error_log('send.php captcha: ошибка ключа — ' . $msg);
+		return true;
+	}
+	return false;
 }
 
 /** Отправка заявки в Roistat (Webhook-интеграция): POST JSON, таймаут 6 с, ошибки молча игнорируем. */

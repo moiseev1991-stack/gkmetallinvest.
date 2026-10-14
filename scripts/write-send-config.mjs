@@ -9,6 +9,7 @@
  *   SMTP_USER        — логин ящика (по умолчанию zakaz@gkmetallinvest.ru)
  *   LEAD_TO          — кому слать заявки (по умолчанию zakaz@gkmetallinvest.ru)
  *   ROISTAT_WEBHOOK  — URL Webhook-интеграции Roistat (необязательно)
+ *   SMARTCAPTCHA_SERVER_KEY (+ SMARTCAPTCHA_SITEKEY в сборке) — Yandex SmartCaptcha (необязательно)
  * Без SMTP_PASS файл не создаётся, send.php работает в запасном режиме mail().
  */
 import { writeFileSync, existsSync } from 'node:fs';
@@ -32,6 +33,11 @@ const q = (s) => "'" + String(s).split(BACKSLASH).join(BACKSLASH + BACKSLASH).sp
 const user = env('SMTP_USER', 'zakaz@gkmetallinvest.ru');
 const to = env('LEAD_TO', 'zakaz@gkmetallinvest.ru');
 const hook = env('ROISTAT_WEBHOOK');
+// Капча включается только когда есть оба ключа: серверный (секрет) и клиентский (он же уходит в сборку
+// сайта как PUBLIC_SMARTCAPTCHA_SITEKEY). Иначе форма без виджета упёрлась бы в серверную проверку.
+const captchaSecret = env('SMARTCAPTCHA_SERVER_KEY');
+const captchaSitekey = env('PUBLIC_SMARTCAPTCHA_SITEKEY');
+const captchaOn = captchaSecret !== '' && captchaSitekey !== '';
 
 const php = `<?php
 // Создан при деплое из секретов GitHub Actions (scripts/write-send-config.mjs). Не редактировать вручную.
@@ -43,8 +49,9 @@ return [
 	'smtp_pass' => ${q(pass)},
 	'to' => ${q(to)},
 	'roistat_webhook' => ${q(hook)},
+	'captcha_secret' => ${q(captchaOn ? captchaSecret : '')},
 ];
 `;
 
 writeFileSync('dist/send-config.php', php, { mode: 0o600 });
-console.log('write-send-config: dist/send-config.php создан (SMTP ' + user + ', Roistat ' + (hook ? 'вкл' : 'выкл') + ')');
+console.log('write-send-config: dist/send-config.php создан (SMTP ' + user + ', Roistat ' + (hook ? 'вкл' : 'выкл') + ', капча ' + (captchaOn ? 'вкл' : 'выкл') + ')');
