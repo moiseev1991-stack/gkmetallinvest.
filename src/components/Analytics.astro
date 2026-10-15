@@ -34,6 +34,93 @@ import { siteNoindex } from '../data/site';
 		</script>
 		{/* /Roistat */}
 
+		{/* Подмена почты Roistat (email-трекинг) по всему тексту сайта. Родной скрипт Roistat заменяет адрес,
+		   только если он стоит отдельным словом (пробел или конец строки вокруг): «…на zakaz@x.ru.» с точкой
+		   или в скобках он пропускает, как и тексты, которые скрипты сайта вставляют позже. Здесь берём тот же
+		   набор замен из roistat.emailtracking.emails и применяем его к любому тексту, ссылкам mailto и
+		   атрибутам data-email, а MutationObserver ловит всё, что появится на странице позже. */}
+		<script is:inline>
+			(function () {
+				var started = false;
+				function getMap() {
+					var et = window.roistat && window.roistat.emailtracking;
+					if (!et || !et.loaded) return null;
+					var m = {};
+					var src = et.emails && typeof et.emails === 'object' ? et.emails : {};
+					for (var k in src) if (Object.prototype.hasOwnProperty.call(src, k) && src[k]) m[k.toLowerCase()] = src[k];
+					if (et.email && et.trackingEmail) m[String(et.email).toLowerCase()] = et.trackingEmail;
+					for (var j in m) return m;
+					return null;
+				}
+				function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+				function start(map) {
+					if (started) return;
+					started = true;
+					var rules = [];
+					for (var from in map) {
+						if (map[from].toLowerCase() === from) continue;
+						rules.push({
+							// адрес не должен быть частью более длинного слова/адреса; точка после него допустима (конец предложения)
+							re: new RegExp('(^|[^A-Za-z0-9._%+\\-])(' + esc(from) + ')(?![A-Za-z0-9_\\-]|\\.[A-Za-z0-9])', 'gi'),
+							to: map[from],
+						});
+					}
+					if (!rules.length) return;
+					function sub(str) {
+						var out = str;
+						for (var i = 0; i < rules.length; i++) out = out.replace(rules[i].re, function (m, pre) { return pre + rules[i].to; });
+						return out;
+					}
+					var skip = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, TEXTAREA: 1 };
+					function swap(root) {
+						try {
+							var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+							var n;
+							while ((n = w.nextNode())) {
+								var p = n.parentNode;
+								if (p && skip[p.nodeName]) continue;
+								var v = n.nodeValue;
+								if (v && v.indexOf('@') !== -1) {
+									var nv = sub(v);
+									if (nv !== v) n.nodeValue = nv;
+								}
+							}
+							var els = root.querySelectorAll ? root.querySelectorAll('a[href^="mailto:" i],[data-email]') : [];
+							for (var e = 0; e < els.length; e++) {
+								var el = els[e];
+								var h = el.getAttribute('href');
+								if (h && /^mailto:/i.test(h)) {
+									var nh = 'mailto:' + sub(' ' + h.slice(7)).slice(1);
+									if (nh !== h) el.setAttribute('href', nh);
+								}
+								var de = el.getAttribute('data-email');
+								if (de) {
+									var nd = sub(' ' + de).slice(1);
+									if (nd !== de) el.setAttribute('data-email', nd);
+								}
+							}
+						} catch (err) { /* подмена почты не должна ломать страницу */ }
+					}
+					swap(document.body);
+					var timer = null;
+					new MutationObserver(function () {
+						clearTimeout(timer);
+						timer = setTimeout(function () { swap(document.body); }, 60);
+					}).observe(document.body, { childList: true, subtree: true, characterData: true });
+				}
+				function wait() {
+					var tries = 0;
+					(function poll() {
+						var map = getMap();
+						if (map) return start(map);
+						if (++tries < 200) setTimeout(poll, 300); // до ~60 с: пока Roistat загрузит настройки
+					})();
+				}
+				if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wait);
+				else wait();
+			})();
+		</script>
+
 		{/* Yandex.Metrika counter */}
 		<script is:inline type="text/javascript">
 			(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
