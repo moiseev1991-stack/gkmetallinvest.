@@ -292,12 +292,11 @@ const defaultOffice = offices[0];
 		const YC_KEY = (import.meta.env.PUBLIC_SMARTCAPTCHA_SITEKEY as string | undefined) || '';
 		const CAPTCHA: '' | 'google' | 'yandex' = RC_KEY ? 'google' : YC_KEY ? 'yandex' : '';
 		const captchaBox = form.querySelector<HTMLElement>('[data-lead-captcha]');
-		const CAPTCHA_FAIL =
-			'Не удалось пройти проверку «я не робот». Попробуйте ещё раз или напишите на zakaz@gkmetallinvest.ru';
 		let captchaLoading: Promise<void> | null = null;
+		let captchaDiag = ''; // почему не получили токен (уходит на сервер в captcha_unavailable)
 
 		// Скрипт капчи грузим с таймаутом: если google.com/Яндекс недоступен или завис, форма не должна висеть.
-		const addScript = (src: string, timeoutMs = 10000): Promise<boolean> =>
+		const addScript = (src: string, timeoutMs = 15000): Promise<boolean> =>
 			new Promise<boolean>((resolve) => {
 				const s = document.createElement('script');
 				const t = setTimeout(() => resolve(false), timeoutMs);
@@ -337,10 +336,14 @@ const defaultOffice = offices[0];
 		};
 		const yandexToken = (): Promise<string> => {
 			const w = window as any;
-			if (ycId === null || !w.smartCaptcha) return Promise.resolve('');
+			if (ycId === null || !w.smartCaptcha) {
+				captchaDiag = 'ya-no-widget';
+				return Promise.resolve('');
+			}
 			return new Promise<string>((resolve) => {
 				const t = setTimeout(() => {
 					ycWait = null;
+					captchaDiag = 'ya-timeout';
 					resolve('');
 				}, 60000);
 				ycWait = (token) => {
@@ -364,21 +367,30 @@ const defaultOffice = offices[0];
 			if (w.grecaptcha?.execute) return;
 			const q = '/recaptcha/api.js?render=' + encodeURIComponent(RC_KEY);
 			// google.com, а при недоступности — зеркало recaptcha.net
-			if (!(await addScript('https://www.google.com' + q))) await addScript('https://www.recaptcha.net' + q);
+			if (!(await addScript('https://www.google.com' + q)) && !w.grecaptcha) {
+				await addScript('https://www.recaptcha.net' + q);
+			}
 		};
 		const googleToken = (): Promise<string> => {
 			const g = (window as any).grecaptcha;
-			if (!g || !g.ready) return Promise.resolve('');
+			if (!g || !g.ready) {
+				captchaDiag = 'script-blocked';
+				return Promise.resolve('');
+			}
 			return new Promise<string>((resolve) => {
-				const t = setTimeout(() => resolve(''), 15000);
+				const t = setTimeout(() => {
+					captchaDiag = 'timeout';
+					resolve('');
+				}, 25000);
 				g.ready(() => {
 					g.execute(RC_KEY, { action: 'lead' }).then(
 						(token: string) => {
 							clearTimeout(t);
 							resolve(token);
 						},
-						() => {
+						(err: unknown) => {
 							clearTimeout(t);
+							captchaDiag = 'execute: ' + String((err && (err as Error).message) || err).slice(0, 50);
 							resolve('');
 						},
 					);
@@ -395,11 +407,14 @@ const defaultOffice = offices[0];
 			// Подгружаем заранее, как только человек начал заполнять форму.
 			form.addEventListener('focusin', () => void loadCaptcha(), { once: true });
 		}
-		const getCaptchaToken = async (): Promise<{ field: string; token: string }> => {
+		const getCaptchaToken = async (): Promise<{ field: string; token: string; diag: string }> => {
+			captchaDiag = '';
 			await loadCaptcha();
-			return CAPTCHA === 'google'
-				? { field: 'g-recaptcha-response', token: await googleToken() }
-				: { field: 'smart-token', token: await yandexToken() };
+			const field = CAPTCHA === 'google' ? 'g-recaptcha-response' : 'smart-token';
+			const token = CAPTCHA === 'google' ? await googleToken() : await yandexToken();
+			// Скрипт не загрузился совсем: при следующей отправке попробуем загрузить заново.
+			if (!token && CAPTCHA === 'google' && !(window as any).grecaptcha) captchaLoading = null;
+			return { field, token, diag: token ? '' : captchaDiag || 'unknown' };
 		};
 		const resetCaptcha = () => {
 			const w = window as any;
@@ -473,12 +488,15 @@ const defaultOffice = offices[0];
 					fd.set('attachment', await compressImage(picked));
 				}
 				if (CAPTCHA) {
-					const { field, token } = await getCaptchaToken();
-					if (!token) {
-						setStatus(CAPTCHA_FAIL, 'err');
-						return;
+					const { field, token, diag } = await getCaptchaToken();
+					if (token) {
+						fd.set(field, token);
+					} else {
+						// Капча не загрузилась (заблокирована, медленная сеть): заявку не теряем, сервер примет её
+						// с ограничением по IP и пометкой в письме.
+						fd.set('captcha_unavailable', diag);
+						console.warn('captcha unavailable:', diag);
 					}
-					fd.set(field, token);
 				}
 				timer = setTimeout(() => ctrl.abort(), 90000);
 				const res = await fetch(form.action, {

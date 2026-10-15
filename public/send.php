@@ -141,16 +141,30 @@ $fail = static function (string $code, int $status = 422): void {
 };
 
 // ---- Капча: включается, когда в send-config.php есть captcha_secret (Google reCAPTCHA v3 или Яндекс SmartCaptcha). ----
+$captchaNote = ''; // строка для письма: пройдена / не проверена; пусто — капча выключена
 if (!empty($cfg['captcha_secret']) && is_string($cfg['captcha_secret'])) {
 	$captchaProvider = (isset($cfg['captcha_provider']) && $cfg['captcha_provider'] === 'google') ? 'google' : 'yandex';
 	$captchaField = $captchaProvider === 'google' ? 'g-recaptcha-response' : 'smart-token';
 	$captchaToken = isset($_POST[$captchaField]) && is_string($_POST[$captchaField]) ? trim($_POST[$captchaField]) : '';
-	if ($captchaToken === '' || strlen($captchaToken) > 4096) {
+	$remoteIp = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+	if (strlen($captchaToken) > 4096) {
 		$fail('captcha');
 	}
-	$minScore = isset($cfg['captcha_min_score']) && is_numeric($cfg['captcha_min_score']) ? (float) $cfg['captcha_min_score'] : 0.3;
-	if (!lead_captcha_ok($captchaProvider, $cfg['captcha_secret'], $captchaToken, (string) ($_SERVER['REMOTE_ADDR'] ?? ''), $minScore)) {
-		$fail('captcha');
+	if ($captchaToken === '') {
+		// Скрипт капчи не загрузился у посетителя (заблокирован, медленная сеть). Живого клиента терять нельзя,
+		// поэтому принимаем заявку, но не чаще 3 раз в час с одного IP, и помечаем письмо.
+		$diag = isset($_POST['captcha_unavailable']) && is_string($_POST['captcha_unavailable']) ? trim($_POST['captcha_unavailable']) : '';
+		if ($diag === '' || !lead_fallback_allowed($remoteIp)) {
+			$fail('captcha');
+		}
+		$diag = substr((string) preg_replace('/[^\w .:,\/-]/u', '', $diag), 0, 80);
+		$captchaNote = 'НЕ ПРОВЕРЕНА (капча не загрузилась у посетителя: ' . $diag . ')';
+	} else {
+		$minScore = isset($cfg['captcha_min_score']) && is_numeric($cfg['captcha_min_score']) ? (float) $cfg['captcha_min_score'] : 0.3;
+		if (!lead_captcha_ok($captchaProvider, $cfg['captcha_secret'], $captchaToken, $remoteIp, $minScore)) {
+			$fail('captcha');
+		}
+		$captchaNote = 'пройдена';
 	}
 }
 
@@ -291,6 +305,10 @@ $bodyLines = [
 	'Дата/время:          ' . date('Y-m-d H:i:s'),
 	'IP:                  ' . ($_SERVER['REMOTE_ADDR'] ?? '—'),
 ];
+if ($captchaNote !== '') {
+	// Перед строками «Дата/время» и «IP».
+	array_splice($bodyLines, -2, 0, ['Капча:               ' . $captchaNote]);
+}
 $text = implode("\r\n", $bodyLines);
 
 $fromEmail = 'zakaz@gkmetallinvest.ru';
@@ -510,6 +528,33 @@ function lead_captcha_ok(string $provider, string $secret, string $token, string
 		return true;
 	}
 	return false;
+}
+
+/**
+ * Запасной путь без капчи: не больше 3 заявок в час с одного IP. Счётчик лежит во временной папке;
+ * если файл недоступен для записи, лимит не применяем (не теряем заявку).
+ */
+function lead_fallback_allowed(string $ip): bool
+{
+	$file = sys_get_temp_dir() . '/lead_fb_' . md5($ip !== '' ? $ip : 'unknown') . '.json';
+	$now = time();
+	$times = [];
+	if (is_file($file)) {
+		$data = json_decode((string) @file_get_contents($file), true);
+		if (is_array($data)) {
+			foreach ($data as $ts) {
+				if (is_int($ts) && $ts > $now - 3600) {
+					$times[] = $ts;
+				}
+			}
+		}
+	}
+	if (count($times) >= 3) {
+		return false;
+	}
+	$times[] = $now;
+	@file_put_contents($file, json_encode($times), LOCK_EX);
+	return true;
 }
 
 /** POST x-www-form-urlencoded: возвращает [тело|false, HTTP-код]. curl, а если его нет — потоки PHP. */
