@@ -24,9 +24,12 @@ return [
 	// Кому слать заявки (через запятую можно несколько адресов)
 	'to'          => 'zakaz@gkmetallinvest.ru',
 
-	// Roistat: URL Webhook-интеграции (Roistat → Интеграции → Добавить → Webhook).
-	// Пока не указан — заявка только письмом, номер визита Roistat в нём есть.
-	'roistat_webhook' => '',
+	// Roistat (проксилид): «Ключ для интеграции» — Roistat → Интеграции → ваша CRM → Настроить интеграцию → показать.
+	// Пока не указан — заявка только письмом, номер визита Roistat в нём есть. При деплое ключ берётся
+	// из секрета GitHub ROISTAT_KEY.
+	'roistat_key' => '',
+	// Необязательно: поля CRM с переменными Roistat. Без этой строки передаются UTM_SOURCE и utm_source.
+	// 'roistat_fields' => ['UTM_SOURCE' => '{utmSource}', 'utm_source' => '{sourceAliasLevel1}'],
 
 	// Капча: Google reCAPTCHA v3 ('google') или Яндекс SmartCaptcha ('yandex'). Пусто — выключена.
 	// При деплое эти поля пишет scripts/write-send-config.mjs из секретов GitHub

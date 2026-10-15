@@ -8,7 +8,7 @@
  *   SMTP_PASS        — пароль внешнего приложения почты zakaz@gkmetallinvest.ru (mail.ru)
  *   SMTP_USER        — логин ящика (по умолчанию zakaz@gkmetallinvest.ru)
  *   LEAD_TO          — кому слать заявки (по умолчанию zakaz@gkmetallinvest.ru)
- *   ROISTAT_WEBHOOK  — URL Webhook-интеграции Roistat (необязательно)
+ *   ROISTAT_KEY      — «Ключ для интеграции» Roistat (Интеграции → CRM → Настроить интеграцию); необязательно
  *   RECAPTCHA_SECRET_KEY (+ RECAPTCHA_SITEKEY в сборке) — Google reCAPTCHA v3 (необязательно)
  *   SMARTCAPTCHA_SERVER_KEY (+ SMARTCAPTCHA_SITEKEY в сборке) — Yandex SmartCaptcha (необязательно)
  * Без SMTP_PASS файл не создаётся, send.php работает в запасном режиме mail().
@@ -33,7 +33,7 @@ const q = (s) => "'" + String(s).split(BACKSLASH).join(BACKSLASH + BACKSLASH).sp
 
 const user = env('SMTP_USER', 'zakaz@gkmetallinvest.ru');
 const to = env('LEAD_TO', 'zakaz@gkmetallinvest.ru');
-const hook = env('ROISTAT_WEBHOOK');
+const roistatKey = env('ROISTAT_KEY');
 // Капча включается только когда есть оба ключа провайдера: серверный (секрет) и клиентский (он же уходит
 // в сборку сайта как PUBLIC_*_SITEKEY). Иначе форма без виджета упёрлась бы в серверную проверку.
 // Приоритет у Google reCAPTCHA v3, запасной вариант: Яндекс SmartCaptcha.
@@ -60,11 +60,11 @@ return [
 	'smtp_user' => ${q(user)},
 	'smtp_pass' => ${q(pass)},
 	'to' => ${q(to)},
-	'roistat_webhook' => ${q(hook)},
+	'roistat_key' => ${q(roistatKey)},
 	'captcha_provider' => ${q(captchaProvider)},
 	'captcha_secret' => ${q(captchaSecret)},
 ];
 `;
 
 writeFileSync('dist/send-config.php', php, { mode: 0o600 });
-console.log('write-send-config: dist/send-config.php создан (SMTP ' + user + ', Roistat ' + (hook ? 'вкл' : 'выкл') + ', капча ' + (captchaProvider || 'выкл') + ')');
+console.log('write-send-config: dist/send-config.php создан (SMTP ' + user + ', Roistat ' + (roistatKey ? 'вкл' : 'выкл') + ', капча ' + (captchaProvider || 'выкл') + ')');

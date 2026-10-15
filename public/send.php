@@ -11,8 +11,9 @@
  * сервере в файле send-config.php рядом с этим скриптом (в репозитории его нет,
  * образец — docs/send-config.example.php). Без этого файла работает запасной mail().
  *
- * Roistat: номер визита (cookie roistat_visit) добавляется в письмо, а при
- * наличии roistat_webhook в конфиге заявка уходит в Roistat Webhook-интеграцией.
+ * Roistat: номер визита (cookie roistat_visit) добавляется в письмо, а при наличии
+ * roistat_key в конфиге заявка уходит в Roistat проксилидом
+ * (https://cloud.roistat.com/api/proxy/1.0/leads/add), откуда Roistat передаёт её в CRM.
  */
 
 // Форма шлёт заявку через fetch (Accept: application/json) и получает JSON. Если же браузер перешёл
@@ -364,17 +365,46 @@ if ($useSmtp) {
 	$sent = @mail($recipients, $subject, $body, $headers, '-f' . $fromEmail);
 }
 
-// Roistat: заявка с номером визита (необязательно, ошибки не влияют на ответ клиенту).
-if (!empty($cfg['roistat_webhook']) && is_string($cfg['roistat_webhook'])) {
-	lead_roistat_send($cfg['roistat_webhook'], [
+// Roistat (проксилид): заявка с номером визита уходит в Roistat, тот передаёт её в CRM.
+// Ошибки пишем только в лог, ответ клиенту они не меняют.
+if (!empty($cfg['roistat_key']) && is_string($cfg['roistat_key'])) {
+	$roiLines = [];
+	if ($message !== '') {
+		$roiLines[] = $message;
+		$roiLines[] = '';
+	}
+	$roiLines[] = 'Город: ' . ($city !== '' ? $city : '—');
+	$roiLines[] = 'Страница: ' . ($page !== '' ? $page : '—');
+	$roiLines[] = 'Согласие на рекламу: ' . $marketing;
+	if ($attachment) {
+		$roiLines[] = 'Вложение: ' . $attachment['name'] . ' (файл во письме на почте)';
+	}
+	if ($captchaNote !== '' && $captchaNote !== 'пройдена') {
+		$roiLines[] = 'Капча: ' . $captchaNote;
+	}
+	$roiData = [
+		'roistat' => $roistatVisit !== '' ? $roistatVisit : 'nocookie',
+		'key' => $cfg['roistat_key'],
 		'title' => 'Заявка с сайта gkmetallinvest.ru',
 		'name' => $name,
 		'phone' => $phone,
-		'email' => $email !== '' ? $email : null,
-		'comment' => $message !== '' ? $message : null,
-		'roistat_visit' => $roistatVisit !== '' ? $roistatVisit : 'nocookie',
-		'fields' => ['page' => $page, 'city' => $city, 'attachment' => $attachment ? $attachment['name'] : null],
-	]);
+		'comment' => implode("
+", $roiLines),
+		'order_creation_method' => 'Форма на сайте',
+		'is_need_callback' => '0',
+		'sync' => '0',
+	];
+	if ($email !== '') {
+		$roiData['email'] = $email;
+	}
+	// Поля CRM с переменными Roistat (источник визита); коды полей можно переопределить в roistat_fields.
+	$roiFields = isset($cfg['roistat_fields']) && is_array($cfg['roistat_fields'])
+		? $cfg['roistat_fields']
+		: ['UTM_SOURCE' => '{utmSource}', 'utm_source' => '{sourceAliasLevel1}'];
+	if ($roiFields) {
+		$roiData['fields'] = $roiFields;
+	}
+	lead_roistat_proxylead($roiData);
 }
 
 if ($sent) {
@@ -558,7 +588,7 @@ function lead_fallback_allowed(string $ip): bool
 }
 
 /** POST x-www-form-urlencoded: возвращает [тело|false, HTTP-код]. curl, а если его нет — потоки PHP. */
-function lead_http_post(string $url, string $post): array
+function lead_http_post(string $url, string $post, int $connectTimeout = 4, int $timeout = 8): array
 {
 	if (function_exists('curl_init')) {
 		$ch = curl_init($url);
@@ -566,8 +596,8 @@ function lead_http_post(string $url, string $post): array
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post,
 			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_CONNECTTIMEOUT => 4,
-			CURLOPT_TIMEOUT => 8,
+			CURLOPT_CONNECTTIMEOUT => $connectTimeout,
+			CURLOPT_TIMEOUT => $timeout,
 		]);
 		$body = curl_exec($ch);
 		$code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -578,7 +608,7 @@ function lead_http_post(string $url, string $post): array
 		'method' => 'POST',
 		'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
 		'content' => $post,
-		'timeout' => 8,
+		'timeout' => $timeout,
 		'ignore_errors' => true,
 	]]);
 	$body = @file_get_contents($url, false, $ctx);
@@ -589,18 +619,19 @@ function lead_http_post(string $url, string $post): array
 	return [$body, $code];
 }
 
-/** Отправка заявки в Roistat (Webhook-интеграция): POST JSON, таймаут 6 с, ошибки молча игнорируем. */
-function lead_roistat_send(string $url, array $payload): void
+/**
+ * Проксилид Roistat: POST на leads/add (параметры, как в документации Roistat, «передача через серверный код»).
+ * Ответ вида {"status":"ok"} или {"status":"error","data":"..."}; ошибки пишем в лог и не влияем на заявку.
+ */
+function lead_roistat_proxylead(array $data): void
 {
-	if (strpos($url, 'https://') !== 0) {
+	[$body, $code] = lead_http_post('https://cloud.roistat.com/api/proxy/1.0/leads/add', http_build_query($data), 3, 6);
+	if (!is_string($body) || $code !== 200) {
+		error_log('send.php roistat: нет ответа, код ' . $code);
 		return;
 	}
-	$ctx = stream_context_create(['http' => [
-		'method' => 'POST',
-		'header' => "Content-Type: application/json\r\n",
-		'content' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-		'timeout' => 6,
-		'ignore_errors' => true,
-	]]);
-	@file_get_contents($url, false, $ctx);
+	$d = json_decode($body, true);
+	if (!is_array($d) || ($d['status'] ?? '') !== 'ok') {
+		error_log('send.php roistat: ' . substr($body, 0, 200));
+	}
 }
