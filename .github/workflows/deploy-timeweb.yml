@@ -57,6 +57,7 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           LEAD_TO: ${{ secrets.LEAD_TO }}
           ROISTAT_KEY: ${{ secrets.ROISTAT_KEY }}
+          LEAD_MAIL: ${{ secrets.LEAD_MAIL }}
           RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
           PUBLIC_RECAPTCHA_SITEKEY: ${{ secrets.RECAPTCHA_SITEKEY }}
           SMARTCAPTCHA_SERVER_KEY: ${{ secrets.SMARTCAPTCHA_SERVER_KEY }}

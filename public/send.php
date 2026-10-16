@@ -347,7 +347,10 @@ if ($attachment) {
 $smtpUser = isset($cfg['smtp_user']) && is_string($cfg['smtp_user']) ? $cfg['smtp_user'] : '';
 $useSmtp = $smtpUser !== '' && !empty($cfg['smtp_pass']) && !empty($cfg['smtp_host']);
 
-if ($useSmtp) {
+if (isset($cfg['mail']) && $cfg['mail'] === 'off') {
+	// Письмо отключено настройкой (секрет LEAD_MAIL=off): заявка идёт только в Roistat/CRM.
+	$sent = true;
+} elseif ($useSmtp) {
 	// По SMTP отправитель обязан совпадать с логином ящика.
 	$smtpFrom = $smtpUser;
 	$smtpHeaders = 'Date: ' . date('r') . "\r\n"
