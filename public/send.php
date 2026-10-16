@@ -347,26 +347,39 @@ if ($attachment) {
 $smtpUser = isset($cfg['smtp_user']) && is_string($cfg['smtp_user']) ? $cfg['smtp_user'] : '';
 $useSmtp = $smtpUser !== '' && !empty($cfg['smtp_pass']) && !empty($cfg['smtp_host']);
 
-if (isset($cfg['mail']) && $cfg['mail'] === 'off' && !$attachment) {
-	// Письмо отключено настройкой (секрет LEAD_MAIL=off): заявка идёт только в Roistat/CRM.
-	// Исключение — заявки с вложением: файл в Roistat не передаётся, поэтому такое письмо всё равно уходит.
-	$sent = true;
-} elseif ($useSmtp) {
-	// По SMTP отправитель обязан совпадать с логином ящика.
-	$smtpFrom = $smtpUser;
-	$smtpHeaders = 'Date: ' . date('r') . "\r\n"
-		. 'To: ' . $recipients . "\r\n"
-		. 'Subject: ' . $subject . "\r\n"
-		. str_replace('<' . $fromEmail . '>', '<' . $smtpFrom . '>', $headers);
-	$sent = lead_smtp_send($cfg, $smtpFrom, $recipients, $smtpHeaders . "\r\n" . $body);
-} else {
+// Идентификатор заявки из формы: по нему находим сделку в amoCRM, чтобы приложить файл к нужной.
+$rid = isset($_POST['rid']) && is_string($_POST['rid']) && preg_match('/^F[0-9a-f]{10}$/', $_POST['rid']) ? $_POST['rid'] : '';
+$requestStart = time();
+
+// Загрузка вложения в сделку amoCRM включается, когда в конфиге есть amocrm_token.
+$amoOn = $attachment && $rid !== '' && !empty($cfg['amocrm_token']) && is_string($cfg['amocrm_token']);
+$mailOff = isset($cfg['mail']) && $cfg['mail'] === 'off';
+
+/** Отправка письма с заявкой (SMTP или запасной mail()). */
+$sendMail = static function () use ($cfg, $useSmtp, $smtpUser, $recipients, $subject, $headers, $body, $fromEmail): bool {
+	if ($useSmtp) {
+		// По SMTP отправитель обязан совпадать с логином ящика.
+		$smtpHeaders = 'Date: ' . date('r') . "\r\n"
+			. 'To: ' . $recipients . "\r\n"
+			. 'Subject: ' . $subject . "\r\n"
+			. str_replace('<' . $fromEmail . '>', '<' . $smtpUser . '>', $headers);
+		return lead_smtp_send($cfg, $smtpUser, $recipients, $smtpHeaders . "\r\n" . $body);
+	}
 	// Запасной путь: на некоторых хостингах mail() отключён — тогда нужен SMTP.
 	if (!function_exists('mail')) {
-		http_response_code(502);
-		echo json_encode(['ok' => false, 'error' => 'mail_disabled']);
-		exit;
+		return false;
 	}
-	$sent = @mail($recipients, $subject, $body, $headers, '-f' . $fromEmail);
+	return @mail($recipients, $subject, $body, $headers, '-f' . $fromEmail);
+};
+
+$mailLater = false; // письмо понадобится только как запасной путь, если файл не удастся положить в amoCRM
+if ($mailOff && (!$attachment || $amoOn)) {
+	// Письмо отключено настройкой (секрет LEAD_MAIL=off): заявка идёт только в Roistat/CRM.
+	// Исключение — заявка с файлом, который некуда положить, кроме письма.
+	$sent = true;
+	$mailLater = (bool) $attachment;
+} else {
+	$sent = $sendMail();
 }
 
 // Roistat (проксилид): заявка с номером визита уходит в Roistat, тот передаёт её в CRM.
@@ -411,12 +424,45 @@ if (!empty($cfg['roistat_key']) && is_string($cfg['roistat_key'])) {
 	lead_roistat_proxylead($roiData);
 }
 
-if ($sent) {
-	echo json_encode(['ok' => true]);
-} else {
+$response = $sent ? json_encode(['ok' => true]) : json_encode(['ok' => false, 'error' => 'send']);
+if (!$sent) {
 	http_response_code(502);
-	echo json_encode(['ok' => false, 'error' => 'send']);
 }
+
+if (!$amoOn || $wantsHtml || !$sent) {
+	echo $response;
+	// Файл некуда положить, кроме письма (обычный переход без JS или сбой): отправляем письмо сейчас.
+	if ($mailLater) {
+		$sendMail();
+	}
+	exit;
+}
+
+// Файл уходит в сделку amoCRM уже после ответа посетителю: сделку создаёт Roistat с задержкой в несколько секунд.
+ignore_user_abort(true);
+@set_time_limit(240);
+header('Content-Length: ' . strlen($response));
+header('Connection: close');
+echo $response;
+while (ob_get_level() > 0) {
+	@ob_end_flush();
+}
+@flush();
+if (function_exists('fastcgi_finish_request')) {
+	@fastcgi_finish_request();
+}
+
+$attached = false;
+try {
+	$attached = lead_amo_attach($cfg, $attachment, $rid, $requestStart);
+} catch (\Throwable $e) {
+	error_log('send.php amocrm: ' . $e->getMessage());
+}
+if (!$attached && $mailLater) {
+	// Не получилось положить файл в сделку — отправляем его письмом, чтобы не потерять.
+	$sendMail();
+}
+exit;
 
 /**
  * Минимальный SMTP-клиент: implicit TLS (ssl, порт 465), STARTTLS (tls, 587)
@@ -621,6 +667,134 @@ function lead_http_post(string $url, string $post, int $connectTimeout = 4, int 
 		$code = (int) $m[1];
 	}
 	return [$body, $code];
+}
+
+/**
+ * Запрос к amoCRM (JSON). Возвращает [HTTP-код, разобранный ответ|null].
+ * $url — полный адрес; $json — тело в JSON; $raw — сырое тело (части файла).
+ */
+function lead_amo_call(array $cfg, string $method, string $url, ?array $json = null, ?string $raw = null): array
+{
+	$headers = ['Authorization: Bearer ' . $cfg['amocrm_token'], 'Accept: application/json'];
+	$ch = curl_init($url);
+	$opts = [
+		CURLOPT_CUSTOMREQUEST => $method,
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_CONNECTTIMEOUT => 6,
+		CURLOPT_TIMEOUT => 40,
+	];
+	if ($json !== null) {
+		$headers[] = 'Content-Type: application/json';
+		$opts[CURLOPT_POSTFIELDS] = json_encode($json, JSON_UNESCAPED_UNICODE);
+	} elseif ($raw !== null) {
+		$headers[] = 'Content-Type: application/octet-stream';
+		$opts[CURLOPT_POSTFIELDS] = $raw;
+	}
+	$opts[CURLOPT_HTTPHEADER] = $headers;
+	curl_setopt_array($ch, $opts);
+	$body = curl_exec($ch);
+	$code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	curl_close($ch);
+	$data = is_string($body) && $body !== '' ? json_decode($body, true) : null;
+	return [$code, is_array($data) ? $data : null];
+}
+
+/**
+ * Находит сделку по идентификатору заявки: Roistat кладёт текст заявки (в нём «№ F…») примечанием в сделку.
+ * Ищем среди недавно изменённых примечаний; до $deadline опрашиваем каждые 5 секунд.
+ */
+function lead_amo_find_lead(array $cfg, string $base, string $rid, int $since, int $deadline): int
+{
+	while (time() <= $deadline) {
+		$q = http_build_query([
+			'filter' => ['updated_at' => ['from' => $since - 60]],
+			'order' => ['updated_at' => 'desc'],
+			'limit' => 250,
+		]);
+		[$code, $data] = lead_amo_call($cfg, 'GET', $base . '/api/v4/leads/notes?' . $q);
+		if ($code === 200 && isset($data['_embedded']['notes']) && is_array($data['_embedded']['notes'])) {
+			foreach ($data['_embedded']['notes'] as $note) {
+				if (strpos(json_encode($note['params'] ?? [], JSON_UNESCAPED_UNICODE), $rid) !== false && !empty($note['entity_id'])) {
+					return (int) $note['entity_id'];
+				}
+			}
+		} elseif ($code === 401 || $code === 403) {
+			throw new \RuntimeException('нет доступа к amoCRM, код ' . $code);
+		}
+		sleep(5);
+	}
+	return 0;
+}
+
+/**
+ * Кладёт файл заявки в сделку amoCRM (Files API): сессия → части → привязка к сделке → проверка.
+ * true — файл привязан и виден в списке файлов сделки.
+ */
+function lead_amo_attach(array $cfg, array $attachment, string $rid, int $since): bool
+{
+	$domain = !empty($cfg['amocrm_domain']) && is_string($cfg['amocrm_domain']) ? $cfg['amocrm_domain'] : 'gkmetallinvest.amocrm.ru';
+	$base = !empty($cfg['amocrm_base']) && is_string($cfg['amocrm_base']) ? rtrim($cfg['amocrm_base'], '/') : 'https://' . $domain;
+
+	$wait = isset($cfg['amocrm_wait']) && is_numeric($cfg['amocrm_wait']) ? max(5, (int) $cfg['amocrm_wait']) : 75;
+	$leadId = lead_amo_find_lead($cfg, $base, $rid, $since, $since + $wait);
+	if ($leadId <= 0) {
+		error_log('send.php amocrm: сделка с заявкой ' . $rid . ' не найдена');
+		return false;
+	}
+
+	[$code, $acc] = lead_amo_call($cfg, 'GET', $base . '/api/v4/account?with=drive_url');
+	$drive = $code === 200 && !empty($acc['drive_url']) ? rtrim((string) $acc['drive_url'], '/') : '';
+	if ($drive === '') {
+		error_log('send.php amocrm: нет адреса хранилища файлов, код ' . $code);
+		return false;
+	}
+
+	$data = (string) $attachment['data'];
+	[$code, $sess] = lead_amo_call($cfg, 'POST', $drive . '/v1.0/sessions', [
+		'file_name' => (string) $attachment['name'],
+		'file_size' => strlen($data),
+		'content_type' => (string) $attachment['type'],
+	]);
+	if (!in_array($code, [200, 201], true) || empty($sess['upload_url'])) {
+		error_log('send.php amocrm: сессия загрузки, код ' . $code);
+		return false;
+	}
+	$part = max(1024, (int) ($sess['max_part_size'] ?? 131072));
+	$url = (string) $sess['upload_url'];
+	$file = null;
+	for ($off = 0; $off < strlen($data); $off += $part) {
+		[$code, $res] = lead_amo_call($cfg, 'POST', $url, null, substr($data, $off, $part));
+		if ($code !== 200 || !is_array($res)) {
+			error_log('send.php amocrm: часть файла, код ' . $code);
+			return false;
+		}
+		if (!empty($res['next_url'])) {
+			$url = (string) $res['next_url'];
+		} elseif (!empty($res['uuid'])) {
+			$file = $res;
+		}
+	}
+	if (!$file || empty($file['uuid'])) {
+		error_log('send.php amocrm: загрузка не вернула файл');
+		return false;
+	}
+
+	[$code] = lead_amo_call($cfg, 'PUT', $base . '/api/v4/leads/' . $leadId . '/files', [['file_uuid' => (string) $file['uuid']]]);
+	if (!in_array($code, [200, 202, 204], true)) {
+		error_log('send.php amocrm: привязка файла к сделке ' . $leadId . ', код ' . $code);
+		return false;
+	}
+	// Проверяем, что файл действительно привязан.
+	[$code, $list] = lead_amo_call($cfg, 'GET', $base . '/api/v4/leads/' . $leadId . '/files');
+	if ($code === 200 && isset($list['_embedded']['files'])) {
+		foreach ($list['_embedded']['files'] as $f) {
+			if (($f['file_uuid'] ?? '') === $file['uuid']) {
+				return true;
+			}
+		}
+	}
+	error_log('send.php amocrm: привязка к сделке ' . $leadId . ' не подтверждена');
+	return false;
 }
 
 /**

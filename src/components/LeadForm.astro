@@ -53,6 +53,7 @@ const defaultOffice = offices[0];
 					/>
 					<input type="hidden" name="page" value="" />
 					<input type="hidden" name="city" value="" />
+					<input type="hidden" name="rid" value="" />
 					<Field label="Имя" name="name" required />
 					<Field label="Телефон" name="phone" type="tel" required />
 					<Field label="Email (необязательно)" name="email" type="email" />
@@ -240,6 +241,16 @@ const defaultOffice = offices[0];
 			btn.removeAttribute('data-lead-wait');
 			setStatus('', '');
 		}
+
+		// Идентификатор заявки: по нему сервер находит сделку в amoCRM, чтобы приложить к ней файл.
+		const ridInput = form.querySelector<HTMLInputElement>('input[name="rid"]');
+		const newRid = () => {
+			if (!ridInput) return;
+			const a = new Uint8Array(5);
+			crypto.getRandomValues(a);
+			ridInput.value = 'F' + Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
+		};
+		newRid();
 
 		// Всплывающее окно «Спасибо» поверх формы после успешной отправки.
 		const modal = form.parentElement?.querySelector<HTMLDialogElement>('dialog[data-lead-modal]') ?? null;
@@ -508,6 +519,7 @@ const defaultOffice = offices[0];
 				const json = await res.json().catch(() => ({ ok: false }));
 				if (res.ok && json.ok) {
 					form.reset();
+					newRid();
 					if (showThanks()) setStatus('', '');
 					else setStatus('Заявка отправлена! Менеджер свяжется с вами в течение 30 минут.', 'ok');
 				} else {

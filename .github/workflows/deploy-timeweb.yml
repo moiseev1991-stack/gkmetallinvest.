@@ -58,6 +58,7 @@ jobs:
           LEAD_TO: ${{ secrets.LEAD_TO }}
           ROISTAT_KEY: ${{ secrets.ROISTAT_KEY }}
           LEAD_MAIL: ${{ secrets.LEAD_MAIL }}
+          AMOCRM_TOKEN: ${{ secrets.AMOCRM_TOKEN }}
           RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
           PUBLIC_RECAPTCHA_SITEKEY: ${{ secrets.RECAPTCHA_SITEKEY }}
           SMARTCAPTCHA_SERVER_KEY: ${{ secrets.SMARTCAPTCHA_SERVER_KEY }}
