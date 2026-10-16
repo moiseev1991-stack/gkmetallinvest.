@@ -347,8 +347,9 @@ if ($attachment) {
 $smtpUser = isset($cfg['smtp_user']) && is_string($cfg['smtp_user']) ? $cfg['smtp_user'] : '';
 $useSmtp = $smtpUser !== '' && !empty($cfg['smtp_pass']) && !empty($cfg['smtp_host']);
 
-if (isset($cfg['mail']) && $cfg['mail'] === 'off') {
+if (isset($cfg['mail']) && $cfg['mail'] === 'off' && !$attachment) {
 	// Письмо отключено настройкой (секрет LEAD_MAIL=off): заявка идёт только в Roistat/CRM.
+	// Исключение — заявки с вложением: файл в Roistat не передаётся, поэтому такое письмо всё равно уходит.
 	$sent = true;
 } elseif ($useSmtp) {
 	// По SMTP отправитель обязан совпадать с логином ящика.
